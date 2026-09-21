@@ -22,8 +22,14 @@ from .snippets import (
 
 
 class Session:
-    def __init__(self, path: Path, collections: tuple[Path, ...] = ()):
-        self.project = Project(path)
+    def __init__(
+        self,
+        path: Path,
+        collections: tuple[Path, ...] = (),
+        *,
+        allow_draft: bool = False,
+    ):
+        self.project = Project(path, allow_draft=allow_draft)
         for collection in collections:
             resolved = collection.resolve()
             if resolved not in self.project.collections:

@@ -42,7 +42,7 @@ def test_hub_parser_handles_partial_frames_and_neutralizes_stale_input(monkeypat
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     controller = module.Controller()
-    state = ControlState(0.5, -1, buttons=3)
+    state = ControlState(0.5, -1, buttons=3, left_trigger=0.25, right_trigger=1)
     frame = state.encode()
     buffer.extend(frame[:6])
     controller.update()
@@ -52,6 +52,9 @@ def test_hub_parser_handles_partial_frames_and_neutralizes_stale_input(monkeypat
     assert controller.left_x == state.left_x
     assert controller.left_y == state.left_y
     assert controller.buttons == state.buttons
+    assert controller.left_trigger == state.left_trigger
+    assert controller.right_trigger == state.right_trigger
     elapsed[0] = 501
     controller.update()
     assert controller.left_x == controller.left_y == controller.buttons == 0
+    assert controller.left_trigger == controller.right_trigger == 0

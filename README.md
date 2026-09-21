@@ -7,6 +7,11 @@
 Library содержит Python- и Pybricks-сниппеты, Scratch хранит незаконченный код,
 а история отменяет целые операции. Робототехника и тяжёлые интерфейсы необязательны.
 
+В Qt есть структурный и обычный Python-режимы, скрываемая консоль, встроенная
+помощь и экранный Xbox-контроллер с назначением моторов. Виртуальные профили
+Inventor/Prime, BOOST и Technic позволяют учиться без оборудования; подключение
+настоящих хабов рассчитано на прошивку Pybricks.
+
 ## Быстрый запуск
 
 ```sh
@@ -17,7 +22,14 @@ uv run --extra qt pyblocks-qt examples/first.py
 В терминале: `uv run --extra tui pyblocks-tui examples/first.py`.
 Без интерфейса: `uv run pyblocks inspect examples/first.py`.
 
-![Окно PyBlocks Studio: Library, Python и Scratch](doc/images/editor.png)
+![Окно PyBlocks Studio: библиотека и программа](doc/images/editor.png)
+
+Для первого запуска программы нажмите «Подключить хаб» → «Виртуальный хаб»,
+выберите модель и нажмите F5. В терминале:
+
+```sh
+uv run pyblocks run examples/motor.py --transport virtual --model boost
+```
 
 ## Документация
 

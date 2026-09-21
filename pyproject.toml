@@ -31,6 +31,9 @@ dev = ["pytest>=8", "pytest-asyncio>=1", "ruff>=0.14", "build>=1.2"]
 include = ["pyblocks*"]
 namespaces = false
 
+[tool.setuptools.cmdclass]
+build_py = "build_support.BuildPy"
+
 [tool.setuptools.package-data]
 pyblocks = ["snippets/**/*.toml", "core/black.toml"]
 

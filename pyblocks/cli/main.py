@@ -100,7 +100,15 @@ def parser() -> argparse.ArgumentParser:
             command.add_argument("index", type=int)
         if name == "run":
             command.add_argument("--name", help="Bluetooth hub name")
-            command.add_argument("--transport", choices=("ble", "usb"), default="ble")
+            command.add_argument(
+                "--transport", choices=("ble", "usb", "virtual"), default="ble"
+            )
+            command.add_argument(
+                "--model",
+                choices=("inventor", "boost", "technic"),
+                default="inventor",
+                help="Virtual hub model",
+            )
     return result
 
 
@@ -129,7 +137,11 @@ def main(argv: list[str] | None = None) -> int:
 
             from pyblocks.pybricks.connection import run_file
 
-            asyncio.run(run_file(arguments.file, arguments.name, arguments.transport))
+            asyncio.run(
+                run_file(
+                    arguments.file, arguments.name, arguments.transport, arguments.model
+                )
+            )
             return 0
         session = Session(arguments.file, tuple(arguments.collection))
         editor, document = session.editor, session.document

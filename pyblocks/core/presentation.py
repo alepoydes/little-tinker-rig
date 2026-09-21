@@ -38,6 +38,11 @@ def role(node: ast.AST) -> str:
     return "value"
 
 
+def snippet_role(snippet) -> str:
+    """A template keeps the same semantic color in the library and the document."""
+    return role(snippet.body if snippet.expression else snippet.body[0])
+
+
 @dataclass(frozen=True)
 class Region:
     span: Span
@@ -101,7 +106,7 @@ def regions(syntax: Syntax, matches=()) -> tuple[Region, ...]:
             Region(
                 match.span,
                 depth,
-                "snippet",
+                snippet_role(match.snippet),
                 line,
                 column,
                 end_line,

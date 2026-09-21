@@ -26,8 +26,9 @@ from textual.widgets import (
 from textual.widgets.option_list import Option
 
 from pyblocks.core.edit import target_position
-from pyblocks.core.presentation import PALETTE, regions
+from pyblocks.core.presentation import PALETTE, regions, snippet_role
 from pyblocks.core.session import Session
+from pyblocks.core.snippets import instantiate
 
 
 class EditDialog(ModalScreen):
@@ -166,7 +167,7 @@ class Studio(App):
     #scratch-pane { width: 25%; min-width: 18; }
     #source-pane { width: 1fr; }
     OptionList { height: 1fr; border: round $primary; }
-    #console { height: 6; border-top: solid $primary; }
+    #console { height: 6; border-top: solid $primary; display: none; }
     #status { height: 2; }
     #quick-help { height: 4; }
     Label { padding: 0 1; }
@@ -194,6 +195,7 @@ class Studio(App):
         ("f5", "run", "Run hub"),
         ("f6", "stop", "Stop hub"),
         ("f7", "connect", "Connect"),
+        ("f8", "console", "Console"),
         ("ctrl+q", "quit", "Quit"),
     ]
 
@@ -238,7 +240,17 @@ class Studio(App):
                 and search.casefold()
                 in (snippet.identity + " " + snippet.help).casefold()
             ):
-                widget.add_option(Option(snippet.identity, id=snippet.identity))
+                preview = instantiate(
+                    snippet,
+                    {p.name: p.name for p in snippet.parameters if p.default is None},
+                ).source
+                text = Text(
+                    snippet.help.splitlines()[0] if snippet.help else snippet.identity,
+                    style="bold",
+                )
+                text.append("\n" + "\n".join(preview.splitlines()[:3]))
+                text.stylize(f"#203040 on {PALETTE[snippet_role(snippet)]}")
+                widget.add_option(Option(text, id=snippet.identity))
 
     @on(Input.Changed, "#search")
     def search(self, event):
@@ -528,28 +540,46 @@ class Studio(App):
         self.push_screen(
             EditDialog(
                 "Connect hub (empty name: first available)",
-                lambda values: self.connect(values["name"]),
-                fields=[("name", "", "Bluetooth hub")],
+                lambda values: self.connect(
+                    values["name"], values["transport"], values["model"]
+                ),
+                fields=[
+                    ("transport", "virtual", "virtual / ble / usb"),
+                    ("model", "inventor", "inventor / boost / technic (virtual)"),
+                    ("name", "", "Bluetooth hub"),
+                ],
             )
         )
 
     @work(group="connection", exclusive=True)
-    async def connect(self, name):
+    async def connect(self, name, transport="ble", model="inventor"):
         try:
             from pyblocks.pybricks.connection import Connection
+            from pyblocks.pybricks.virtual import VirtualConnection
 
             if self.connection:
                 await self.connection.disconnect()
             decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
-            self.connection = Connection(
-                lambda data: self.query_one("#console", RichLog).write(
-                    Text(decoder.decode(data))
-                )
+            factory = VirtualConnection if transport == "virtual" else Connection
+            options = {"model": model} if transport == "virtual" else {}
+            self.connection = factory(
+                lambda data: self.console_output(decoder.decode(data)), **options
             )
-            await self.connection.connect(name or None)
+            await self.connection.connect(name or None, transport)
             self.notify("Hub connected")
         except Exception as error:
             self.notify(str(error), severity="error")
+
+    def action_console(self):
+        widget = self.query_one("#console", RichLog)
+        widget.display = not widget.display
+
+    def console_output(self, text):
+        self.query_one("#console", RichLog).write(Text(text))
+        if not self.query_one("#console").display:
+            self.query_one("#status", Static).update(
+                "New program output · F8 opens Console"
+            )
 
     @work(group="run", exclusive=True)
     async def action_run(self):

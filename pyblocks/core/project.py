@@ -8,7 +8,7 @@ import tempfile
 import tokenize
 from pathlib import Path
 
-from .document import Document
+from .document import Document, State
 
 
 def atomic_write(path: Path, text: str, encoding: str = "utf-8") -> None:
@@ -35,7 +35,7 @@ def atomic_write(path: Path, text: str, encoding: str = "utf-8") -> None:
 class Project:
     """File ownership and external-change detection; editor state stays separate."""
 
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, *, allow_draft: bool = False):
         self.path = path.resolve()
         self.encoding = "utf-8"
         source = ""
@@ -74,8 +74,17 @@ class Project:
                 raise ValueError("Pins must map collection names to version strings")
             self.collections = [(self.path.parent / p).resolve() for p in collections]
             self.pins = pins
-        self.document = Document(source, scratch)
-        self._saved = self.document.state
+        self.draft = None
+        try:
+            self.document = Document(source, scratch)
+        except SyntaxError:
+            if not allow_draft:
+                raise
+            self.draft = source
+            self.document = Document("", scratch)
+        self._saved = (
+            State(source, scratch) if self.draft is not None else self.document.state
+        )
 
     @property
     def workspace_path(self) -> Path:
@@ -90,6 +99,8 @@ class Project:
 
     def save(self) -> None:
         """Refuse to overwrite a file changed externally since opening/saving."""
+        if self.draft is not None:
+            raise ValueError("Correct the Python draft before saving the main document")
         if self._hash(self.path) != self._disk_hash:
             raise ValueError(
                 "File changed outside PyBlocks; reopen it or save to another path"

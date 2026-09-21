@@ -31,7 +31,9 @@ class SourceView(QPlainTextEdit):
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
         self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
-        self.setFont(QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont))
+        font = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
+        font.setPointSize(11)
+        self.setFont(font)
         self.setStyleSheet(
             "QPlainTextEdit { background: #fafbfc; color: #203040; border: 0; padding: 8px; }"
         )

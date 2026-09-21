@@ -38,6 +38,7 @@ async def test_transport_boundary_receives_source_controls_and_shutdown(
             events.append("connect")
 
         async def run(self, path, **options):
+            assert events[-1] == "stop"
             assert Path(path).read_text() == "print(1)\n"
             assert options == {
                 "wait": False,
@@ -72,4 +73,70 @@ async def test_transport_boundary_receives_source_controls_and_shutdown(
     await connection.stop()
     await connection.disconnect()
     assert output == [b"hello\n"]
-    assert events == ["connect", state, "stop", "disconnect"]
+    assert events == ["connect", "stop", state, "stop", "disconnect"]
+
+
+@pytest.mark.asyncio
+async def test_real_transport_monitor_identity_telemetry_and_braking(monkeypatch):
+    pytest.importorskip("pybricksdev")
+    from pybricksdev import ble
+    from pybricksdev.ble.lwp3 import HubKind
+    from pybricksdev.ble.pybricks import StatusFlag
+    from pybricksdev.connections import pybricks
+    from reactivex.subject import BehaviorSubject, Subject
+
+    from pyblocks.pybricks.devices import encode_commands
+
+    events = []
+
+    class Hub:
+        hub_kind = HubKind.BOOST
+        fw_version = "3.6.0"
+
+        def __init__(self, device):
+            self.stdout_observable = Subject()
+            self.status_observable = BehaviorSubject(StatusFlag(0))
+
+        async def connect(self):
+            pass
+
+        async def stop_user_program(self):
+            events.append("stop")
+            self.status_observable.on_next(StatusFlag(0))
+
+        async def run(self, path, **options):
+            self.status_observable.on_next(StatusFlag.USER_PROGRAM_RUNNING)
+            self.stdout_observable.on_next(
+                b"\x1ePYBLOCKS {'name': 'Classroom', 'model': 'boost', 'ports': {'A': {'type': 'motor', 'angle': 15}}, 'battery_mv': 7900}\n"
+            )
+
+        async def write(self, data):
+            events.append(data)
+
+        async def disconnect(self):
+            events.append("disconnect")
+
+    async def discover(name):
+        return object()
+
+    monkeypatch.setattr(ble, "find_device", discover)
+    monkeypatch.setattr(pybricks, "PybricksHubBLE", Hub)
+    info, output = [], []
+    connection = Connection(output.append, info.append)
+    await connection.connect()
+    assert connection.info.model == "boost"
+    await connection.start_monitor()
+    assert connection.info.monitoring and not connection.info.running
+    assert connection.info.name == "Classroom"
+    assert connection.info.battery_mv == 7900
+    assert connection.info.ports["A"]["angle"] == 15
+    await connection.drive((("A", "servo", 90),))
+    await connection.disconnect()
+    assert events == [
+        "stop",
+        encode_commands((("A", "servo", 90),)),
+        "stop",
+        "disconnect",
+    ]
+    assert not connection.info.connected
+    assert output == []
