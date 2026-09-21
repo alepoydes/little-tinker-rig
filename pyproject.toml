@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyblocks-studio"
+version = "0.1.0"
+description = "Structural Python editor with optional Pybricks robotics support"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE.txt"]
+authors = [{ name = "Igor Lobanov", email = "lobanov.igor@gmail.com" }]
+dependencies = ["black>=26.5,<27"]
+
+[project.optional-dependencies]
+tui = ["textual>=8,<9"]
+qt = ["PySide6>=6.8,<7"]
+pybricks = ["pybricksdev>=2.3,<3"]
+gamepad = ["pygame-ce>=2.5,<3"]
+
+[project.scripts]
+pyblocks = "pyblocks.cli.main:main"
+pyblocks-qt = "pyblocks.qt.app:main"
+pyblocks-tui = "pyblocks.tui.app:main"
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-asyncio>=1", "ruff>=0.14", "build>=1.2"]
+
+[tool.setuptools.packages.find]
+include = ["pyblocks*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+pyblocks = ["snippets/**/*.toml", "core/black.toml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# Templates are parsed, not executed. Annotations are editor units/object kinds;
+# assignments and empty loop bodies are intentional expansion patterns.
+"pyblocks/snippets/**/*.py" = ["F722", "F821", "F841", "B007"]
+
+[tool.black]
+target-version = ["py311"]

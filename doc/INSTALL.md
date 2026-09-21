@@ -1,0 +1,68 @@
+# Установка и запуск
+
+PyBlocks работает на компьютере. Программу для робота он передаёт на хаб
+с установленной прошивкой Pybricks. Для знакомства с редактором робот не нужен.
+
+## Из исходников с uv
+
+Установите [uv](https://docs.astral.sh/uv/getting-started/installation/), скачайте
+проект и откройте терминал в его каталоге. uv создаёт изолированное окружение
+`.venv`; системные Python-пакеты не меняются.
+
+Графический редактор:
+
+```sh
+uv sync --extra qt
+uv run --extra qt pyblocks-qt examples/first.py
+```
+
+Терминальный редактор:
+
+```sh
+uv sync --extra tui
+uv run --extra tui pyblocks-tui examples/first.py
+```
+
+Для работы с хабом добавьте `--extra pybricks` при установке и запуске:
+
+```sh
+uv sync --extra qt --extra pybricks
+uv run --extra qt --extra pybricks pyblocks-qt examples/motor.py
+```
+
+Физический геймпад требует ещё `--extra gamepad`. Установка терминального
+интерфейса не устанавливает Qt; установка ядра не устанавливает Pybricks.
+`uv sync --all-extras` устанавливает все возможности сразу.
+
+Версии зависимостей зафиксированы в `uv.lock`. Добавьте `--locked`, если нужно
+запретить uv менять этот файл. `--no-dev` исключает инструменты разработки.
+
+## Обычное виртуальное окружение
+
+Поддерживается Python 3.11 и новее. В корне проекта:
+
+```sh
+python -m venv .venv
+```
+
+Активируйте окружение: `source .venv/bin/activate` в Linux/macOS либо
+`.venv\Scripts\activate` в Windows. Затем:
+
+```sh
+python -m pip install '.[qt,pybricks]'
+pyblocks-qt examples/first.py
+```
+
+## Если запуск не удался
+
+- `No module named PySide6` / `textual` / `pybricksdev`: соответствующая опция
+  установки отсутствует. При использовании uv укажите её в `uv run`.
+- Qt сообщает об отсутствии платформенного плагина: проверьте графическую
+  сессию и системные библиотеки Qt для своей ОС. Без графического окружения
+  используйте TUI; `QT_QPA_PLATFORM=offscreen` предназначен для тестов.
+- Bluetooth-хаб не найден: включите Bluetooth, запустите хаб с прошивкой Pybricks
+  и закройте другое приложение, которое уже подключено к нему.
+- USB недоступен: проверьте кабель передачи данных и права доступа к USB.
+
+Дальше: [первое знакомство](tutorial/first.md), [управление редактором](usage.md),
+[подключение робота](robotics.md).

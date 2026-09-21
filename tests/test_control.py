@@ -1,0 +1,57 @@
+import importlib.util
+import sys
+import types
+from pathlib import Path
+
+import pytest
+
+from pyblocks.pybricks.control import ControlState
+
+
+@pytest.mark.parametrize("value", [-1, -0.37, 0, 0.59, 1])
+def test_controller_frame_roundtrip(value):
+    state = ControlState(value, -value, value, -value, 0x8003, 0.25)
+    assert len(state.encode()) == 16
+    assert ControlState.decode(state.encode()) == state
+    assert b"\x03" not in state.encode()
+
+
+def test_controller_rejects_nonfinite_and_out_of_range():
+    for value in (float("nan"), float("inf"), 1.01):
+        with pytest.raises(ValueError):
+            ControlState(left_x=value)
+
+
+def test_hub_parser_handles_partial_frames_and_neutralizes_stale_input(monkeypatch):
+    buffer = []
+    elapsed = [0]
+
+    class Clock:
+        def time(self):
+            return elapsed[0]
+
+        def reset(self):
+            elapsed[0] = 0
+
+    tools = types.ModuleType("pybricks.tools")
+    tools.StopWatch = Clock
+    tools.read_input_byte = lambda: buffer.pop(0) if buffer else None
+    monkeypatch.setitem(sys.modules, "pybricks.tools", tools)
+    path = Path(__file__).parents[1] / "pyblocks/pybricks/hub_controller.py"
+    spec = importlib.util.spec_from_file_location("test_hub_controller", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    controller = module.Controller()
+    state = ControlState(0.5, -1, buttons=3)
+    frame = state.encode()
+    buffer.extend(frame[:6])
+    controller.update()
+    assert controller.left_x == 0
+    buffer.extend(frame[6:])
+    controller.update()
+    assert controller.left_x == state.left_x
+    assert controller.left_y == state.left_y
+    assert controller.buttons == state.buttons
+    elapsed[0] = 501
+    controller.update()
+    assert controller.left_x == controller.left_y == controller.buttons == 0
