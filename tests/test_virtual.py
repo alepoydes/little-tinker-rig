@@ -242,3 +242,69 @@ def test_monitor_brakes_started_motors_if_later_device_fails(monkeypatch):
         monitor = Path(__file__).parents[1] / "pyblocks/pybricks/hub_monitor.py"
         with pytest.raises(Finished):
             runpy.run_path(str(monitor), run_name="__main__")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("finish", ["complete", "emergency", "device_error"])
+async def test_courier_obstacle_delivery_and_shutdown(finish):
+    output = []
+    hub = VirtualConnection(output.append)
+
+    def printed(text):
+        return text.encode() in b"".join(output)
+
+    try:
+        await hub.connect()
+        await hub.configure("F", "motor")
+        await wait_until(lambda: hub.info.ports["F"]["type"] == "motor")
+        await hub.run(Path(__file__).parents[1] / "examples/courier.py")
+        await wait_until(lambda: printed("state=following"))
+        await wait_until(lambda: hub.info.ports["A"]["speed"] != 0)
+        await hub.configure("D", "ultrasonic", 50)
+        await wait_until(
+            lambda: printed("state=blocked")
+            and hub.info.ports["A"]["speed"] == 0
+            and hub.info.ports["B"]["speed"] == 0
+        )
+        await hub.configure("D", "ultrasonic", 500)
+        await wait_until(lambda: hub.info.ports["A"]["speed"] != 0)
+        await hub.configure("C", "color", 5)
+        await wait_until(lambda: printed("delivery=1"))
+        await hub.configure("C", "color", 50)
+        await wait_until(lambda: hub.info.ports["A"]["speed"] != 0)
+        if finish == "complete":
+            await hub.configure("C", "color", 5)
+        elif finish == "device_error":
+            await hub.configure("E", "empty")
+        else:
+            await hub.configure("E", "force", 5)
+        await wait_until(lambda: not hub.info.running)
+        await wait_until(lambda: printed("state=" + finish))
+        assert not hub.info.error
+        assert printed("delivery=2") == (finish == "complete")
+        assert all(hub.info.ports[port]["speed"] == 0 for port in "ABF")
+    finally:
+        await hub.disconnect()
+
+
+@pytest.mark.asyncio
+async def test_courier_deadline_stops_every_motor(tmp_path):
+    from shutil import copyfile
+
+    copyfile(Path(__file__).parents[1] / "examples/courier.py", tmp_path / "courier.py")
+    program = tmp_path / "deadline.py"
+    program.write_text(
+        "from courier import run_route\nprint(run_route(time_limit_ms=1))\n"
+    )
+    output = []
+    hub = VirtualConnection(output.append)
+    try:
+        await hub.connect()
+        await hub.configure("F", "motor")
+        await wait_until(lambda: hub.info.ports["F"]["type"] == "motor")
+        await hub.run(program, wait=True)
+        await wait_until(lambda: b"state=timeout" in b"".join(output))
+        assert not hub.info.error
+        assert all(hub.info.ports[port]["speed"] == 0 for port in "ABF")
+    finally:
+        await hub.disconnect()

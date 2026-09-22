@@ -7,6 +7,7 @@ from threading import Event, Thread
 
 from PySide6.QtCore import QObject, Signal
 
+from pyblocks.i18n import tr
 from pyblocks.pybricks.connection import Connection
 from pyblocks.pybricks.devices import HubInfo
 from pyblocks.pybricks.virtual import VirtualConnection
@@ -48,7 +49,7 @@ class Robot(QObject):
                 self.operation.cancel()
             else:
                 coroutine.close()
-                self.failed.emit("Дождитесь завершения операции с хабом")
+                self.failed.emit(tr("Дождитесь завершения операции с хабом"))
                 return None
         if operation:
             self.generation += 1
@@ -101,12 +102,12 @@ class Robot(QObject):
     def run_file(self, path):
         if self.connection:
             return self.submit(self.connection.run(path), operation=True)
-        self.failed.emit("Сначала подключите хаб")
+        self.failed.emit(tr("Сначала подключите хаб"))
 
     def start_monitor(self):
         if self.connection:
             return self.submit(self.connection.start_monitor(), operation=True)
-        self.failed.emit("Сначала подключите хаб")
+        self.failed.emit(tr("Сначала подключите хаб"))
 
     def stop_program(self):
         async def stop():

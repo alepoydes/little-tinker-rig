@@ -111,6 +111,16 @@ def insert(syntax: Syntax, target: Target, fragment: str) -> str:
     return result
 
 
+def insertion_targets(syntax: Syntax, fragment: str):
+    """Yield only destinations where the inserted fragment compiles in context."""
+    for target in targets(syntax):
+        try:
+            insert(syntax, target, fragment)
+        except (ValueError, SyntaxError):
+            continue
+        yield target
+
+
 def statement_group(
     syntax: Syntax, nodes: ast.stmt | tuple[ast.stmt, ...]
 ) -> tuple[Suite, Span, int]:
@@ -147,6 +157,21 @@ def delete(syntax: Syntax, node: ast.AST) -> str:
     return result
 
 
+def replace_expressions(syntax: Syntax, changes: list[tuple[Span, str]]) -> str:
+    """Keep grouping only when the unparenthesized text changes the Python AST."""
+    changes = [(span, text.strip()) for span, text in changes]
+    for _, text in changes:
+        ast.parse(text, mode="eval")
+    protected = patches(syntax.source, [(span, f"({text})") for span, text in changes])
+    expected = parse(protected)
+    plain = patches(syntax.source, changes)
+    try:
+        actual = parse(plain)
+    except SyntaxError:
+        return protected
+    return plain if ast.dump(actual) == ast.dump(expected) else protected
+
+
 def replace(syntax: Syntax, node: ast.AST, fragment: str) -> str:
     if isinstance(node, ast.Module):
         result = fragment
@@ -156,9 +181,7 @@ def replace(syntax: Syntax, node: ast.AST, fragment: str) -> str:
             syntax.source, [(syntax.block_span(node), reindent(fragment, indent))]
         )
     elif isinstance(node, ast.expr):
-        ast.parse(fragment.strip(), mode="eval")
-        # Parentheses preserve precedence in the surrounding expression.
-        result = patches(syntax.source, [(syntax.spans[node], f"({fragment.strip()})")])
+        result = replace_expressions(syntax, [(syntax.spans[node], fragment)])
     else:
         raise ValueError("Select a statement or expression")
     parse(result)

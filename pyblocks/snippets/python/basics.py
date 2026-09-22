@@ -10,7 +10,7 @@ def display(value="Hello!"):
     print(value)
 
 
-def assign(name, value=0):
+def assign(name=value, value=0):
     """Запомнить значение под выбранным именем.
 
     Имя пишется без кавычек: например, speed или distance.
@@ -44,6 +44,6 @@ def forever():
         pass
 
 
-def compare(value, threshold=0):
+def compare(value=0, threshold=0):
     """Проверить, что значение меньше порога."""
     return value < threshold

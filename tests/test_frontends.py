@@ -1,5 +1,4 @@
 import ast
-import os
 
 import pytest
 
@@ -26,15 +25,6 @@ async def test_tui_edit_validation_and_library(tmp_path):
         assert app.session.document.state.source == "value = 3\n"
         app.action_undo()
         assert app.session.document.state.source == ""
-
-
-@pytest.fixture(scope="module")
-def qt_app():
-    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-    pytest.importorskip("PySide6")
-    from PySide6.QtWidgets import QApplication
-
-    return QApplication.instance() or QApplication([])
 
 
 def test_qt_selection_unicode_and_draft_validation(tmp_path, qt_app):
@@ -169,7 +159,7 @@ def test_qt_python_draft_save_format_undo_and_native_cut(tmp_path, qt_app):
     assert selected not in window.code.toPlainText()
     assert not window.session.document.state.scratch
     window.code.undo()
-    window.editor_tabs.setCurrentIndex(0)
+    window.change_editor(0)
     assert not window.code_active
     assert window.session.project.draft is None
     window.close()

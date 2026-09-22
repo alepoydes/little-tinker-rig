@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QStyle, QStyledItemDelegate, QTreeWidget, QTreeWid
 
 from pyblocks.core.presentation import PALETTE, snippet_role
 from pyblocks.core.snippets import instantiate
+from pyblocks.i18n import tr
 
 IDENTITY = Qt.ItemDataRole.UserRole
 PREVIEW = int(IDENTITY) + 1
@@ -20,11 +21,10 @@ class CardDelegate(QStyledItemDelegate):
         painter.save()
         rect = option.rect.adjusted(3, 3, -4, -3)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setBrush(QColor(index.data(COLOR)))
         selected = bool(option.state & QStyle.StateFlag.State_Selected)
-        painter.setPen(
-            QPen(QColor("#277d96" if selected else "#c5d1da"), 2 if selected else 1)
-        )
+        color = QColor(index.data(COLOR))
+        painter.setBrush(color.darker(112) if selected else color)
+        painter.setPen(QPen(QColor("#c5d1da"), 1))
         painter.drawRoundedRect(rect, 6, 6)
         painter.setClipRect(rect)
         painter.setPen(QColor("#203040"))
@@ -63,6 +63,10 @@ class Library(QTreeWidget):
         self.setIndentation(12)
         self.setItemDelegate(CardDelegate(self))
         self.setMinimumWidth(270)
+        self.load(snippets)
+
+    def load(self, snippets):
+        self.clear()
         groups = {}
         for snippet in snippets:
             if snippet.historical:
@@ -82,9 +86,11 @@ class Library(QTreeWidget):
             item.setData(0, PREVIEW, expansion.source)
             item.setData(0, COLOR, PALETTE[snippet_role(snippet)])
             item.setData(
-                0, DESCRIPTION, snippet.help.splitlines()[0] if snippet.help else name
+                0,
+                DESCRIPTION,
+                tr(snippet.help).splitlines()[0] if snippet.help else name,
             )
-            item.setToolTip(0, expansion.source + "\n\n" + snippet.help)
+            item.setToolTip(0, expansion.source + "\n\n" + tr(snippet.help))
         self.expandAll()
 
     def filter(self, search):

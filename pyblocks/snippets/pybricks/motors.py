@@ -1,7 +1,7 @@
 """Motor templates for Pybricks hubs."""
 
 
-def create_motor(name, port="A"):
+def create_motor(name=motor, port="A"):
     """Подключить мотор к порту хаба.
 
     name — имя мотора без кавычек, например left_motor.
@@ -14,7 +14,7 @@ def create_motor(name, port="A"):
     name = Motor(getattr(Port, port))
 
 
-def run_motor(motor: "Motor", speed: "deg/s" = 500):
+def run_motor(motor: "Motor" = motor, speed: "deg/s" = 500):
     """Вращать мотор с заданной скоростью.
 
     Скорость задаётся в градусах в секунду. Отрицательное число меняет направление.
@@ -23,11 +23,11 @@ def run_motor(motor: "Motor", speed: "deg/s" = 500):
     motor.run(speed)
 
 
-def stop_motor(motor: "Motor"):
+def stop_motor(motor: "Motor" = motor):
     """Остановить мотор с торможением."""
     motor.brake()
 
 
-def turn_motor(motor: "Motor", angle: "deg" = 90, speed: "deg/s" = 300):
+def turn_motor(motor: "Motor" = motor, angle: "deg" = 90, speed: "deg/s" = 300):
     """Повернуть мотор на заданный угол и дождаться завершения."""
     motor.run_angle(speed, angle)

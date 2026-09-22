@@ -25,7 +25,13 @@ pyblocks-qt = "pyblocks.qt.app:main"
 pyblocks-tui = "pyblocks.tui.app:main"
 
 [dependency-groups]
-dev = ["pytest>=8", "pytest-asyncio>=1", "ruff>=0.14", "build>=1.2"]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=1",
+    "ruff>=0.14",
+    "build>=1.2",
+    "babel>=2.17,<3",
+]
 
 [tool.setuptools.packages.find]
 include = ["pyblocks*"]
@@ -35,7 +41,7 @@ namespaces = false
 build_py = "build_support.BuildPy"
 
 [tool.setuptools.package-data]
-pyblocks = ["snippets/**/*.toml", "core/black.toml"]
+pyblocks = ["snippets/**/*.toml", "core/black.toml", "locale/languages.json", "locale/**/*.po", "locale/**/*.mo"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

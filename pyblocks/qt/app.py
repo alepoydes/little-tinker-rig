@@ -1,10 +1,10 @@
-"""Desktop workspaces over one source document and one active hub connection."""
+"""Desktop workspaces with independent source documents and one hub connection."""
 
 import argparse
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QTextCursor
 from PySide6.QtWidgets import (
     QApplication,
@@ -25,82 +25,58 @@ from PySide6.QtWidgets import (
     QSplitter,
     QStackedWidget,
     QStyle,
-    QTabBar,
-    QToolBar,
+    QTabWidget,
     QToolButton,
     QVBoxLayout,
     QWidget,
 )
 
-from pyblocks.core.session import Session
+from pyblocks.core.edit import target_position
+from pyblocks.core.parameters import default_bindings
+from pyblocks.i18n import LANGUAGES, language, set_language, tr
 from pyblocks.pybricks.control import ControlState
 from pyblocks.pybricks.devices import HubInfo
 
-from .code import CodeEdit
 from .controls import ControlsPage
 from .device import ConnectDialog, DevicePanel
 from .dialogs import EditDialog
-from .editor import SourceView, source_offset
+from .document import DocumentPage
+from .editor import source_offset
 from .help import HelpPage
 from .library import IDENTITY, Library
+from .localization import localize, translate_standard_dialogs
+from .navigation import ModeTabs
 
 
 class Studio(QMainWindow):
     def __init__(self, path: Path, collections=()):
         super().__init__()
-        self.session = Session(path, collections, allow_draft=True)
-        self.session.editor.select(0)
+        self.collections = collections
         self.resize(1380, 880)
         self.setMinimumSize(930, 620)
         self.robot = None
         self.hub_info = HubInfo()
         self.hub_is_busy = False
-        self.code_active = False
         self.unread = 0
-        self.child_windows = []
         self.setStyleSheet("""
             QMainWindow { background: #f3f6fa; }
             QToolBar { border: 0; spacing: 5px; padding: 5px; background: #f3f6fa; }
             QToolButton { padding: 5px 8px; border-radius: 6px; }
             QToolButton:hover { background: #dfe8f2; }
-            QToolButton:checked { background: #d0e8e4; color: #155d57; }
+            QToolButton:checked { background: transparent; border-bottom: 2px solid #303944; border-radius: 0; }
+            QTabBar::tab { background: transparent; padding: 7px 13px; border: 0; }
+            QTabBar::tab:selected { border-bottom: 2px solid #303944; }
             QDockWidget { font-weight: bold; }
             QLineEdit { padding: 6px; border: 1px solid #c5d0dc; border-radius: 5px; }
             QTreeWidget, QListWidget { background: #f8fafc; border: 0; }
             QPushButton { padding: 6px 10px; }
             QStatusBar { background: #e8eef5; }
         """)
-        self.source = SourceView(self.session)
-        self.source.selected.connect(self.refresh_status)
-        self.source.changed.connect(self.refresh_views)
-        self.source.failed.connect(self.error)
-        self.source.snippet_dropped.connect(self.insert_snippet)
-        self.code = CodeEdit()
-        self.code.textChanged.connect(self.refresh_status)
-        self.editor_stack = QStackedWidget()
-        self.editor_stack.addWidget(self.source)
-        self.editor_stack.addWidget(self.code)
-        self.editor_tabs = QTabBar()
-        self.editor_tabs.addTab("Блоки")
-        self.editor_tabs.addTab("Python")
-        self.editor_tabs.currentChanged.connect(self.change_editor)
-        self.code_message = QLabel(
-            "Выберите блок, чтобы изменить параметры. Перетаскивайте блоки мышью."
-        )
-        self.code_message.setWordWrap(True)
-        self.find_bar = QLineEdit()
-        self.find_bar.setPlaceholderText(
-            "Найти в программе · Enter — следующее совпадение"
-        )
-        self.find_bar.returnPressed.connect(self.find_next)
-        self.find_bar.hide()
-        program = QWidget()
-        layout = QVBoxLayout(program)
-        layout.setContentsMargins(0, 8, 0, 0)
-        layout.addWidget(self.editor_tabs)
-        layout.addWidget(self.code_message)
-        layout.addWidget(self.find_bar)
-        layout.addWidget(self.editor_stack, 1)
+        self.documents = QTabWidget()
+        self.documents.setDocumentMode(True)
+        self.documents.setTabsClosable(True)
+        self.documents.setMovable(True)
+        self.open_document(path)
         self.library = Library(self.session.snippets)
         self.library.itemDoubleClicked.connect(self.insert_selected)
         self.search = QLineEdit()
@@ -117,7 +93,7 @@ class Studio(QMainWindow):
         self.library_pane = library
         self.program_page = QSplitter()
         self.program_page.addWidget(library)
-        self.program_page.addWidget(program)
+        self.program_page.addWidget(self.documents)
         self.program_page.setSizes([320, 1060])
         self.controls = ControlsPage()
         self.controls.monitor_requested.connect(self.start_monitor)
@@ -134,18 +110,23 @@ class Studio(QMainWindow):
         self.pages = QStackedWidget()
         for page in (self.program_page, scroll, self.help_page):
             self.pages.addWidget(page)
-        self.setCentralWidget(self.pages)
+        self.mode_tabs = ModeTabs()
+        self.mode_tabs.currentChanged.connect(self.set_mode)
+        workspace = QWidget()
+        workspace_layout = QHBoxLayout(workspace)
+        workspace_layout.setContentsMargins(0, 0, 0, 0)
+        workspace_layout.setSpacing(4)
+        workspace_layout.addWidget(self.mode_tabs, 0, Qt.AlignmentFlag.AlignTop)
+        workspace_layout.addWidget(self.pages, 1)
+        self.setCentralWidget(workspace)
         self._docks()
         self._menus()
-        self._modes()
+        self.documents.currentChanged.connect(self.document_changed)
+        self.documents.tabCloseRequested.connect(self.close_document)
         self.refresh_views()
         self.update_hub(HubInfo())
-        if self.session.project.draft is not None:
-            self.editor_tabs.setCurrentIndex(1)
-            self.code.setPlainText(self.session.project.draft)
-            self.code_message.setText(
-                "В файле есть незавершённый Python. Исправьте его перед сохранением или переходом к блокам."
-            )
+        self.document_mode_changed()
+        self.retranslate()
         QApplication.instance().applicationStateChanged.connect(self.application_state)
 
     def _icon(self, theme, fallback):
@@ -159,7 +140,7 @@ class Studio(QMainWindow):
             action.setShortcut(QKeySequence(shortcut))
         if icon:
             action.setIcon(self._icon(*icon))
-        action.setToolTip(label + (f" · {shortcut}" if shortcut else ""))
+        action.setToolTip(label)
         action.triggered.connect(lambda checked=False: self.perform(callback))
         menu.addAction(action)
         if toolbar:
@@ -259,6 +240,12 @@ class Studio(QMainWindow):
             ("document-save", "SP_DialogSaveButton"),
         )
         self._action(file, "Сохранить как…", "Ctrl+Shift+S", self.save_as)
+        self._action(
+            file,
+            "Закрыть документ",
+            "Ctrl+W",
+            lambda: self.close_document(self.documents.currentIndex()),
+        )
         toolbar.addSeparator()
         edit = self.menuBar().addMenu("Правка")
         self.undo_action = self._action(
@@ -298,12 +285,12 @@ class Studio(QMainWindow):
                 self._action(edit, label, key, callback, toolbar, icon)
             )
         for label, key, callback in (
-            ("Родитель", "Alt+Left", self.session.editor.parent),
-            ("Потомок", "Alt+Right", self.session.editor.child),
+            ("Родитель", "Alt+Left", lambda: self.session.editor.parent()),
+            ("Потомок", "Alt+Right", lambda: self.session.editor.child()),
             ("Предыдущий узел / цель", "Alt+Up", lambda: self.navigate(-1)),
             ("Следующий узел / цель", "Alt+Down", lambda: self.navigate(1)),
-            ("Раскрыть блок", "Ctrl+E", self.session.toggle_expansion),
-            ("Начать перенос", "Ctrl+M", self.session.begin_move),
+            ("Раскрыть блок", "Ctrl+E", lambda: self.session.toggle_expansion()),
+            ("Начать перенос", "Ctrl+M", lambda: self.session.begin_move()),
             (
                 "Наружу",
                 "Ctrl+Alt+Left",
@@ -314,15 +301,46 @@ class Studio(QMainWindow):
                 "Ctrl+Alt+Right",
                 lambda: self.session.editor.navigate_move(depth=1),
             ),
-            ("Завершить перенос", "Ctrl+Return", self.session.editor.commit_move),
-            ("Отменить перенос", "Escape", self.session.editor.cancel_move),
-            ("Обновить блок", "Ctrl+U", self.session.upgrade_selected),
-            ("Свернуть область", "Ctrl+Shift+F", self.source.fold_selection),
+            (
+                "Завершить перенос",
+                "Ctrl+Return",
+                lambda: self.session.editor.commit_move(),
+            ),
+            ("Отменить перенос", "Escape", lambda: self.session.editor.cancel_move()),
+            ("Обновить блок", "Ctrl+U", lambda: self.session.upgrade_selected()),
+            ("Свернуть область", "Ctrl+Shift+F", lambda: self.source.fold_selection()),
         ):
             self.structural_actions.append(self._action(edit, label, key, callback))
         self._action(edit, "Форматировать Python", "Ctrl+Alt+L", self.commit_code)
         self._action(edit, "Найти", "Ctrl+F", self.show_find)
         view = self.menuBar().addMenu("Вид")
+        group = QActionGroup(self)
+        self.editor_actions = []
+        for index, label in enumerate(("Блоки", "Python")):
+            action = self._action(
+                view,
+                label,
+                f"Ctrl+Alt+{index+1}",
+                lambda mode=index: self.change_editor(mode),
+            )
+            action.setCheckable(True)
+            group.addAction(action)
+            self.editor_actions.append(action)
+        self.editor_actions[int(self.code_active)].setChecked(True)
+        view.addSeparator()
+        languages = view.addMenu("Язык")
+        self.language_actions = {}
+        group = QActionGroup(self)
+        for code, name in LANGUAGES.items():
+            action = QAction(name, self)
+            action.setCheckable(True)
+            action.setChecked(code == language())
+            action.triggered.connect(
+                lambda checked, value=code: self.change_language(value)
+            )
+            group.addAction(action)
+            languages.addAction(action)
+            self.language_actions[code] = action
         view.addAction(self.console_dock.toggleViewAction())
         view.addAction(self.scratch_dock.toggleViewAction())
         view.addAction(self.device_dock.toggleViewAction())
@@ -389,70 +407,132 @@ class Studio(QMainWindow):
         intensity.valueChanged.connect(self.set_intensity)
         self.statusBar().addPermanentWidget(intensity)
 
-    def _modes(self):
-        toolbar = QToolBar("Режимы", self)
-        toolbar.setMovable(False)
-        toolbar.setIconSize(QSize(27, 27))
-        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
-        toolbar.setObjectName("modes")
-        group = QActionGroup(self)
-        self.mode_actions = []
-        for index, (label, icon) in enumerate(
-            (
-                ("Программа", ("text-x-script", "SP_FileIcon")),
-                ("Управление", ("input-gaming", "SP_ComputerIcon")),
-                ("Помощь", ("help-contents", "SP_DialogHelpButton")),
-            )
-        ):
-            action = QAction(self._icon(*icon), label, self)
-            action.setCheckable(True)
-            action.triggered.connect(lambda checked, i=index: self.set_mode(i))
-            group.addAction(action)
-            toolbar.addAction(action)
-            self.mode_actions.append(action)
-        self.mode_actions[0].setChecked(True)
-        self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, toolbar)
+    @property
+    def document_page(self):
+        return self.documents.currentWidget()
+
+    @property
+    def session(self):
+        return self.document_page.session
+
+    @property
+    def source(self):
+        return self.document_page.source
+
+    @property
+    def code(self):
+        return self.document_page.code
+
+    @property
+    def code_active(self):
+        return self.document_page.code_active
+
+    @property
+    def find_bar(self):
+        return self.document_page.find_bar
 
     @property
     def draft_dirty(self):
-        return (
-            self.code_active
-            and self.code.toPlainText() != self.session.document.state.source
-        )
+        return self.document_page.draft_dirty
 
     def change_editor(self, index):
-        try:
-            if index == 0:
-                self.commit_code()
-            else:
-                self.code.setPlainText(self.session.document.state.source)
-            self.code_active = bool(index)
-            self.editor_stack.setCurrentIndex(index)
-            self.library_pane.setVisible(not index)
-            self.code_message.setText(
-                "Обычный Python · форматирование при сохранении · Ctrl+Space — дополнение · Ctrl+Alt+L — форматировать"
-                if index
-                else "Выберите блок, чтобы изменить параметры. Перетаскивайте блоки мышью."
-            )
-            self.refresh_views()
-            (self.code if index else self.source).setFocus()
-        except (ValueError, SyntaxError, OSError) as error:
-            self.editor_tabs.blockSignals(True)
-            self.editor_tabs.setCurrentIndex(1)
-            self.editor_tabs.blockSignals(False)
-            self.code_message.setText(str(error))
-            self.error(str(error))
+        self.document_page.change_mode(index)
 
     def commit_code(self):
-        if self.code_active:
-            self.session.editor.commit(self.code.toPlainText())
-            self.session.project.draft = None
-            self.code.replace_formatted(self.session.document.state.source)
-            self.source.refresh_source()
+        self.document_page.commit_code()
+
+    def document_changed(self, *_):
+        if self.document_page is None:
+            return
+        self.library.load(self.session.snippets)
+        self.library.filter(self.search.text())
+        self.help_page.snippets = self.session.snippets
+        self.help_page.retranslate()
+        self.document_mode_changed()
+        self.refresh_views()
+
+    def change_language(self, code):
+        set_language(code)
+        QSettings("PyBlocks", "Studio").setValue("language", code)
+        for window in QApplication.topLevelWidgets():
+            if isinstance(window, Studio):
+                window.retranslate()
+
+    def retranslate(self):
+        translate_standard_dialogs()
+        localize(self)
+        for index in range(self.documents.count()):
+            self.documents.widget(index).update_mode()
+        self.language_actions[language()].setChecked(True)
+        self.library.load(self.session.snippets)
+        self.library.filter(self.search.text())
+        self.help_page.retranslate()
+        self.update_hub(self.hub_info)
+        self.refresh_status()
+        self.console_button.setText(
+            tr("Консоль · {p0}", p0=self.unread) if self.unread else tr("Консоль")
+        )
+
+    def document_mode_changed(self):
+        if not hasattr(self, "library_pane"):
+            return
+        self.library_pane.setVisible(not self.code_active)
+        self.editor_actions[int(self.code_active)].setChecked(True)
+        self.refresh_status()
+
+    def open_document(self, path):
+        path = Path(path).resolve()
+        for index in range(self.documents.count()):
+            if self.documents.widget(index).session.project.path == path:
+                self.documents.setCurrentIndex(index)
+                return self.documents.widget(index)
+        page = DocumentPage(path, self.collections)
+        page.changed.connect(self.refresh_views)
+        page.failed.connect(self.error)
+        page.snippet_dropped.connect(self.insert_snippet)
+        page.mode_changed.connect(self.document_mode_changed)
+        page.find_bar.returnPressed.connect(self.find_next)
+        index = self.documents.addTab(page, path.name)
+        self.documents.setTabToolTip(index, str(path))
+        self.documents.setCurrentIndex(index)
+        localize(page)
+        return page
+
+    def confirm_close(self, page):
+        if not page.dirty:
+            return True
+        result = QMessageBox.question(
+            self,
+            tr("Несохранённые изменения"),
+            tr("Сохранить {p0} перед закрытием?", p0=page.session.project.path.name),
+            QMessageBox.StandardButton.Save
+            | QMessageBox.StandardButton.Discard
+            | QMessageBox.StandardButton.Cancel,
+        )
+        if result == QMessageBox.StandardButton.Cancel:
+            return False
+        if result == QMessageBox.StandardButton.Save:
+            try:
+                page.commit_code()
+                page.session.project.save()
+            except (ValueError, SyntaxError, OSError) as error:
+                self.documents.setCurrentWidget(page)
+                self.error(str(error))
+                return False
+        return True
+
+    def close_document(self, index):
+        page = self.documents.widget(index)
+        if not self.confirm_close(page):
+            return
+        if self.documents.count() == 1:
+            self.new_file()
+        self.documents.removeTab(self.documents.indexOf(page))
+        page.deleteLater()
 
     def set_mode(self, index):
         self.pages.setCurrentIndex(index)
-        self.mode_actions[index].setChecked(True)
+        self.mode_tabs.setCurrentIndex(index)
         if index == 1:
             self.device_dock.show()
         elif index == 2:
@@ -461,12 +541,14 @@ class Studio(QMainWindow):
         self.refresh_status()
 
     def refresh_views(self):
+        if not hasattr(self, "scratch") or self.document_page is None:
+            return
         self.source.refresh_source()
         selected = self.scratch.currentRow()
         self.scratch.clear()
         for index, text in enumerate(self.session.document.state.scratch):
             self.scratch.addItem(
-                f'{index + 1}: {text.strip().splitlines()[0] if text.strip() else "(пустой фрагмент)"}'
+                f'{index + 1}: {text.strip().splitlines()[0] if text.strip() else tr("(пустой фрагмент)")}'
             )
             self.scratch.item(index).setToolTip(text)
         if 0 <= selected < self.scratch.count():
@@ -478,15 +560,19 @@ class Studio(QMainWindow):
             return
         match = self.session.selected_match()
         selection = (
-            match.snippet.help.splitlines()[0]
+            tr(match.snippet.help).splitlines()[0]
             if match and match.snippet.help
-            else "Python" if self.code_active else "Выберите блок"
+            else "Python" if self.code_active else tr("Выберите блок")
         )
         self.statusBar().showMessage(
-            f"{selection} · предупреждений: {len(self.session.analysis.diagnostics())}"
+            tr(
+                "{p0} · предупреждений: {p1}",
+                p0=selection,
+                p1=len(self.session.analysis.diagnostics()),
+            )
         )
         self.setWindowTitle(
-            f'{"● " if self.session.project.dirty or self.draft_dirty else ""}{self.session.project.path.name} — PyBlocks Studio'
+            f'{"● " if self.document_page.dirty else ""}{self.session.project.path.name} — PyBlocks Studio'
         )
         self.undo_action.setEnabled(
             self.code.document().isUndoAvailable()
@@ -500,6 +586,12 @@ class Studio(QMainWindow):
         )
         for action in self.structural_actions:
             action.setEnabled(not self.code_active and self.pages.currentIndex() == 0)
+        for index in range(self.documents.count()):
+            page = self.documents.widget(index)
+            self.documents.setTabText(
+                index, ("● " if page.dirty else "") + page.session.project.path.name
+            )
+            self.documents.setTabToolTip(index, str(page.session.project.path))
         self.source.viewport().update()
 
     def perform(self, callback):
@@ -517,12 +609,12 @@ class Studio(QMainWindow):
         self.console.ensureCursorVisible()
         if not self.console_dock.isVisible() and text:
             self.unread += max(1, text.count("\n"))
-            self.console_button.setText(f"Консоль · {self.unread}")
+            self.console_button.setText(tr("Консоль · {p0}", p0=self.unread))
 
     def console_visibility(self, visible):
         if visible and hasattr(self, "console_button"):
             self.unread = 0
-            self.console_button.setText("Консоль")
+            self.console_button.setText(tr("Консоль"))
 
     def error(self, message):
         self.statusBar().showMessage(message, 15000)
@@ -531,7 +623,7 @@ class Studio(QMainWindow):
         self.controls.armed.setChecked(False)
 
     def _dialog(self, title, apply, **kwargs):
-        dialog = EditDialog(self, title, apply, **kwargs)
+        dialog = EditDialog(self, tr(title), apply, **kwargs)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.refresh_views()
 
@@ -546,13 +638,27 @@ class Studio(QMainWindow):
             for s in self.session.snippets
             if s.identity == identity and not s.historical
         )
-        offset = self.session.document.syntax.spans[self.session.editor.selection].start
-        self._dialog(
-            snippet.help.splitlines()[0] if snippet.help else identity,
-            lambda values: self.session.insert_snippet(snippet, values, target),
-            snippet=snippet,
-            names=self.session.analysis.available(offset),
+        syntax = self.session.document.syntax
+        offset = (
+            target_position(syntax, target)[0]
+            if target
+            else syntax.spans[self.session.editor.selection].start
         )
+        try:
+            self.session.insert_snippet(
+                snippet, default_bindings(self.session, snippet, offset), target
+            )
+            candidates = [
+                match
+                for match in self.session.matches
+                if match.snippet.identity == identity
+            ]
+            if candidates:
+                match = min(candidates, key=lambda m: abs(m.span.start - offset))
+                self.session.editor.select(match.span.start)
+            self.refresh_views()
+        except (ValueError, SyntaxError, OSError) as error:
+            self.error(str(error))
 
     def edit_python(self):
         self._dialog(
@@ -562,22 +668,7 @@ class Studio(QMainWindow):
         )
 
     def edit_parameters(self):
-        match = self.session.selected_match()
-        if match is None:
-            raise ValueError(
-                "Выберите блок из библиотеки или распознанный блок программы"
-            )
-        self._dialog(
-            (
-                match.snippet.help.splitlines()[0]
-                if match.snippet.help
-                else match.snippet.identity
-            ),
-            self.session.edit_parameters,
-            snippet=match.snippet,
-            bindings=match.bindings,
-            names=self.session.analysis.available(match.span.start),
-        )
+        self.source.edit_parameters()
 
     def to_scratch(self):
         self.session.to_scratch()
@@ -618,7 +709,7 @@ class Studio(QMainWindow):
             line, column = self.session.document.syntax.position(diagnostic.span.start)
             self.append_output(f"{line}:{column}: {diagnostic.message}\n")
         if not diagnostics:
-            self.append_output("Неизвестных имён не найдено.\n")
+            self.append_output(tr("Неизвестных имён не найдено.\n"))
         self.console_dock.show()
 
     def show_find(self):
@@ -658,40 +749,56 @@ class Studio(QMainWindow):
         self.commit_code()
         self.session.project.save()
 
-    def _open_window(self, path):
-        window = Studio(path)
-        window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-        self.child_windows.append(window)
-        window.destroyed.connect(lambda: self.child_windows.remove(window))
-        window.show()
-
     def new_file(self):
-        path = self.session.project.path.parent / "untitled.py"
-        index = 1
-        while path.exists():
-            path = path.with_name(f"untitled_{index}.py")
+        parent = self.session.project.path.parent
+        paths = {
+            self.documents.widget(i).session.project.path
+            for i in range(self.documents.count())
+        }
+        index = 0
+        while True:
+            path = parent / ("untitled.py" if index == 0 else f"untitled_{index}.py")
+            if not path.exists() and path not in paths:
+                break
             index += 1
-        self._open_window(path)
+        self.open_document(path)
+        self.set_mode(0)
 
     def open_file(self):
-        path, _ = QFileDialog.getOpenFileName(
+        paths, _ = QFileDialog.getOpenFileNames(
             self,
-            "Открыть Python",
+            tr("Открыть Python"),
             str(self.session.project.path.parent),
             "Python (*.py)",
         )
-        if path:
-            self._open_window(Path(path))
+        for path in paths:
+            self.open_document(Path(path))
+        if paths:
+            self.set_mode(0)
 
     def save_as(self):
         self.commit_code()
         path, _ = QFileDialog.getSaveFileName(
-            self, "Сохранить Python", str(self.session.project.path), "Python (*.py)"
+            self,
+            tr("Сохранить Python"),
+            str(self.session.project.path),
+            "Python (*.py)",
         )
         if path:
             from pyblocks.core.project import Project
 
-            project = Project(Path(path), allow_draft=True)
+            destination = Path(path).resolve()
+            for index in range(self.documents.count()):
+                page = self.documents.widget(index)
+                if (
+                    page is not self.document_page
+                    and page.session.project.path == destination
+                ):
+                    raise ValueError(tr("Этот файл уже открыт в другой вкладке"))
+            if destination == self.session.project.path:
+                self.save()
+                return
+            project = Project(destination, allow_draft=True)
             project.document = self.session.document
             project.draft = None
             project.collections = self.session.project.collections
@@ -715,7 +822,7 @@ class Studio(QMainWindow):
         self.hub_button.setEnabled(not busy)
         self.run_action.setEnabled(self.hub_info.connected and not busy)
         if busy:
-            self.hub_button.setText("Подождите…")
+            self.hub_button.setText(tr("Подождите…"))
         else:
             self.update_hub(self.hub_info)
 
@@ -724,14 +831,25 @@ class Studio(QMainWindow):
             self.error(info.error)
         self.hub_info = info
         self.hub_button.setText(
-            "Подождите…"
+            tr("Подождите…")
             if self.hub_is_busy
-            else ("● " + info.name) if info.connected else "＋ Подключить хаб"
+            else (
+                (
+                    "● "
+                    + (
+                        tr("Виртуальный хаб")
+                        if info.transport == "virtual"
+                        else info.name
+                    )
+                )
+                if info.connected
+                else tr("＋ Подключить хаб")
+            )
         )
         self.hub_button.setToolTip(
-            "Информация о хабе и показания портов"
+            tr("Информация о хабе и показания портов")
             if info.connected
-            else "Bluetooth, USB или виртуальный хаб"
+            else tr("Bluetooth, USB или виртуальный хаб")
         )
         self.run_action.setEnabled(info.connected and not self.hub_is_busy)
         self.stop_action.setEnabled(info.connected)
@@ -776,25 +894,10 @@ class Studio(QMainWindow):
             self.controls.controller.display(ControlState())
 
     def closeEvent(self, event):
-        if self.session.project.dirty or self.draft_dirty:
-            result = QMessageBox.question(
-                self,
-                "Несохранённые изменения",
-                "Сохранить программу перед закрытием?",
-                QMessageBox.StandardButton.Save
-                | QMessageBox.StandardButton.Discard
-                | QMessageBox.StandardButton.Cancel,
-            )
-            if result == QMessageBox.StandardButton.Cancel:
+        for index in range(self.documents.count()):
+            if not self.confirm_close(self.documents.widget(index)):
                 event.ignore()
                 return
-            if result == QMessageBox.StandardButton.Save:
-                try:
-                    self.save()
-                except (ValueError, SyntaxError, OSError) as error:
-                    self.error(str(error))
-                    event.ignore()
-                    return
         self.controls.close()
         if self.robot:
             self.robot.close()
@@ -803,6 +906,8 @@ class Studio(QMainWindow):
 
 def launch(path: Path, collections=()) -> int:
     app = QApplication.instance() or QApplication(sys.argv)
+    code = QSettings("PyBlocks", "Studio").value("language", "ru")
+    set_language(code if code in LANGUAGES else "ru")
     window = Studio(path, collections)
     window.show()
     return app.exec()

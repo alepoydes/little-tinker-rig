@@ -7,8 +7,10 @@
 Library содержит Python- и Pybricks-сниппеты, Scratch хранит незаконченный код,
 а история отменяет целые операции. Робототехника и тяжёлые интерфейсы необязательны.
 
-В Qt есть структурный и обычный Python-режимы, скрываемая консоль, встроенная
-помощь и экранный Xbox-контроллер с назначением моторов. Виртуальные профили
+В Qt можно открыть несколько файлов во вкладках, переключать структурный и
+обычный Python-режимы, менять параметры прямо в блоках. Интерфейс и встроенная
+помощь доступны на русском и английском: **Вид → Язык**. Есть скрываемая консоль
+и экранный Xbox-контроллер с назначением моторов. Виртуальные профили
 Inventor/Prime, BOOST и Technic позволяют учиться без оборудования; подключение
 настоящих хабов рассчитано на прошивку Pybricks.
 
@@ -31,6 +33,11 @@ uv run --extra qt pyblocks-qt examples/first.py
 uv run pyblocks run examples/motor.py --transport virtual --model boost
 ```
 
+Практический пример — [робот-курьер](doc/robotics.md#робот-курьер): движение по
+линии, остановка перед препятствием, захват груза и аварийная кнопка.
+Откройте `examples/courier.py`, подключите виртуальный Inventor и назначьте
+порту F мотор захвата.
+
 ## Документация
 
 - [Установка](doc/INSTALL.md)
@@ -41,6 +48,7 @@ uv run pyblocks run examples/motor.py --transport virtual --model boost
 - [API для разработчиков](doc/api.md)
 - [Архитектура и принятые решения](doc/architecture.md)
 - [Разработка и инварианты](doc/development.md)
+- [English documentation](doc/en/tutorial/first.md)
 - [Спецификация](devs/PYBLOCKS_DESIGN_SPEC.md)
 
 ## Разработка
@@ -52,6 +60,7 @@ uv sync --all-extras --locked
 uv run --all-extras pytest
 uv run ruff check .
 uv run black --check .
+uv run python tools/translations.py check
 uv build
 ```
 

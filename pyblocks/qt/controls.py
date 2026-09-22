@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from pyblocks.i18n import tr
 from pyblocks.pybricks.control import ControlState, Gamepad
 from pyblocks.pybricks.devices import SOURCES, MotorBinding, motor_commands
 
@@ -353,15 +354,23 @@ class ControlsPage(QWidget):
         if not ready:
             self.armed.setChecked(False)
         self.notice.setText(
-            "Запустите программу с модулем Controller (см. Помощь → Робот и органы управления)."
+            tr(
+                "Запустите программу с модулем Controller (см. Помощь → Робот и органы управления)."
+            )
             if program
             else (
-                "Монитор портов работает. Назначьте мотор, затем включите передачу команд."
+                tr(
+                    "Монитор портов работает. Назначьте мотор, затем включите передачу команд."
+                )
                 if ready
                 else (
-                    "Ручной режим остановит текущую программу и откроет монитор портов."
+                    tr(
+                        "Ручной режим остановит текущую программу и откроет монитор портов."
+                    )
                     if info.connected
-                    else "Подключите виртуальный или настоящий хаб в правом верхнем углу."
+                    else tr(
+                        "Подключите виртуальный или настоящий хаб в правом верхнем углу."
+                    )
                 )
             )
         )

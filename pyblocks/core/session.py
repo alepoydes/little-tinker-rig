@@ -208,8 +208,8 @@ class Session:
         for name, expression in bindings.items():
             ast.parse(expression, mode="eval")
             for node in match.occurrences.get(name, ()):
-                changes.append((self.document.syntax.spans[node], f"({expression})"))
-        self.editor.commit(edit.patches(self.document.state.source, changes))
+                changes.append((self.document.syntax.spans[node], expression))
+        self.editor.commit(edit.replace_expressions(self.document.syntax, changes))
 
     def begin_move(self):
         match = self.selected_match()

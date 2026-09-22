@@ -18,6 +18,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from pyblocks.i18n import LANGUAGES, language, tr
+
 
 class HelpBrowser(QTextBrowser):
     def resizeEvent(self, event):
@@ -59,11 +61,13 @@ class HelpPage(QWidget):
     def __init__(self, snippets):
         super().__init__()
         repository = Path(__file__).resolve().parents[2] / "doc"
-        self.root = (
+        self.base_root = (
             repository
             if repository.is_dir()
             else Path(str(files("pyblocks") / "help_pages"))
         )
+        self.root = self.base_root
+        self.snippets = snippets
         self.pages = {}
         self.history = []
         self.current = None
@@ -76,33 +80,6 @@ class HelpPage(QWidget):
         self.browser.setStyleSheet(
             "QTextBrowser { padding: 22px; border: 0; background: white; font-size: 15px; }"
         )
-        documents = QTreeWidgetItem(self.tree, ["Руководство"])
-        for path in sorted(self.root.rglob("*.md")):
-            text = path.read_text(encoding="utf-8")
-            title = text.splitlines()[0].lstrip("# ")
-            self.add_page(documents, str(path.relative_to(self.root)), title, text)
-        templates = QTreeWidgetItem(self.tree, ["Библиотека блоков"])
-        for snippet in snippets:
-            if snippet.historical:
-                continue
-            parameters = "\n".join(
-                f"| `{p.name}` | {p.annotation or 'Python'} | `{p.default or '—'}` |"
-                for p in snippet.parameters
-            )
-            source = (
-                ast.unparse(snippet.body)
-                if snippet.expression
-                else "\n".join(ast.unparse(node) for node in snippet.body)
-            )
-            text = (
-                f"# {snippet.identity}\n\n{snippet.help}\n\n## Параметры\n\n"
-                f"| Имя | Единица / тип | По умолчанию |\n|---|---|---|\n{parameters}\n\n"
-                f"## Python\n\n```python\n{source}\n```\n"
-            )
-            self.add_page(
-                templates, snippet.identity, snippet.identity.rsplit("/", 1)[-1], text
-            )
-        self.tree.expandAll()
         self.tree.currentItemChanged.connect(
             lambda item, old: (
                 self.show_page(item.data(0, Qt.ItemDataRole.UserRole)) if item else None
@@ -125,7 +102,49 @@ class HelpPage(QWidget):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(splitter)
-        self.show_page("tutorial/first.md")
+        self.retranslate()
+
+    def retranslate(self):
+        current, history = self.current, self.history
+        self.root = (
+            self.base_root if language() == "ru" else self.base_root / language()
+        )
+        self.pages = {}
+        self.current = None
+        self.tree.blockSignals(True)
+        self.tree.clear()
+        documents = QTreeWidgetItem(self.tree, [tr("Руководство")])
+        for path in sorted(self.root.rglob("*.md")):
+            if path.relative_to(self.root).parts[0] in LANGUAGES:
+                continue
+            text = path.read_text(encoding="utf-8")
+            title = text.splitlines()[0].lstrip("# ")
+            self.add_page(documents, str(path.relative_to(self.root)), title, text)
+        templates = QTreeWidgetItem(self.tree, [tr("Библиотека блоков")])
+        for snippet in self.snippets:
+            if snippet.historical:
+                continue
+            parameters = "\n".join(
+                f"| `{p.name}` | {p.annotation or 'Python'} | `{p.default or '—'}` |"
+                for p in snippet.parameters
+            )
+            source = (
+                ast.unparse(snippet.body)
+                if snippet.expression
+                else "\n".join(ast.unparse(node) for node in snippet.body)
+            )
+            text = (
+                f"# {snippet.identity}\n\n{tr(snippet.help)}\n\n## {tr('Параметры')}\n\n"
+                f"| {tr('Имя')} | {tr('Единица / тип')} | {tr('По умолчанию')} |\n|---|---|---|\n{parameters}\n\n"
+                f"## Python\n\n```python\n{source}\n```\n"
+            )
+            self.add_page(
+                templates, snippet.identity, snippet.identity.rsplit("/", 1)[-1], text
+            )
+        self.tree.expandAll()
+        self.tree.blockSignals(False)
+        self.history = [key for key in history if key in self.pages]
+        self.show_page(current if current in self.pages else "tutorial/first.md")
 
     def add_page(self, parent, identity, title, text):
         item = QTreeWidgetItem(parent, [title])

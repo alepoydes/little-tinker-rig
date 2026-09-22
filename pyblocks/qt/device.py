@@ -16,7 +16,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from pyblocks.i18n import tr
 from pyblocks.pybricks.simulation import SENSOR_VALUES
+
+from .localization import localize
 
 KINDS = {
     "empty": "Пусто",
@@ -75,6 +78,7 @@ class ConnectDialog(QDialog):
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
+        localize(self)
 
 
 class DevicePanel(QWidget):
@@ -144,23 +148,29 @@ class DevicePanel(QWidget):
 
     def update_info(self, info):
         self.info = info
-        self.identity.setText(info.name if info.connected else "Хаб не подключён")
-        state = (
-            "Программа работает"
-            if info.running
-            else "Монитор портов" if info.monitoring else "Ожидание"
+        self.identity.setText(
+            (tr("Виртуальный хаб") if info.transport == "virtual" else info.name)
+            if info.connected
+            else tr("Хаб не подключён")
         )
-        battery = f" · {info.battery_mv / 1000:.2f} В" if info.battery_mv else ""
+        state = (
+            tr("Программа работает")
+            if info.running
+            else tr("Монитор портов") if info.monitoring else tr("Ожидание")
+        )
+        battery = (
+            tr(" · {p0:.2f} В", p0=info.battery_mv / 1000) if info.battery_mv else ""
+        )
         self.details.setText(
             f"{info.kind} · {info.firmware}\n{info.transport.upper()} · {state}{battery}"
             if info.connected
-            else "Подключение — в правом верхнем углу окна."
+            else tr("Подключение — в правом верхнем углу окна.")
         )
         self.monitor.setEnabled(info.connected and not info.monitoring)
         self.monitor.setText(
-            "Остановить программу и открыть порты"
+            tr("Остановить программу и открыть порты")
             if info.running
-            else "Открыть монитор портов"
+            else tr("Открыть монитор портов")
         )
         self.disconnect.setEnabled(info.connected)
         virtual = info.connected and info.transport == "virtual"
@@ -173,23 +183,31 @@ class DevicePanel(QWidget):
             kind.setEnabled(virtual and not (info.model == "boost" and port in "AB"))
             kind.parentWidget().setVisible(not info.ports or port in info.ports)
             if key == "motor":
-                text = f"{data.get('angle', 0):g}°    {data.get('speed', 0):g} °/с"
+                text = tr(
+                    "{p0:g}°    {p1:g} °/с",
+                    p0=data.get("angle", 0),
+                    p1=data.get("speed", 0),
+                )
             elif key in {"color", "color_distance"}:
-                text = f"Отражение: {data.get('reflection', 0):g} %"
+                text = tr("Отражение: {p0:g} %", p0=data.get("reflection", 0))
                 if key == "color_distance":
-                    text += f" · Дальность: {data.get('distance_percent', 0):g} %"
+                    text += tr(
+                        " · Дальность: {p0:g} %", p0=data.get("distance_percent", 0)
+                    )
             elif key == "ultrasonic":
-                text = f"Расстояние: {data.get('distance', 0):g} мм"
+                text = tr("Расстояние: {p0:g} мм", p0=data.get("distance", 0))
             elif key == "force":
-                text = f"Сила: {data.get('force', 0):g} Н"
+                text = tr("Сила: {p0:g} Н", p0=data.get("force", 0))
             else:
                 text = (
-                    "Нет устройства"
+                    tr("Нет устройства")
                     if key == "empty"
-                    else f"Устройство ID {data.get('id', '?')}"
+                    else tr("Устройство ID {p0}", p0=data.get("id", "?"))
                 )
             fresh = info.monitoring or virtual
-            label.setText(text + (" · прошлое показание" if data and not fresh else ""))
+            label.setText(
+                text + (tr(" · прошлое показание") if data and not fresh else "")
+            )
             slider.setVisible(
                 virtual and key in {"color", "color_distance", "ultrasonic", "force"}
             )

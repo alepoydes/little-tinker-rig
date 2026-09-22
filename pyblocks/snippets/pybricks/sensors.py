@@ -8,7 +8,7 @@ def wait_ms(duration: "ms" = 1000):
     wait(duration)
 
 
-def create_color_sensor(name, port="B"):
+def create_color_sensor(name=sensor, port="C"):
     """Подключить датчик цвета к порту хаба."""
     from pybricks.parameters import Port
     from pybricks.pupdevices import ColorSensor
@@ -16,12 +16,14 @@ def create_color_sensor(name, port="B"):
     name = ColorSensor(getattr(Port, port))
 
 
-def reflection_below(sensor: "ColorSensor", threshold: "%" = 30):
+def reflection_below(sensor: "ColorSensor" = sensor, threshold: "%" = 30):
     """Проверить, что поверхность темнее заданного порога отражения."""
     return sensor.reflection() < threshold
 
 
-def follow_edge(drive: "DriveBase", sensor: "ColorSensor", target: "%" = 50, gain=2):
+def follow_edge(
+    drive: "DriveBase" = drive, sensor: "ColorSensor" = sensor, target: "%" = 50, gain=2
+):
     """Следовать вдоль границы линии пропорциональным регулятором.
 
     drive — заранее созданная DriveBase; sensor — датчик отражения.
