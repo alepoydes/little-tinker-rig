@@ -4,6 +4,8 @@ from PySide6.QtCore import QRectF, QSize, Qt
 from PySide6.QtGui import QColor, QPainter, QPen
 from PySide6.QtWidgets import QTabBar
 
+from pyblocks.i18n import N_
+
 
 class ModeTabs(QTabBar):
     translate_tabs = True
@@ -14,9 +16,9 @@ class ModeTabs(QTabBar):
         self.setExpanding(False)
         self.setDrawBase(False)
         self.setFixedWidth(36)
-        for label in ("Программа", "Управление", "Помощь"):
+        for label in (N_("Program"), N_("Control"), N_("Help")):
             self.addTab(label)
-        self.setAccessibleName("Режимы")
+        self.setAccessibleName(N_("Workspaces"))
 
     def tabSizeHint(self, index):
         return QSize(36, self.fontMetrics().horizontalAdvance(self.tabText(index)) + 36)

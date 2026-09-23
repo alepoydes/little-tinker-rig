@@ -33,7 +33,7 @@ from PySide6.QtWidgets import (
 from pyblocks.core.edit import target_position
 from pyblocks.core.parameters import default_bindings
 from pyblocks.core.transfer import Transfer
-from pyblocks.i18n import LANGUAGES, language, set_language, tr
+from pyblocks.i18n import DEFAULT_LANGUAGE, LANGUAGES, N_, language, set_language, tr
 from pyblocks.pybricks.control import ControlState
 from pyblocks.pybricks.devices import HubInfo
 
@@ -90,14 +90,14 @@ class Studio(QMainWindow):
         self.library = Library(self.session.snippets)
         self.library.itemDoubleClicked.connect(self.insert_selected)
         self.search = QLineEdit()
-        self.search.setPlaceholderText("Найти блок…")
+        self.search.setPlaceholderText(N_("Find a block…"))
         self.search.textChanged.connect(self.library.filter)
         library = QWidget()
         layout = QVBoxLayout(library)
-        layout.addWidget(QLabel("Библиотека · перетащите блок в программу"))
+        layout.addWidget(QLabel(N_("Library · drag a block into the program")))
         layout.addWidget(self.search)
         layout.addWidget(self.library, 1)
-        insert = QPushButton("＋ Добавить выбранный блок")
+        insert = QPushButton(N_("＋ Add selected block"))
         insert.clicked.connect(self.insert_selected)
         layout.addWidget(insert)
         self.library_pane = library
@@ -165,15 +165,15 @@ class Studio(QMainWindow):
         console_page = QWidget()
         layout = QVBoxLayout(console_page)
         row = QHBoxLayout()
-        row.addWidget(QLabel("Вывод программы и сообщения"))
+        row.addWidget(QLabel(N_("Program output and messages")))
         row.addStretch()
-        clear = QPushButton("Очистить")
+        clear = QPushButton(N_("Clear"))
         clear.clicked.connect(self.console.clear)
         row.addWidget(clear)
         layout.addLayout(row)
         layout.addWidget(self.console)
         self.console_dock = self.dock(
-            "Консоль", console_page, Qt.DockWidgetArea.BottomDockWidgetArea
+            N_("Console"), console_page, Qt.DockWidgetArea.BottomDockWidgetArea
         )
         self.console_dock.visibilityChanged.connect(self.console_visibility)
         self.console_dock.hide()
@@ -181,7 +181,7 @@ class Studio(QMainWindow):
         self.scratch.changed.connect(self.refresh_views)
         self.scratch.failed.connect(self.error)
         self.scratch_dock = self.dock(
-            "Черновики · Scratch", self.scratch, Qt.DockWidgetArea.RightDockWidgetArea
+            N_("Scratch"), self.scratch, Qt.DockWidgetArea.RightDockWidgetArea
         )
         self.resizeDocks([self.scratch_dock], [300], Qt.Orientation.Horizontal)
         self.scratch_dock.visibilityChanged.connect(self.scratch_visibility)
@@ -195,7 +195,7 @@ class Studio(QMainWindow):
         scroll.setWidgetResizable(True)
         scroll.setWidget(self.device_panel)
         self.device_dock = self.dock(
-            "Хаб и устройства", scroll, Qt.DockWidgetArea.RightDockWidgetArea
+            N_("Hub and devices"), scroll, Qt.DockWidgetArea.RightDockWidgetArea
         )
         self.device_dock.setMinimumWidth(285)
         self.device_dock.hide()
@@ -208,15 +208,15 @@ class Studio(QMainWindow):
         return dock
 
     def _menus(self):
-        toolbar = self.addToolBar("Программа")
+        toolbar = self.addToolBar(N_("Program"))
         toolbar.setObjectName("programTools")
         toolbar.setMovable(False)
         toolbar.setIconSize(QSize(23, 23))
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
-        file = self.menuBar().addMenu("Файл")
+        file = self.menuBar().addMenu(N_("File"))
         self._action(
             file,
-            "Новый",
+            N_("New"),
             "Ctrl+N",
             self.new_file,
             toolbar,
@@ -224,7 +224,7 @@ class Studio(QMainWindow):
         )
         self._action(
             file,
-            "Открыть",
+            N_("Open"),
             "Ctrl+O",
             self.open_file,
             toolbar,
@@ -232,24 +232,24 @@ class Studio(QMainWindow):
         )
         self._action(
             file,
-            "Сохранить",
+            N_("Save"),
             "Ctrl+S",
             self.save,
             toolbar,
             ("document-save", "SP_DialogSaveButton"),
         )
-        self._action(file, "Сохранить как…", "Ctrl+Shift+S", self.save_as)
+        self._action(file, N_("Save as…"), "Ctrl+Shift+S", self.save_as)
         self._action(
             file,
-            "Закрыть документ",
+            N_("Close document"),
             "Ctrl+W",
             lambda: self.close_document(self.documents.currentIndex()),
         )
         toolbar.addSeparator()
-        edit = self.menuBar().addMenu("Правка")
+        edit = self.menuBar().addMenu(N_("Edit"))
         self.undo_action = self._action(
             edit,
-            "Отменить",
+            N_("Undo"),
             "Ctrl+Z",
             self.undo,
             toolbar,
@@ -257,7 +257,7 @@ class Studio(QMainWindow):
         )
         self.redo_action = self._action(
             edit,
-            "Повторить",
+            N_("Redo"),
             "Ctrl+Shift+Z",
             self.redo,
             toolbar,
@@ -267,71 +267,76 @@ class Studio(QMainWindow):
         self.structural_actions = []
         for label, key, callback, icon in (
             (
-                "Параметры",
+                N_("Parameters"),
                 "F3",
                 self.edit_parameters,
                 ("document-properties", "SP_FileDialogDetailedView"),
             ),
             (
-                "Фрагмент Python",
+                N_("Python fragment"),
                 "F2",
                 self.edit_python,
                 ("accessories-text-editor", "SP_FileDialogContentsView"),
             ),
-            ("В черновики", "Ctrl+X", self.to_scratch, ("edit-cut", "SP_ArrowRight")),
+            (
+                N_("To Scratch"),
+                "Ctrl+X",
+                self.to_scratch,
+                ("edit-cut", "SP_ArrowRight"),
+            ),
         ):
             self.structural_actions.append(
                 self._action(edit, label, key, callback, toolbar, icon)
             )
         for label, key, callback in (
-            ("Родитель", "Alt+Left", lambda: self.editing_session.editor.parent()),
-            ("Потомок", "Alt+Right", lambda: self.editing_session.editor.child()),
-            ("Предыдущий узел / цель", "Alt+Up", lambda: self.navigate(-1)),
-            ("Следующий узел / цель", "Alt+Down", lambda: self.navigate(1)),
+            (N_("Parent"), "Alt+Left", lambda: self.editing_session.editor.parent()),
+            (N_("Child"), "Alt+Right", lambda: self.editing_session.editor.child()),
+            (N_("Previous node / target"), "Alt+Up", lambda: self.navigate(-1)),
+            (N_("Next node / target"), "Alt+Down", lambda: self.navigate(1)),
             (
-                "Раскрыть блок",
+                N_("Expand block"),
                 "Ctrl+E",
                 lambda: self.editing_session.toggle_expansion(),
             ),
-            ("Начать перенос", "Ctrl+M", lambda: self.editing_session.begin_move()),
+            (N_("Start move"), "Ctrl+M", lambda: self.editing_session.begin_move()),
             (
-                "Наружу",
+                N_("Outdent"),
                 "Ctrl+Alt+Left",
                 lambda: self.editing_session.editor.navigate_move(depth=-1),
             ),
             (
-                "Внутрь",
+                N_("Indent"),
                 "Ctrl+Alt+Right",
                 lambda: self.editing_session.editor.navigate_move(depth=1),
             ),
             (
-                "Завершить перенос",
+                N_("Finish move"),
                 "Ctrl+Return",
                 lambda: self.editing_session.editor.commit_move(),
             ),
             (
-                "Отменить перенос",
+                N_("Cancel move"),
                 "Escape",
                 lambda: self.editing_session.editor.cancel_move(),
             ),
             (
-                "Обновить блок",
+                N_("Upgrade block"),
                 "Ctrl+U",
                 lambda: self.editing_session.upgrade_selected(),
             ),
             (
-                "Свернуть область",
+                N_("Fold region"),
                 "Ctrl+Shift+F",
                 lambda: self.editing_source.fold_selection(),
             ),
         ):
             self.structural_actions.append(self._action(edit, label, key, callback))
-        self._action(edit, "Форматировать Python", "Ctrl+Alt+L", self.commit_code)
-        self._action(edit, "Найти", "Ctrl+F", self.show_find)
-        view = self.menuBar().addMenu("Вид")
+        self._action(edit, N_("Format Python"), "Ctrl+Alt+L", self.commit_code)
+        self._action(edit, N_("Find"), "Ctrl+F", self.show_find)
+        view = self.menuBar().addMenu(N_("View"))
         group = QActionGroup(self)
         self.editor_actions = []
-        for index, label in enumerate(("Блоки", "Python")):
+        for index, label in enumerate((N_("Blocks"), "Python")):
             action = self._action(
                 view,
                 label,
@@ -343,7 +348,7 @@ class Studio(QMainWindow):
             self.editor_actions.append(action)
         self.editor_actions[int(self.code_active)].setChecked(True)
         view.addSeparator()
-        languages = view.addMenu("Язык")
+        languages = view.addMenu(N_("Language"))
         self.language_actions = {}
         group = QActionGroup(self)
         for code, name in LANGUAGES.items():
@@ -361,17 +366,17 @@ class Studio(QMainWindow):
         view.addAction(self.device_dock.toggleViewAction())
         self._action(
             view,
-            "Полный экран",
+            N_("Full screen"),
             "F11",
             lambda: self.showNormal() if self.isFullScreen() else self.showFullScreen(),
         )
-        self._action(view, "Справка", "F1", self.show_help)
-        self._action(view, "Диагностика имён", None, self.show_diagnostics)
+        self._action(view, N_("Help"), "F1", self.show_help)
+        self._action(view, N_("Name diagnostics"), None, self.show_diagnostics)
         toolbar.addSeparator()
-        robot = self.menuBar().addMenu("Хаб")
+        robot = self.menuBar().addMenu(N_("Hub"))
         self.run_action = self._action(
             robot,
-            "Запустить",
+            N_("Run"),
             "F5",
             self.run_hub,
             toolbar,
@@ -379,15 +384,15 @@ class Studio(QMainWindow):
         )
         self.stop_action = self._action(
             robot,
-            "Стоп",
+            N_("Stop"),
             "F6",
             self.stop_hub,
             toolbar,
             ("media-playback-stop", "SP_MediaStop"),
         )
-        self._action(robot, "Подключить…", "F7", self.connect_hub)
-        self._action(robot, "Отключить", None, self.disconnect_hub)
-        self._action(robot, "Ручное управление", None, self.show_controls)
+        self._action(robot, N_("Connect…"), "F7", self.connect_hub)
+        self._action(robot, N_("Disconnect"), None, self.disconnect_hub)
+        self._action(robot, N_("Manual control"), None, self.show_controls)
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         toolbar.addWidget(spacer)
@@ -409,18 +414,18 @@ class Studio(QMainWindow):
         self.console_button.setToolButtonStyle(
             Qt.ToolButtonStyle.ToolButtonTextBesideIcon
         )
-        self.console_button.setText("Консоль")
+        self.console_button.setText(N_("Console"))
         self.console_button.clicked.connect(
             lambda: self.console_dock.setVisible(not self.console_dock.isVisible())
         )
         self.statusBar().addPermanentWidget(self.console_button)
         scratch_button = self.scratch_button = QToolButton()
-        scratch_button.setText("Черновики")
+        scratch_button.setText(N_("Scratch"))
         scratch_button.clicked.connect(
             lambda: self.scratch_dock.setVisible(not self.scratch_dock.isVisible())
         )
         self.statusBar().addPermanentWidget(scratch_button)
-        self.statusBar().addPermanentWidget(QLabel("Цвет блоков"))
+        self.statusBar().addPermanentWidget(QLabel(N_("Block color")))
         intensity = QSlider(Qt.Orientation.Horizontal)
         intensity.setRange(0, 100)
         intensity.setValue(65)
@@ -502,7 +507,7 @@ class Studio(QMainWindow):
         self.update_hub(self.hub_info)
         self.refresh_status()
         self.console_button.setText(
-            tr("Консоль · {p0}", p0=self.unread) if self.unread else tr("Консоль")
+            tr("Console · {p0}", p0=self.unread) if self.unread else tr("Console")
         )
 
     def document_mode_changed(self):
@@ -535,8 +540,8 @@ class Studio(QMainWindow):
             return True
         result = QMessageBox.question(
             self,
-            tr("Несохранённые изменения"),
-            tr("Сохранить {p0} перед закрытием?", p0=page.session.project.path.name),
+            tr("Unsaved changes"),
+            tr("Save {p0} before closing?", p0=page.session.project.path.name),
             QMessageBox.StandardButton.Save
             | QMessageBox.StandardButton.Discard
             | QMessageBox.StandardButton.Cancel,
@@ -602,11 +607,11 @@ class Studio(QMainWindow):
         selection = (
             tr(match.snippet.help).splitlines()[0]
             if match and match.snippet.help
-            else "Python" if self.code_active else tr("Выберите блок")
+            else "Python" if self.code_active else tr("Select a block")
         )
         self.statusBar().showMessage(
             tr(
-                "{p0} · предупреждений: {p1}",
+                "{p0} · warnings: {p1}",
                 p0=selection,
                 p1=len(self.session.analysis.diagnostics()),
             )
@@ -659,12 +664,12 @@ class Studio(QMainWindow):
         self.console.ensureCursorVisible()
         if not self.console_dock.isVisible() and text:
             self.unread += max(1, text.count("\n"))
-            self.console_button.setText(tr("Консоль · {p0}", p0=self.unread))
+            self.console_button.setText(tr("Console · {p0}", p0=self.unread))
 
     def console_visibility(self, visible):
         if visible and hasattr(self, "console_button"):
             self.unread = 0
-            self.console_button.setText(tr("Консоль"))
+            self.console_button.setText(tr("Console"))
 
     def error(self, message):
         self.statusBar().showMessage(message, 15000)
@@ -711,7 +716,7 @@ class Studio(QMainWindow):
             cell.change_mode(True)
             return
         self._dialog(
-            "Редактировать фрагмент Python",
+            N_("Edit Python fragment"),
             self.session.edit_python,
             text=self.session.selected_text(),
         )
@@ -746,7 +751,7 @@ class Studio(QMainWindow):
             line, column = self.session.document.syntax.position(diagnostic.span.start)
             self.append_output(f"{line}:{column}: {diagnostic.message}\n")
         if not diagnostics:
-            self.append_output(tr("Неизвестных имён не найдено.\n"))
+            self.append_output(tr("No unknown names found.\n"))
         self.console_dock.show()
 
     def show_find(self):
@@ -806,7 +811,7 @@ class Studio(QMainWindow):
     def open_file(self):
         paths, _ = QFileDialog.getOpenFileNames(
             self,
-            tr("Открыть Python"),
+            tr("Open Python"),
             str(self.session.project.path.parent),
             "Python (*.py)",
         )
@@ -819,7 +824,7 @@ class Studio(QMainWindow):
         self.commit_code()
         path, _ = QFileDialog.getSaveFileName(
             self,
-            tr("Сохранить Python"),
+            tr("Save Python"),
             str(self.session.project.path),
             "Python (*.py)",
         )
@@ -833,7 +838,7 @@ class Studio(QMainWindow):
                     page is not self.document_page
                     and page.session.project.path == destination
                 ):
-                    raise ValueError(tr("Этот файл уже открыт в другой вкладке"))
+                    raise ValueError(tr("This file is already open in another tab"))
             if destination == self.session.project.path:
                 self.save()
                 return
@@ -861,7 +866,7 @@ class Studio(QMainWindow):
         self.hub_button.setEnabled(not busy)
         self.run_action.setEnabled(self.hub_info.connected and not busy)
         if busy:
-            self.hub_button.setText(tr("Подождите…"))
+            self.hub_button.setText(tr("Please wait…"))
         else:
             self.update_hub(self.hub_info)
 
@@ -870,25 +875,21 @@ class Studio(QMainWindow):
             self.error(info.error)
         self.hub_info = info
         self.hub_button.setText(
-            tr("Подождите…")
+            tr("Please wait…")
             if self.hub_is_busy
             else (
                 (
                     "● "
-                    + (
-                        tr("Виртуальный хаб")
-                        if info.transport == "virtual"
-                        else info.name
-                    )
+                    + (tr("Virtual hub") if info.transport == "virtual" else info.name)
                 )
                 if info.connected
-                else tr("＋ Подключить хаб")
+                else tr("＋ Connect hub")
             )
         )
         self.hub_button.setToolTip(
-            tr("Информация о хабе и показания портов")
+            tr("Hub information and port readings")
             if info.connected
-            else tr("Bluetooth, USB или виртуальный хаб")
+            else tr("Bluetooth, USB or virtual hub")
         )
         self.run_action.setEnabled(info.connected and not self.hub_is_busy)
         self.stop_action.setEnabled(info.connected)
@@ -945,8 +946,8 @@ class Studio(QMainWindow):
 
 def launch(path: Path, collections=()) -> int:
     app = QApplication.instance() or QApplication(sys.argv)
-    code = QSettings("PyBlocks", "Studio").value("language", "ru")
-    set_language(code if code in LANGUAGES else "ru")
+    code = QSettings("PyBlocks", "Studio").value("language", DEFAULT_LANGUAGE)
+    set_language(code if code in LANGUAGES else DEFAULT_LANGUAGE)
     window = Studio(path, collections)
     window.show()
     return app.exec()

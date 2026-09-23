@@ -1,101 +1,103 @@
-# Рабочие сценарии Studio
+# Studio interaction design
 
-Studio предназначена для первого знакомства с роботами и для повседневной
-работы с Python. Общий документ и операции ядра используются во всех режимах.
+Studio supports a first introduction to robotics and everyday Python work.
+Every frontend uses the same document model and core editing operations.
 
-## Рабочее пространство
+## Workspace
 
-- Вертикальная панель слева переключает «Программа», «Управление», «Помощь».
-- В программе доступны структурный вид и полноценный текстовый Python.
-  Текстовый черновик допускает ошибки; сохранение, запуск и переход к блокам
-  проверяют и форматируют его атомарно. Отмена сохраняет историю правок текста.
-- Графические кнопки сгруппированы по назначению: файл, история, редактирование,
-  запуск. Подключение и состояние хаба находятся справа вверху.
-- Консоль скрыта при открытии. Вывод отмечается счётчиком; ошибки раскрывают
-  её. Пользователь может открыть, очистить и снова скрыть консоль.
-- Библиотека показывает цвет, Python-представление и краткое назначение шаблона.
-  Та же семантическая палитра используется после вставки в программу.
-- Помощь объединяет Markdown из `doc/` и документацию загруженных сниппетов.
-  Она доступна в установленном пакете без сети и без исходного репозитория.
+- A narrow vertical strip switches between Program, Control, and Help.
+- Programs have structural and full Python views. Text drafts may be invalid;
+  save, run, and returning to Blocks validate and format them atomically. Text
+  edits and formatting remain undoable.
+- Toolbar actions are grouped by files, history, editing, and execution. Hub
+  connection and state appear at the top right.
+- The console starts hidden. An unread counter announces output; errors reveal
+  it. Users can open, clear, and hide it.
+- Library cards show semantic color, Python, a short description, and an action
+  symbol. These remain consistent after insertion into the program.
+- Offline help combines localized Markdown with generated snippet reference
+  pages. Its contents list groups; each group page contains all its templates.
+  F1 targets a stable section anchor, and search includes all blocks in the page.
+  Source snippets are the only maintained block reference definitions.
 
-## Хаб и управление
+## Hubs and controls
 
-Подключение выбирает Bluetooth, USB или виртуальный хаб. Панель устройства
-показывает имя, тип, прошивку, состояние программы, батарею и порты. Показания
-портов помечаются как актуальные только при работающем мониторе.
+Connections offer Bluetooth, USB, and virtual hubs. The device panel shows hub
+name, type, firmware, program state, battery, and ports. Readings are current only
+while the monitor is running.
 
-Ручной режим запускает отдельную небольшую программу мониторинга на хабе.
-Кнопка его включения явно сообщает, что пользовательская программа остановится.
-В этом режиме доступны телеметрия и привязка моторов к четырём осям стиков и
-двум триггерам. Для каждого мотора выбираются источник, вращение или сервопривод,
-масштаб, направление и центр сервопривода. Не назначенные моторы не запускаются.
+Manual control starts a small monitor on the hub. Its activation explicitly says
+that it replaces the user program. Motors can use four stick axes and two triggers;
+each binding chooses a source, speed or servo mode, scale, direction, and servo
+center. Unassigned motors do not start.
 
-Экранный контроллер имеет расположение органов Xbox. Физический SDL-контроллер
-обновляет тот же экран и формирует то же нормализованное состояние. Поток команд
-не накапливает очередь. Остановка, потеря связи, выключение ручного режима и
-закрытие приложения останавливают управление. Программа хаба также прекращает
-вращение при отсутствии свежих команд.
+The on-screen controller follows the Xbox layout. An SDL gamepad updates the same
+screen and produces the same normalized state. Commands never accumulate in a
+queue. Stop, disconnection, disabling manual control, and closing the application
+stop control. The hub also stops motors when fresh commands expire.
 
-Виртуальный хаб позволяет проходить те же сценарии подключения, запуска,
-портов и управления. Он исполняет пользовательский Python отдельным процессом
-с моделями поддержанных Pybricks-устройств. Это учебная модель, а не физический
-симулятор или изолированная среда исполнения недоверенного кода. Датчики можно
-изменять с экрана; неподдержанные API сообщают ошибку вместо фиктивного успеха.
+Virtual hubs use the same connection, execution, port, and control workflows.
+User Python runs in a separate process over explicit device models. This is a
+teaching model, not physical simulation or a sandbox for untrusted code. Sensor
+inputs can be changed on screen; unsupported APIs fail explicitly.
 
-Целевые модели на прошивке Pybricks: Robot Inventor / SPIKE Prime (A–F),
-BOOST Move Hub (встроенные моторы A/B и внешние C/D), LEGO Technic Hub (A–D).
-Виртуальное подключение выбирает тот же профиль портов. Монитор должен работать
-на BOOST без `ujson` и `PUPDevice`; типизированное обнаружение устройств и
-компактный текстовый протокол проверяются запуском общего helper на этой модели.
-Режим передачи `Controller` в свою программу сохраняется отдельно от прямого
-назначения моторов и не подменяет программу служебным монитором.
+Target Pybricks models are Robot Inventor / SPIKE Prime (A–F), BOOST Move Hub
+(built-in A/B motors and external C/D), and LEGO Technic Hub (A–D). The monitor
+must work on BOOST without ujson or PUPDevice. The common helper is tested with
+typed discovery and a compact text protocol on this profile. Sending Controller
+input to a user program remains separate from direct motor assignments.
 
-## Проверка результата
+## Documents, language, and parameter editing
 
-Проверяются сохранность ошибочного черновика и история, совпадение отображения
-библиотеки и вставленного шаблона, переходы режимов, скрытая консоль и вывод,
-навигация справки, жизненный цикл подключения и запуска. Ручное управление
-проверяется по углам и скоростям виртуальных моторов, обратной связи датчиков,
-отпусканию органов и остановке при потере команд. Реальный монитор компилируется
-MicroPython-компилятором и проверяется на границе публичного API устройств.
+Each file tab owns a Session, text draft, history, selection, and scroll position.
+Changing tabs never commits unfinished Python. Hub tools, the console, and global
+modes belong to the window. Closing checks every changed document; reopening a
+path selects its existing tab.
 
-## Документы, язык и прямое редактирование параметров
+Global navigation uses rotated labels and a neutral active indicator. Blocks and
+Python use two icons in the document header and matching View menu actions.
+Native window controls allow minimizing and maximizing; F11 toggles full screen.
 
-Окно содержит вкладки исходников с независимыми Session, текстовыми черновиками,
-историей, выделением и прокруткой. Смена вкладки не фиксирует незавершённый Python.
-Инструменты хаба, консоль и глобальные режимы принадлежат окну. Закрытие проверяет
-каждый изменённый документ; повторное открытие пути выбирает существующую вкладку.
+English is the source language and the default on first launch. Russian is a
+gettext translation. The language menu uses native names from languages.json;
+saved choices survive upgrades. Static captions are explicitly marked with N_,
+dynamic messages use tr, and snippet descriptions come from English docstrings.
+Changing language preserves editors, history, and unfinished text. Source code,
+filenames, parameter values, and console output are never translated.
 
-Глобальная навигация занимает узкую полосу с повёрнутыми под 90° надписями.
-Активное состояние обозначается шрифтом и нейтральной линией, без цветного фона.
-Режимы «Блоки» и «Python» переключаются двумя иконками в заголовке документа и
-пунктами меню «Вид». Они не образуют второй ряд широких вкладок.
+Documentation lives in doc/en and doc/ru with matching page identities. The help
+language follows the interface. Missing translated pages fall back to English;
+release checks require both supported manuals to be complete. Page and block
+anchors are preserved when changing languages.
 
-Переводы интерфейса используют gettext: исходные сообщения на русском, каталоги
-PO/MO для других языков, список доступных языков в `locale/languages.json`.
-Выбор языка не пересоздаёт документы и не теряет историю или несохранённый текст.
-Пользовательский Python, имена файлов и вывод программы переводить нельзя.
+The structural view has no text cursor outside parameter editing. Clicking a
+field opens its editable combo directly over the source value. The name is a
+tooltip and the unit is a read-only suffix. Choices use known types and exclude
+imported classes from condition suggestions. Invalid input stays available for
+correction without changing the program.
 
-В структурном режиме нет текстового курсора вне редактирования параметра.
-Поля параметров видимы прямо в коде; выбор или ввод меняет исходник общей
-транзакцией. Ошибочный ввод сохраняется для исправления, не меняя программу.
-Выделенный блок имеет медленно пульсирующий фон всей области, без рамки текста.
-Во время переноса показываются место и отступ вставки. Библиотечный блок сразу
-вставляется с исходными или контекстно выбранными значениями без модального окна.
+Descriptions and action symbols are display-only. Selection pulses across the
+block background; blank lines preserve indentation bands. During a drag, the
+view shows the target indentation and a source preview. Library blocks insert
+with defaults or context-derived values, without a dialog. The view preserves its
+anchor and scrolls only as needed to reveal the start of the inserted block.
 
+## Detached block ribbon
 
-## Лента отложенных блоков
+Scratch is visible when opening a program and hidden in hub Control. Its dock
+can be resized or closed. Independent cells share the main structural renderer;
+each cell also offers a text view for unfinished fragments.
 
-Scratch виден при открытии программы и скрыт в управлении хабом. Док-панель
-поддерживает изменение размера и закрытие. Независимые ячейки показывают блоки
-тем же SourceView; отдельный текстовый режим хранит незаконченные фрагменты.
-Добавление, объединение, отделение и возврат выполняются перетаскиванием.
-Ячейки не требуют импортов или внешнего исполняемого контекста. При возврате
-программа получает зависимости из библиотеки и проверяется целиком.
+Dragging adds, combines, detaches, reorders, and restores blocks. Cells need no
+imports or complete execution context. Returning to the main program adds library
+dependencies and validates the complete result. One undo restores both sides.
 
-Клик по параметру сразу раскрывает список на месте значения; промежуточной
-формы нет. Имя находится в tooltip, единица не входит в редактируемый текст.
-Описание и символ рисуются отдельно от Python. Типы известных значений
-ограничивают список подсказок; импортированные классы исключены из условий.
-Пустые строки сохраняют цветовые полосы отступов. Вставка сохраняет положение
-видимого текста, прокручивая его лишь для показа начала вставленного блока.
+## Verification
+
+Tests cover invalid-draft preservation, undo, consistent library and source
+presentation, mode changes, the console, help navigation, and connection/execution
+lifecycle. Virtual motor angles, speeds, sensor feedback, released controls, and
+expired commands provide observable results. The real monitor is compiled for
+MicroPython and tested at the public device API boundary. Localization checks cover
+captions, snippet help, corresponding documentation, links, package resources, and
+preservation of user data during language changes.

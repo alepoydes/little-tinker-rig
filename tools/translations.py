@@ -4,7 +4,6 @@ import argparse
 import ast
 import io
 import json
-import re
 from pathlib import Path
 from string import Formatter
 
@@ -32,13 +31,10 @@ def messages():
             explicit = (
                 isinstance(parent, ast.Call)
                 and isinstance(parent.func, ast.Name)
-                and parent.func.id == "tr"
+                and parent.func.id in {"tr", "N_"}
                 and parent.args[0] is node
             )
-            if explicit or (
-                re.search("[А-Яа-яЁё]", node.value)
-                and not isinstance(parent, ast.JoinedStr)
-            ):
+            if explicit:
                 catalog.add(
                     node.value, locations=[(str(path.relative_to(ROOT)), node.lineno)]
                 )
@@ -59,7 +55,7 @@ def main():
     languages = json.loads((LOCALES / "languages.json").read_text(encoding="utf-8"))
     failures = []
     for code in languages:
-        if code == "ru":
+        if code == "en":
             continue
         directory = LOCALES / code / "LC_MESSAGES"
         path = directory / "pyblocks.po"

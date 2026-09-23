@@ -1,7 +1,7 @@
 include .python-version uv.lock
 include build_support.py
 recursive-include doc *.md
-recursive-include doc/images *.png *.svg
+recursive-include doc *.png *.svg
 recursive-include examples *.py
 recursive-include tests *.py
 recursive-include tools *.py

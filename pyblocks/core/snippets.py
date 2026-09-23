@@ -460,6 +460,16 @@ def recognize(
     return tuple(sorted(result, key=lambda match: match.span.start))
 
 
+def snippet_groups(snippets):
+    """Current templates grouped by their collection/module identity, in order."""
+    groups = {}
+    for snippet in snippets:
+        if not snippet.historical:
+            group = snippet.identity.rsplit("/", 1)[0]
+            groups.setdefault(group, []).append(snippet)
+    return groups
+
+
 def upgrade(
     match: Match, current: Snippet, occupied: set[str] | None = None
 ) -> Expansion:

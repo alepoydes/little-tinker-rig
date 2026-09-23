@@ -488,7 +488,7 @@ class SourceView(QTextEdit):
         if slot:
             self.show_parameter(slot)
         else:
-            raise ValueError(tr("У этого блока нет изменяемых параметров"))
+            raise ValueError(tr("This block has no editable parameters"))
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:

@@ -189,7 +189,7 @@ def test_parameter_combo_opens_in_place_and_validates_before_commit(tmp_path, qt
         assert popup.isVisible() and QApplication.activeModalWidget() is None
         assert popup.parent() is window.source.viewport()
         assert popup.view().isVisible()
-        assert popup.unit.text() == "°/с"
+        assert popup.unit.text() == "°/s"
         assert popup.lineEdit().text() == "500"
         popup.setCurrentText("300 +")
         popup.apply()

@@ -256,7 +256,7 @@ def test_qt_window_controls_scratch_visibility_and_help(tmp_path, qt_app):
         window.help_page.show_page("pybricks/motors/create_motor")
         browser = window.help_page.browser
         assert browser.document().defaultFont().pointSize() >= 12
-        assert "Подключить мотор" in browser.toPlainText()
+        assert "Connect a motor" in browser.toPlainText()
         assert (
             "Port.A" in browser.toPlainText() or "Motor(port)" in browser.toPlainText()
         )
@@ -294,7 +294,7 @@ def test_qt_annotations_keep_source_and_scroll_anchor(tmp_path, qt_app):
         rect = view.cursorRect(view.document().find("motor ="))
         assert 0 <= rect.top() < view.viewport().height()
         assert view.toPlainText() == session.document.state.source
-        assert "# Подключить" not in session.document.state.source
+        assert "# Connect" not in session.document.state.source
         session.editor.selection = session.document.syntax.tree.body[-1]
         session.insert_snippet(snippet(session, "wait_ms"), {})
         view.refresh_source()

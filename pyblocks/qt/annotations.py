@@ -3,7 +3,7 @@
 import ast
 
 from pyblocks.core.presentation import role, snippet_role
-from pyblocks.i18n import tr
+from pyblocks.i18n import N_, tr
 
 ICONS = {
     "loop": "⟳",
@@ -15,18 +15,18 @@ ICONS = {
     "placeholder": "…",
 }
 LABELS = {
-    ast.If: "Проверить условие",
-    ast.For: "Повторить для каждого элемента",
-    ast.While: "Повторять, пока условие истинно",
-    ast.Try: "Выполнить с обработкой ошибок",
-    ast.FunctionDef: "Описать действие",
-    ast.Return: "Вернуть результат",
-    ast.Break: "Выйти из цикла",
-    ast.Continue: "Следующее повторение",
-    ast.Assign: "Сохранить значение",
-    ast.AugAssign: "Изменить значение",
-    ast.Expr: "Выполнить действие",
-    ast.Pass: "Место для действий",
+    ast.If: N_("Check a condition"),
+    ast.For: N_("Repeat for each item"),
+    ast.While: N_("Repeat while the condition is true"),
+    ast.Try: N_("Run with error handling"),
+    ast.FunctionDef: N_("Define an action"),
+    ast.Return: N_("Return a result"),
+    ast.Break: N_("Leave the loop"),
+    ast.Continue: N_("Next iteration"),
+    ast.Assign: N_("Store a value"),
+    ast.AugAssign: N_("Change a value"),
+    ast.Expr: N_("Perform an action"),
+    ast.Pass: N_("Place actions here"),
 }
 
 

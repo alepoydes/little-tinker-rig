@@ -1,0 +1,921 @@
+# Russian translations for PyBlocks Studio.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PyBlocks Studio project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PyBlocks Studio 0.1\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-09-23 07:39+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && "
+"(n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: pyblocks/qt/device.py:197
+#, python-brace-format
+msgid " · Distance: {p0:g} %"
+msgstr " · Дальность: {p0:g} %"
+
+#: pyblocks/qt/device.py:211
+msgid " · previous reading"
+msgstr " · прошлое показание"
+
+#: pyblocks/qt/controls.py:132
+msgid " · release to return to zero"
+msgstr " · отпустите для возврата к нулю"
+
+#: pyblocks/qt/device.py:164
+#, python-brace-format
+msgid " · {p0:.2f} V"
+msgstr " · {p0:.2f} В"
+
+#: pyblocks/qt/controls.py:338
+msgid ""
+"Assign motors to axes or triggers. Scale sets the speed or the angle relative to the "
+"center."
+msgstr ""
+"Назначьте моторы осям или триггерам. Масштаб задаёт скорость вращения или угол "
+"отклонения от центра."
+
+#: pyblocks/qt/controls.py:256
+msgid "Assign motors to sticks and triggers"
+msgstr "Назначить моторы осям и триггерам"
+
+#: pyblocks/qt/device.py:28
+msgid "BOOST color / distance"
+msgstr "Цвет / расстояние BOOST"
+
+#: pyblocks/qt/device.py:133
+msgid "BOOST distance, %"
+msgstr "Расстояние BOOST, %"
+
+#: pyblocks/qt/app.py:428
+msgid "Block color"
+msgstr "Цвет блоков"
+
+#: pyblocks/qt/help.py:239
+msgid "Block library"
+msgstr "Библиотека блоков"
+
+#: pyblocks/qt/app.py:339 pyblocks/qt/document.py:60 pyblocks/qt/scratch.py:73
+msgid "Blocks"
+msgstr "Блоки"
+
+#: pyblocks/qt/device.py:71
+msgid "Bluetooth name"
+msgstr "Имя Bluetooth"
+
+#: pyblocks/qt/app.py:892
+msgid "Bluetooth, USB or virtual hub"
+msgstr "Bluetooth, USB или виртуальный хаб"
+
+#: pyblocks/snippets/pybricks/drive.py:22
+msgid "Brake both robot wheels."
+msgstr "Затормозить оба колеса робота."
+
+#: pyblocks/qt/app.py:318
+msgid "Cancel move"
+msgstr "Отменить перенос"
+
+#: pyblocks/qt/controls.py:266
+msgid "Center, °"
+msgstr "Центр, °"
+
+#: pyblocks/qt/annotations.py:27
+msgid "Change a value"
+msgstr "Изменить значение"
+
+#: pyblocks/qt/annotations.py:18
+msgid "Check a condition"
+msgstr "Проверить условие"
+
+#: pyblocks/snippets/python/basics.py:77
+msgid "Check that at least one condition is true."
+msgstr "Проверить, что хотя бы одно условие истинно."
+
+#: pyblocks/snippets/python/basics.py:72
+msgid "Check that both conditions are true."
+msgstr "Проверить, что оба условия истинны."
+
+#: pyblocks/snippets/pybricks/sensors.py:19
+msgid "Check whether a surface is darker than a reflection threshold."
+msgstr "Проверить, что поверхность темнее заданного порога отражения."
+
+#: pyblocks/snippets/python/basics.py:43
+msgid "Check whether a value is below a threshold."
+msgstr "Проверить, что значение меньше порога."
+
+#: pyblocks/snippets/pybricks/sensors.py:84
+msgid "Check whether the force sensor button is pressed."
+msgstr "Проверить, нажата ли кнопка датчика силы."
+
+#: pyblocks/snippets/python/basics.py:67
+msgid "Check whether two values are equal."
+msgstr "Проверить, равны ли два значения."
+
+#: pyblocks/qt/app.py:293
+msgid "Child"
+msgstr "Потомок"
+
+#: pyblocks/snippets/python/basics.py:48
+msgid "Choose between two actions using a condition."
+msgstr "Выбрать одно из двух действий по условию."
+
+#: pyblocks/qt/app.py:170
+msgid "Clear"
+msgstr "Очистить"
+
+#: pyblocks/qt/app.py:244
+msgid "Close document"
+msgstr "Закрыть документ"
+
+#: pyblocks/qt/device.py:27
+msgid "Color sensor"
+msgstr "Датчик цвета"
+
+#: pyblocks/qt/device.py:77
+msgid "Connect"
+msgstr "Подключить"
+
+#: pyblocks/snippets/pybricks/sensors.py:56
+msgid "Connect a BOOST color and distance sensor."
+msgstr "Подключить комбинированный датчик цвета и расстояния BOOST."
+
+#: pyblocks/snippets/pybricks/sensors.py:11
+msgid "Connect a color sensor to a hub port."
+msgstr "Подключить датчик цвета к порту хаба."
+
+#: pyblocks/snippets/pybricks/sensors.py:48
+msgid "Connect a force sensor or emergency button."
+msgstr "Подключить датчик силы или аварийную кнопку."
+
+#: pyblocks/qt/device.py:169
+msgid "Connect a hub at the top right of the window."
+msgstr "Подключение — в правом верхнем углу окна."
+
+#: pyblocks/qt/robot.py:105 pyblocks/qt/robot.py:110
+msgid "Connect a hub first"
+msgstr "Сначала подключите хаб"
+
+#: pyblocks/snippets/pybricks/motors.py:15
+msgid "Connect a motor and choose its positive direction."
+msgstr "Подключить мотор и выбрать положительное направление вращения."
+
+#: pyblocks/snippets/pybricks/motors.py:4
+msgid ""
+"Connect a motor to a hub port.\n"
+"\n"
+"Choose a port and an unquoted motor name, such as left_motor.\n"
+"Available ports depend on the hub model."
+msgstr ""
+"Подключить мотор к порту хаба.\n"
+"\n"
+"Выберите порт и задайте имя мотора без кавычек, например left_motor.\n"
+"Доступные порты зависят от модели хаба."
+
+#: pyblocks/qt/controls.py:246 pyblocks/qt/controls.py:386
+msgid "Connect a virtual or physical hub at the top right."
+msgstr "Подключите виртуальный или настоящий хаб в правом верхнем углу."
+
+#: pyblocks/snippets/pybricks/sensors.py:40
+msgid "Connect an ultrasonic distance sensor."
+msgstr "Подключить ультразвуковой датчик расстояния."
+
+#: pyblocks/qt/device.py:38
+msgid "Connect hub"
+msgstr "Подключить хаб"
+
+#: pyblocks/qt/device.py:70
+msgid "Connection"
+msgstr "Подключение"
+
+#: pyblocks/qt/app.py:393
+msgid "Connect…"
+msgstr "Подключить…"
+
+#: pyblocks/qt/app.py:176 pyblocks/qt/app.py:417 pyblocks/qt/app.py:510
+#: pyblocks/qt/app.py:672
+msgid "Console"
+msgstr "Консоль"
+
+#: pyblocks/qt/app.py:510 pyblocks/qt/app.py:667
+#, python-brace-format
+msgid "Console · {p0}"
+msgstr "Консоль · {p0}"
+
+#: pyblocks/qt/navigation.py:19
+msgid "Control"
+msgstr "Управление"
+
+#: pyblocks/snippets/pybricks/drive.py:27
+msgid "Create a stopwatch to measure time."
+msgstr "Создать секундомер для измерения времени."
+
+#: pyblocks/snippets/pybricks/drive.py:4
+msgid "Create a two-wheel robot from the left and right motors."
+msgstr "Создать двухколёсного робота из левого и правого моторов."
+
+#: pyblocks/qt/help.py:59
+msgid "Default"
+msgstr "По умолчанию"
+
+#: pyblocks/qt/annotations.py:22
+msgid "Define an action"
+msgstr "Описать действие"
+
+#: pyblocks/qt/device.py:31
+msgid "Device"
+msgstr "Устройство"
+
+#: pyblocks/qt/device.py:207
+#, python-brace-format
+msgid "Device ID {p0}"
+msgstr "Устройство ID {p0}"
+
+#: pyblocks/qt/app.py:394
+msgid "Disconnect"
+msgstr "Отключить"
+
+#: pyblocks/qt/device.py:142
+msgid "Disconnect hub"
+msgstr "Отключить хаб"
+
+#: pyblocks/snippets/python/basics.py:4
+msgid ""
+"Display a value in the console.\n"
+"\n"
+"The value can be quoted text, a number, or a variable name.\n"
+"Use the console to see what happens in your program."
+msgstr ""
+"Показать значение в консоли.\n"
+"\n"
+"Значением может быть текст в кавычках, число или имя переменной.\n"
+"Консоль помогает увидеть, что происходит в программе."
+
+#: pyblocks/qt/device.py:29
+msgid "Distance"
+msgstr "Расстояние"
+
+#: pyblocks/qt/device.py:200
+#, python-brace-format
+msgid "Distance: {p0:g} mm"
+msgstr "Расстояние: {p0:g} мм"
+
+#: pyblocks/qt/scratch.py:194 pyblocks/qt/scratch.py:233
+msgid ""
+"Drag a block here to set it aside.\n"
+"Return it to the program when you need it."
+msgstr ""
+"Перетащите сюда блок, чтобы отложить его.\n"
+"Верните его в программу, когда он понадобится."
+
+#: pyblocks/qt/document.py:113
+msgid "Drag blocks. Click a parameter to edit it."
+msgstr "Перетаскивайте блоки. Нажмите на параметр, чтобы изменить его."
+
+#: pyblocks/qt/controls.py:38
+msgid "Drag the stick; release to center it. Keyboard control is also available."
+msgstr "Перетаскивайте стик; отпустите для возврата в центр. Можно использовать клавиатуру."
+
+#: pyblocks/qt/scratch.py:37
+msgid "Drag the whole fragment into the program or another cell"
+msgstr "Перетащите весь фрагмент в программу или другую ячейку"
+
+#: pyblocks/snippets/pybricks/drive.py:17
+msgid "Drive at the chosen speed and turn rate."
+msgstr "Ехать с заданной скоростью и поворотом."
+
+#: pyblocks/qt/library.py:24
+msgid "Drive bases and clocks"
+msgstr "Движение и секундомеры"
+
+#: pyblocks/qt/app.py:249
+msgid "Edit"
+msgstr "Правка"
+
+#: pyblocks/qt/app.py:719
+msgid "Edit Python fragment"
+msgstr "Редактировать фрагмент Python"
+
+#: pyblocks/qt/device.py:25
+msgid "Empty"
+msgstr "Пусто"
+
+#: pyblocks/qt/device.py:53
+msgid "Empty — first available hub"
+msgstr "Пусто — первый найденный хаб"
+
+#: pyblocks/qt/controls.py:251
+msgid "Enable motor commands"
+msgstr "Передавать команды моторам"
+
+#: pyblocks/qt/app.py:297
+msgid "Expand block"
+msgstr "Раскрыть блок"
+
+#: pyblocks/qt/app.py:216
+msgid "File"
+msgstr "Файл"
+
+#: pyblocks/qt/app.py:335
+msgid "Find"
+msgstr "Найти"
+
+#: pyblocks/qt/app.py:93
+msgid "Find a block…"
+msgstr "Найти блок…"
+
+#: pyblocks/qt/document.py:51
+msgid "Find in program · Enter — next match"
+msgstr "Найти в программе · Enter — следующее совпадение"
+
+#: pyblocks/qt/app.py:313
+msgid "Finish move"
+msgstr "Завершить перенос"
+
+#: pyblocks/qt/app.py:328
+msgid "Fold region"
+msgstr "Свернуть область"
+
+#: pyblocks/snippets/pybricks/sensors.py:24
+msgid ""
+"Follow a line edge using proportional control.\n"
+"\n"
+"drive is an existing DriveBase; sensor measures reflection.\n"
+"target is the reflection at the edge; gain sets correction strength.\n"
+"The loop continues until the program is stopped."
+msgstr ""
+"Следовать вдоль границы линии пропорциональным регулятором.\n"
+"\n"
+"drive — заранее созданная DriveBase; sensor — датчик отражения.\n"
+"target — отражение на границе светлого и тёмного, gain — сила коррекции.\n"
+"Цикл продолжается до остановки программы."
+
+#: pyblocks/qt/device.py:30
+msgid "Force sensor"
+msgstr "Датчик силы"
+
+#: pyblocks/qt/device.py:202
+#, python-brace-format
+msgid "Force: {p0:g} N"
+msgstr "Сила: {p0:g} Н"
+
+#: pyblocks/qt/app.py:334
+msgid "Format Python"
+msgstr "Форматировать Python"
+
+#: pyblocks/qt/app.py:369
+msgid "Full screen"
+msgstr "Полный экран"
+
+#: pyblocks/qt/help.py:225
+msgid "Guide"
+msgstr "Руководство"
+
+#: pyblocks/qt/app.py:373 pyblocks/qt/navigation.py:19
+msgid "Help"
+msgstr "Помощь"
+
+#: pyblocks/qt/app.py:376
+msgid "Hub"
+msgstr "Хаб"
+
+#: pyblocks/qt/app.py:198
+msgid "Hub and devices"
+msgstr "Хаб и устройства"
+
+#: pyblocks/qt/app.py:890
+msgid "Hub information and port readings"
+msgstr "Информация о хабе и показания портов"
+
+#: pyblocks/qt/device.py:161
+msgid "Idle"
+msgstr "Ожидание"
+
+#: pyblocks/snippets/python/basics.py:62
+msgid "Increase a variable value."
+msgstr "Увеличить значение переменной."
+
+#: pyblocks/qt/app.py:308
+msgid "Indent"
+msgstr "Внутрь"
+
+#: pyblocks/qt/controls.py:263
+msgid "Input"
+msgstr "Орган управления"
+
+#: pyblocks/qt/app.py:351
+msgid "Language"
+msgstr "Язык"
+
+#: pyblocks/qt/annotations.py:24
+msgid "Leave the loop"
+msgstr "Выйти из цикла"
+
+#: pyblocks/qt/controls.py:277
+msgid "Left X"
+msgstr "Левый X"
+
+#: pyblocks/qt/controls.py:278
+msgid "Left Y"
+msgstr "Левый Y"
+
+#: pyblocks/qt/controls.py:143
+msgid "Left stick · WASD"
+msgstr "Левый стик · WASD"
+
+#: pyblocks/qt/app.py:97
+msgid "Library · drag a block into the program"
+msgstr "Библиотека · перетащите блок в программу"
+
+#: pyblocks/qt/app.py:395 pyblocks/qt/controls.py:316
+msgid "Manual control"
+msgstr "Ручное управление"
+
+#: pyblocks/qt/controls.py:383
+msgid "Manual control stops the running program and opens the port monitor."
+msgstr "Ручной режим остановит текущую программу и откроет монитор портов."
+
+#: pyblocks/snippets/pybricks/sensors.py:69
+msgid "Measure obstacle distance in millimeters."
+msgstr "Измерить расстояние до препятствия в миллиметрах."
+
+#: pyblocks/snippets/pybricks/sensors.py:79
+msgid "Measure pressing force in newtons."
+msgstr "Измерить силу нажатия в ньютонах."
+
+#: pyblocks/snippets/pybricks/sensors.py:74
+msgid "Measure relative distance with a BOOST sensor."
+msgstr "Измерить относительное расстояние датчиком BOOST."
+
+#: pyblocks/snippets/pybricks/sensors.py:64
+msgid "Measure surface reflection from 0 to 100%."
+msgstr "Измерить отражение поверхности: от 0 до 100%."
+
+#: pyblocks/qt/controls.py:264
+msgid "Mode"
+msgstr "Режим"
+
+#: pyblocks/qt/device.py:26
+msgid "Motor"
+msgstr "Мотор"
+
+#: pyblocks/qt/library.py:22
+msgid "Motors"
+msgstr "Моторы"
+
+#: pyblocks/qt/parameters.py:19
+msgid "N"
+msgstr "Н"
+
+#: pyblocks/qt/help.py:59
+msgid "Name"
+msgstr "Имя"
+
+#: pyblocks/qt/app.py:374
+msgid "Name diagnostics"
+msgstr "Диагностика имён"
+
+#: pyblocks/snippets/python/basics.py:82
+msgid "Negate a condition."
+msgstr "Изменить условие на противоположное."
+
+#: pyblocks/qt/app.py:219
+msgid "New"
+msgstr "Новый"
+
+#: pyblocks/qt/annotations.py:25
+msgid "Next iteration"
+msgstr "Следующее повторение"
+
+#: pyblocks/qt/app.py:295
+msgid "Next node / target"
+msgstr "Следующий узел / цель"
+
+#: pyblocks/qt/device.py:205
+msgid "No device"
+msgstr "Нет устройства"
+
+#: pyblocks/qt/device.py:93 pyblocks/qt/device.py:156
+msgid "No hub connected"
+msgstr "Хаб не подключён"
+
+#: pyblocks/qt/app.py:754
+msgid "No unknown names found.\n"
+msgstr "Неизвестных имён не найдено.\n"
+
+#: pyblocks/qt/app.py:227
+msgid "Open"
+msgstr "Открыть"
+
+#: pyblocks/qt/app.py:814
+msgid "Open Python"
+msgstr "Открыть Python"
+
+#: pyblocks/qt/device.py:100 pyblocks/qt/device.py:175
+msgid "Open port monitor"
+msgstr "Открыть монитор портов"
+
+#: pyblocks/qt/app.py:303
+msgid "Outdent"
+msgstr "Наружу"
+
+#: pyblocks/qt/app.py:270 pyblocks/qt/help.py:59
+msgid "Parameters"
+msgstr "Параметры"
+
+#: pyblocks/qt/app.py:292
+msgid "Parent"
+msgstr "Родитель"
+
+#: pyblocks/qt/annotations.py:28
+msgid "Perform an action"
+msgstr "Выполнить действие"
+
+#: pyblocks/qt/controls.py:253
+msgid "Physical Xbox / SDL controller"
+msgstr "Физический Xbox / SDL-контроллер"
+
+#: pyblocks/qt/annotations.py:29
+msgid "Place actions here"
+msgstr "Место для действий"
+
+#: pyblocks/qt/app.py:869 pyblocks/qt/app.py:878
+msgid "Please wait…"
+msgstr "Подождите…"
+
+#: pyblocks/qt/controls.py:262
+msgid "Port"
+msgstr "Порт"
+
+#: pyblocks/qt/device.py:161
+msgid "Port monitor"
+msgstr "Монитор портов"
+
+#: pyblocks/qt/app.py:294
+msgid "Previous node / target"
+msgstr "Предыдущий узел / цель"
+
+#: pyblocks/qt/app.py:211 pyblocks/qt/navigation.py:19
+msgid "Program"
+msgstr "Программа"
+
+#: pyblocks/qt/app.py:168
+msgid "Program output and messages"
+msgstr "Вывод программы и сообщения"
+
+#: pyblocks/qt/device.py:159
+msgid "Program running"
+msgstr "Программа работает"
+
+#: pyblocks/qt/library.py:21
+msgid "Python basics"
+msgstr "Основы Python"
+
+#: pyblocks/qt/app.py:276
+msgid "Python fragment"
+msgstr "Фрагмент Python"
+
+#: pyblocks/qt/document.py:111
+msgid "Python · Ctrl+Space — complete · Ctrl+Alt+L — format"
+msgstr "Python · Ctrl+Space — дополнение · Ctrl+Alt+L — форматировать"
+
+#: pyblocks/snippets/pybricks/drive.py:34
+msgid "Read elapsed milliseconds from the stopwatch."
+msgstr "Узнать, сколько миллисекунд прошло на секундомере."
+
+#: pyblocks/snippets/pybricks/motors.py:60
+msgid "Read the current motor angle."
+msgstr "Узнать текущий угол мотора."
+
+#: pyblocks/snippets/pybricks/motors.py:65
+msgid "Read the current motor speed."
+msgstr "Узнать текущую скорость мотора."
+
+#: pyblocks/snippets/pybricks/sensors.py:89
+msgid "Read the surface color under the sensor."
+msgstr "Узнать цвет поверхности под датчиком."
+
+#: pyblocks/qt/app.py:260
+msgid "Redo"
+msgstr "Повторить"
+
+#: pyblocks/qt/device.py:194
+#, python-brace-format
+msgid "Reflection: {p0:g} %"
+msgstr "Отражение: {p0:g} %"
+
+#: pyblocks/snippets/python/basics.py:12
+msgid ""
+"Remember a value under a name.\n"
+"\n"
+"Write the name without quotes, for example speed or distance.\n"
+"Use this name in later blocks."
+msgstr ""
+"Запомнить значение под выбранным именем.\n"
+"\n"
+"Имя пишется без кавычек: например, speed или distance.\n"
+"Позже это имя можно использовать в других блоках."
+
+#: pyblocks/snippets/python/basics.py:20
+msgid ""
+"Repeat actions a given number of times.\n"
+"\n"
+"Replace pass with blocks dragged into the loop.\n"
+"The counter i starts at zero."
+msgstr ""
+"Повторить действия заданное число раз.\n"
+"\n"
+"Замените pass внутри цикла своими действиями через «Edit as Python».\n"
+"Счётчик i начинается с нуля."
+
+#: pyblocks/snippets/python/basics.py:35
+msgid ""
+"Repeat actions until the program stops.\n"
+"\n"
+"Add a wait to robot control loops so the hub has time for other work."
+msgstr ""
+"Повторять действия до остановки программы.\n"
+"\n"
+"Добавьте ожидание в цикл управления роботом, чтобы не перегружать хаб."
+
+#: pyblocks/snippets/python/basics.py:56
+msgid "Repeat actions while the condition is true."
+msgstr "Повторять действия, пока условие истинно."
+
+#: pyblocks/qt/annotations.py:19
+msgid "Repeat for each item"
+msgstr "Повторить для каждого элемента"
+
+#: pyblocks/qt/annotations.py:20
+msgid "Repeat while the condition is true"
+msgstr "Повторять, пока условие истинно"
+
+#: pyblocks/qt/device.py:103
+msgid "Replaces the running program with the port monitor. Motors remain stopped."
+msgstr "Запустит монитор вместо текущей программы. Моторы останутся остановленными."
+
+#: pyblocks/snippets/pybricks/drive.py:39
+msgid "Restart the stopwatch."
+msgstr "Начать отсчёт времени заново."
+
+#: pyblocks/qt/annotations.py:23
+msgid "Return a result"
+msgstr "Вернуть результат"
+
+#: pyblocks/qt/controls.py:267
+msgid "Reverse"
+msgstr "Реверс"
+
+#: pyblocks/qt/controls.py:279
+msgid "Right X"
+msgstr "Правый X"
+
+#: pyblocks/qt/controls.py:280
+msgid "Right Y"
+msgstr "Правый Y"
+
+#: pyblocks/qt/controls.py:149
+msgid "Right stick · arrows"
+msgstr "Правый стик · стрелки"
+
+#: pyblocks/qt/controls.py:290
+msgid "Rotation, °/s"
+msgstr "Вращение, °/с"
+
+#: pyblocks/qt/app.py:379
+msgid "Run"
+msgstr "Запустить"
+
+#: pyblocks/snippets/pybricks/motors.py:27
+msgid ""
+"Run a motor at a chosen speed.\n"
+"\n"
+"Speed is in degrees per second. Negative values reverse direction.\n"
+"The motor keeps running until another command stops or changes it."
+msgstr ""
+"Вращать мотор с заданной скоростью.\n"
+"\n"
+"Скорость задаётся в градусах в секунду. Отрицательное число меняет направление.\n"
+"Мотор продолжает вращаться после этого блока до следующей команды."
+
+#: pyblocks/qt/controls.py:375
+msgid "Run a program using the Controller module (see Help → Robots and controls)."
+msgstr "Запустите программу с модулем Controller (см. Помощь → Робот и органы управления)."
+
+#: pyblocks/snippets/python/basics.py:29
+msgid "Run actions when a condition is true."
+msgstr "Выполнить действия, если условие истинно."
+
+#: pyblocks/snippets/pybricks/motors.py:50
+msgid "Run the motor for a set time, then stop."
+msgstr "Вращать мотор заданное время, затем остановить."
+
+#: pyblocks/qt/annotations.py:21
+msgid "Run with error handling"
+msgstr "Выполнить с обработкой ошибок"
+
+#: pyblocks/qt/app.py:235
+msgid "Save"
+msgstr "Сохранить"
+
+#: pyblocks/qt/app.py:827
+msgid "Save Python"
+msgstr "Сохранить Python"
+
+#: pyblocks/qt/app.py:241
+msgid "Save as…"
+msgstr "Сохранить как…"
+
+#: pyblocks/qt/app.py:544
+#, python-brace-format
+msgid "Save {p0} before closing?"
+msgstr "Сохранить {p0} перед закрытием?"
+
+#: pyblocks/qt/controls.py:265
+msgid "Scale"
+msgstr "Масштаб"
+
+#: pyblocks/qt/app.py:184 pyblocks/qt/app.py:423
+msgid "Scratch"
+msgstr "Черновики"
+
+#: pyblocks/qt/help.py:199
+msgid "Search the guide and blocks…"
+msgstr "Поиск в руководстве и блоках…"
+
+#: pyblocks/qt/app.py:610
+msgid "Select a block"
+msgstr "Выберите блок"
+
+#: pyblocks/qt/controls.py:257
+msgid "Send controller input to my program"
+msgstr "Передавать контроллер в мою программу"
+
+#: pyblocks/qt/library.py:23
+msgid "Sensors and timing"
+msgstr "Датчики и ожидание"
+
+#: pyblocks/qt/controls.py:291
+msgid "Servo, °"
+msgstr "Серво, °"
+
+#: pyblocks/snippets/pybricks/motors.py:55
+msgid "Set the angle reading at the current motor position."
+msgstr "Назначить текущему положению мотора выбранный угол."
+
+#: pyblocks/qt/controls.py:248
+msgid "Start manual control"
+msgstr "Включить ручной режим"
+
+#: pyblocks/qt/app.py:301
+msgid "Start move"
+msgstr "Начать перенос"
+
+#: pyblocks/qt/device.py:41
+msgid "Start with a virtual hub or connect your robot."
+msgstr "Начните с виртуального хаба или подключите свой робот."
+
+#: pyblocks/qt/app.py:387
+msgid "Stop"
+msgstr "Стоп"
+
+#: pyblocks/snippets/pybricks/motors.py:35
+msgid "Stop a motor with braking."
+msgstr "Остановить мотор с торможением."
+
+#: pyblocks/qt/device.py:173
+msgid "Stop program and inspect ports"
+msgstr "Остановить программу и открыть порты"
+
+#: pyblocks/qt/controls.py:249
+msgid "Stops the user program and starts the port monitor"
+msgstr "Остановит пользовательскую программу и запустит монитор портов"
+
+#: pyblocks/qt/annotations.py:26
+msgid "Store a value"
+msgstr "Сохранить значение"
+
+#: pyblocks/qt/controls.py:379
+msgid "The port monitor is running. Assign a motor, then enable commands."
+msgstr "Монитор портов работает. Назначьте мотор, затем включите передачу команд."
+
+#: pyblocks/qt/editor.py:491
+msgid "This block has no editable parameters"
+msgstr "У этого блока нет изменяемых параметров"
+
+#: pyblocks/qt/app.py:841
+msgid "This file is already open in another tab"
+msgstr "Этот файл уже открыт в другой вкладке"
+
+#: pyblocks/qt/app.py:282
+msgid "To Scratch"
+msgstr "В черновики"
+
+#: pyblocks/snippets/pybricks/motors.py:40
+msgid "Turn a motor through an angle and wait until it finishes."
+msgstr "Повернуть мотор на заданный угол и дождаться завершения."
+
+#: pyblocks/snippets/pybricks/motors.py:45
+msgid "Turn the motor to a target position and wait until it finishes."
+msgstr "Повернуть мотор в заданное положение и дождаться завершения."
+
+#: pyblocks/qt/controls.py:287
+msgid "Unassigned"
+msgstr "Не назначен"
+
+#: pyblocks/qt/app.py:252
+msgid "Undo"
+msgstr "Отменить"
+
+#: pyblocks/qt/help.py:59
+msgid "Unit / type"
+msgstr "Единица / тип"
+
+#: pyblocks/qt/app.py:543
+msgid "Unsaved changes"
+msgstr "Несохранённые изменения"
+
+#: pyblocks/qt/app.py:323
+msgid "Upgrade block"
+msgstr "Обновить блок"
+
+#: pyblocks/qt/app.py:336
+msgid "View"
+msgstr "Вид"
+
+#: pyblocks/qt/app.py:883 pyblocks/qt/device.py:154
+msgid "Virtual hub"
+msgstr "Виртуальный хаб"
+
+#: pyblocks/qt/device.py:72
+msgid "Virtual hub model"
+msgstr "Модель виртуального хаба"
+
+#: pyblocks/qt/device.py:47
+msgid "Virtual hub · no hardware needed"
+msgstr "Виртуальный хаб · без оборудования"
+
+#: pyblocks/snippets/pybricks/sensors.py:4
+msgid "Wait for a number of milliseconds. 1000 ms = 1 second."
+msgstr "Подождать указанное число миллисекунд. 1000 мс = 1 секунда."
+
+#: pyblocks/qt/robot.py:52
+msgid "Wait for the hub operation to finish"
+msgstr "Дождитесь завершения операции с хабом"
+
+#: pyblocks/qt/navigation.py:21
+msgid "Workspaces"
+msgstr "Режимы"
+
+#: pyblocks/qt/parameters.py:14
+msgid "mm"
+msgstr "мм"
+
+#: pyblocks/qt/parameters.py:15
+msgid "mm/s"
+msgstr "мм/с"
+
+#: pyblocks/qt/parameters.py:16
+msgid "ms"
+msgstr "мс"
+
+#: pyblocks/qt/parameters.py:17
+msgid "s"
+msgstr "с"
+
+#: pyblocks/qt/device.py:189
+#, python-brace-format
+msgid "{p0:g}°    {p1:g} °/s"
+msgstr "{p0:g}°    {p1:g} °/с"
+
+#: pyblocks/qt/app.py:614
+#, python-brace-format
+msgid "{p0} · warnings: {p1}"
+msgstr "{p0} · предупреждений: {p1}"
+
+#: pyblocks/qt/parameters.py:13
+msgid "°/s"
+msgstr "°/с"
+
+#: pyblocks/qt/help.py:201
+msgid "← Back"
+msgstr "← Назад"
+
+#: pyblocks/qt/app.py:100
+msgid "＋ Add selected block"
+msgstr "＋ Добавить выбранный блок"
+
+#: pyblocks/qt/app.py:886
+msgid "＋ Connect hub"
+msgstr "＋ Подключить хаб"
+

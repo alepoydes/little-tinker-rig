@@ -1,4 +1,4 @@
-"""gettext catalogs shared by frontends; source messages are kept in Russian."""
+"""gettext catalogs shared by frontends; source messages are written in English."""
 
 import gettext
 import json
@@ -7,8 +7,14 @@ from importlib.resources import files
 LANGUAGES = json.loads(
     (files("pyblocks") / "locale/languages.json").read_text(encoding="utf-8")
 )
-_language = "ru"
+DEFAULT_LANGUAGE = "en"
+_language = DEFAULT_LANGUAGE
 _translation = gettext.NullTranslations()
+
+
+def N_(message):
+    """Mark a static caption for extraction; translate when rendering it."""
+    return message
 
 
 def language():
@@ -23,7 +29,7 @@ def set_language(code):
         "pyblocks",
         localedir=str(files("pyblocks") / "locale"),
         languages=[code],
-        fallback=code == "ru",
+        fallback=True,
     )
     _language = code
 

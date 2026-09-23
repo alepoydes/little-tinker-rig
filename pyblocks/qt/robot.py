@@ -49,7 +49,7 @@ class Robot(QObject):
                 self.operation.cancel()
             else:
                 coroutine.close()
-                self.failed.emit(tr("Дождитесь завершения операции с хабом"))
+                self.failed.emit(tr("Wait for the hub operation to finish"))
                 return None
         if operation:
             self.generation += 1
@@ -102,12 +102,12 @@ class Robot(QObject):
     def run_file(self, path):
         if self.connection:
             return self.submit(self.connection.run(path), operation=True)
-        self.failed.emit(tr("Сначала подключите хаб"))
+        self.failed.emit(tr("Connect a hub first"))
 
     def start_monitor(self):
         if self.connection:
             return self.submit(self.connection.start_monitor(), operation=True)
-        self.failed.emit(tr("Сначала подключите хаб"))
+        self.failed.emit(tr("Connect a hub first"))
 
     def stop_program(self):
         async def stop():

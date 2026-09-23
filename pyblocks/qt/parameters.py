@@ -10,13 +10,13 @@ from pyblocks.i18n import tr
 def unit_text(annotation):
     return {
         "deg": "°",
-        "deg/s": tr("°/с"),
-        "mm": tr("мм"),
-        "mm/s": tr("мм/с"),
-        "ms": tr("мс"),
-        "s": tr("с"),
+        "deg/s": tr("°/s"),
+        "mm": tr("mm"),
+        "mm/s": tr("mm/s"),
+        "ms": tr("ms"),
+        "s": tr("s"),
         "%": "%",
-        "N": tr("Н"),
+        "N": tr("N"),
     }.get(annotation, "")
 
 

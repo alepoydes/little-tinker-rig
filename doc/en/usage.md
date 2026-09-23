@@ -59,7 +59,7 @@ not prove that a moved program still has the intended meaning.
 
 Search the library by name, category or description. Cards use the same semantic
 color as inserted blocks. Hover shows the full preview. F1 opens the selected
-snippet's documentation or the guide. Help includes offline Markdown and snippet
+block's section on its group page or the guide. Help includes offline Markdown and snippet
 parameters/source, with search, internal links and Back.
 
 Scratch is a vertical ribbon of independent editable fragments. Drag blocks from
@@ -101,6 +101,8 @@ exit with 2. `pyblocks --help` lists commands. Add a collection with
 `pyblocks --collection ./my_snippets qt main.py`; saving remembers its path.
 See [authoring snippets](snippets.md) and [robot control](robotics.md).
 
-![Multiple documents, inline parameters and the English interface](../images/editor-en.png)
+![Multiple documents, inline parameters and the English interface](images/editor.png)
 
-![Offline guide and block reference](../images/help.png)
+![Offline guide and block reference](images/help.png)
+
+![Previewing an insertion from the library](images/drop-preview.png)

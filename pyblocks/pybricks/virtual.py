@@ -16,7 +16,7 @@ class VirtualConnection:
         self.changed = changed or (lambda info: None)
         world = World(model=model)
         self.info = HubInfo(
-            name="Виртуальный хаб",
+            name="Virtual hub",
             kind=PROFILES[model][0],
             model=model,
             firmware="PyBlocks simulator",

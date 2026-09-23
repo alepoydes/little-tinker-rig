@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
 )
 
 from pyblocks.core.session import Session
-from pyblocks.i18n import tr
+from pyblocks.i18n import N_, tr
 
 from .code import CodeEdit
 from .editor import SourceView
@@ -48,9 +48,7 @@ class DocumentPage(QWidget):
         self.message = QLabel()
         self.message.setWordWrap(True)
         self.find_bar = QLineEdit()
-        self.find_bar.setPlaceholderText(
-            "Найти в программе · Enter — следующее совпадение"
-        )
+        self.find_bar.setPlaceholderText(N_("Find in program · Enter — next match"))
         self.find_bar.hide()
         row = QHBoxLayout()
         row.addWidget(self.message, 1)
@@ -58,7 +56,11 @@ class DocumentPage(QWidget):
         group = QActionGroup(self)
         for index, (label, theme, fallback) in enumerate(
             (
-                ("Блоки", "view-grid", QStyle.StandardPixmap.SP_FileDialogListView),
+                (
+                    N_("Blocks"),
+                    "view-grid",
+                    QStyle.StandardPixmap.SP_FileDialogListView,
+                ),
                 (
                     "Python",
                     "text-x-script",
@@ -106,9 +108,9 @@ class DocumentPage(QWidget):
     def update_mode(self):
         self.mode_actions[int(self.code_active)].setChecked(True)
         self.message.setText(
-            tr("Python · Ctrl+Space — дополнение · Ctrl+Alt+L — форматировать")
+            tr("Python · Ctrl+Space — complete · Ctrl+Alt+L — format")
             if self.code_active
-            else tr("Перетаскивайте блоки. Нажмите на параметр, чтобы изменить его.")
+            else tr("Drag blocks. Click a parameter to edit it.")
         )
 
     def change_mode(self, index):

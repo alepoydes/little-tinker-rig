@@ -2,55 +2,51 @@
 
 
 def display(value="Hello!"):
-    """Показать значение в консоли.
+    """Display a value in the console.
 
-    Значением может быть текст в кавычках, число или имя переменной.
-    Консоль помогает увидеть, что происходит в программе.
-    """
+    The value can be quoted text, a number, or a variable name.
+    Use the console to see what happens in your program."""
     print(value)
 
 
 def assign(name=value, value=0):
-    """Запомнить значение под выбранным именем.
+    """Remember a value under a name.
 
-    Имя пишется без кавычек: например, speed или distance.
-    Позже это имя можно использовать в других блоках.
-    """
+    Write the name without quotes, for example speed or distance.
+    Use this name in later blocks."""
     name = value
 
 
 def repeat(count: "number" = 10):
-    """Повторить действия заданное число раз.
+    """Repeat actions a given number of times.
 
-    Замените pass внутри цикла своими действиями через «Edit as Python».
-    Счётчик i начинается с нуля.
-    """
+    Replace pass with blocks dragged into the loop.
+    The counter i starts at zero."""
     for i in range(count):
         pass
 
 
 def condition(test: "bool" = True):
-    """Выполнить действия, если условие истинно."""
+    """Run actions when a condition is true."""
     if test:
         pass
 
 
 def forever():
-    """Повторять действия до остановки программы.
+    """Repeat actions until the program stops.
 
-    Добавьте ожидание в цикл управления роботом, чтобы не перегружать хаб.
-    """
+    Add a wait to robot control loops so the hub has time for other work."""
     while True:
         pass
 
 
 def compare(value: "number" = 0, threshold: "number" = 0) -> "bool":
-    """Проверить, что значение меньше порога."""
+    """Check whether a value is below a threshold."""
     return value < threshold
 
 
 def condition_else(test: "bool" = True):
-    """Выбрать одно из двух действий по условию."""
+    """Choose between two actions using a condition."""
     if test:
         pass
     else:
@@ -58,31 +54,31 @@ def condition_else(test: "bool" = True):
 
 
 def while_condition(test: "bool" = True):
-    """Повторять действия, пока условие истинно."""
+    """Repeat actions while the condition is true."""
     while test:
         pass
 
 
 def add_to(name=value, amount: "number" = 1):
-    """Увеличить значение переменной."""
+    """Increase a variable value."""
     name += amount
 
 
 def equal(left=0, right=0) -> "bool":
-    """Проверить, равны ли два значения."""
+    """Check whether two values are equal."""
     return left == right
 
 
 def both(left: "bool" = True, right: "bool" = True) -> "bool":
-    """Проверить, что оба условия истинны."""
+    """Check that both conditions are true."""
     return left and right
 
 
 def either(left: "bool" = True, right: "bool" = False) -> "bool":
-    """Проверить, что хотя бы одно условие истинно."""
+    """Check that at least one condition is true."""
     return left or right
 
 
 def opposite(test: "bool" = True) -> "bool":
-    """Изменить условие на противоположное."""
+    """Negate a condition."""
     return not test

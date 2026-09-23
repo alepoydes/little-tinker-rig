@@ -21,11 +21,12 @@ from pyblocks.core.parameters import default_bindings
 from pyblocks.core.session import Session
 from pyblocks.core.snippets import instantiate
 from pyblocks.core.transfer import Transfer
-from pyblocks.i18n import tr
+from pyblocks.i18n import N_, tr
 
 from .code import CodeEdit
 from .drag import BlockMime, drag_block
 from .editor import SourceView
+from .localization import localize
 
 
 class Grip(QLabel):
@@ -33,7 +34,7 @@ class Grip(QLabel):
         super().__init__("⠿", cell)
         self.cell = cell
         self.setCursor(Qt.CursorShape.OpenHandCursor)
-        self.setToolTip(tr("Перетащите весь фрагмент в программу или другую ячейку"))
+        self.setToolTip(N_("Drag the whole fragment into the program or another cell"))
         self.setStyleSheet("font-size: 20px; color: #65788a; padding: 2px 8px")
         self.press = None
 
@@ -69,7 +70,7 @@ class ScratchCell(QFrame):
         row.addStretch()
         self.blocks_button = QToolButton()
         self.blocks_button.setText("▦")
-        self.blocks_button.setToolTip(tr("Блоки"))
+        self.blocks_button.setToolTip(N_("Blocks"))
         self.code_button = QToolButton()
         self.code_button.setText("</>")
         self.code_button.setToolTip("Python")
@@ -101,6 +102,7 @@ class ScratchCell(QFrame):
         layout.addWidget(self.error)
         self.code_active = True
         self.change_mode(False)
+        localize(self)
 
     def change_mode(self, code):
         if not code:
@@ -189,7 +191,7 @@ class ScratchPane(QScrollArea):
         self.column.setSpacing(10)
         self.empty = QLabel(
             tr(
-                "Перетащите сюда блок, чтобы отложить его.\nВерните его в программу, когда он понадобится."
+                "Drag a block here to set it aside.\nReturn it to the program when you need it."
             )
         )
         self.empty.setWordWrap(True)
@@ -228,7 +230,7 @@ class ScratchPane(QScrollArea):
         self.empty.setVisible(not self.cells)
         self.empty.setText(
             tr(
-                "Перетащите сюда блок, чтобы отложить его.\nВерните его в программу, когда он понадобится."
+                "Drag a block here to set it aside.\nReturn it to the program when you need it."
             )
         )
 

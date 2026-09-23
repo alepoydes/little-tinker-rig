@@ -74,3 +74,14 @@ adding imports.
 BOOST distance is a relative percentage; ultrasonic distance uses millimeters.
 See the [BOOST sensor API](https://docs.pybricks.com/en/latest/pupdevices/colordistancesensor.html)
 and [UltrasonicSensor API](https://docs.pybricks.com/en/latest/pupdevices/ultrasonicsensor.html).
+
+
+## Groups and reference pages
+
+A module defines a group: `collection/motors.py` contributes `collection/motors`.
+Use a separate module for each coherent topic. The library and help share these
+groups; historical templates are excluded from the visible collection. Built-in
+groups have translated captions, and additional collections keep their module
+identity as the heading. All blocks in a group appear on one reference page.
+English docstrings are the original descriptions; the interface catalog supplies
+translations. F1 opens the selected block's stable section within its group.

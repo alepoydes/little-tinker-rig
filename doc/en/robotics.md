@@ -63,6 +63,8 @@ motors. It requires Pybricks 3.3+ `read_input_byte`, and owns stdin. SDL button
 numbers are A/B/X/Y=0/1/2/3, View/Guide/Menu=4/5/6, L3/R3=7/8, LB/RB=9/10,
 and d-pad up/down/left/right=11/12/13/14.
 
+![Manual controls and the virtual hub](images/controls.png)
+
 ## Delivery robot
 
 `examples/courier.py` is a line-following courier with obstacle detection,
@@ -87,6 +89,8 @@ Its wheel diameter (56 mm), axle track (112 mm), directions, thresholds and spee
 must match the physical robot before running on hardware. These parameters are
 editable in Blocks or Python. Virtual tests verify completion, an emergency,
 device failure and the route deadline, including obstacle stop/resume and delivery.
+
+![The courier stopped at a virtual obstacle](images/courier-running.png)
 
 ## Simulation limits
 

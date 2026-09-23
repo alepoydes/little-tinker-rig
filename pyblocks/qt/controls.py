@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from pyblocks.i18n import tr
+from pyblocks.i18n import N_, tr
 from pyblocks.pybricks.control import ControlState, Gamepad
 from pyblocks.pybricks.devices import SOURCES, MotorBinding, motor_commands
 
@@ -34,7 +34,9 @@ class Joystick(QWidget):
         self.pressed = set()
         self.x_value = self.y_value = 0
         self.setToolTip(
-            "Перетаскивайте стик; отпустите для возврата в центр. Можно использовать клавиатуру."
+            N_(
+                "Drag the stick; release to center it. Keyboard control is also available."
+            )
         )
 
     def paintEvent(self, event):
@@ -127,7 +129,7 @@ class Controller(QWidget):
             slider = QSlider(Qt.Orientation.Horizontal)
             slider.setRange(0, 100)
             slider.sliderReleased.connect(lambda s=slider: s.setValue(0))
-            slider.setToolTip(label + " · отпустите для возврата к нулю")
+            slider.setToolTip(label + N_(" · release to return to zero"))
             self.triggers.append(slider)
             panel = QWidget()
             row = QHBoxLayout(panel)
@@ -138,10 +140,13 @@ class Controller(QWidget):
         layout.addWidget(self.left, 2, 0, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.right, 3, 2, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(
-            QLabel("Левый стик · WASD"), 4, 0, alignment=Qt.AlignmentFlag.AlignCenter
+            QLabel(N_("Left stick · WASD")),
+            4,
+            0,
+            alignment=Qt.AlignmentFlag.AlignCenter,
         )
         layout.addWidget(
-            QLabel("Правый стик · стрелки"),
+            QLabel(N_("Right stick · arrows")),
             4,
             2,
             alignment=Qt.AlignmentFlag.AlignCenter,
@@ -238,26 +243,29 @@ class ControlsPage(QWidget):
         self.gamepad = None
         self.controller = Controller()
         self.state_label = QLabel()
-        self.notice = QLabel(
-            "Подключите виртуальный или настоящий хаб в правом верхнем углу."
-        )
+        self.notice = QLabel(N_("Connect a virtual or physical hub at the top right."))
         self.notice.setWordWrap(True)
-        self.start = QPushButton("Включить ручной режим")
-        self.start.setToolTip(
-            "Остановит пользовательскую программу и запустит монитор портов"
-        )
+        self.start = QPushButton(N_("Start manual control"))
+        self.start.setToolTip(N_("Stops the user program and starts the port monitor"))
         self.start.clicked.connect(self.monitor_requested)
-        self.armed = QCheckBox("Передавать команды моторам")
+        self.armed = QCheckBox(N_("Enable motor commands"))
         self.armed.toggled.connect(self._armed)
-        self.physical = QCheckBox("Физический Xbox / SDL-контроллер")
+        self.physical = QCheckBox(N_("Physical Xbox / SDL controller"))
         self.physical.toggled.connect(self._physical)
         self.target = QComboBox()
-        self.target.addItem("Назначить моторы осям и триггерам", "motors")
-        self.target.addItem("Передавать контроллер в мою программу", "program")
+        self.target.addItem(N_("Assign motors to sticks and triggers"), "motors")
+        self.target.addItem(N_("Send controller input to my program"), "program")
         self.target.currentIndexChanged.connect(self._target_changed)
         self.table = QTableWidget(6, 6)
         self.table.setHorizontalHeaderLabels(
-            ["Порт", "Орган управления", "Режим", "Масштаб", "Центр, °", "Реверс"]
+            [
+                N_("Port"),
+                N_("Input"),
+                N_("Mode"),
+                N_("Scale"),
+                N_("Center, °"),
+                N_("Reverse"),
+            ]
         )
         self.table.verticalHeader().hide()
         self.table.horizontalHeader().setSectionResizeMode(
@@ -265,15 +273,22 @@ class ControlsPage(QWidget):
         )
         self.table.setFixedHeight(225)
         self.rows = {}
-        source_names = ("Левый X", "Левый Y", "Правый X", "Правый Y", "LT", "RT")
+        source_names = (
+            N_("Left X"),
+            N_("Left Y"),
+            N_("Right X"),
+            N_("Right Y"),
+            "LT",
+            "RT",
+        )
         for row, port in enumerate("ABCDEF"):
             self.table.setItem(row, 0, QTableWidgetItem(port))
             source, mode = QComboBox(), QComboBox()
-            source.addItem("Не назначен", None)
+            source.addItem(N_("Unassigned"), None)
             for text, key in zip(source_names, SOURCES, strict=True):
                 source.addItem(text, key)
-            mode.addItem("Вращение, °/с", "speed")
-            mode.addItem("Серво, °", "servo")
+            mode.addItem(N_("Rotation, °/s"), "speed")
+            mode.addItem(N_("Servo, °"), "servo")
             scale, center = QDoubleSpinBox(), QDoubleSpinBox()
             scale.setRange(0, 2000)
             scale.setValue(500)
@@ -298,7 +313,7 @@ class ControlsPage(QWidget):
                 self.table.setCellWidget(row, column, widget)
             self.rows[port] = (source, mode, scale, center, reverse)
         layout = QVBoxLayout(self)
-        title = QLabel("Ручное управление")
+        title = QLabel(N_("Manual control"))
         title.setStyleSheet("font-size: 23px; font-weight: bold")
         layout.addWidget(title)
         layout.addWidget(self.target)
@@ -319,7 +334,9 @@ class ControlsPage(QWidget):
         layout.addWidget(self.state_label)
         layout.addWidget(
             QLabel(
-                "Назначьте моторы осям или триггерам. Масштаб задаёт скорость вращения или угол отклонения от центра."
+                N_(
+                    "Assign motors to axes or triggers. Scale sets the speed or the angle relative to the center."
+                )
             )
         )
         layout.addWidget(self.table)
@@ -355,22 +372,18 @@ class ControlsPage(QWidget):
             self.armed.setChecked(False)
         self.notice.setText(
             tr(
-                "Запустите программу с модулем Controller (см. Помощь → Робот и органы управления)."
+                "Run a program using the Controller module (see Help → Robots and controls)."
             )
             if program
             else (
-                tr(
-                    "Монитор портов работает. Назначьте мотор, затем включите передачу команд."
-                )
+                tr("The port monitor is running. Assign a motor, then enable commands.")
                 if ready
                 else (
                     tr(
-                        "Ручной режим остановит текущую программу и откроет монитор портов."
+                        "Manual control stops the running program and opens the port monitor."
                     )
                     if info.connected
-                    else tr(
-                        "Подключите виртуальный или настоящий хаб в правом верхнем углу."
-                    )
+                    else tr("Connect a virtual or physical hub at the top right.")
                 )
             )
         )

@@ -26,7 +26,8 @@ python -m pip install '.[qt,pybricks,gamepad]'
 pyblocks-qt examples/courier.py
 ```
 
-Choose **View → Language → English**. The choice is remembered. Switching language
+English is the default on first launch. Choose **View → Language → Русский**
+for Russian. The choice is remembered, including existing Russian preferences. Switching language
 preserves open documents, incomplete text and undo histories. Help is bundled
 with the package and works offline.
 

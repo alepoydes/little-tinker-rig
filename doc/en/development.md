@@ -6,6 +6,7 @@ uv run --all-extras pytest
 uv run ruff check .
 uv run black --check .
 uv run python tools/translations.py check
+uv run python tools/check_docs.py
 uv build
 ```
 
@@ -48,7 +49,7 @@ formatting resources and core-only virtual execution on the minimum Python versi
 
 ## Translations
 
-Source interface messages are Russian. gettext PO files live in
+English is the source and default interface language; Russian is a translation. gettext PO files live in
 `pyblocks/locale/<language>/LC_MESSAGES/pyblocks.po`; compiled MO files ship in the
 wheel. `locale/languages.json` maps language codes to their native menu names.
 Use the development translation tool to extract/update catalogs, validate coverage
@@ -64,12 +65,14 @@ uv run python tools/translations.py check
 The check rejects missing or unreviewed translations, changed format fields and
 outdated MO files. Commit PO and MO files together. To add a language, register
 its code/native name in `languages.json`, update the catalogs, translate, compile,
-and add the corresponding help pages.
+and add the corresponding help pages. English needs no translation catalog.
 
-Static Qt captions are captured by `qt.localization.localize`. Dynamic messages
+Mark static Qt captions with `N_("Caption")`; `qt.localization.localize` retains
+the English originals and updates widgets in place. Dynamic messages
 must call `tr("message with {name}", name=value)`. Do not interpolate before lookup.
 Parameter values, source, filenames and console output are never translated.
-Snippet docstrings share the catalog. Add corresponding documentation under
+English snippet docstrings share the catalog. Extraction reads explicit `N_` /
+`tr` calls and template docstrings, without alphabet detection. Add corresponding documentation under
 `doc/<language>/`, retaining page paths so navigation survives language changes.
 
 
@@ -88,3 +91,45 @@ with one block can still detach it even when it has no internal move destination
 `test_scratch.py` exercises Qt drag/drop, undo and incomplete cells. It builds
 programs through the library and runs them on virtual Inventor, BOOST and Technic,
 checking device effects and dependencies as well as syntax.
+
+
+## Localized documentation and block groups
+
+Keep matching Markdown paths in `doc/en/` and `doc/ru/`. English is the reference
+version; update both supported guides when behavior changes. Language-specific
+screenshots belong to `doc/<language>/images/`; text-free shared assets may live
+in `doc/images/`. Help follows the selected interface language and retains the
+current page or block anchor. Missing translated pages fall back to English at
+runtime; `tools/check_docs.py` rejects missing release pages and broken local
+links or anchors. The root README, code comments, docstrings, design notes, and
+commit descriptions use English. Saved language choices remain authoritative;
+fresh or invalid preferences default to English.
+
+`snippet_groups()` derives groups from collection/module identities and excludes
+historical templates. The library and help use the same grouping. Each group has
+one generated reference page, with descriptions, parameters, code, and stable
+function-name anchors. F1 resolves a snippet identity to its group and anchor.
+No separate maintained Markdown copy of the block reference is needed. Search
+matches the full group page, and Back includes visits to sections of the same page.
+
+## Performance and packaging checks
+
+AST indexing is linear. Committed transformations format and parse again; hover
+and navigation reuse the index. History stores source/Scratch snapshots. Move
+validation normally compiles one candidate per statement suite; declarations such
+as global, nonlocal, and __future__ require per-position validation. The resulting
+move is always compiled before publication. Library insertion validates each
+position once on drag entry and reuses those candidates while the pointer moves.
+
+Compile the monitor and controller as well as the courier example:
+
+```sh
+uv run --extra pybricks python -m mpy_cross_v6 pyblocks/pybricks/hub_monitor.py -o /tmp/pyblocks-monitor.mpy
+uv run --extra pybricks python -m mpy_cross_v6 pyblocks/pybricks/hub_controller.py -o /tmp/pyblocks-controller.mpy
+```
+
+Imports in static templates declare dependencies, including names used only by
+default expressions. F401 is disabled for template modules because removing those
+imports can break expanded programs. Run behavioral tests after linting and
+formatting. Pointer indentation, rather than the text cursor's column zero, selects
+the nesting of a drop onto an empty line.

@@ -28,7 +28,43 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from pyblocks.i18n import LANGUAGES, language, tr
+from pyblocks.core.snippets import snippet_groups
+from pyblocks.documentation import heading_anchors
+from pyblocks.i18n import DEFAULT_LANGUAGE, LANGUAGES, N_, language, tr
+
+from .library import group_title, snippet_title
+
+
+def group_document(identity, snippets):
+    parts = [
+        f"# {group_title(identity)}",
+        "\n".join(
+            f"- [{snippet_title(snippet)}](#{snippet.identity.rsplit('/', 1)[1]})"
+            for snippet in snippets
+        ),
+    ]
+    for snippet in snippets:
+        name = snippet.identity.rsplit("/", 1)[1]
+        help = tr(snippet.help).splitlines()
+        parts.append(
+            f'<a name="{name}"></a>\n\n## {snippet_title(snippet)}\n\n'
+            + "\n".join(help[1:])
+        )
+        if snippet.parameters:
+            parameters = "\n".join(
+                f"| `{p.name}` | {p.annotation or 'Python'} | `{p.default or '—'}` |"
+                for p in snippet.parameters
+            )
+            parts.append(
+                f"### {tr('Parameters')}\n\n| {tr('Name')} | {tr('Unit / type')} | {tr('Default')} |\n|---|---|---|\n{parameters}"
+            )
+        source = (
+            ast.unparse(snippet.body)
+            if snippet.expression
+            else "\n".join(ast.unparse(node) for node in snippet.body)
+        )
+        parts.append(f"### Python\n\n```python\n{source}\n```")
+    return "\n\n".join(parts) + "\n"
 
 
 class HelpBrowser(QTextBrowser):
@@ -159,10 +195,10 @@ class HelpPage(QWidget):
                 self.show_page(item.data(0, Qt.ItemDataRole.UserRole)) if item else None
             )
         )
-        search = QLineEdit()
-        search.setPlaceholderText("Поиск в руководстве и блоках…")
+        search = self.search = QLineEdit()
+        search.setPlaceholderText(N_("Search the guide and blocks…"))
         search.textChanged.connect(self.filter)
-        back = QPushButton("← Назад")
+        back = QPushButton(N_("← Back"))
         back.clicked.connect(self.back)
         sidebar = QWidget()
         left = QVBoxLayout(sidebar)
@@ -180,45 +216,46 @@ class HelpPage(QWidget):
 
     def retranslate(self):
         current, history = self.current, self.history
-        self.root = (
-            self.base_root if language() == "ru" else self.base_root / language()
-        )
-        self.pages = {}
+        self.root = self.base_root / language()
+        self.pages, self.page_paths, self.snippet_targets = {}, {}, {}
+        self.groups = snippet_groups(self.snippets)
         self.current = None
         self.tree.blockSignals(True)
         self.tree.clear()
-        documents = QTreeWidgetItem(self.tree, [tr("Руководство")])
-        for path in sorted(self.root.rglob("*.md")):
-            if path.relative_to(self.root).parts[0] in LANGUAGES:
-                continue
+        documents = QTreeWidgetItem(self.tree, [tr("Guide")])
+        english = self.base_root / DEFAULT_LANGUAGE
+        identities = {
+            str(path.relative_to(root))
+            for root in (english, self.root)
+            for path in root.rglob("*.md")
+        }
+        for identity in sorted(identities):
+            path = self.root / identity
+            if not path.is_file():
+                path = english / identity
             text = path.read_text(encoding="utf-8")
-            title = text.splitlines()[0].lstrip("# ")
-            self.add_page(documents, str(path.relative_to(self.root)), title, text)
-        templates = QTreeWidgetItem(self.tree, [tr("Библиотека блоков")])
-        for snippet in self.snippets:
-            if snippet.historical:
-                continue
-            parameters = "\n".join(
-                f"| `{p.name}` | {p.annotation or 'Python'} | `{p.default or '—'}` |"
-                for p in snippet.parameters
-            )
-            source = (
-                ast.unparse(snippet.body)
-                if snippet.expression
-                else "\n".join(ast.unparse(node) for node in snippet.body)
-            )
-            text = (
-                f"# {tr(snippet.help).splitlines()[0]}\n\n{chr(10).join(tr(snippet.help).splitlines()[1:])}\n\n## {tr('Параметры')}\n\n"
-                f"| {tr('Имя')} | {tr('Единица / тип')} | {tr('По умолчанию')} |\n|---|---|---|\n{parameters}\n\n"
-                f"## Python\n\n```python\n{source}\n```\n"
-            )
+            self.add_page(documents, identity, text.splitlines()[0].lstrip("# "), text)
+            self.page_paths[identity] = path
+        templates = QTreeWidgetItem(self.tree, [tr("Block library")])
+        for group, members in self.groups.items():
+            identity = "library/" + group
             self.add_page(
-                templates, snippet.identity, tr(snippet.help).splitlines()[0], text
+                templates, identity, group_title(group), group_document(group, members)
             )
+            self.page_paths[identity] = self.root / "snippets.md"
+            for snippet in members:
+                self.snippet_targets[snippet.identity] = (
+                    identity + "#" + snippet.identity.rsplit("/", 1)[1]
+                )
         self.tree.expandAll()
         self.tree.blockSignals(False)
-        self.history = [key for key in history if key in self.pages]
-        self.show_page(current if current in self.pages else "tutorial/first.md")
+        self.history = [key for key in history if key.partition("#")[0] in self.pages]
+        self.show_page(
+            current
+            if current and current.partition("#")[0] in self.pages
+            else "index.md"
+        )
+        self.filter(self.search.text())
 
     def add_page(self, parent, identity, title, text):
         item = QTreeWidgetItem(parent, [title])
@@ -226,23 +263,43 @@ class HelpPage(QWidget):
         self.pages[identity] = (text, item)
 
     def show_page(self, identity):
-        if identity not in self.pages or identity == self.current:
+        if identity is None:
             return
-        if self.current:
-            self.history.append(self.current)
+        identity = self.snippet_targets.get(identity, identity)
+        page, _, anchor = identity.partition("#")
+        if page not in self.pages or identity == self.current:
+            return
+        previous = self.current
+        if previous:
+            self.history.append(previous)
         self.current = identity
-        text, item = self.pages[identity]
+        text, item = self.pages[page]
         self.tree.blockSignals(True)
         self.tree.setCurrentItem(item)
         self.tree.blockSignals(False)
-        base = (
-            self.root / identity
-            if identity.endswith(".md")
-            else self.root / "snippets.md"
-        )
-        self.browser.document().setBaseUrl(QUrl.fromLocalFile(str(base)))
-        self.browser.setMarkdown(text)
-        self.browser.style_document()
+        if previous is None or previous.partition("#")[0] != page:
+            self.browser.document().setBaseUrl(
+                QUrl.fromLocalFile(str(self.page_paths[page]))
+            )
+            self.browser.setMarkdown(text)
+            # Qt's Markdown importer omits named anchors. Attach the same section
+            # names used by the documentation checker, including stable block IDs.
+            names = iter(heading_anchors(text))
+            block = self.browser.document().begin()
+            while block.isValid():
+                if block.blockFormat().headingLevel():
+                    cursor = QTextCursor(block)
+                    cursor.select(QTextCursor.SelectionType.BlockUnderCursor)
+                    format = cursor.charFormat()
+                    format.setAnchor(True)
+                    format.setAnchorNames(next(names, []))
+                    cursor.mergeCharFormat(format)
+                block = block.next()
+            self.browser.style_document()
+        if anchor:
+            self.browser.scrollToAnchor(anchor)
+        else:
+            self.browser.verticalScrollBar().setValue(0)
 
     def back(self):
         if self.history:
@@ -258,21 +315,19 @@ class HelpPage(QWidget):
         if url.scheme() in {"https", "http"}:
             QDesktopServices.openUrl(url)
             return
-        if not url.path():
-            self.browser.scrollToAnchor(url.fragment())
-            return
-        base = (
-            self.root / self.current
-            if self.current and self.current.endswith(".md")
-            else self.root / "snippets.md"
-        )
+        page = self.current.partition("#")[0]
+        base = self.page_paths[page]
         path = (
             Path(url.toLocalFile()) if url.isLocalFile() else base.parent / url.path()
         )
-        try:
-            identity = str(path.resolve().relative_to(self.root.resolve()))
-        except ValueError:
-            return
-        self.show_page(identity)
-        if url.fragment():
-            self.browser.scrollToAnchor(url.fragment())
+        if not url.path() or path.resolve() == base.resolve() and url.fragment():
+            identity = page
+        else:
+            try:
+                relative = path.resolve().relative_to(self.base_root.resolve())
+            except ValueError:
+                return
+            if relative.parts[0] not in LANGUAGES:
+                return
+            identity = str(Path(*relative.parts[1:]))
+        self.show_page(identity + ("#" + url.fragment() if url.fragment() else ""))

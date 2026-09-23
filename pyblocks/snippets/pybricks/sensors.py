@@ -2,14 +2,14 @@
 
 
 def wait_ms(duration: "ms" = 1000):
-    """Подождать указанное число миллисекунд. 1000 мс = 1 секунда."""
+    """Wait for a number of milliseconds. 1000 ms = 1 second."""
     from pybricks.tools import wait
 
     wait(duration)
 
 
 def create_color_sensor(name=sensor, port: "Port" = Port.C):
-    """Подключить датчик цвета к порту хаба."""
+    """Connect a color sensor to a hub port."""
     from pybricks.parameters import Port
     from pybricks.pupdevices import ColorSensor
 
@@ -17,19 +17,18 @@ def create_color_sensor(name=sensor, port: "Port" = Port.C):
 
 
 def reflection_below(sensor: "ColorSensor" = sensor, threshold: "%" = 30) -> "bool":
-    """Проверить, что поверхность темнее заданного порога отражения."""
+    """Check whether a surface is darker than a reflection threshold."""
     return sensor.reflection() < threshold
 
 
 def follow_edge(
     drive: "DriveBase" = drive, sensor: "ColorSensor" = sensor, target: "%" = 50, gain=2
 ):
-    """Следовать вдоль границы линии пропорциональным регулятором.
+    """Follow a line edge using proportional control.
 
-    drive — заранее созданная DriveBase; sensor — датчик отражения.
-    target — отражение на границе светлого и тёмного, gain — сила коррекции.
-    Цикл продолжается до остановки программы.
-    """
+    drive is an existing DriveBase; sensor measures reflection.
+    target is the reflection at the edge; gain sets correction strength.
+    The loop continues until the program is stopped."""
     from pybricks.tools import wait
 
     while True:
@@ -39,7 +38,7 @@ def follow_edge(
 
 
 def create_ultrasonic_sensor(name=distance, port: "Port" = Port.D):
-    """Подключить ультразвуковой датчик расстояния."""
+    """Connect an ultrasonic distance sensor."""
     from pybricks.parameters import Port
     from pybricks.pupdevices import UltrasonicSensor
 
@@ -47,7 +46,7 @@ def create_ultrasonic_sensor(name=distance, port: "Port" = Port.D):
 
 
 def create_force_sensor(name=button, port: "Port" = Port.E):
-    """Подключить датчик силы или аварийную кнопку."""
+    """Connect a force sensor or emergency button."""
     from pybricks.parameters import Port
     from pybricks.pupdevices import ForceSensor
 
@@ -55,7 +54,7 @@ def create_force_sensor(name=button, port: "Port" = Port.E):
 
 
 def create_color_distance_sensor(name=sensor, port: "Port" = Port.D):
-    """Подключить комбинированный датчик цвета и расстояния BOOST."""
+    """Connect a BOOST color and distance sensor."""
     from pybricks.parameters import Port
     from pybricks.pupdevices import ColorDistanceSensor
 
@@ -63,30 +62,30 @@ def create_color_distance_sensor(name=sensor, port: "Port" = Port.D):
 
 
 def reflection(sensor: "ColorSensor" = sensor) -> "%":
-    """Измерить отражение поверхности: от 0 до 100%."""
+    """Measure surface reflection from 0 to 100%."""
     return sensor.reflection()
 
 
 def distance(sensor: "UltrasonicSensor" = distance) -> "mm":
-    """Измерить расстояние до препятствия в миллиметрах."""
+    """Measure obstacle distance in millimeters."""
     return sensor.distance()
 
 
 def boost_distance(sensor: "ColorDistanceSensor" = sensor) -> "%":
-    """Измерить относительное расстояние датчиком BOOST."""
+    """Measure relative distance with a BOOST sensor."""
     return sensor.distance()
 
 
 def force(sensor: "ForceSensor" = button) -> "N":
-    """Измерить силу нажатия в ньютонах."""
+    """Measure pressing force in newtons."""
     return sensor.force()
 
 
 def pressed(sensor: "ForceSensor" = button) -> "bool":
-    """Проверить, нажата ли кнопка датчика силы."""
+    """Check whether the force sensor button is pressed."""
     return sensor.pressed()
 
 
 def color(sensor: "ColorSensor" = sensor) -> "Color":
-    """Узнать цвет поверхности под датчиком."""
+    """Read the surface color under the sensor."""
     return sensor.color()

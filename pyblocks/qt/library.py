@@ -5,8 +5,8 @@ from PySide6.QtGui import QColor, QDrag, QFontDatabase, QFontMetrics, QPainter, 
 from PySide6.QtWidgets import QStyle, QStyledItemDelegate, QTreeWidget, QTreeWidgetItem
 
 from pyblocks.core.presentation import PALETTE, snippet_role
-from pyblocks.core.snippets import instantiate
-from pyblocks.i18n import tr
+from pyblocks.core.snippets import instantiate, snippet_groups
+from pyblocks.i18n import N_, tr
 
 from .annotations import block_icon
 
@@ -15,6 +15,26 @@ PREVIEW = int(IDENTITY) + 1
 COLOR = int(IDENTITY) + 2
 DESCRIPTION = int(IDENTITY) + 3
 ICON = int(IDENTITY) + 4
+
+
+GROUP_TITLES = {
+    "python/basics": N_("Python basics"),
+    "pybricks/motors": N_("Motors"),
+    "pybricks/sensors": N_("Sensors and timing"),
+    "pybricks/drive": N_("Drive bases and clocks"),
+}
+
+
+def group_title(identity):
+    return tr(GROUP_TITLES[identity]) if identity in GROUP_TITLES else identity
+
+
+def snippet_title(snippet):
+    return (
+        tr(snippet.help).splitlines()[0]
+        if snippet.help
+        else snippet.identity.rsplit("/", 1)[1]
+    )
 
 
 class CardDelegate(QStyledItemDelegate):
@@ -75,31 +95,23 @@ class Library(QTreeWidget):
 
     def load(self, snippets):
         self.clear()
-        groups = {}
-        for snippet in snippets:
-            if snippet.historical:
-                continue
-            group, name = snippet.identity.rsplit("/", 1)
-            if group not in groups:
-                groups[group] = QTreeWidgetItem(self, [group])
-                groups[group].setFlags(
-                    groups[group].flags() & ~Qt.ItemFlag.ItemIsDragEnabled
+        for group, members in snippet_groups(snippets).items():
+            heading = QTreeWidgetItem(self, [group_title(group)])
+            heading.setToolTip(0, group)
+            heading.setFlags(heading.flags() & ~Qt.ItemFlag.ItemIsDragEnabled)
+            for snippet in members:
+                name = snippet.identity.rsplit("/", 1)[1]
+                expansion = instantiate(
+                    snippet,
+                    {p.name: p.name for p in snippet.parameters if p.default is None},
                 )
-            expansion = instantiate(
-                snippet,
-                {p.name: p.name for p in snippet.parameters if p.default is None},
-            )
-            item = QTreeWidgetItem(groups[group], [name])
-            item.setData(0, IDENTITY, snippet.identity)
-            item.setData(0, ICON, block_icon(snippet))
-            item.setData(0, PREVIEW, expansion.source)
-            item.setData(0, COLOR, PALETTE[snippet_role(snippet)])
-            item.setData(
-                0,
-                DESCRIPTION,
-                tr(snippet.help).splitlines()[0] if snippet.help else name,
-            )
-            item.setToolTip(0, expansion.source + "\n\n" + tr(snippet.help))
+                item = QTreeWidgetItem(heading, [name])
+                item.setData(0, IDENTITY, snippet.identity)
+                item.setData(0, ICON, block_icon(snippet))
+                item.setData(0, PREVIEW, expansion.source)
+                item.setData(0, COLOR, PALETTE[snippet_role(snippet)])
+                item.setData(0, DESCRIPTION, snippet_title(snippet))
+                item.setToolTip(0, expansion.source + "\n\n" + tr(snippet.help))
         self.expandAll()
 
     def filter(self, search):
