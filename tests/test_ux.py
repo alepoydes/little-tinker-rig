@@ -54,6 +54,9 @@ def test_library_defaults_choose_existing_devices_and_fresh_names(tmp_path):
     create = next(s for s in session.snippets if s.identity.endswith("/create_motor"))
     assert default_bindings(session, create)["name"] == "motor_2"
     assert all(p.default is not None for s in session.snippets for p in s.parameters)
+    drive = next(s for s in session.snippets if s.identity.endswith("/create_drive"))
+    bindings = default_bindings(session, drive, len(session.document.state.source))
+    assert bindings["left"] == "left" and bindings["right"] == "motor"
 
 
 def test_documents_and_languages_preserve_text_and_undo(tmp_path, qt_app):
@@ -156,7 +159,7 @@ def test_library_drop_has_preview_and_inserts_defaults_without_dialog(tmp_path, 
         discard_window(window)
 
 
-def test_parameter_popup_is_nonmodal_and_validates_before_commit(tmp_path, qt_app):
+def test_parameter_combo_opens_in_place_and_validates_before_commit(tmp_path, qt_app):
     from PySide6.QtCore import Qt
     from PySide6.QtTest import QTest
     from PySide6.QtWidgets import QApplication
@@ -182,13 +185,17 @@ def test_parameter_popup_is_nonmodal_and_validates_before_commit(tmp_path, qt_ap
             Qt.MouseButton.LeftButton,
             pos=rect.center().toPoint(),
         )
-        popup = window.source.parameter_popup
+        popup = window.source.parameter_editor
         assert popup.isVisible() and QApplication.activeModalWidget() is None
-        popup.field.setCurrentText("300 +")
+        assert popup.parent() is window.source.viewport()
+        assert popup.view().isVisible()
+        assert popup.unit.text() == "°/с"
+        assert popup.lineEdit().text() == "500"
+        popup.setCurrentText("300 +")
         popup.apply()
-        assert popup.isVisible() and popup.error.text()
+        assert popup.isVisible() and popup.error
         assert window.session.document.state.source.endswith("motor.run(500)\n")
-        popup.field.setCurrentText("300")
+        popup.setCurrentText("300")
         popup.apply()
         assert window.session.document.state.source.endswith("motor.run(300)\n")
         assert window.source.viewport().cursor().shape() != Qt.CursorShape.IBeamCursor

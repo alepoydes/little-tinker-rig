@@ -11,13 +11,14 @@ The narrow tabs on the left switch between **Program**, **Control** and **Help**
 The library shows a block's description and Python preview. Files open in tabs
 across the top. The two small icons at the top right of the document switch
 between **Blocks** and **Python**; the same commands are in the View menu.
-**Console** and **Scratch** are hidden until you open them from the bottom bar.
+**Scratch** is visible on the right; drag blocks there to set them aside.
+**Console** opens from the bottom bar.
 
 ## Change a parameter
 
 Click the visible field around `message` in `print(message)`. Select a suggestion
-or type `"Hello, robot!"`, including the quotes, and press Enter or ✓. The editor
-updates the Python source immediately. Invalid input stays in the small popup so
+or type `"Hello, robot!"`, including the quotes, and press Enter. The editor
+updates the Python source immediately. Invalid input stays in the inline field so
 you can correct it; the program is unchanged. Click outside or press Escape to cancel.
 
 Quoted text is a string. An unquoted word refers to a variable. A number such as

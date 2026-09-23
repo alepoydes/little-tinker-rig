@@ -8,15 +8,15 @@ def wait_ms(duration: "ms" = 1000):
     wait(duration)
 
 
-def create_color_sensor(name=sensor, port="C"):
+def create_color_sensor(name=sensor, port: "Port" = Port.C):
     """Подключить датчик цвета к порту хаба."""
     from pybricks.parameters import Port
     from pybricks.pupdevices import ColorSensor
 
-    name = ColorSensor(getattr(Port, port))
+    name = ColorSensor(port)
 
 
-def reflection_below(sensor: "ColorSensor" = sensor, threshold: "%" = 30):
+def reflection_below(sensor: "ColorSensor" = sensor, threshold: "%" = 30) -> "bool":
     """Проверить, что поверхность темнее заданного порога отражения."""
     return sensor.reflection() < threshold
 
@@ -36,3 +36,57 @@ def follow_edge(
         error = sensor.reflection() - target
         drive.drive(200, gain * error)
         wait(10)
+
+
+def create_ultrasonic_sensor(name=distance, port: "Port" = Port.D):
+    """Подключить ультразвуковой датчик расстояния."""
+    from pybricks.parameters import Port
+    from pybricks.pupdevices import UltrasonicSensor
+
+    name = UltrasonicSensor(port)
+
+
+def create_force_sensor(name=button, port: "Port" = Port.E):
+    """Подключить датчик силы или аварийную кнопку."""
+    from pybricks.parameters import Port
+    from pybricks.pupdevices import ForceSensor
+
+    name = ForceSensor(port)
+
+
+def create_color_distance_sensor(name=sensor, port: "Port" = Port.D):
+    """Подключить комбинированный датчик цвета и расстояния BOOST."""
+    from pybricks.parameters import Port
+    from pybricks.pupdevices import ColorDistanceSensor
+
+    name = ColorDistanceSensor(port)
+
+
+def reflection(sensor: "ColorSensor" = sensor) -> "%":
+    """Измерить отражение поверхности: от 0 до 100%."""
+    return sensor.reflection()
+
+
+def distance(sensor: "UltrasonicSensor" = distance) -> "mm":
+    """Измерить расстояние до препятствия в миллиметрах."""
+    return sensor.distance()
+
+
+def boost_distance(sensor: "ColorDistanceSensor" = sensor) -> "%":
+    """Измерить относительное расстояние датчиком BOOST."""
+    return sensor.distance()
+
+
+def force(sensor: "ForceSensor" = button) -> "N":
+    """Измерить силу нажатия в ньютонах."""
+    return sensor.force()
+
+
+def pressed(sensor: "ForceSensor" = button) -> "bool":
+    """Проверить, нажата ли кнопка датчика силы."""
+    return sensor.pressed()
+
+
+def color(sensor: "ColorSensor" = sensor) -> "Color":
+    """Узнать цвет поверхности под датчиком."""
+    return sensor.color()

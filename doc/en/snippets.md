@@ -56,3 +56,21 @@ Do not rely on comments or editor metadata as part of a template's identity.
 
 Translate snippet docstrings through the same gettext catalog as the interface;
 see [development](development.md#translations).
+
+## Types and bundled blocks
+
+An expression return annotation (`-> "bool"`, `-> "mm"`) gives its suggestion
+type. Annotations are read statically. Numeric units belong to the numeric type;
+no automatic unit conversion is performed. Known receiver types distinguish
+`motor.brake()` from `drive.brake()`. Unknown dynamic values remain ordinary Python.
+
+Bundled blocks cover motor creation and direction, speed, angle and timed moves,
+motor readings; DriveBase; color, reflection, ultrasonic distance, force and BOOST
+color/distance sensors; waits and stopwatches; variables, comparisons, logic and
+loops. Ports are expressions such as `Port.A`, without quotes. A whole device
+definition is recognized as one block. Scratch uses these templates without
+adding imports.
+
+BOOST distance is a relative percentage; ultrasonic distance uses millimeters.
+See the [BOOST sensor API](https://docs.pybricks.com/en/latest/pupdevices/colordistancesensor.html)
+and [UltrasonicSensor API](https://docs.pybricks.com/en/latest/pupdevices/ultrasonicsensor.html).

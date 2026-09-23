@@ -6,7 +6,7 @@ import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
-from .analysis import Scopes, identifiers
+from .analysis import Analysis, Scopes, annotation_text, identifiers, value_type
 from .syntax import Span, Syntax
 
 
@@ -27,6 +27,7 @@ class Snippet:
     help: str
     locals: dict[str, str]
     historical: bool = False
+    result_type: str | None = None
 
     @property
     def expression(self) -> bool:
@@ -139,6 +140,7 @@ def load_module(
                 help_text,
                 local_names,
                 historical,
+                annotation_text(function.returns),
             )
         )
     return tuple(result)
@@ -393,8 +395,11 @@ def _match(snippet: Snippet, candidate) -> tuple[dict, dict, dict] | None:
     )
 
 
-def recognize(syntax: Syntax, snippets: tuple[Snippet, ...]) -> tuple[Match, ...]:
+def recognize(
+    syntax: Syntax, snippets: tuple[Snippet, ...], analysis=None
+) -> tuple[Match, ...]:
     """Recognize whole algorithms before fragments; current forms supersede history."""
+    analysis = analysis or Analysis(syntax)
     candidates = []
     for snippet in snippets:
         if snippet.expression:
@@ -419,7 +424,16 @@ def recognize(syntax: Syntax, snippets: tuple[Snippet, ...]) -> tuple[Match, ...
         for span, candidate in regions:
             result = _match(snippet, candidate)
             if result is not None:
-                candidates.append(Match(snippet, span, *result))
+                bindings = result[0]
+                compatible = all(
+                    (actual := analysis.type_of(bindings[p.name])) is None
+                    or p.annotation is None
+                    or actual == value_type(p.annotation)
+                    for p in snippet.parameters
+                    if p.name in bindings
+                )
+                if compatible:
+                    candidates.append(Match(snippet, span, *result))
     current = {
         (m.snippet.identity, m.span) for m in candidates if not m.snippet.historical
     }

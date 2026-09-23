@@ -91,15 +91,8 @@ def regions(syntax: Syntax, matches=()) -> tuple[Region, ...]:
             if match.span.start <= region.span.start
             and region.span.end <= match.span.end
         ]
-        placeholders = {
-            syntax.spans[node] for nodes in match.occurrences.values() for node in nodes
-        }
         depth = min((region.depth for region in contained), default=0)
-        result = [
-            region
-            for region in result
-            if region not in contained or region.span in placeholders
-        ]
+        result = [region for region in result if region not in contained]
         line, column = syntax.position(match.span.start)
         end_line, end_column = syntax.position(match.span.end)
         result.append(

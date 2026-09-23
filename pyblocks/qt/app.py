@@ -14,7 +14,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QListWidget,
     QMainWindow,
     QMessageBox,
     QPlainTextEdit,
@@ -33,6 +32,7 @@ from PySide6.QtWidgets import (
 
 from pyblocks.core.edit import target_position
 from pyblocks.core.parameters import default_bindings
+from pyblocks.core.transfer import Transfer
 from pyblocks.i18n import LANGUAGES, language, set_language, tr
 from pyblocks.pybricks.control import ControlState
 from pyblocks.pybricks.devices import HubInfo
@@ -46,11 +46,21 @@ from .help import HelpPage
 from .library import IDENTITY, Library
 from .localization import localize, translate_standard_dialogs
 from .navigation import ModeTabs
+from .scratch import ScratchPane
 
 
 class Studio(QMainWindow):
     def __init__(self, path: Path, collections=()):
         super().__init__()
+        self.setWindowFlags(
+            Qt.WindowType.Window
+            | Qt.WindowType.WindowTitleHint
+            | Qt.WindowType.WindowSystemMenuHint
+            | Qt.WindowType.WindowMinimizeButtonHint
+            | Qt.WindowType.WindowMaximizeButtonHint
+            | Qt.WindowType.WindowCloseButtonHint
+        )
+        self.scratch_visible = True
         self.collections = collections
         self.resize(1380, 880)
         self.setMinimumSize(930, 620)
@@ -128,6 +138,7 @@ class Studio(QMainWindow):
         self.document_mode_changed()
         self.retranslate()
         QApplication.instance().applicationStateChanged.connect(self.application_state)
+        QApplication.instance().focusChanged.connect(self.focus_changed)
 
     def _icon(self, theme, fallback):
         return QIcon.fromTheme(
@@ -166,26 +177,14 @@ class Studio(QMainWindow):
         )
         self.console_dock.visibilityChanged.connect(self.console_visibility)
         self.console_dock.hide()
-        self.scratch = QListWidget()
-        self.scratch.itemDoubleClicked.connect(self.edit_scratch)
-        scratch = QWidget()
-        layout = QVBoxLayout(scratch)
-        note = QLabel("Здесь можно оставить незаконченный код и запасные блоки.")
-        note.setWordWrap(True)
-        layout.addWidget(note)
-        layout.addWidget(self.scratch)
-        for label, callback in (
-            ("＋ Новый фрагмент", self.new_scratch),
-            ("Редактировать", self.edit_scratch),
-            ("Вернуть в программу", self.restore_scratch),
-        ):
-            button = QPushButton(label)
-            button.clicked.connect(callback)
-            layout.addWidget(button)
+        self.scratch = ScratchPane()
+        self.scratch.changed.connect(self.refresh_views)
+        self.scratch.failed.connect(self.error)
         self.scratch_dock = self.dock(
-            "Черновики · Scratch", scratch, Qt.DockWidgetArea.RightDockWidgetArea
+            "Черновики · Scratch", self.scratch, Qt.DockWidgetArea.RightDockWidgetArea
         )
-        self.scratch_dock.hide()
+        self.resizeDocks([self.scratch_dock], [300], Qt.Orientation.Horizontal)
+        self.scratch_dock.visibilityChanged.connect(self.scratch_visibility)
         self.device_panel = DevicePanel()
         self.device_panel.monitor_requested.connect(self.start_monitor)
         self.device_panel.disconnect_requested.connect(self.disconnect_hub)
@@ -285,30 +284,46 @@ class Studio(QMainWindow):
                 self._action(edit, label, key, callback, toolbar, icon)
             )
         for label, key, callback in (
-            ("Родитель", "Alt+Left", lambda: self.session.editor.parent()),
-            ("Потомок", "Alt+Right", lambda: self.session.editor.child()),
+            ("Родитель", "Alt+Left", lambda: self.editing_session.editor.parent()),
+            ("Потомок", "Alt+Right", lambda: self.editing_session.editor.child()),
             ("Предыдущий узел / цель", "Alt+Up", lambda: self.navigate(-1)),
             ("Следующий узел / цель", "Alt+Down", lambda: self.navigate(1)),
-            ("Раскрыть блок", "Ctrl+E", lambda: self.session.toggle_expansion()),
-            ("Начать перенос", "Ctrl+M", lambda: self.session.begin_move()),
+            (
+                "Раскрыть блок",
+                "Ctrl+E",
+                lambda: self.editing_session.toggle_expansion(),
+            ),
+            ("Начать перенос", "Ctrl+M", lambda: self.editing_session.begin_move()),
             (
                 "Наружу",
                 "Ctrl+Alt+Left",
-                lambda: self.session.editor.navigate_move(depth=-1),
+                lambda: self.editing_session.editor.navigate_move(depth=-1),
             ),
             (
                 "Внутрь",
                 "Ctrl+Alt+Right",
-                lambda: self.session.editor.navigate_move(depth=1),
+                lambda: self.editing_session.editor.navigate_move(depth=1),
             ),
             (
                 "Завершить перенос",
                 "Ctrl+Return",
-                lambda: self.session.editor.commit_move(),
+                lambda: self.editing_session.editor.commit_move(),
             ),
-            ("Отменить перенос", "Escape", lambda: self.session.editor.cancel_move()),
-            ("Обновить блок", "Ctrl+U", lambda: self.session.upgrade_selected()),
-            ("Свернуть область", "Ctrl+Shift+F", lambda: self.source.fold_selection()),
+            (
+                "Отменить перенос",
+                "Escape",
+                lambda: self.editing_session.editor.cancel_move(),
+            ),
+            (
+                "Обновить блок",
+                "Ctrl+U",
+                lambda: self.editing_session.upgrade_selected(),
+            ),
+            (
+                "Свернуть область",
+                "Ctrl+Shift+F",
+                lambda: self.editing_source.fold_selection(),
+            ),
         ):
             self.structural_actions.append(self._action(edit, label, key, callback))
         self._action(edit, "Форматировать Python", "Ctrl+Alt+L", self.commit_code)
@@ -344,6 +359,12 @@ class Studio(QMainWindow):
         view.addAction(self.console_dock.toggleViewAction())
         view.addAction(self.scratch_dock.toggleViewAction())
         view.addAction(self.device_dock.toggleViewAction())
+        self._action(
+            view,
+            "Полный экран",
+            "F11",
+            lambda: self.showNormal() if self.isFullScreen() else self.showFullScreen(),
+        )
         self._action(view, "Справка", "F1", self.show_help)
         self._action(view, "Диагностика имён", None, self.show_diagnostics)
         toolbar.addSeparator()
@@ -393,7 +414,7 @@ class Studio(QMainWindow):
             lambda: self.console_dock.setVisible(not self.console_dock.isVisible())
         )
         self.statusBar().addPermanentWidget(self.console_button)
-        scratch_button = QToolButton()
+        scratch_button = self.scratch_button = QToolButton()
         scratch_button.setText("Черновики")
         scratch_button.clicked.connect(
             lambda: self.scratch_dock.setVisible(not self.scratch_dock.isVisible())
@@ -435,6 +456,15 @@ class Studio(QMainWindow):
     def draft_dirty(self):
         return self.document_page.draft_dirty
 
+    @property
+    def editing_source(self):
+        cell = self.scratch.focused_cell()
+        return cell.source if cell is not None and not cell.code_active else self.source
+
+    @property
+    def editing_session(self):
+        return self.editing_source.session
+
     def change_editor(self, index):
         self.document_page.change_mode(index)
 
@@ -463,6 +493,8 @@ class Studio(QMainWindow):
         localize(self)
         for index in range(self.documents.count()):
             self.documents.widget(index).update_mode()
+            self.documents.widget(index).source.refresh_source()
+        self.scratch.refresh(self.session)
         self.language_actions[language()].setChecked(True)
         self.library.load(self.session.snippets)
         self.library.filter(self.search.text())
@@ -530,30 +562,38 @@ class Studio(QMainWindow):
         self.documents.removeTab(self.documents.indexOf(page))
         page.deleteLater()
 
+    def scratch_visibility(self, visible):
+        if self.pages.currentIndex() == 0:
+            self.scratch_visible = visible
+
     def set_mode(self, index):
         self.pages.setCurrentIndex(index)
         self.mode_tabs.setCurrentIndex(index)
+        self.scratch_dock.setVisible(index == 0 and self.scratch_visible)
+        self.scratch_dock.toggleViewAction().setEnabled(index == 0)
+        self.scratch_button.setEnabled(index == 0)
         if index == 1:
             self.device_dock.show()
         elif index == 2:
             self.device_dock.hide()
-            self.scratch_dock.hide()
         self.refresh_status()
 
     def refresh_views(self):
         if not hasattr(self, "scratch") or self.document_page is None:
             return
         self.source.refresh_source()
-        selected = self.scratch.currentRow()
-        self.scratch.clear()
-        for index, text in enumerate(self.session.document.state.scratch):
-            self.scratch.addItem(
-                f'{index + 1}: {text.strip().splitlines()[0] if text.strip() else tr("(пустой фрагмент)")}'
-            )
-            self.scratch.item(index).setToolTip(text)
-        if 0 <= selected < self.scratch.count():
-            self.scratch.setCurrentRow(selected)
+        self.scratch.refresh(self.session)
         self.refresh_status()
+
+    def focus_changed(self, old, new):
+        if hasattr(self, "undo_action"):
+            self.refresh_status()
+
+    def text_editor(self):
+        cell = self.scratch.focused_cell()
+        if cell is not None:
+            return cell.code if cell.code_active else None
+        return self.code if self.code_active else None
 
     def refresh_status(self):
         if not hasattr(self, "undo_action"):
@@ -574,18 +614,19 @@ class Studio(QMainWindow):
         self.setWindowTitle(
             f'{"● " if self.document_page.dirty else ""}{self.session.project.path.name} — PyBlocks Studio'
         )
+        text_editor = self.text_editor()
         self.undo_action.setEnabled(
-            self.code.document().isUndoAvailable()
-            if self.code_active
+            text_editor.document().isUndoAvailable()
+            if text_editor
             else self.session.document.can_undo
         )
         self.redo_action.setEnabled(
-            self.code.document().isRedoAvailable()
-            if self.code_active
+            text_editor.document().isRedoAvailable()
+            if text_editor
             else self.session.document.can_redo
         )
         for action in self.structural_actions:
-            action.setEnabled(not self.code_active and self.pages.currentIndex() == 0)
+            action.setEnabled(text_editor is None and self.pages.currentIndex() == 0)
         for index in range(self.documents.count()):
             page = self.documents.widget(index)
             self.documents.setTabText(
@@ -595,8 +636,17 @@ class Studio(QMainWindow):
         self.source.viewport().update()
 
     def perform(self, callback):
+        cell = self.scratch.focused_cell()
+        revision = cell.source.session.document.state if cell is not None else None
         try:
             callback()
+            if (
+                cell is not None
+                and cell in self.scratch.cells
+                and not cell.code_active
+                and cell.source.session.document.state is not revision
+            ):
+                cell.structural_changed()
             self.refresh_views()
         except (ValueError, SyntaxError, OSError, ImportError) as error:
             self.error(str(error))
@@ -648,19 +698,18 @@ class Studio(QMainWindow):
             self.session.insert_snippet(
                 snippet, default_bindings(self.session, snippet, offset), target
             )
-            candidates = [
-                match
-                for match in self.session.matches
-                if match.snippet.identity == identity
-            ]
-            if candidates:
-                match = min(candidates, key=lambda m: abs(m.span.start - offset))
-                self.session.editor.select(match.span.start)
             self.refresh_views()
+            self.source.reveal(
+                self.session.document.syntax.spans[self.session.editor.selection].start
+            )
         except (ValueError, SyntaxError, OSError) as error:
             self.error(str(error))
 
     def edit_python(self):
+        cell = self.scratch.focused_cell()
+        if cell is not None:
+            cell.change_mode(True)
+            return
         self._dialog(
             "Редактировать фрагмент Python",
             self.session.edit_python,
@@ -668,30 +717,18 @@ class Studio(QMainWindow):
         )
 
     def edit_parameters(self):
-        self.source.edit_parameters()
+        self.editing_source.edit_parameters()
 
     def to_scratch(self):
-        self.session.to_scratch()
-        self.scratch_dock.show()
-
-    def new_scratch(self):
-        self._dialog(
-            "Новый черновик", lambda text: self.session.set_scratch(None, text), text=""
-        )
-
-    def edit_scratch(self, *_):
-        index = self.scratch.currentRow()
-        if index >= 0:
-            self._dialog(
-                "Черновик",
-                lambda text: self.session.set_scratch(index, text),
-                text=self.session.document.state.scratch[index],
+        cell = self.scratch.focused_cell()
+        if cell is not None and not cell.code_active:
+            transfer = Transfer.capture(
+                self.session, index=cell.index, fragment=cell.source.session
             )
-
-    def restore_scratch(self):
-        index = self.scratch.currentRow()
-        if index >= 0:
-            self.perform(lambda: self.session.restore_scratch(index))
+            transfer.to_scratch(len(self.session.document.state.scratch))
+        else:
+            self.session.to_scratch()
+        self.scratch_dock.show()
 
     def show_help(self):
         item = self.library.currentItem() if self.library.hasFocus() else None
@@ -736,14 +773,16 @@ class Studio(QMainWindow):
         self.source.viewport().update()
 
     def navigate(self, step):
-        editor = self.session.editor
+        editor = self.editing_session.editor
         editor.navigate_move(step) if editor.moving else editor.sibling(step)
 
     def undo(self):
-        self.code.undo() if self.code_active else self.session.editor.undo()
+        editor = self.text_editor()
+        editor.undo() if editor else self.session.editor.undo()
 
     def redo(self):
-        self.code.redo() if self.code_active else self.session.editor.redo()
+        editor = self.text_editor()
+        editor.redo() if editor else self.session.editor.redo()
 
     def save(self):
         self.commit_code()

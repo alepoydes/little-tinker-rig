@@ -4,8 +4,9 @@ import ast
 import io
 import tokenize
 from dataclasses import dataclass
+from difflib import SequenceMatcher
 
-from .syntax import Span, Suite, Syntax, parse
+from .syntax import Span, Suite, Syntax
 
 
 @dataclass(frozen=True)
@@ -27,6 +28,18 @@ def patches(source: str, changes: list[tuple[Span, str]]) -> str:
         cursor = span.end
     parts.append(source[cursor:])
     return "".join(parts)
+
+
+def map_offset(previous: str, source: str, offset: int) -> int:
+    """Follow an existing source character through formatting or inserted imports."""
+    if source == previous:
+        return min(offset, len(source))
+    for _tag, start, end, new_start, new_end in SequenceMatcher(
+        None, previous, source, autojunk=False
+    ).get_opcodes():
+        if start <= offset < end:
+            return new_start + min(offset - start, new_end - new_start)
+    return len(source)
 
 
 def reindent(source: str, indent: int) -> str:
@@ -107,7 +120,7 @@ def _insertion(syntax: Syntax, target: Target, fragment: str) -> tuple[Span, str
 
 def insert(syntax: Syntax, target: Target, fragment: str) -> str:
     result = patches(syntax.source, [_insertion(syntax, target, fragment)])
-    parse(result)
+    syntax.validate(result)
     return result
 
 
@@ -153,7 +166,7 @@ def delete(syntax: Syntax, node: ast.AST) -> str:
         result = patches(syntax.source, [(syntax.spans[node], "None")])
     else:
         raise ValueError("Select a statement or expression")
-    parse(result)
+    syntax.validate(result)
     return result
 
 
@@ -163,10 +176,10 @@ def replace_expressions(syntax: Syntax, changes: list[tuple[Span, str]]) -> str:
     for _, text in changes:
         ast.parse(text, mode="eval")
     protected = patches(syntax.source, [(span, f"({text})") for span, text in changes])
-    expected = parse(protected)
+    expected = syntax.validate(protected)
     plain = patches(syntax.source, changes)
     try:
-        actual = parse(plain)
+        actual = syntax.validate(plain)
     except SyntaxError:
         return protected
     return plain if ast.dump(actual) == ast.dump(expected) else protected
@@ -184,7 +197,7 @@ def replace(syntax: Syntax, node: ast.AST, fragment: str) -> str:
         result = replace_expressions(syntax, [(syntax.spans[node], fragment)])
     else:
         raise ValueError("Select a statement or expression")
-    parse(result)
+    syntax.validate(result)
     return result
 
 
@@ -196,5 +209,5 @@ def move(syntax: Syntax, node: ast.stmt | tuple[ast.stmt, ...], target: Target) 
         raise ValueError("Cannot move a block into itself or to the same position")
     insertion = _insertion(syntax, target, syntax.source[span.start : span.end])
     result = patches(syntax.source, [removed, insertion])
-    parse(result)
+    syntax.validate(result)
     return result

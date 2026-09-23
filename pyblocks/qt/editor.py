@@ -7,6 +7,7 @@ from PySide6.QtGui import (
     QColor,
     QFont,
     QFontDatabase,
+    QFontMetrics,
     QPainter,
     QPen,
     QPolygonF,
@@ -15,7 +16,7 @@ from PySide6.QtGui import (
     QTextCharFormat,
     QTextCursor,
 )
-from PySide6.QtWidgets import QApplication, QPlainTextEdit
+from PySide6.QtWidgets import QApplication, QTextEdit
 
 from pyblocks.core import edit
 from pyblocks.core.analysis import identifiers
@@ -23,9 +24,12 @@ from pyblocks.core.edit import insertion_targets, target_position
 from pyblocks.core.parameters import default_bindings, slots
 from pyblocks.core.presentation import PALETTE, regions
 from pyblocks.core.snippets import instantiate
-from pyblocks.i18n import tr
+from pyblocks.core.transfer import Transfer
+from pyblocks.i18n import language, tr
 
-from .parameters import ParameterPopup
+from .annotations import block_notes
+from .drag import BlockMime, drag_block
+from .parameters import ParameterEditor, unit_text
 
 
 def qt_offset(source: str, offset: int) -> int:
@@ -38,9 +42,10 @@ def source_offset(source: str, offset: int) -> int:
     )
 
 
-class SourceView(QPlainTextEdit):
+class SourceView(QTextEdit):
     selected = Signal()
     changed = Signal()
+    transferred = Signal()
     failed = Signal(str)
     snippet_dropped = Signal(str, object)
 
@@ -54,15 +59,16 @@ class SourceView(QPlainTextEdit):
         self.viewport().setCursor(Qt.CursorShape.ArrowCursor)
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
-        self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
+        self.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
         font = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
         font.setPointSize(11)
         self.setFont(font)
         self.setStyleSheet(
-            "QPlainTextEdit { background: #fafbfc; color: #203040; border: 0; padding: 8px; }"
+            "QTextEdit { background: #fafbfc; color: #203040; border: 0; padding: 8px; }"
         )
         self.setTabStopDistance(self.fontMetrics().horizontalAdvance(" ") * 4)
         self.presentation = ()
+        self.notes = {}
         self.folded = set()
         self.press_position = None
         self.hover = None
@@ -79,8 +85,11 @@ class SourceView(QPlainTextEdit):
         self.drag_indent = None
         self.parameter_slots = ()
         self.parameter_revision = None
-        self.parameter_popup = None
+        self.parameter_editor = None
         self.pending_parameter = None
+        self.scratch_owner = None
+        self.scratch_index = None
+        self.drop_transfer = None
         self.drop_target = None
         self.drop_candidates = ()
         self.drop_snippet = None
@@ -95,7 +104,13 @@ class SourceView(QPlainTextEdit):
 
     def refresh_source(self):
         source = self.session.document.state.source
-        if source != self.toPlainText():
+        previous = self.toPlainText()
+        anchor = self.cursorForPosition(QPoint(0, 0))
+        anchor.setPosition(anchor.block().position())
+        old_offset = source_offset(previous, anchor.position())
+        old_y = self.cursorRect(anchor).y()
+        horizontal = self.horizontalScrollBar().value()
+        if source != previous:
             self.fade.stop()
             self.fade_lines.clear()
             self.fold_after_fade = None
@@ -108,13 +123,15 @@ class SourceView(QPlainTextEdit):
         revision = (
             self.session.document.syntax,
             tuple(m.span for m in self.session.visible_matches),
+            language(),
         )
         if revision != self.parameter_revision:
             self.parameter_revision = revision
-            if self.parameter_popup:
-                self.parameter_popup.close()
-                self.parameter_popup = None
+            if self.parameter_editor:
+                self.parameter_editor.close()
+                self.parameter_editor = None
             self.parameter_slots = slots(self.session)
+            self.notes = block_notes(self.session)
             cursor = QTextCursor(self.document())
             cursor.select(QTextCursor.SelectionType.Document)
             cursor.setCharFormat(QTextCharFormat())
@@ -123,6 +140,17 @@ class SourceView(QPlainTextEdit):
                 140, QTextBlockFormat.LineHeightTypes.ProportionalHeight.value
             )
             cursor.setBlockFormat(block_format)
+            for line in self.notes:
+                cursor = QTextCursor(self.document().findBlockByNumber(line - 1))
+                note_format = QTextBlockFormat(block_format)
+                note_format.setTopMargin(self.fontMetrics().height() + 3)
+                cursor.setBlockFormat(note_format)
+            frame = self.document().rootFrame()
+            frame_format = frame.frameFormat()
+            frame_format.setTopMargin(
+                4 + (self.fontMetrics().height() + 3 if 1 in self.notes else 0)
+            )
+            frame.setFrameFormat(frame_format)
             for slot in self.parameter_slots:
                 start, _ = self.session.document.syntax.position(slot.span.start)
                 end, _ = self.session.document.syntax.position(slot.span.end)
@@ -135,10 +163,51 @@ class SourceView(QPlainTextEdit):
                 format = QTextCharFormat()
                 format.setFontLetterSpacingType(QFont.SpacingType.AbsoluteSpacing)
                 format.setFontLetterSpacing(
-                    18 / max(1, slot.span.end - slot.span.start)
+                    (
+                        18
+                        + self.fontMetrics().horizontalAdvance(
+                            unit_text(slot.parameter.annotation)
+                        )
+                        + (6 if unit_text(slot.parameter.annotation) else 0)
+                    )
+                    / max(1, slot.span.end - slot.span.start)
                 )
                 cursor.setCharFormat(format)
+        if previous:
+            mapped = edit.map_offset(previous, source, old_offset)
+            anchor.setPosition(qt_offset(source, mapped))
+            self.verticalScrollBar().setValue(
+                self.verticalScrollBar().value() + self.cursorRect(anchor).y() - old_y
+            )
+            self.horizontalScrollBar().setValue(horizontal)
         self.viewport().update()
+
+    def reveal(self, offset):
+        cursor = QTextCursor(self.document())
+        cursor.setPosition(qt_offset(self.toPlainText(), offset))
+        rect = self.cursorRect(cursor)
+        top = rect.top() - cursor.blockFormat().topMargin()
+        bottom = rect.bottom()
+        delta = top if top < 0 else max(0, bottom - self.viewport().height() + 8)
+        if delta:
+            self.verticalScrollBar().setValue(
+                self.verticalScrollBar().value() + round(delta)
+            )
+        horizontal = min(0, rect.left()) or max(
+            0, rect.right() - self.viewport().width() + 8
+        )
+        if horizontal:
+            self.horizontalScrollBar().setValue(
+                self.horizontalScrollBar().value() + horizontal
+            )
+
+    def centerCursor(self):
+        rect = self.cursorRect()
+        self.verticalScrollBar().setValue(
+            self.verticalScrollBar().value()
+            + rect.center().y()
+            - self.viewport().height() // 2
+        )
 
     def offset_at(self, point):
         return source_offset(
@@ -154,6 +223,14 @@ class SourceView(QPlainTextEdit):
             block.position() + qt_offset(block.text(), min(column, len(block.text())))
         )
         start = self.cursorRect(cursor)
+        # Blank source lines still carry every enclosing indentation band.
+        if column > len(block.text()):
+            start.translate(
+                self.fontMetrics().horizontalAdvance(
+                    " " * (column - len(block.text()))
+                ),
+                0,
+            )
         if end_column is None:
             end = self.viewport().width() - 8
         else:
@@ -163,6 +240,22 @@ class SourceView(QPlainTextEdit):
             )
             end = self.cursorRect(cursor).x()
         return QRectF(start.x(), start.y(), max(3, end - start.x()), start.height())
+
+    def background_rect(self, line, column, end_column=None):
+        rect = self._rect(line, column, end_column)
+        if rect is None:
+            return None
+        block = self.document().findBlockByNumber(line - 1)
+        rect.setTop(rect.top() - block.blockFormat().topMargin())
+        following = block.next()
+        while following.isValid() and not following.isVisible():
+            following = following.next()
+        if following.isValid():
+            cursor = QTextCursor(following)
+            rect.setBottom(
+                self.cursorRect(cursor).top() - following.blockFormat().topMargin()
+            )
+        return rect
 
     def paintEvent(self, event):
         super().paintEvent(event)
@@ -189,7 +282,7 @@ class SourceView(QPlainTextEdit):
                     if region.extend_line or line < region.end_line
                     else region.end_column
                 )
-                rect = self._rect(
+                rect = self.background_rect(
                     line,
                     region.column if region.extend_line or line == region.line else 0,
                     end,
@@ -219,7 +312,7 @@ class SourceView(QPlainTextEdit):
             for line in range(
                 max(first_line, region.line), min(last_line, region.end_line) + 1
             ):
-                rect = self._rect(
+                rect = self.background_rect(
                     line,
                     region.column if region.extend_line or line == region.line else 0,
                     (
@@ -231,6 +324,38 @@ class SourceView(QPlainTextEdit):
                 if rect:
                     painter.drawRect(rect)
         painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceOver)
+        note_font = self.font()
+        note_font.setPointSize(9)
+        note_font.setItalic(True)
+        for line, (column, description, icon) in self.notes.items():
+            rect = self._rect(line, column)
+            if rect is None:
+                continue
+            margin = (
+                self.document().findBlockByNumber(line - 1).blockFormat().topMargin()
+            )
+            note = QRectF(rect.left(), rect.top() - margin, rect.width(), margin)
+            if not note.intersects(QRectF(event.rect())):
+                continue
+            painter.setFont(note_font)
+            painter.setPen(QColor("#617187"))
+            painter.drawText(
+                note.adjusted(0, 0, -40, 0),
+                Qt.AlignmentFlag.AlignVCenter,
+                QFontMetrics(note_font).elidedText(
+                    "# " + description,
+                    Qt.TextElideMode.ElideRight,
+                    max(1, int(note.width() - 40)),
+                ),
+            )
+            symbol_font = self.font()
+            symbol_font.setPointSize(14)
+            painter.setFont(symbol_font)
+            painter.drawText(
+                note.adjusted(0, 0, -8, 0),
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+                icon,
+            )
         painter.setFont(self.font())
         for slot in self.parameter_slots:
             rect = self.parameter_rect(slot)
@@ -241,10 +366,26 @@ class SourceView(QPlainTextEdit):
             painter.drawRoundedRect(rect.adjusted(-1, 1, -1, -1), 3, 3)
             painter.setPen(QColor("#243442"))
             painter.drawText(
-                rect.adjusted(2, 0, -13, 0),
+                rect.adjusted(
+                    2,
+                    0,
+                    -13
+                    - self.fontMetrics().horizontalAdvance(
+                        unit_text(slot.parameter.annotation)
+                    ),
+                    0,
+                ),
                 Qt.AlignmentFlag.AlignVCenter,
                 syntax.source[slot.span.start : slot.span.end],
             )
+            unit = unit_text(slot.parameter.annotation)
+            if unit:
+                painter.setPen(QColor("#68788a"))
+                painter.drawText(
+                    rect.adjusted(2, 0, -15, 0),
+                    Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+                    unit,
+                )
             x, y = rect.right() - 8, rect.center().y()
             painter.setBrush(QColor("#63717f"))
             painter.setPen(Qt.PenStyle.NoPen)
@@ -314,30 +455,23 @@ class SourceView(QPlainTextEdit):
         )
 
     def show_parameter(self, slot):
-        if self.parameter_popup:
-            self.parameter_popup.close()
-        popup = ParameterPopup(self, slot)
-        self.parameter_popup = popup
-        popup.applied.connect(self.changed)
-        popup.destroyed.connect(
-            lambda: (
-                setattr(self, "parameter_popup", None)
-                if self.parameter_popup is popup
-                else None
-            )
-        )
+        if self.parameter_editor:
+            self.parameter_editor.close()
         rect = self.parameter_rect(slot)
         if rect is None:
             return
-        popup.adjustSize()
-        point = self.viewport().mapToGlobal(rect.bottomLeft().toPoint())
-        screen = self.screen().availableGeometry()
-        point.setX(min(point.x(), screen.right() - popup.width()))
-        point.setY(min(point.y(), screen.bottom() - popup.height()))
-        popup.move(point)
-        popup.show()
-        popup.field.setFocus()
-        popup.field.lineEdit().selectAll()
+        field = ParameterEditor(self, slot)
+        self.parameter_editor = field
+        field.applied.connect(self.changed)
+        field.destroyed.connect(
+            lambda: (
+                setattr(self, "parameter_editor", None)
+                if self.parameter_editor is field
+                else None
+            )
+        )
+        field.setGeometry(rect.toRect().adjusted(-1, 0, 2, 0))
+        field.begin()
 
     def edit_parameters(self):
         syntax = self.session.document.syntax
@@ -381,10 +515,20 @@ class SourceView(QPlainTextEdit):
                 point - self.press_position
             ).manhattanLength() >= QApplication.startDragDistance():
                 try:
+                    if not self.viewport().rect().contains(point):
+                        owner = self.scratch_owner or self.session
+                        transfer = Transfer.capture(
+                            owner,
+                            index=self.scratch_index,
+                            fragment=self.session if self.scratch_owner else None,
+                        )
+                        self.press_position = None
+                        editor.cancel_move()
+                        drag_block(self, transfer)
+                        return
                     move = editor.moving or self.session.begin_move()
                     self.viewport().setCursor(Qt.CursorShape.ClosedHandCursor)
-                    offset = self.offset_at(point)
-                    line, column = self.session.document.syntax.position(offset)
+                    line, column = self.target_coordinates(point)
                     move.index = min(
                         range(len(move.targets)),
                         key=lambda i: self._distance(move.targets[i], line, column),
@@ -401,8 +545,10 @@ class SourceView(QPlainTextEdit):
                         self._apply_folds()
                     self.drag_indent = indent
                 except (ValueError, SyntaxError) as error:
-                    self.press_position = None
-                    self.failed.emit(str(error))
+                    editor.cancel_move()
+                    if not self.viewport().rect().contains(point):
+                        self.press_position = None
+                        self.failed.emit(str(error))
         else:
             syntax = self.session.document.syntax
             node = syntax.at(self.offset_at(point))
@@ -419,12 +565,33 @@ class SourceView(QPlainTextEdit):
                 (m for m in self.session.matches if m.span.contains(self.hover.start)),
                 None,
             )
+            parameter = self.parameter_at(point)
             self.setToolTip(
-                tr(match.snippet.help).splitlines()[0]
-                if match and match.snippet.help
-                else type(node).__name__
+                parameter.parameter.name
+                + (
+                    " · " + unit_text(parameter.parameter.annotation)
+                    if unit_text(parameter.parameter.annotation)
+                    else ""
+                )
+                if parameter
+                else (
+                    tr(match.snippet.help).splitlines()[0]
+                    if match and match.snippet.help
+                    else type(node).__name__
+                )
             )
         self.viewport().update()
+
+    def target_coordinates(self, point):
+        line = self.cursorForPosition(point).blockNumber() + 1
+        origin = self._rect(line, 0)
+        column = max(
+            0,
+            round(
+                (point.x() - origin.left()) / self.fontMetrics().horizontalAdvance(" ")
+            ),
+        )
+        return line, column
 
     def _distance(self, target, line, column):
         syntax = self.session.document.syntax
@@ -447,43 +614,84 @@ class SourceView(QPlainTextEdit):
             try:
                 self.session.editor.commit_move()
                 self.changed.emit()
+                self.reveal(
+                    self.session.document.syntax.spans[
+                        self.session.editor.selection
+                    ].start
+                )
             except (ValueError, SyntaxError) as error:
                 self.failed.emit(str(error))
 
     def dragEnterEvent(self, event):
-        if not event.mimeData().hasFormat("application/x-pyblocks-snippet"):
-            return
-        identity = bytes(
-            event.mimeData().data("application/x-pyblocks-snippet")
-        ).decode()
-        self.drop_snippet = next(
-            (
-                s
-                for s in self.session.snippets
-                if s.identity == identity and not s.historical
-            ),
-            None,
-        )
-        if self.drop_snippet is None:
-            return
+        self.drop_transfer = self.drop_snippet = self.drop_target = None
+        data = event.mimeData()
         syntax = self.session.document.syntax
-        expansion = instantiate(
-            self.drop_snippet,
-            default_bindings(self.session, self.drop_snippet),
-            identifiers(syntax.tree),
-        )
-        if not self.drop_snippet.expression:
-            self.drop_candidates = tuple(insertion_targets(syntax, expansion.source))
+        if isinstance(data, BlockMime):
+            if data.transfer.owner is not (self.scratch_owner or self.session):
+                return
+            try:
+                data.transfer.validate()
+            except ValueError:
+                return
+            self.drop_transfer = data.transfer
+            text = data.transfer.text
+            if data.transfer.origin is None and self.scratch_owner is None:
+                try:
+                    move = self.session.begin_move()
+                    self.drop_candidates = move.targets
+                    self.session.editor.cancel_move()
+                except (ValueError, SyntaxError):
+                    self.drop_candidates = ()
+            else:
+                self.drop_candidates = tuple(insertion_targets(syntax, text))
+        elif data.hasFormat("application/x-pyblocks-snippet"):
+            identity = bytes(data.data("application/x-pyblocks-snippet")).decode()
+            self.drop_snippet = next(
+                (
+                    s
+                    for s in self.session.snippets
+                    if s.identity == identity and not s.historical
+                ),
+                None,
+            )
+            if self.drop_snippet is None:
+                return
+            text = self.drop_preview()
+            self.drop_candidates = (
+                ()
+                if self.drop_snippet.expression
+                else tuple(insertion_targets(syntax, text))
+            )
+        else:
+            return
         event.acceptProposedAction()
 
     def dragMoveEvent(self, event):
-        if self.drop_snippet is None:
+        if self.drop_snippet is None and self.drop_transfer is None:
             return
         point = event.position().toPoint()
         syntax = self.session.document.syntax
         offset = self.offset_at(point)
-        if self.drop_snippet.expression:
-            candidate = syntax.at(offset)
+        slot = self.parameter_at(point)
+        expression = (
+            self.drop_snippet.expression
+            if self.drop_snippet
+            else slot is not None
+            and not (self.drop_transfer.origin is None and self.scratch_owner is None)
+        )
+        if expression:
+            candidate = (
+                next(
+                    (
+                        n
+                        for n, span in syntax.spans.items()
+                        if span == slot.span and isinstance(n, ast.expr)
+                    ),
+                    None,
+                )
+                if slot
+                else syntax.at(offset)
+            )
             self.drop_target = candidate if isinstance(candidate, ast.expr) else None
             if self.drop_target is not None:
                 try:
@@ -491,7 +699,7 @@ class SourceView(QPlainTextEdit):
                 except (ValueError, SyntaxError):
                     self.drop_target = None
         else:
-            line, column = syntax.position(offset)
+            line, column = self.target_coordinates(point)
             self.drop_target = min(
                 self.drop_candidates,
                 key=lambda t: self._distance(t, line, column),
@@ -504,6 +712,8 @@ class SourceView(QPlainTextEdit):
         self.viewport().update()
 
     def drop_preview(self):
+        if self.drop_transfer is not None:
+            return self.drop_transfer.text
         if not self.drop_snippet:
             return ""
         syntax = self.session.document.syntax
@@ -519,23 +729,39 @@ class SourceView(QPlainTextEdit):
         ).source
 
     def dragLeaveEvent(self, event):
-        self.drop_target = self.drop_snippet = None
+        self.drop_target = self.drop_snippet = self.drop_transfer = None
         self.drop_candidates = ()
         self.viewport().update()
 
     def dropEvent(self, event):
-        if self.drop_snippet is None or self.drop_target is None:
+        if self.drop_target is None:
             event.ignore()
             return
-        target = self.drop_target
-        if isinstance(target, ast.expr):
-            self.session.editor.selection = target
-            target = None
-        self.snippet_dropped.emit(self.drop_snippet.identity, target)
-        self.drop_target = self.drop_snippet = None
-        self.drop_candidates = ()
-        event.acceptProposedAction()
-        self.viewport().update()
+        target, transfer, snippet = (
+            self.drop_target,
+            self.drop_transfer,
+            self.drop_snippet,
+        )
+        self.dragLeaveEvent(event)
+        try:
+            if transfer is not None:
+                if self.scratch_owner is None:
+                    transfer.to_program(target)
+                else:
+                    transfer.to_fragment(self.scratch_index, self.session, target)
+                self.transferred.emit()
+            else:
+                if isinstance(target, ast.expr):
+                    self.session.editor.selection = target
+                    target = None
+                self.snippet_dropped.emit(snippet.identity, target)
+            event.acceptProposedAction()
+            self.reveal(
+                self.session.document.syntax.spans[self.session.editor.selection].start
+            )
+        except (ValueError, SyntaxError) as error:
+            event.ignore()
+            self.failed.emit(str(error))
 
     def leaveEvent(self, event):
         self.hover = None
@@ -548,8 +774,8 @@ class SourceView(QPlainTextEdit):
 
     def hideEvent(self, event):
         self.pulse.stop()
-        if self.parameter_popup:
-            self.parameter_popup.close()
+        if self.parameter_editor:
+            self.parameter_editor.close()
         super().hideEvent(event)
 
     def fold_selection(self):

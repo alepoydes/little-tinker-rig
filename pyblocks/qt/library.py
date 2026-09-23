@@ -8,10 +8,13 @@ from pyblocks.core.presentation import PALETTE, snippet_role
 from pyblocks.core.snippets import instantiate
 from pyblocks.i18n import tr
 
+from .annotations import block_icon
+
 IDENTITY = Qt.ItemDataRole.UserRole
 PREVIEW = int(IDENTITY) + 1
 COLOR = int(IDENTITY) + 2
 DESCRIPTION = int(IDENTITY) + 3
+ICON = int(IDENTITY) + 4
 
 
 class CardDelegate(QStyledItemDelegate):
@@ -36,8 +39,13 @@ class CardDelegate(QStyledItemDelegate):
             rect.adjusted(10, 7, -8, 0),
             Qt.AlignmentFlag.AlignTop,
             QFontMetrics(font).elidedText(
-                description, Qt.TextElideMode.ElideRight, rect.width() - 20
+                description, Qt.TextElideMode.ElideRight, rect.width() - 45
             ),
+        )
+        painter.drawText(
+            rect.adjusted(0, 7, -8, 0),
+            Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight,
+            index.data(ICON),
         )
         painter.setFont(QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont))
         for row, line in enumerate(index.data(PREVIEW).splitlines()[:3]):
@@ -83,6 +91,7 @@ class Library(QTreeWidget):
             )
             item = QTreeWidgetItem(groups[group], [name])
             item.setData(0, IDENTITY, snippet.identity)
+            item.setData(0, ICON, block_icon(snippet))
             item.setData(0, PREVIEW, expansion.source)
             item.setData(0, COLOR, PALETTE[snippet_role(snippet)])
             item.setData(

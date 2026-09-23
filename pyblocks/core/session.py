@@ -6,7 +6,8 @@ import tokenize
 from pathlib import Path
 
 from . import edit
-from .analysis import Analysis, identifiers
+from .analysis import Analysis, Scopes, identifiers, value_type
+from .document import Document
 from .imports import manage_imports
 from .interaction import Editor
 from .project import Project
@@ -48,10 +49,28 @@ class Session:
                 raise ValueError(
                     f"Collection {collection!r} requires version {pinned}, installed {snippet.version}"
                 )
+        self._reset_cache()
+
+    def _reset_cache(self):
         self._revision = None
         self._matches: tuple[Match, ...] = ()
         self._analysis = None
         self._expanded = set()
+
+    @classmethod
+    def fragment(cls, text, snippets):
+        """A detached editing session: no file, imports or executable context."""
+        session = cls.__new__(cls)
+        session.project = None
+        session.editor = Editor(Document(edit.reindent(text, 0), fragment=True))
+        session.snippets = snippets
+        session._reset_cache()
+        return session
+
+    def with_imports(self, source, required=()):
+        if self.document.fragment:
+            return source
+        return manage_imports(source, required, retain=self.document.state.scratch)
 
     @property
     def document(self):
@@ -69,8 +88,26 @@ class Session:
 
     def _refresh(self):
         if self._revision is not self.document.syntax:
-            self._matches = recognize(self.document.syntax, self.snippets)
             self._analysis = Analysis(self.document.syntax)
+            for snippet in self.snippets:
+                body = snippet.body
+                if (
+                    snippet.expression
+                    and snippet.result_type
+                    and isinstance(body, ast.Call)
+                    and isinstance(body.func, ast.Attribute)
+                ):
+                    receiver = getattr(body.func.value, "template_parameter", None)
+                    parameter = next(
+                        (p for p in snippet.parameters if p.name == receiver), None
+                    )
+                    if parameter and parameter.annotation:
+                        self._analysis.method_types[
+                            parameter.annotation, body.func.attr
+                        ] = value_type(snippet.result_type)
+            self._matches = recognize(
+                self.document.syntax, self.snippets, self._analysis
+            )
             self._revision = self.document.syntax
             self._expanded.clear()
 
@@ -149,13 +186,25 @@ class Session:
         if snippet.expression:
             if not isinstance(self.editor.selection, ast.expr):
                 raise ValueError("Select an expression to replace with this snippet")
+            offset = syntax.spans[self.editor.selection].start
             source = edit.replace(syntax, self.editor.selection, expansion.source)
         else:
-            source = edit.insert(syntax, target or self.destination(), expansion.source)
+            target = target or self.destination()
+            offset = self.insertion_offset(target)
+            source = edit.insert(syntax, target, expansion.source)
+        self.commit_insertion(source, offset, expansion.imports)
+
+    def insertion_offset(self, target):
+        syntax = self.document.syntax
+        statements = target.suite.statements
+        if len(statements) == 1 and isinstance(statements[0], ast.Pass):
+            return syntax.block_span(statements[0]).start
+        return edit.target_position(syntax, target)[0]
+
+    def commit_insertion(self, source, offset, required=(), scratch=None):
+        imported = self.with_imports(source, required)
         self.editor.commit(
-            manage_imports(
-                source, expansion.imports, retain=self.document.state.scratch
-            )
+            imported, scratch, focus=edit.map_offset(source, imported, offset)
         )
 
     def _replace_match(self, match: Match, source: str) -> str:
@@ -195,7 +244,7 @@ class Session:
             if match
             else edit.replace(self.document.syntax, self.editor.selection, source)
         )
-        self.editor.commit(manage_imports(result, retain=self.document.state.scratch))
+        self.editor.commit(self.with_imports(result))
 
     def edit_parameters(self, bindings: dict[str, str]) -> None:
         match = self.selected_match()
@@ -237,22 +286,23 @@ class Session:
         ]
         replacement = "\n".join([*comments, expansion.source])
         source = self._replace_match(match, replacement)
-        self.editor.commit(
-            manage_imports(
-                source, expansion.imports, retain=self.document.state.scratch
-            )
-        )
+        self.editor.commit(self.with_imports(source, expansion.imports))
 
-    def to_scratch(self) -> None:
+    def extract_selection(self):
+        """Return detached text and the valid remainder, without changing state."""
         match = self.selected_match()
-        if match is None:
-            self.editor.to_scratch()
-            return
-        source = self._replace_match(match, "None" if match.snippet.expression else "")
-        self.editor.commit(
-            source,
-            self.document.state.scratch + (self.selected_text(),),
+        source = (
+            self._replace_match(match, "None" if match.snippet.expression else "")
+            if match
+            else edit.delete(self.document.syntax, self.editor.selection)
         )
+        return edit.reindent(self.selected_text(), 0), source
+
+    def to_scratch(self, position=None) -> None:
+        text, source = self.extract_selection()
+        scratch = list(self.document.state.scratch)
+        scratch.insert(len(scratch) if position is None else position, text)
+        self.editor.commit(source, tuple(scratch))
 
     def set_scratch(self, index: int | None, text: str) -> None:
         scratch = list(self.document.state.scratch)
@@ -264,19 +314,54 @@ class Session:
             scratch[index] = text
         self.editor.commit(self.document.state.source, tuple(scratch))
 
-    def restore_scratch(self, index: int) -> None:
+    def fragment_imports(self, text):
+        """Dependencies come from library definitions, never execute a module."""
+        scope = Scopes(ast.parse(text))
+        used = {
+            node.id
+            for node, _ in scope.references
+            if scope.resolve(node, node.id) is None
+        }
+        required = set()
+        for snippet in self.snippets:
+            for node in snippet.imports:
+                for alias in node.names:
+                    name = alias.asname or alias.name.split(".")[0]
+                    if name in used:
+                        single = (
+                            ast.ImportFrom(
+                                module=node.module, names=[alias], level=node.level
+                            )
+                            if isinstance(node, ast.ImportFrom)
+                            else ast.Import(names=[alias])
+                        )
+                        required.add(ast.unparse(single))
+        return tuple(sorted(required))
+
+    def restore_scratch(self, index: int, target=None, *, fragment=None) -> None:
         scratch = self.document.state.scratch
         if not 0 <= index < len(scratch):
             raise ValueError("Scratch index outside workspace")
-        if isinstance(self.editor.selection, ast.expr):
+        text, remainder = (scratch[index], "") if fragment is None else fragment
+        syntax = self.document.syntax
+        node = target if isinstance(target, ast.expr) else self.editor.selection
+        expression = False
+        if isinstance(node, ast.expr) and not isinstance(target, edit.Target):
             try:
-                ast.parse(scratch[index].strip(), mode="eval")
+                ast.parse(text.strip(), mode="eval")
+                expression = True
             except SyntaxError:
                 pass
-            else:
-                source = edit.replace(
-                    self.document.syntax, self.editor.selection, scratch[index]
-                )
-                self.editor.commit(source, scratch[:index] + scratch[index + 1 :])
-                return
-        self.editor.from_scratch(index, self.destination())
+        if expression:
+            offset = syntax.spans[node].start
+            source = edit.replace(syntax, node, text)
+        else:
+            target = target or self.destination()
+            offset = self.insertion_offset(target)
+            source = edit.insert(syntax, target, text)
+        remaining = (
+            scratch[:index]
+            + ((remainder,) if remainder.strip() else ())
+            + scratch[index + 1 :]
+        )
+        self.commit_insertion(source, offset, self.fragment_imports(text), remaining)

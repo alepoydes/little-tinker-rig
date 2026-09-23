@@ -17,7 +17,7 @@ those tests correctly. No test requires a physical robot.
 ## Invariants
 
 Source is authoritative; AST and presentation are derived. Committed documents
-parse and compile without executing. Failed operations preserve source, Scratch
+parse and compile without executing (Scratch projections only require parsing). Failed operations preserve source, Scratch
 and both histories. Unicode spans, comments, literal contents and lexical scopes
 must survive transformations. Compare optimized move targets with an independent
 compile-based reference. Test interrupted source/workspace saves in both directions.
@@ -71,3 +71,20 @@ must call `tr("message with {name}", name=value)`. Do not interpolate before loo
 Parameter values, source, filenames and console output are never translated.
 Snippet docstrings share the catalog. Add corresponding documentation under
 `doc/<language>/`, retaining page paths so navigation survives language changes.
+
+
+## Scratch and rendering invariants
+
+Transfers hold their owner's revision and commit both areas atomically. Invalid
+context and cancelled drags preserve the source fragment. Scratch-only edits keep
+the main syntax index. Undo must not republish a stale cell projection.
+
+Fragment projections require parsing but not executable context; raw cells retain
+incomplete Python. Main-document commits still compile. Descriptions and units
+never change source text. Rendering checks cover first-line descriptions, blank
+indentation bands, and viewport anchors after imports and insertion. A document
+with one block can still detach it even when it has no internal move destination.
+
+`test_scratch.py` exercises Qt drag/drop, undo and incomplete cells. It builds
+programs through the library and runs them on virtual Inventor, BOOST and Technic,
+checking device effects and dependencies as well as syntax.

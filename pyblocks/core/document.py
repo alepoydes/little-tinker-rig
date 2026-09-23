@@ -15,10 +15,13 @@ class State:
 class Document:
     """Own the committed source and Scratch. A failed commit changes nothing."""
 
-    def __init__(self, source: str = "", scratch: tuple[str, ...] = ()):
-        source = format_source(source)
+    def __init__(
+        self, source: str = "", scratch: tuple[str, ...] = (), *, fragment=False
+    ):
+        self.fragment = fragment
+        source = format_source(source, fragment=self.fragment)
         self._state = State(source, tuple(scratch))
-        self._syntax = Syntax(source)
+        self._syntax = Syntax(source, fragment=self.fragment)
         self._undo: list[State] = []
         self._redo: list[State] = []
 
@@ -40,11 +43,19 @@ class Document:
 
     def commit(self, source: str, scratch: tuple[str, ...] | None = None) -> bool:
         """Validate and format before publishing; return whether state changed."""
-        source = format_source(source) if source != self.state.source else source
+        source = (
+            format_source(source, fragment=self.fragment)
+            if source != self.state.source
+            else source
+        )
         state = State(source, self.state.scratch if scratch is None else tuple(scratch))
         if state == self.state:
             return False
-        syntax = Syntax(source)
+        syntax = (
+            self.syntax
+            if source == self.state.source
+            else Syntax(source, fragment=self.fragment)
+        )
         self._undo.append(self.state)
         self._redo.clear()
         self._state, self._syntax = state, syntax
@@ -60,7 +71,11 @@ class Document:
         if not previous:
             return False
         state = previous[-1]
-        syntax = Syntax(state.source)
+        syntax = (
+            self.syntax
+            if state.source == self.state.source
+            else Syntax(state.source, fragment=self.fragment)
+        )
         following.append(self.state)
         previous.pop()
         self._state, self._syntax = state, syntax

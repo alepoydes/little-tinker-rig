@@ -7,9 +7,9 @@ from pathlib import Path
 from .syntax import parse
 
 
-def format_source(source: str) -> str:
+def format_source(source: str, *, fragment: bool = False) -> str:
     """Return validated canonical source, independent of cwd configuration."""
-    parse(source)
+    parse(source, fragment=fragment)
     try:
         result = subprocess.run(
             [
@@ -34,5 +34,5 @@ def format_source(source: str) -> str:
         ) from error
     if result.returncode:
         raise ValueError(f"Formatting failed: {result.stderr.strip()}")
-    parse(result.stdout)
+    parse(result.stdout, fragment=fragment)
     return result.stdout

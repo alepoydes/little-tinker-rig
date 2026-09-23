@@ -4,8 +4,8 @@ import ast
 from dataclasses import dataclass
 
 from . import edit
-from .analysis import identifiers
-from .snippets import Match, Parameter
+from .analysis import identifiers, value_type
+from .snippets import Match, Parameter, instantiate
 from .syntax import Span, Syntax
 
 
@@ -21,7 +21,17 @@ def slots(session):
     syntax = session.document.syntax
     result = []
     covered = []
+    conditions = [
+        syntax.spans[node.test]
+        for node in ast.walk(syntax.tree)
+        if isinstance(node, (ast.If, ast.While, ast.IfExp))
+    ]
     for match in session.visible_matches:
+        if match.snippet.expression and any(
+            span.start <= match.span.start and match.span.end <= span.end
+            for span in conditions
+        ):
+            continue
         body = match.snippet.body
         assignment = (
             not match.snippet.expression
@@ -55,7 +65,13 @@ def slots(session):
             and node.value.id == "Port"
         ):
             name, annotation = "port", "Port"
-        result.append(Slot(syntax, span, Parameter(name, None, annotation)))
+        result.append(
+            Slot(
+                syntax,
+                span,
+                Parameter(name, None, annotation or session.analysis.type_of(node)),
+            )
+        )
         covered.append(span)
 
     # Outer expressions are useful editing units: a condition or argument can
@@ -65,6 +81,20 @@ def slots(session):
             add(node.test, "condition")
         elif isinstance(node, (ast.For, ast.AsyncFor)):
             add(node.iter, "iterable")
+        elif isinstance(node, ast.arguments):
+            for argument, default in zip(
+                (node.posonlyargs + node.args)[
+                    len(node.posonlyargs) + len(node.args) - len(node.defaults) :
+                ],
+                node.defaults,
+                strict=True,
+            ):
+                add(default, argument.arg)
+            for argument, default in zip(
+                node.kwonlyargs, node.kw_defaults, strict=True
+            ):
+                if default is not None:
+                    add(default, argument.arg)
         elif isinstance(node, ast.Call):
             for index, argument in enumerate(node.args):
                 add(argument, f"argument {index + 1}")
@@ -77,31 +107,71 @@ def slots(session):
 
 
 def choices(session, parameter, offset):
-    available = session.analysis.available(offset)
-    typed = []
-    for node in ast.walk(session.document.syntax.tree):
-        if not isinstance(node, ast.Assign) or not isinstance(node.value, ast.Call):
-            continue
-        constructor = ast.unparse(node.value.func).rsplit(".", 1)[-1]
-        if constructor == parameter.annotation:
-            typed.extend(
-                target.id
-                for target in node.targets
-                if isinstance(target, ast.Name) and target.id in available
-            )
-    if parameter.name == "port":
-        return tuple(
-            f"Port.{port}" if parameter.annotation == "Port" else repr(port)
-            for port in "ABCDEF"
-        )
-    if parameter.name in {"test", "condition"}:
-        return ("True", "False", *available)
-    values = [*typed]
-    if parameter.default is not None:
+    analysis = session.analysis
+    names = {
+        name: analysis.name_type(name, offset)
+        for name in analysis.available(offset)
+        if name in identifiers(session.document.syntax.tree)
+    }
+    if context := getattr(session, "context", None):
+        position = context.document.syntax.spans[context.editor.selection].start
+        outer = {
+            name: context.analysis.name_type(name, position)
+            for name in context.analysis.available(position)
+            if name in identifiers(context.document.syntax.tree)
+        }
+        names = dict(outer, **names)
+    kind = value_type(parameter.annotation)
+    if kind is None and parameter.name in {"test", "condition"}:
+        kind = "bool"
+    enums = {
+        "Port": [f"Port.{port}" for port in getattr(session, "ports", "ABCDEF")],
+        "Direction": ["Direction.CLOCKWISE", "Direction.COUNTERCLOCKWISE"],
+        "Stop": ["Stop.COAST", "Stop.BRAKE", "Stop.HOLD"],
+        "Color": [
+            "Color.BLACK",
+            "Color.WHITE",
+            "Color.RED",
+            "Color.GREEN",
+            "Color.BLUE",
+            "Color.YELLOW",
+            "Color.NONE",
+        ],
+    }
+    if kind in enums:
+        return tuple(enums[kind])
+    values = [
+        name for name, actual in names.items() if actual == kind and kind is not None
+    ]
+    if parameter.default is not None and (
+        kind in {None, "number", "bool", "str"} or names.get(parameter.default) == kind
+    ):
         values.append(parameter.default)
-    values.extend(
-        name for name in available if name in identifiers(session.document.syntax.tree)
-    )
+    if kind == "bool":
+        values.extend(("True", "False"))
+    elif kind is None:
+        values.extend(
+            name
+            for name, actual in names.items()
+            if actual not in {"type", "function", "module"}
+        )
+    # Offer useful sensor readings of the requested type, using the same static
+    # function templates as the library. No imports or device calls are executed.
+    for snippet in session.snippets:
+        body = snippet.body
+        if not (
+            snippet.expression
+            and value_type(snippet.result_type) == kind
+            and isinstance(body, ast.Call)
+            and isinstance(body.func, ast.Attribute)
+        ):
+            continue
+        receiver = getattr(body.func.value, "template_parameter", None)
+        device = next((p for p in snippet.parameters if p.name == receiver), None)
+        if device is not None:
+            for name, actual in names.items():
+                if actual == device.annotation:
+                    values.append(instantiate(snippet, {device.name: name}).source)
     return tuple(dict.fromkeys(values))
 
 
@@ -109,6 +179,8 @@ def default_bindings(session, snippet, offset=None):
     syntax = session.document.syntax
     offset = syntax.spans[session.editor.selection].start if offset is None else offset
     used = identifiers(syntax.tree)
+    if context := getattr(session, "context", None):
+        used |= identifiers(context.document.syntax.tree)
     result = {}
     roots = (snippet.body,) if snippet.expression else snippet.body
     declared = {
@@ -129,10 +201,22 @@ def default_bindings(session, snippet, offset=None):
                 "DriveBase",
                 "UltrasonicSensor",
                 "ForceSensor",
+                "StopWatch",
             }
             and suggested
         ):
-            value = suggested[0]
+            value = (
+                value
+                if value in suggested
+                else next(
+                    (
+                        candidate
+                        for candidate in suggested
+                        if candidate not in result.values()
+                    ),
+                    suggested[0],
+                )
+            )
         if parameter.name in declared:
             base = value
             suffix = 2

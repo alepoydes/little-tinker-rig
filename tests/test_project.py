@@ -49,8 +49,8 @@ def test_session_inserts_imports_and_edits_parameters_atomically(tmp_path):
     assert "from pybricks.pupdevices import Motor" in session.document.state.source
     session.editor.select(session.document.state.source.index("left_motor"))
     assert session.selected_match().snippet == snippet
-    session.edit_parameters({"port": "'B'"})
-    assert '"B"' in session.document.state.source
+    session.edit_parameters({"port": "Port.B"})
+    assert "Motor(Port.B)" in session.document.state.source
     before = session.document.state
     with pytest.raises((ValueError, SyntaxError)):
         session.edit_parameters({"name": "1 + 2"})

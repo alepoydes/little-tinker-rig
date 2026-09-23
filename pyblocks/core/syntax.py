@@ -29,19 +29,21 @@ class Suite:
     statements: tuple[ast.stmt, ...]
 
 
-def parse(source: str) -> ast.Module:
+def parse(source: str, *, fragment: bool = False) -> ast.Module:
     """Validate syntax *and* compiler context without executing the program."""
     tree = ast.parse(source)
-    compile(tree, "<pyblocks>", "exec", dont_inherit=True)
+    if not fragment:
+        compile(tree, "<pyblocks>", "exec", dont_inherit=True)
     return tree
 
 
 class Syntax:
     """Index one source revision. Nodes and suites must not cross revisions."""
 
-    def __init__(self, source: str):
+    def __init__(self, source: str, *, fragment: bool = False):
         self.source = source
-        self.tree = parse(source)
+        self.fragment = fragment
+        self.tree = self.validate(source)
         self.lines = source.splitlines(keepends=True)
         self.starts = [0]
         for line in self.lines:
@@ -89,6 +91,9 @@ class Syntax:
                 self.owned_spans[node] = self.block_span(node)
             except ValueError:
                 pass  # Non-isolated fmt:off statements keep their exact AST span.
+
+    def validate(self, source):
+        return parse(source, fragment=self.fragment)
 
     def _ast_offset(self, line: int, byte_column: int) -> int:
         prefix = self.lines[line - 1].encode("utf-8")[:byte_column]

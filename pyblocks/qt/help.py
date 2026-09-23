@@ -5,7 +5,17 @@ from importlib.resources import files
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QUrl
-from PySide6.QtGui import QDesktopServices, QTextCursor, QTextDocument
+from PySide6.QtGui import (
+    QColor,
+    QDesktopServices,
+    QFont,
+    QFontDatabase,
+    QTextBlockFormat,
+    QTextCursor,
+    QTextDocument,
+    QTextFrameFormat,
+    QTextTable,
+)
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLineEdit,
@@ -26,6 +36,63 @@ class HelpBrowser(QTextBrowser):
         super().resizeEvent(event)
         self.fit_images()
 
+    def style_document(self):
+        document = self.document()
+        document.setDefaultFont(QFont("sans-serif", 12))
+        document.setDocumentMargin(32)
+        block = document.begin()
+        while block.isValid():
+            cursor = QTextCursor(block)
+            format = block.blockFormat()
+            heading = format.headingLevel()
+            code = format.nonBreakableLines()
+            format.setLineHeight(
+                145 if code else 155,
+                QTextBlockFormat.LineHeightTypes.ProportionalHeight.value,
+            )
+            format.setTopMargin(24 if heading else 0)
+            format.setBottomMargin(12 if heading else 0 if code else 12)
+            if code:
+                format.setBackground(QColor("#edf2f7"))
+                format.setLeftMargin(14)
+                format.setRightMargin(14)
+                cursor.select(QTextCursor.SelectionType.BlockUnderCursor)
+                text_format = cursor.charFormat()
+                text_format.setFont(
+                    QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
+                )
+                text_format.setFontPointSize(10.5)
+                text_format.setForeground(QColor("#24394e"))
+                cursor.mergeCharFormat(text_format)
+            elif heading:
+                cursor.select(QTextCursor.SelectionType.BlockUnderCursor)
+                text_format = cursor.charFormat()
+                text_format.setFontPointSize(
+                    25 if heading == 1 else 18 if heading == 2 else 14
+                )
+                text_format.setForeground(QColor("#193650"))
+                text_format.setFontWeight(QFont.Weight.DemiBold)
+                cursor.mergeCharFormat(text_format)
+            cursor.clearSelection()
+            cursor.setPosition(block.position())
+            cursor.setBlockFormat(format)
+            block = block.next()
+        for frame in document.rootFrame().childFrames():
+            if isinstance(frame, QTextTable):
+                format = frame.format()
+                format.setCellPadding(9)
+                format.setCellSpacing(0)
+                format.setBorder(1)
+                format.setBorderStyle(QTextFrameFormat.BorderStyle.BorderStyle_Solid)
+                format.setBorderBrush(QColor("#d8e2ec"))
+                frame.setFormat(format)
+                for column in range(frame.columns()):
+                    cell = frame.cellAt(0, column)
+                    format = cell.format()
+                    format.setBackground(QColor("#eaf1f8"))
+                    cell.setFormat(format)
+        self.fit_images()
+
     def fit_images(self):
         document = self.document()
         block = document.begin()
@@ -44,7 +111,10 @@ class HelpBrowser(QTextBrowser):
             )
             if source is None or source.width() <= 0:
                 continue
-            width = min(source.width(), max(1, self.viewport().width() - 20))
+            width = min(
+                source.width(),
+                max(1, self.viewport().width() - 2 * document.documentMargin() - 4),
+            )
             if format.width() == width:
                 continue
             format.setWidth(width)
@@ -74,11 +144,15 @@ class HelpPage(QWidget):
         self.tree = QTreeWidget()
         self.tree.setHeaderHidden(True)
         self.tree.setMinimumWidth(230)
+        self.tree.setStyleSheet(
+            "QTreeWidget { border: 0; background: #f3f6fa; font-size: 14px; } QTreeWidget::item { padding: 7px 5px; } QTreeWidget::item:selected { background: #dce8f2; color: #18364d; }"
+        )
         self.browser = HelpBrowser()
         self.browser.setOpenLinks(False)
+        self.browser.setMaximumWidth(1120)
         self.browser.anchorClicked.connect(self.follow_link)
         self.browser.setStyleSheet(
-            "QTextBrowser { padding: 22px; border: 0; background: white; font-size: 15px; }"
+            "QTextBrowser { border: 1px solid #e0e7ef; background: white; color: #263b4d; selection-background-color: #d2e5f5; }"
         )
         self.tree.currentItemChanged.connect(
             lambda item, old: (
@@ -134,12 +208,12 @@ class HelpPage(QWidget):
                 else "\n".join(ast.unparse(node) for node in snippet.body)
             )
             text = (
-                f"# {snippet.identity}\n\n{tr(snippet.help)}\n\n## {tr('Параметры')}\n\n"
+                f"# {tr(snippet.help).splitlines()[0]}\n\n{chr(10).join(tr(snippet.help).splitlines()[1:])}\n\n## {tr('Параметры')}\n\n"
                 f"| {tr('Имя')} | {tr('Единица / тип')} | {tr('По умолчанию')} |\n|---|---|---|\n{parameters}\n\n"
                 f"## Python\n\n```python\n{source}\n```\n"
             )
             self.add_page(
-                templates, snippet.identity, snippet.identity.rsplit("/", 1)[-1], text
+                templates, snippet.identity, tr(snippet.help).splitlines()[0], text
             )
         self.tree.expandAll()
         self.tree.blockSignals(False)
@@ -168,7 +242,7 @@ class HelpPage(QWidget):
         )
         self.browser.document().setBaseUrl(QUrl.fromLocalFile(str(base)))
         self.browser.setMarkdown(text)
-        self.browser.fit_images()
+        self.browser.style_document()
 
     def back(self):
         if self.history:

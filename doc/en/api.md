@@ -94,3 +94,17 @@ parsed safely without executing it. BOOST requires neither ujson nor PUPDevice.
 
 SyntaxError indicates invalid Python, ValueError an invalid operation, binding or
 conflict, and OSError a file/device failure. Failed source edits are never published.
+
+
+## Detached fragments
+
+`Session.fragment(text, snippets)` creates a structural projection without a file.
+It formats and parses, but does not compile the surrounding execution context or
+add imports. Arbitrary invalid text stays separately in Scratch.
+`Transfer.capture(owner, index=None, fragment=None)` prepares a move without
+changing state. `to_scratch(position)`, `to_program(target)` and
+`to_fragment(index, session, target)` check the revision and commit both areas in
+one owner transaction. `index=None` denotes the main document.
+
+`Analysis.type_of(node)` and `name_type(name, offset)` conservatively infer known
+types for editing suggestions; they are not a Python type checker.

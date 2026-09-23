@@ -55,11 +55,21 @@ class Editor:
                 return node
         raise ValueError("Select a statement first")
 
-    def commit(self, source: str, scratch: tuple[str, ...] | None = None) -> bool:
+    def commit(
+        self,
+        source: str,
+        scratch: tuple[str, ...] | None = None,
+        *,
+        focus: int | None = None,
+    ) -> bool:
         offset = self.document.syntax.spans[self.selection].start
         changed = self.document.commit(source, scratch)
         self.moving = None
-        self.select(min(offset, len(self.document.state.source)))
+        self.select(
+            edit.map_offset(source, self.document.state.source, focus)
+            if focus is not None
+            else min(offset, len(self.document.state.source))
+        )
         return changed
 
     def replace(self, fragment: str) -> None:
@@ -142,7 +152,21 @@ class Editor:
         return edit.move(move.syntax, move.node, move.targets[move.index])
 
     def commit_move(self) -> None:
+        move = self._move()
+        first = move.node[0] if isinstance(move.node, tuple) else move.node
+        fingerprint = ast.dump(first)
+        offset, _ = edit.target_position(move.syntax, move.targets[move.index])
         self.commit(self.preview_move())
+        syntax = self.document.syntax
+        candidates = [
+            node
+            for node in syntax.spans
+            if isinstance(node, ast.stmt) and ast.dump(node) == fingerprint
+        ]
+        if candidates:
+            self.selection = min(
+                candidates, key=lambda node: abs(syntax.spans[node].start - offset)
+            )
 
     def cancel_move(self) -> None:
         self.moving = None

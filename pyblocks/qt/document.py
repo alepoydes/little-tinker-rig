@@ -35,10 +35,12 @@ class DocumentPage(QWidget):
         self.code_active = False
         self.source = SourceView(self.session)
         self.source.changed.connect(self.changed)
+        self.source.transferred.connect(self.changed)
         self.source.selected.connect(self.changed)
         self.source.failed.connect(self.failed)
         self.source.snippet_dropped.connect(self.snippet_dropped)
         self.code = CodeEdit()
+        self.code.setAcceptDrops(False)
         self.code.textChanged.connect(self.changed)
         self.editor_stack = QStackedWidget()
         self.editor_stack.addWidget(self.source)

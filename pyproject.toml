@@ -55,8 +55,9 @@ select = ["E4", "E7", "E9", "F", "I", "UP", "B"]
 
 [tool.ruff.lint.per-file-ignores]
 # Templates are parsed, not executed. Annotations are editor units/object kinds;
-# assignments and empty loop bodies are intentional expansion patterns.
-"pyblocks/snippets/**/*.py" = ["F722", "F821", "F841", "B007"]
+# imports declare expansion dependencies, including names used by defaults.
+# Assignments and empty loop bodies are intentional expansion patterns.
+"pyblocks/snippets/**/*.py" = ["F401", "F722", "F821", "F841", "B007"]
 
 [tool.black]
 target-version = ["py311"]

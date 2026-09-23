@@ -177,12 +177,148 @@ class Scopes:
         return None
 
 
+NUMBER_UNITS = {
+    "number",
+    "int",
+    "float",
+    "deg",
+    "deg/s",
+    "mm",
+    "mm/s",
+    "ms",
+    "s",
+    "%",
+    "N",
+}
+
+
+def value_type(annotation):
+    return "number" if annotation in NUMBER_UNITS else annotation
+
+
+def annotation_text(node):
+    if node is None:
+        return None
+    return (
+        node.value
+        if isinstance(node, ast.Constant) and isinstance(node.value, str)
+        else ast.unparse(node)
+    )
+
+
 class Analysis(Scopes):
     """Lexical lookup, not flow-sensitive type or definite-assignment analysis."""
 
     def __init__(self, syntax: Syntax):
         self.syntax = syntax
         super().__init__(syntax.tree, syntax.spans)
+        self.values = {}
+        self.method_types = {}
+        for node in ast.walk(syntax.tree):
+            if isinstance(node, (ast.Assign, ast.AnnAssign)):
+                targets = (
+                    node.targets if isinstance(node, ast.Assign) else [node.target]
+                )
+                for target in targets:
+                    if isinstance(target, ast.Name):
+                        self.values.setdefault(
+                            (id(self.resolve(target, target.id)), target.id), []
+                        ).append(
+                            (
+                                syntax.spans[target].start,
+                                node.value,
+                                annotation_text(getattr(node, "annotation", None)),
+                            )
+                        )
+            elif isinstance(node, ast.arg):
+                self.values[(id(self.scopes[node]), node.arg)] = [
+                    (-1, None, annotation_text(node.annotation))
+                ]
+            elif isinstance(node, (ast.Import, ast.ImportFrom)):
+                for alias in node.names:
+                    name = alias.asname or alias.name.split(".")[0]
+                    self.values[(id(self.scopes[node]), name)] = [
+                        (-1, None, "type" if alias.name[0].isupper() else "module")
+                    ]
+            elif isinstance(
+                node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+            ):
+                self.values[(id(self.scopes[node]), node.name)] = [
+                    (-1, None, "type" if isinstance(node, ast.ClassDef) else "function")
+                ]
+
+    def type_of(self, node, seen=frozenset()):
+        """Conservative hints, not a type checker or a restriction on user input."""
+        if isinstance(node, ast.Constant):
+            return (
+                "bool"
+                if isinstance(node.value, bool)
+                else (
+                    "number"
+                    if isinstance(node.value, (int, float, complex))
+                    else "str" if isinstance(node.value, str) else None
+                )
+            )
+        if isinstance(node, ast.Name):
+            offset = self.syntax.spans.get(node, Span(len(self.syntax.source), 0)).start
+            return self._binding_type(
+                self.resolve(node, node.id), node.id, offset, seen
+            )
+        if isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Name):
+                name = node.func.id
+                if name in {"int", "float", "abs", "min", "max", "len", "sum", "round"}:
+                    return "number"
+                if name in {"bool", "str", "list", "tuple", "dict", "set"}:
+                    return name
+                if name[0].isupper():
+                    return name
+            elif isinstance(node.func, ast.Attribute):
+                return self.method_types.get(
+                    (self.type_of(node.func.value, seen), node.func.attr)
+                )
+        if (
+            isinstance(node, ast.Compare)
+            or isinstance(node, ast.UnaryOp)
+            and isinstance(node.op, ast.Not)
+        ):
+            return "bool"
+        if isinstance(node, ast.BoolOp):
+            return (
+                "bool"
+                if all(self.type_of(value, seen) == "bool" for value in node.values)
+                else None
+            )
+        if isinstance(node, ast.UnaryOp):
+            return self.type_of(node.operand, seen)
+        if isinstance(node, ast.BinOp):
+            left, right = self.type_of(node.left, seen), self.type_of(node.right, seen)
+            return left if left == right else None
+        if isinstance(node, (ast.List, ast.ListComp)):
+            return "list"
+        if isinstance(node, (ast.Tuple, ast.Dict, ast.Set)):
+            return type(node).__name__.lower()
+        if (
+            isinstance(node, ast.Attribute)
+            and isinstance(node.value, ast.Name)
+            and node.value.id[0].isupper()
+        ):
+            return node.value.id
+        return None
+
+    def _binding_type(self, scope, name, offset, seen):
+        key = (id(scope), name)
+        if key in seen:
+            return None
+        entries = [entry for entry in self.values.get(key, ()) if entry[0] <= offset]
+        if not entries:
+            return None
+        _, value, annotation = max(entries, key=lambda item: item[0])
+        return value_type(annotation) or self.type_of(value, seen | {key})
+
+    def name_type(self, name, offset):
+        node = self.syntax.at(offset)
+        return self._binding_type(self.resolve(node, name), name, offset, frozenset())
 
     def available(self, offset: int) -> tuple[str, ...]:
         node = self.syntax.at(offset)
