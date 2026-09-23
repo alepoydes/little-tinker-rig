@@ -47,6 +47,7 @@ from .library import IDENTITY, Library
 from .localization import localize, translate_standard_dialogs
 from .navigation import ModeTabs
 from .scratch import ScratchPane
+from .window import TitleBar, resize_edges
 
 
 class Studio(QMainWindow):
@@ -54,12 +55,15 @@ class Studio(QMainWindow):
         super().__init__()
         self.setWindowFlags(
             Qt.WindowType.Window
+            | Qt.WindowType.FramelessWindowHint
             | Qt.WindowType.WindowTitleHint
             | Qt.WindowType.WindowSystemMenuHint
             | Qt.WindowType.WindowMinimizeButtonHint
             | Qt.WindowType.WindowMaximizeButtonHint
             | Qt.WindowType.WindowCloseButtonHint
         )
+        self.settings = QSettings("PyBlocks", "Studio")
+        self.setMouseTracking(True)
         self.scratch_visible = True
         self.collections = collections
         self.resize(1380, 880)
@@ -131,6 +135,15 @@ class Studio(QMainWindow):
         self.setCentralWidget(workspace)
         self._docks()
         self._menus()
+        menu = self.menuBar()
+        header = QWidget()
+        header_layout = QVBoxLayout(header)
+        header_layout.setContentsMargins(0, 0, 0, 0)
+        header_layout.setSpacing(0)
+        self.title_bar = TitleBar(self)
+        header_layout.addWidget(self.title_bar)
+        header_layout.addWidget(menu)
+        self.setMenuWidget(header)
         self.documents.currentChanged.connect(self.document_changed)
         self.documents.tabCloseRequested.connect(self.close_document)
         self.refresh_views()
@@ -230,6 +243,8 @@ class Studio(QMainWindow):
             toolbar,
             ("document-open", "SP_DirOpenIcon"),
         )
+        self.recent_menu = file.addMenu(N_("Open recent"))
+        self.recent_menu.aboutToShow.connect(self.refresh_recent_files)
         self._action(
             file,
             N_("Save"),
@@ -496,6 +511,7 @@ class Studio(QMainWindow):
     def retranslate(self):
         translate_standard_dialogs()
         localize(self)
+        self.title_bar.update_state()
         for index in range(self.documents.count()):
             self.documents.widget(index).update_mode()
             self.documents.widget(index).source.refresh_source()
@@ -522,6 +538,7 @@ class Studio(QMainWindow):
         for index in range(self.documents.count()):
             if self.documents.widget(index).session.project.path == path:
                 self.documents.setCurrentIndex(index)
+                self.remember_file(path)
                 return self.documents.widget(index)
         page = DocumentPage(path, self.collections)
         page.changed.connect(self.refresh_views)
@@ -533,7 +550,74 @@ class Studio(QMainWindow):
         self.documents.setTabToolTip(index, str(path))
         self.documents.setCurrentIndex(index)
         localize(page)
+        self.remember_file(path)
         return page
+
+    def remember_file(self, path):
+        if path.is_file():
+            recent = self.settings.value("recentFiles", [])
+            recent = [recent] if isinstance(recent, str) else recent
+            self.settings.setValue(
+                "recentFiles", [str(path), *(p for p in recent if p != str(path))][:10]
+            )
+
+    def refresh_recent_files(self):
+        self.recent_menu.clear()
+        recent = self.settings.value("recentFiles", [])
+        recent = [recent] if isinstance(recent, str) else recent
+        if not recent:
+            self.recent_menu.addAction(tr("No recent files")).setEnabled(False)
+            return
+        for index, path in enumerate(recent, 1):
+            action = self.recent_menu.addAction(f'&{index}  {path.replace("&", "&&")}')
+            action.setToolTip(path)
+            action.setData(path)
+            action.setEnabled(Path(path).is_file())
+            action.triggered.connect(
+                lambda checked=False, value=path: self.perform(
+                    lambda: self.open_recent(value)
+                )
+            )
+            action.setProperty("translationSources", {})
+        self.recent_menu.addSeparator()
+        self.recent_menu.addAction(
+            tr("Clear recent files"), lambda: self.settings.remove("recentFiles")
+        )
+
+    def open_recent(self, path):
+        if not Path(path).is_file():
+            raise FileNotFoundError(path)
+        self.open_document(path)
+        self.set_mode(0)
+
+    def mousePressEvent(self, event):
+        edges = resize_edges(self, event.position().toPoint())
+        if event.button() == Qt.MouseButton.LeftButton and edges:
+            self.windowHandle().startSystemResize(edges)
+            event.accept()
+        else:
+            super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        edges = resize_edges(self, event.position().toPoint())
+        if edges in (
+            Qt.Edge.LeftEdge | Qt.Edge.TopEdge,
+            Qt.Edge.RightEdge | Qt.Edge.BottomEdge,
+        ):
+            cursor = Qt.CursorShape.SizeFDiagCursor
+        elif edges in (
+            Qt.Edge.RightEdge | Qt.Edge.TopEdge,
+            Qt.Edge.LeftEdge | Qt.Edge.BottomEdge,
+        ):
+            cursor = Qt.CursorShape.SizeBDiagCursor
+        elif edges & (Qt.Edge.LeftEdge | Qt.Edge.RightEdge):
+            cursor = Qt.CursorShape.SizeHorCursor
+        elif edges:
+            cursor = Qt.CursorShape.SizeVerCursor
+        else:
+            cursor = Qt.CursorShape.ArrowCursor
+        self.setCursor(cursor)
+        super().mouseMoveEvent(event)
 
     def confirm_close(self, page):
         if not page.dirty:
@@ -552,6 +636,7 @@ class Studio(QMainWindow):
             try:
                 page.commit_code()
                 page.session.project.save()
+                self.remember_file(page.session.project.path)
             except (ValueError, SyntaxError, OSError) as error:
                 self.documents.setCurrentWidget(page)
                 self.error(str(error))
@@ -792,6 +877,7 @@ class Studio(QMainWindow):
     def save(self):
         self.commit_code()
         self.session.project.save()
+        self.remember_file(self.session.project.path)
 
     def new_file(self):
         parent = self.session.project.path.parent
@@ -849,6 +935,7 @@ class Studio(QMainWindow):
             project.pins = self.session.project.pins
             project.save()
             self.session.project = project
+            self.remember_file(destination)
 
     def _robot(self):
         if self.robot is None:

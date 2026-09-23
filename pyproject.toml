@@ -11,7 +11,7 @@ requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE.txt"]
 authors = [{ name = "Igor Lobanov", email = "lobanov.igor@gmail.com" }]
-dependencies = ["black>=26.5,<27"]
+dependencies = ["ruff>=0.14,<1"]
 
 [project.optional-dependencies]
 tui = ["textual>=8,<9"]
@@ -28,7 +28,7 @@ pyblocks-tui = "pyblocks.tui.app:main"
 dev = [
     "pytest>=8",
     "pytest-asyncio>=1",
-    "ruff>=0.14",
+    "black>=26.5,<27",
     "build>=1.2",
     "babel>=2.17,<3",
 ]
@@ -41,7 +41,7 @@ namespaces = false
 build_py = "build_support.BuildPy"
 
 [tool.setuptools.package-data]
-pyblocks = ["snippets/**/*.toml", "core/black.toml", "locale/languages.json", "locale/**/*.po", "locale/**/*.mo"]
+pyblocks = ["snippets/**/*.toml", "core/formatting.toml", "locale/languages.json", "locale/**/*.po", "locale/**/*.mo"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -1,6 +1,7 @@
 """Structural roles shared by every renderer; colors are quiet RGB defaults."""
 
 import ast
+from bisect import bisect_right
 from dataclasses import dataclass
 
 from .syntax import Span, Syntax
@@ -66,6 +67,8 @@ def regions(syntax: Syntax, matches=()) -> tuple[Region, ...]:
             span = syntax.spans[node]
             line, column = syntax.position(span.start)
             end_line, end_column = syntax.position(span.end)
+            if isinstance(node, ast.stmt):
+                line = syntax.position(syntax.owned_spans[node].start)[0]
             result.append(
                 Region(
                     span,
@@ -84,16 +87,22 @@ def regions(syntax: Syntax, matches=()) -> tuple[Region, ...]:
             visit(child, depth + visible)
 
     visit(syntax.tree, 0)
-    for match in matches:
-        contained = [
-            region
-            for region in result
-            if match.span.start <= region.span.start
-            and region.span.end <= match.span.end
-        ]
-        depth = min((region.depth for region in contained), default=0)
-        result = [region for region in result if region not in contained]
+    matches = sorted(matches, key=lambda match: match.span.start)
+    starts = [match.span.start for match in matches]
+    depths, first_lines = {}, {}
+    visible = []
+    for region in result:
+        index = bisect_right(starts, region.span.start) - 1
+        if index >= 0 and region.span.end <= matches[index].span.end:
+            depths[index] = min(depths.get(index, region.depth), region.depth)
+            first_lines[index] = min(first_lines.get(index, region.line), region.line)
+        else:
+            visible.append(region)
+    result = visible
+    for index, match in enumerate(matches):
+        depth = depths.get(index, 0)
         line, column = syntax.position(match.span.start)
+        line = first_lines.get(index, line)
         end_line, end_column = syntax.position(match.span.end)
         result.append(
             Region(

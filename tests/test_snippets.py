@@ -44,6 +44,27 @@ def test_hygienic_expansion_remains_recognizable():
     assert ast.unparse(match.bindings["x"]) == "sensor.read()"
 
 
+@pytest.mark.parametrize(
+    ("template", "bindings", "occupied"),
+    [
+        ("def invoke(callback):\n    return callback(1)\n", {"callback": "run"}, set()),
+        ("def identity(value):\n    return value\n", {"value": "left + right"}, set()),
+        ("def invoke():\n    callback()\n    callback = handler\n", {}, {"callback"}),
+    ],
+)
+def test_recognition_keeps_variable_roots_and_callees(template, bindings, occupied):
+    (snippet,) = load_module(template, "test", "1.0")
+    expansion = instantiate(snippet, bindings, occupied)
+    (match,) = recognize(Syntax(expansion.source + "\n"), (snippet,))
+    assert {
+        name: ast.unparse(value) for name, value in match.bindings.items()
+    } == bindings
+    assert (
+        instantiate(snippet, match.bindings, local_names=match.locals).source
+        == expansion.source
+    )
+
+
 def test_historical_upgrade_preserves_bindings_and_names():
     (old,) = load_module(
         "def show(x):\n    temp = x\n    print(temp)\n", "test", "1.0", historical=True

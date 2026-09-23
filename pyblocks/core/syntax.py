@@ -92,6 +92,23 @@ class Syntax:
             except ValueError:
                 pass  # Non-isolated fmt:off statements keep their exact AST span.
 
+        # Wide suites need logarithmic hit testing. Prefix maxima retain the
+        # original first-owner rule even for overlapping f-string AST spans.
+        self._child_ranges = {}
+        for parent, children in self.children.items():
+            if len(children) <= 8:
+                continue
+            ordered = sorted(
+                enumerate(children), key=lambda pair: self.owned_spans[pair[1]].start
+            )
+            starts, ends, longest = [], [], 0
+            for _, child in ordered:
+                span = self.owned_spans[child]
+                starts.append(span.start)
+                longest = max(longest, span.end)
+                ends.append(longest)
+            self._child_ranges[parent] = (ordered, starts, ends)
+
     def validate(self, source):
         return parse(source, fragment=self.fragment)
 
@@ -124,14 +141,27 @@ class Syntax:
             raise ValueError("Offset outside source")
         node = self.tree
         while True:
-            child = next(
-                (
-                    n
-                    for n in self.children[node]
-                    if self.owned_spans[n].contains(offset)
-                ),
-                None,
-            )
+            if node in self._child_ranges:
+                ordered, starts, ends = self._child_ranges[node]
+                index = bisect_right(starts, offset) - 1
+                found = None
+                while index >= 0 and ends[index] > offset:
+                    order, candidate = ordered[index]
+                    if self.owned_spans[candidate].contains(offset) and (
+                        found is None or order < found[0]
+                    ):
+                        found = (order, candidate)
+                    index -= 1
+                child = found[1] if found else None
+            else:
+                child = next(
+                    (
+                        n
+                        for n in self.children[node]
+                        if self.owned_spans[n].contains(offset)
+                    ),
+                    None,
+                )
             if child is None:
                 return node
             node = child

@@ -1,6 +1,9 @@
 """Display-only explanations of structural blocks; never written into Python."""
 
 import ast
+from bisect import bisect_right
+from collections import defaultdict
+from dataclasses import dataclass
 
 from pyblocks.core.presentation import role, snippet_role
 from pyblocks.i18n import N_, tr
@@ -30,29 +33,52 @@ LABELS = {
 }
 
 
+@dataclass(frozen=True)
+class BlockNote:
+    column: int
+    description: str
+    icon: str
+    role: str
+
+
 def block_notes(session):
     syntax = session.document.syntax
-    matches = [m for m in session.visible_matches if not m.snippet.expression]
-    notes = {}
+    matches = session.visible_matches
+    starts = [m.span.start for m in matches]
+    notes = defaultdict(list)
     for node, span in syntax.spans.items():
-        if type(node) not in LABELS or any(
-            m.span.start <= span.start and span.end <= m.span.end for m in matches
-        ):
+        if type(node) not in LABELS:
+            continue
+        index = bisect_right(starts, span.start) - 1
+        if index >= 0 and span.end <= matches[index].span.end:
             continue
         if isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant):
             continue
         line, column = syntax.position(span.start)
-        notes.setdefault(
-            line, (column, tr(LABELS[type(node)]), ICONS.get(role(node), "▶"))
+        notes[line].append(
+            BlockNote(
+                column, tr(LABELS[type(node)]), ICONS.get(role(node), "▶"), role(node)
+            )
         )
     for match in matches:
         line, column = syntax.position(match.span.start)
-        notes[line] = (
-            column,
-            tr(match.snippet.help).splitlines()[0],
-            block_icon(match.snippet),
+        description = (
+            tr(match.snippet.help).splitlines()[0]
+            if match.snippet.help
+            else match.snippet.identity.rsplit("/", 1)[1]
         )
-    return notes
+        notes[line].append(
+            BlockNote(
+                column,
+                description,
+                block_icon(match.snippet),
+                snippet_role(match.snippet),
+            )
+        )
+    return {
+        line: tuple(sorted(items, key=lambda note: note.column))
+        for line, items in notes.items()
+    }
 
 
 def block_icon(snippet):

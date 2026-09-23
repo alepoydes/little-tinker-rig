@@ -185,17 +185,18 @@ def test_parameter_combo_opens_in_place_and_validates_before_commit(tmp_path, qt
             Qt.MouseButton.LeftButton,
             pos=rect.center().toPoint(),
         )
+        qt_app.processEvents()
         popup = window.source.parameter_editor
         assert popup.isVisible() and QApplication.activeModalWidget() is None
         assert popup.parent() is window.source.viewport()
-        assert popup.view().isVisible()
+        assert popup.completer.popup().isVisible()
         assert popup.unit.text() == "°/s"
-        assert popup.lineEdit().text() == "500"
-        popup.setCurrentText("300 +")
+        assert popup.line_edit.text() == "500"
+        popup.line_edit.setText("300 +")
         popup.apply()
         assert popup.isVisible() and popup.error
         assert window.session.document.state.source.endswith("motor.run(500)\n")
-        popup.setCurrentText("300")
+        popup.line_edit.setText("300")
         popup.apply()
         assert window.session.document.state.source.endswith("motor.run(300)\n")
         assert window.source.viewport().cursor().shape() != Qt.CursorShape.IBeamCursor
@@ -214,7 +215,7 @@ def test_parameter_replacements_preserve_grouping_and_all_occurrences(tmp_path):
     session.snippets = load_module(
         "def square(value=2):\n    return value * value\n", "math", "1.0"
     )
-    fields = slots(session)
+    fields = [slot for slot in slots(session) if slot.parameter.name == "value"]
     assert len(fields) == 2
     change_parameter(session, fields[0], "3 + 4")
     namespace = {}

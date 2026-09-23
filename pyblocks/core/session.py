@@ -114,8 +114,10 @@ class Session:
     @property
     def visible_matches(self) -> tuple[Match, ...]:
         self._refresh()
-        return tuple(
-            match for match in self._matches if match.span not in self._expanded
+        return (
+            tuple(match for match in self._matches if match.span not in self._expanded)
+            if self._expanded
+            else self._matches
         )
 
     def selected_match(self) -> Match | None:

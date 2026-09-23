@@ -34,11 +34,56 @@ def map_offset(previous: str, source: str, offset: int) -> int:
     """Follow an existing source character through formatting or inserted imports."""
     if source == previous:
         return min(offset, len(source))
-    for _tag, start, end, new_start, new_end in SequenceMatcher(
-        None, previous, source, autojunk=False
+    # Most edits preserve the viewport's prefix or suffix. Avoid a quadratic
+    # character diff over a whole document, especially repeated code/indentation.
+    prefix = next(
+        (i for i, (a, b) in enumerate(zip(previous, source, strict=False)) if a != b),
+        min(len(previous), len(source)),
+    )
+    if offset < prefix:
+        return offset
+    suffix = 0
+    limit = min(len(previous), len(source)) - prefix
+    while suffix < limit and previous[-suffix - 1] == source[-suffix - 1]:
+        suffix += 1
+    if offset >= len(previous) - suffix:
+        return len(source) - (len(previous) - offset)
+    old, new = (
+        previous[prefix : len(previous) - suffix or None],
+        source[prefix : len(source) - suffix or None],
+    )
+    old_lines, new_lines = old.splitlines(keepends=True), new.splitlines(keepends=True)
+    old_starts, new_starts = [0], [0]
+    for lines, starts in ((old_lines, old_starts), (new_lines, new_starts)):
+        for line in lines:
+            starts.append(starts[-1] + len(line))
+    for tag, a, b, c, d in SequenceMatcher(
+        None, old_lines, new_lines, autojunk=False
     ).get_opcodes():
-        if start <= offset < end:
-            return new_start + min(offset - start, new_end - new_start)
+        start, end, new_start, new_end = (
+            old_starts[a],
+            old_starts[b],
+            new_starts[c],
+            new_starts[d],
+        )
+        if start <= offset - prefix < end:
+            if tag == "equal":
+                return new_start + offset - start
+            # Changes within one line retain their character-level anchor.
+            if b - a == d - c == 1:
+                for _, x, y, u, v in SequenceMatcher(
+                    None, old[start:end], new[new_start:new_end], autojunk=False
+                ).get_opcodes():
+                    if x <= offset - prefix - start < y:
+                        return (
+                            prefix
+                            + new_start
+                            + u
+                            + min(offset - prefix - start - x, v - u)
+                        )
+            return (
+                prefix + new_start + min(offset - prefix - start, new_end - new_start)
+            )
     return len(source)
 
 

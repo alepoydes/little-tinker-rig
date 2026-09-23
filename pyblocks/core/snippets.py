@@ -3,7 +3,9 @@
 import ast
 import copy
 import tomllib
+from bisect import bisect_left
 from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 
 from .analysis import Analysis, Scopes, annotation_text, identifiers, value_type
@@ -33,7 +35,7 @@ class Snippet:
     def expression(self) -> bool:
         return isinstance(self.body, ast.expr)
 
-    @property
+    @cached_property
     def specificity(self) -> int:
         roots = (self.body,) if self.expression else self.body
         return sum(
@@ -400,13 +402,46 @@ def recognize(
 ) -> tuple[Match, ...]:
     """Recognize whole algorithms before fragments; current forms supersede history."""
     analysis = analysis or Analysis(syntax)
+
+    def keys(node):
+        yield type(node)
+        value = (
+            node.value
+            if isinstance(node, (ast.Expr, ast.Assign, ast.AnnAssign))
+            else node
+        )
+        if isinstance(value, ast.Call):
+            function = value.func
+            if isinstance(function, ast.Attribute) and not getattr(
+                function, "template_names", None
+            ):
+                yield (type(node), "method", function.attr)
+            elif (
+                isinstance(function, ast.Name)
+                and not getattr(function, "template_parameter", None)
+                and not getattr(function, "template_names", None)
+            ):
+                yield (type(node), "call", function.id)
+
+    expressions, statements = {}, {}
+    all_expressions = []
+    for node, span in syntax.spans.items():
+        if isinstance(node, ast.expr):
+            item = (span, node)
+            all_expressions.append(item)
+            for key in keys(node):
+                expressions.setdefault(key, []).append(item)
+    for suite in syntax.suites:
+        for index, node in enumerate(suite.statements):
+            for key in keys(node):
+                statements.setdefault(key, []).append((suite, index))
     candidates = []
     for snippet in snippets:
         if snippet.expression:
             regions = (
-                (syntax.spans[node], node)
-                for node in syntax.spans
-                if isinstance(node, ast.expr)
+                all_expressions
+                if getattr(snippet.body, "template_parameter", None)
+                else expressions.get(tuple(keys(snippet.body))[-1], ())
             )
         else:
             count = len(snippet.body)
@@ -418,8 +453,8 @@ def recognize(
                     ),
                     tuple(suite.statements[index : index + count]),
                 )
-                for suite in syntax.suites
-                for index in range(len(suite.statements) - count + 1)
+                for suite, index in statements.get(tuple(keys(snippet.body[0]))[-1], ())
+                if index + count <= len(suite.statements)
             )
         for span, candidate in regions:
             result = _match(snippet, candidate)
@@ -450,13 +485,24 @@ def recognize(
             m.snippet.identity,
         )
     )
+    # A prefix-maximum Fenwick index rejects overlapping candidates in O(log n).
+    # Accepted intervals are never removed; their start/end coordinates suffice.
+    starts = sorted({match.span.start for match in candidates})
+    ends = [0] * (len(starts) + 1)
     result = []
     for match in candidates:
-        if all(
-            match.span.end <= other.span.start or match.span.start >= other.span.end
-            for other in result
-        ):
-            result.append(match)
+        index = bisect_left(starts, match.span.end)
+        latest = 0
+        while index:
+            latest = max(latest, ends[index])
+            index -= index & -index
+        if latest > match.span.start:
+            continue
+        result.append(match)
+        index = bisect_left(starts, match.span.start) + 1
+        while index < len(ends):
+            ends[index] = max(ends[index], match.span.end)
+            index += index & -index
     return tuple(sorted(result, key=lambda match: match.span.start))
 
 

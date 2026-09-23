@@ -372,7 +372,7 @@ name = "pyblocks-studio"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "black" },
+    { name = "ruff" },
 ]
 
 [package.optional-dependencies]
@@ -392,18 +392,18 @@ tui = [
 [package.dev-dependencies]
 dev = [
     { name = "babel" },
+    { name = "black" },
     { name = "build" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
-    { name = "ruff" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "black", specifier = ">=26.5,<27" },
     { name = "pybricksdev", marker = "extra == 'pybricks'", specifier = ">=2.3,<3" },
     { name = "pygame-ce", marker = "extra == 'gamepad'", specifier = ">=2.5,<3" },
     { name = "pyside6", marker = "extra == 'qt'", specifier = ">=6.8,<7" },
+    { name = "ruff", specifier = ">=0.14,<1" },
     { name = "textual", marker = "extra == 'tui'", specifier = ">=8,<9" },
 ]
 provides-extras = ["tui", "qt", "pybricks", "gamepad"]
@@ -411,10 +411,10 @@ provides-extras = ["tui", "qt", "pybricks", "gamepad"]
 [package.metadata.requires-dev]
 dev = [
     { name = "babel", specifier = ">=2.17,<3" },
+    { name = "black", specifier = ">=26.5,<27" },
     { name = "build", specifier = ">=1.2" },
     { name = "pytest", specifier = ">=8" },
     { name = "pytest-asyncio", specifier = ">=1" },
-    { name = "ruff", specifier = ">=0.14" },
 ]
 
 [[package]]

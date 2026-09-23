@@ -23,6 +23,15 @@ def test_unicode_offsets_and_ownership():
     )
 
 
+def test_formatting_ignores_working_directory_settings(tmp_path, monkeypatch):
+    (tmp_path / "ruff.toml").write_text("unknown-setting = true\n")
+    monkeypatch.chdir(tmp_path)
+    source = "greeting='Привет 😀'\nitems = [1,2,3]\n"
+    document = Document(source)
+    assert document.state.source == 'greeting = "Привет 😀"\nitems = [1, 2, 3]\n'
+    assert ast.dump(document.syntax.tree) == ast.dump(ast.parse(source))
+
+
 @pytest.mark.parametrize("source", ["return 1\n", "break\n", "await f()\n", "x =\n"])
 def test_context_errors_do_not_mutate_document(source):
     document = Document("x = 1\n")

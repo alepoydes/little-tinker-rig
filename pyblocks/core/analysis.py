@@ -211,6 +211,7 @@ class Analysis(Scopes):
 
     def __init__(self, syntax: Syntax):
         self.syntax = syntax
+        self.used_names = identifiers(syntax.tree)
         super().__init__(syntax.tree, syntax.spans)
         self.values = {}
         self.method_types = {}
@@ -319,6 +320,16 @@ class Analysis(Scopes):
     def name_type(self, name, offset):
         node = self.syntax.at(offset)
         return self._binding_type(self.resolve(node, name), name, offset, frozenset())
+
+    def name_types(self, offset):
+        node = self.syntax.at(offset)
+        return {
+            name: self._binding_type(
+                self.resolve(node, name), name, offset, frozenset()
+            )
+            for name in self.available(offset)
+            if name in self.used_names
+        }
 
     def available(self, offset: int) -> tuple[str, ...]:
         node = self.syntax.at(offset)

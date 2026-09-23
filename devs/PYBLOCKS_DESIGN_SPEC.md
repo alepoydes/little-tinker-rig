@@ -118,7 +118,7 @@ This removes the need for difficult synchronization between a text representatio
 
 The project must use a standard deterministic Python formatter so that structurally equivalent edits converge to a predictable textual form.
 
-The exact formatter has **not yet been selected**.
+The editor uses Ruff through its public CLI, with packaged deterministic settings.
 
 Requirements for the formatter choice:
 

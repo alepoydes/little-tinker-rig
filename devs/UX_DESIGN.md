@@ -54,9 +54,16 @@ Changing tabs never commits unfinished Python. Hub tools, the console, and globa
 modes belong to the window. Closing checks every changed document; reopening a
 path selects its existing tab.
 
+File → Open recent stores up to ten successfully opened or saved paths. Opening
+an existing tab preserves its draft. Missing files are disabled; the list can be
+cleared.
+
 Global navigation uses rotated labels and a neutral active indicator. Blocks and
 Python use two icons in the document header and matching View menu actions.
-Native window controls allow minimizing and maximizing; F11 toggles full screen.
+A visible title bar provides minimize, maximize/restore, and close on every
+desktop, including GNOME layouts that hide native buttons. Dragging and edge
+resizing use the compositor; double-clicking the title toggles maximization.
+F11 toggles full screen.
 
 English is the source language and the default on first launch. Russian is a
 gettext translation. The language menu uses native names from languages.json;
@@ -71,12 +78,16 @@ release checks require both supported manuals to be complete. Page and block
 anchors are preserved when changing languages.
 
 The structural view has no text cursor outside parameter editing. Clicking a
-field opens its editable combo directly over the source value. The name is a
+field opens a text input directly over the source value. A field with alternatives
+also has an arrow and a completion list below it. Declared names and fields without
+alternatives remain plain inputs. The name is a
 tooltip and the unit is a read-only suffix. Choices use known types and exclude
 imported classes from condition suggestions. Invalid input stays available for
 correction without changing the program.
 
-Descriptions and action symbols are display-only. Selection pulses across the
+Descriptions and action symbols are display-only. Every description has its own
+row and the color of its block, including nested expression blocks. Drop boundaries
+precede both descriptions and owned source comments. Selection pulses across the
 block background; blank lines preserve indentation bands. During a drag, the
 view shows the target indentation and a source preview. Library blocks insert
 with defaults or context-derived values, without a dialog. The view preserves its

@@ -8,21 +8,24 @@ Use the two document icons or **View → Blocks / Python** to change the editor 
 Global workspaces use narrow rotated labels and neutral active indicators.
 
 The Python editor has syntax highlighting, line numbers, indentation with
-Tab/Shift+Tab, word completion with Ctrl+Space, and search with Ctrl+F. Black
+Tab/Shift+Tab, word completion with Ctrl+Space, and search with Ctrl+F. Ruff
 formats committed edits. Invalid drafts never replace the committed document
 or file; a file containing invalid Python opens as a text draft.
 
-In Blocks, clicking a parameter immediately opens its choices over the source
-value. The editable field exists only while editing; the parameter name is a
+In Blocks, clicking a parameter opens a text field over its source value.
+When alternatives exist, an arrow opens a list below the field; otherwise the
+input has no arrow. Declaration names are plain editable text. The editable field
+exists only while editing; the parameter name is a
 tooltip, and a read-only suffix shows its unit. Suggestions respect known types:
 conditions offer booleans and button readings, motor fields offer motor variables.
 Repeated occurrences change together. Enter or choosing an item applies; Escape
-dismisses. A structural
-selection uses the whole block background, including the remaining line width.
+dismisses. A structural selection uses the whole block background, including the
+remaining line width.
 
 Scratch is visible by default and can be resized or closed with its dock controls.
-The bottom Scratch button restores it. Control mode hides Scratch. Standard title
-bar buttons minimize and maximize the window; F11 toggles full screen.
+The bottom Scratch button restores it. Control mode hides Scratch. The title bar
+always shows minimize, maximize/restore, and close. Double-click it to toggle
+maximization; drag it or a window edge to move or resize. F11 toggles full screen.
 
 Descriptions above blocks and symbols on the right explain their purpose without
 adding comments to the Python file. Indentation colors continue through blank
@@ -106,3 +109,13 @@ See [authoring snippets](snippets.md) and [robot control](robotics.md).
 ![Offline guide and block reference](images/help.png)
 
 ![Previewing an insertion from the library](images/drop-preview.png)
+
+## Recent files and block descriptions
+
+**File → Open recent** lists the ten most recently opened or saved files. Opening
+a file already in a tab selects that tab and preserves its unfinished draft.
+Missing files remain visible but disabled. **Clear recent files** clears the list.
+
+A block description occupies a separate row in its own semantic color. Nested
+expression blocks have their own description rows. The insertion marker appears
+before the target block's descriptions and any attached Python comments.

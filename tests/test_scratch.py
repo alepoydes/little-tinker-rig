@@ -193,7 +193,7 @@ def test_qt_drag_library_scratch_program_undo_and_raw_draft(tmp_path, qt_app):
         cell = window.scratch.cells[0]
         assert cell.source.toPlainText() == "motor = Motor(Port.A)\n"
         assert cell.source.isVisible() and not cell.code_active
-        assert cell.source.notes[1][1]
+        assert cell.source.notes[1][0].description
         data = BlockMime(Transfer.capture(window.session, index=0))
         send_drop(qt_app, window.source.viewport(), data, QPoint(30, 30))
         assert not window.scratch.cells and not window.session.analysis.diagnostics()

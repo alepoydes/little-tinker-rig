@@ -20,3 +20,14 @@ def interface_language():
     set_language(DEFAULT_LANGUAGE)
     yield
     set_language(previous)
+
+
+@pytest.fixture(autouse=True)
+def isolated_qt_settings(request, tmp_path, monkeypatch):
+    if "qt_app" in request.fixturenames:
+        from PySide6.QtCore import QSettings
+
+        import pyblocks.qt.app
+
+        settings = QSettings(str(tmp_path / "settings.ini"), QSettings.Format.IniFormat)
+        monkeypatch.setattr(pyblocks.qt.app, "QSettings", lambda *args: settings)

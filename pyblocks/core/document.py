@@ -19,7 +19,9 @@ class Document:
         self, source: str = "", scratch: tuple[str, ...] = (), *, fragment=False
     ):
         self.fragment = fragment
-        source = format_source(source, fragment=self.fragment)
+        # Scratch is a parsed projection of its existing text, not a new edit.
+        # Canonical formatting belongs to commits, not view construction.
+        source = source if fragment else format_source(source)
         self._state = State(source, tuple(scratch))
         self._syntax = Syntax(source, fragment=self.fragment)
         self._undo: list[State] = []

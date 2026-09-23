@@ -1,24 +1,31 @@
-"""Canonical formatting through Black's supported command-line interface."""
+"""Canonical formatting through Ruff's supported command-line interface."""
 
 import subprocess
 import sys
+import sysconfig
+from functools import lru_cache
 from pathlib import Path
+from shutil import which
 
 from .syntax import parse
 
 
+@lru_cache(maxsize=64)
 def format_source(source: str, *, fragment: bool = False) -> str:
     """Return validated canonical source, independent of cwd configuration."""
     parse(source, fragment=fragment)
+    if not source.strip():
+        return ""
+    executable = which("ruff", path=sysconfig.get_path("scripts"))
+    command = [executable] if executable else [sys.executable, "-m", "ruff"]
     try:
         result = subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "black",
+            command
+            + [
+                "format",
                 "--quiet",
                 "--config",
-                str(Path(__file__).with_name("black.toml")),
+                str(Path(__file__).with_name("formatting.toml")),
                 "-",
             ],
             input=source,

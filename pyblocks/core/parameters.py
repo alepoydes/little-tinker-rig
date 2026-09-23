@@ -1,6 +1,7 @@
 """Editable expression slots and suggested bindings, derived entirely from source."""
 
 import ast
+from bisect import bisect_right
 from dataclasses import dataclass
 
 from . import edit
@@ -15,6 +16,7 @@ class Slot:
     span: Span
     parameter: Parameter
     match: Match | None = None
+    binding: bool = False
 
 
 def slots(session):
@@ -45,17 +47,30 @@ def slots(session):
             ):
                 continue
             for node in match.occurrences.get(parameter.name, ()):
-                result.append(Slot(syntax, syntax.spans[node], parameter, match))
+                result.append(
+                    Slot(
+                        syntax,
+                        syntax.spans[node],
+                        parameter,
+                        match,
+                        isinstance(getattr(node, "ctx", None), ast.Store),
+                    )
+                )
         if assignment and isinstance(match.bindings[assignment], ast.Call):
             covered.extend(slot.span for slot in result if slot.match is match)
         else:
             covered.append(match.span)
 
+    covered.sort()
+    covered_starts = [span.start for span in covered]
+    blocked = set()
+
     def add(node, name, annotation=None):
-        if node not in syntax.spans:
+        if node not in syntax.spans or node in blocked:
             return
         span = syntax.spans[node]
-        if any(item.start <= span.start and span.end <= item.end for item in covered):
+        index = bisect_right(covered_starts, span.start) - 1
+        if index >= 0 and span.end <= covered[index].end:
             return
         if syntax.position(span.start)[0] != syntax.position(span.end)[0]:
             return
@@ -70,9 +85,10 @@ def slots(session):
                 syntax,
                 span,
                 Parameter(name, None, annotation or session.analysis.type_of(node)),
+                binding=isinstance(getattr(node, "ctx", None), ast.Store),
             )
         )
-        covered.append(span)
+        blocked.update(ast.walk(node))
 
     # Outer expressions are useful editing units: a condition or argument can
     # be replaced as a whole without turning every identifier into a control.
@@ -101,34 +117,38 @@ def slots(session):
             for keyword in node.keywords:
                 add(keyword.value, keyword.arg or "arguments")
         elif isinstance(node, (ast.Assign, ast.AnnAssign)):
+            for target in (
+                node.targets if isinstance(node, ast.Assign) else (node.target,)
+            ):
+                if isinstance(target, ast.Name):
+                    add(target, "name", "identifier")
             if node.value is not None and not isinstance(node.value, ast.Call):
                 add(node.value, "value")
     return tuple(sorted(result, key=lambda item: item.span))
 
 
+def has_choices(session, slot):
+    if slot.binding:
+        return False
+    current = slot.syntax.source[slot.span.start : slot.span.end]
+    return any(
+        value != current for value in _choices(session, slot.parameter, slot.span.start)
+    )
+
+
 def choices(session, parameter, offset):
-    analysis = session.analysis
-    names = {
-        name: analysis.name_type(name, offset)
-        for name in analysis.available(offset)
-        if name in identifiers(session.document.syntax.tree)
-    }
-    if context := getattr(session, "context", None):
-        position = context.document.syntax.spans[context.editor.selection].start
-        outer = {
-            name: context.analysis.name_type(name, position)
-            for name in context.analysis.available(position)
-            if name in identifiers(context.document.syntax.tree)
-        }
-        names = dict(outer, **names)
+    return tuple(dict.fromkeys(_choices(session, parameter, offset)))
+
+
+def _choices(session, parameter, offset):
     kind = value_type(parameter.annotation)
     if kind is None and parameter.name in {"test", "condition"}:
         kind = "bool"
     enums = {
-        "Port": [f"Port.{port}" for port in getattr(session, "ports", "ABCDEF")],
-        "Direction": ["Direction.CLOCKWISE", "Direction.COUNTERCLOCKWISE"],
-        "Stop": ["Stop.COAST", "Stop.BRAKE", "Stop.HOLD"],
-        "Color": [
+        "Port": tuple(f"Port.{port}" for port in getattr(session, "ports", "ABCDEF")),
+        "Direction": ("Direction.CLOCKWISE", "Direction.COUNTERCLOCKWISE"),
+        "Stop": ("Stop.COAST", "Stop.BRAKE", "Stop.HOLD"),
+        "Color": (
             "Color.BLACK",
             "Color.WHITE",
             "Color.RED",
@@ -136,27 +156,31 @@ def choices(session, parameter, offset):
             "Color.BLUE",
             "Color.YELLOW",
             "Color.NONE",
-        ],
+        ),
     }
     if kind in enums:
-        return tuple(enums[kind])
-    values = [
-        name for name, actual in names.items() if actual == kind and kind is not None
-    ]
-    if parameter.default is not None and (
-        kind in {None, "number", "bool", "str"} or names.get(parameter.default) == kind
-    ):
-        values.append(parameter.default)
+        yield from enums[kind]
+        return
+    if parameter.default is not None and kind in {None, "number", "bool", "str"}:
+        yield parameter.default
     if kind == "bool":
-        values.extend(("True", "False"))
-    elif kind is None:
-        values.extend(
+        yield from ("True", "False")
+    names = session.analysis.name_types(offset)
+    if context := getattr(session, "context", None):
+        position = context.document.syntax.spans[context.editor.selection].start
+        names = context.analysis.name_types(position) | names
+    yield from (
+        name for name, actual in names.items() if actual == kind and kind is not None
+    )
+    if parameter.default is not None and names.get(parameter.default) == kind:
+        yield parameter.default
+    if kind is None:
+        yield from (
             name
             for name, actual in names.items()
             if actual not in {"type", "function", "module"}
         )
-    # Offer useful sensor readings of the requested type, using the same static
-    # function templates as the library. No imports or device calls are executed.
+    # Static library definitions supply readings without importing user modules.
     for snippet in session.snippets:
         body = snippet.body
         if not (
@@ -171,8 +195,7 @@ def choices(session, parameter, offset):
         if device is not None:
             for name, actual in names.items():
                 if actual == device.annotation:
-                    values.append(instantiate(snippet, {device.name: name}).source)
-    return tuple(dict.fromkeys(values))
+                    yield instantiate(snippet, {device.name: name}).source
 
 
 def default_bindings(session, snippet, offset=None):
@@ -190,21 +213,16 @@ def default_bindings(session, snippet, offset=None):
         if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store)
     }
     for parameter in snippet.parameters:
-        suggested = choices(session, parameter, offset)
         value = parameter.default or parameter.name
-        if (
-            parameter.annotation
-            in {
-                "Motor",
-                "ColorSensor",
-                "ColorDistanceSensor",
-                "DriveBase",
-                "UltrasonicSensor",
-                "ForceSensor",
-                "StopWatch",
-            }
-            and suggested
-        ):
+        if parameter.annotation in {
+            "Motor",
+            "ColorSensor",
+            "ColorDistanceSensor",
+            "DriveBase",
+            "UltrasonicSensor",
+            "ForceSensor",
+            "StopWatch",
+        } and (suggested := choices(session, parameter, offset)):
             value = (
                 value
                 if value in suggested

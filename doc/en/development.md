@@ -10,7 +10,7 @@ uv run python tools/check_docs.py
 uv build
 ```
 
-Core uses the standard library and Black's supported CLI with packaged settings.
+Core uses the standard library and Ruff's supported CLI with packaged settings.
 Qt tests run offscreen. Tests covering asyncio worker threads require local
 socketpair communication; a sandbox that denies socketpair writes cannot run
 those tests correctly. No test requires a physical robot.
@@ -133,3 +133,24 @@ default expressions. F401 is disabled for template modules because removing thos
 imports can break expanded programs. Run behavioral tests after linting and
 formatting. Pointer indentation, rather than the text cursor's column zero, selects
 the nesting of a drop onto an empty line.
+
+## Interactive latency
+
+Measure complete insertions, including analysis, Qt layout, and repaint:
+
+```sh
+uv run --extra qt python tools/benchmark_editor.py --lines 1000 5000
+```
+
+Runtime formatting uses Ruff's public CLI with `core/formatting.toml`; repository
+code style is checked with the development Black dependency. Scratch views parse
+existing text without reformatting it; committed edits still format and validate.
+Source indexes and derived presentation are reused while the revision is unchanged.
+Hit testing and snippet overlap selection use indexes, and rendering visits visible
+rows. Formatting operations batch Qt layout updates. Benchmark library-to-Scratch
+and program-to-Scratch separately, and verify undo after each transfer.
+
+Regression checks must exercise actual pointer activation for every enum value,
+plain identifier fields, source preservation while opening menus, comment colors,
+and the insertion marker above all owned descriptions. Window control tests click
+the visible buttons; window flags alone do not verify desktop decorations.
