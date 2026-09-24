@@ -41,6 +41,7 @@ class BlockNote:
     icon: str
     role: str
     span: Span
+    error: bool = False
 
 
 def block_notes(session):
@@ -80,6 +81,20 @@ def block_notes(session):
                 block_icon(match.snippet),
                 snippet_role(match.snippet),
                 match.span,
+            )
+        )
+    for diagnostic in session.analysis.diagnostics():
+        if diagnostic.severity != "error":
+            continue
+        line, column = syntax.position(diagnostic.span.start)
+        notes[line].append(
+            BlockNote(
+                column,
+                tr("Error: {detail}", detail=diagnostic.message),
+                "!",
+                "warning",
+                diagnostic.span,
+                True,
             )
         )
     return {

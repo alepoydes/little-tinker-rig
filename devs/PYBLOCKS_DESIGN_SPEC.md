@@ -1621,3 +1621,28 @@ compatibility is checked before erase. LEGO downloads provide Inventor/Prime
 recovery 1.3; BOOST/Technic restoration requires a local compatible LEGO package.
 Automation prepares images and tests public transport boundaries; physical flashing
 requires separate hardware verification.
+
+### Structural expression and function editing
+
+The desktop exposes expression leaves, call receivers and callees, function names,
+parameters and operators as fields derived from source. Calls, definitions and
+Boolean operations share insertion, removal and reordering of list items; calls
+and definitions allow zero items, while `and`/`or` keep at least two operands.
+Explicit expression replacement and wrapping preserve grouping and evaluation
+order. Occupied fields remain protected against accidental drag replacement.
+
+Module-level user definitions contribute a transient My functions library group.
+Definition renames follow resolved lexical bindings, including known keyword
+calls. Signature changes retain existing call sites. Proven argument mismatches
+have a red frame and a generated error-comment row; unknown dynamic signatures
+are not treated as errors. Syntax validation and one-step Undo apply to all edits.
+The Beginner range block fixes `range` and exposes the counter/count; the Standard
+variant exposes start, exclusive stop and step as well.
+
+Generated comments begin with `#` at their containing statement's indentation;
+the following enlarged icon and text may align with a nested expression without
+increasing row height. They share backgrounds, ancestor bands, hover, selection
+and ownership hit testing with code. Origin and destination markers use explicit,
+contrasting colors; the origin starts at the moved block's former indentation.
+Library search matches all query words across the complete localized help, source,
+name and group.

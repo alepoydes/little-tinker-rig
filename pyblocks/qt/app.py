@@ -93,7 +93,7 @@ class Studio(QMainWindow):
         self.documents.setTabsClosable(True)
         self.documents.setMovable(True)
         self.open_document(path)
-        self.library = Library(self.session.snippets)
+        self.library = Library(self.session.available_snippets)
         self.library.itemDoubleClicked.connect(self.insert_selected)
         self.search = QLineEdit()
         self.search.setPlaceholderText(N_("Find a block…"))
@@ -133,7 +133,7 @@ class Studio(QMainWindow):
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QScrollArea.Shape.NoFrame)
         scroll.setWidget(self.controls)
-        self.help_page = HelpPage(self.session.snippets)
+        self.help_page = HelpPage(self.session.available_snippets)
         self.pages = QStackedWidget()
         for page in (self.program_page, scroll, self.help_page):
             self.pages.addWidget(page)
@@ -527,9 +527,9 @@ class Studio(QMainWindow):
     def document_changed(self, *_):
         if self.document_page is None:
             return
-        self.library.load(self.session.snippets)
+        self.library.load(self.session.available_snippets)
         self.library.filter(self.search.text(), self.level_filter.currentData())
-        self.help_page.snippets = self.session.snippets
+        self.help_page.snippets = self.session.available_snippets
         self.help_page.retranslate()
         self.document_mode_changed()
         self.refresh_views()
@@ -550,7 +550,7 @@ class Studio(QMainWindow):
             self.documents.widget(index).source.refresh_source()
         self.scratch.refresh(self.session)
         self.language_actions[language()].setChecked(True)
-        self.library.load(self.session.snippets)
+        self.library.load(self.session.available_snippets)
         self.library.filter(self.search.text(), self.level_filter.currentData())
         self.help_page.retranslate()
         self.update_hub(self.hub_info)
@@ -705,6 +705,9 @@ class Studio(QMainWindow):
         if not hasattr(self, "scratch") or self.document_page is None:
             return
         self.source.refresh_source()
+        if self.library.update_functions(self.session.available_snippets):
+            self.help_page.snippets = self.session.available_snippets
+            self.help_page.retranslate()
         self.scratch.refresh(self.session)
         self.refresh_status()
 
@@ -808,7 +811,7 @@ class Studio(QMainWindow):
     def insert_snippet(self, identity, target=None):
         snippet = next(
             s
-            for s in self.session.snippets
+            for s in self.session.available_snippets
             if s.identity == identity and not s.historical
         )
         syntax = self.session.document.syntax

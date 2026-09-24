@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PyBlocks Studio 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-24 21:14+0300\n"
+"POT-Creation-Date: 2026-09-24 23:20+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -38,9 +38,27 @@ msgstr " · отпустите для возврата к нулю"
 msgid " · {p0:.2f} V"
 msgstr " · {p0:.2f} В"
 
+#: pyblocks/qt/structure.py:35 pyblocks/qt/structure.py:151
+msgid "Add item"
+msgstr "Добавить элемент"
+
+#: pyblocks/snippets/python/basics.py:116
+msgid "Add two values."
+msgstr "Сложить два значения."
+
 #: pyblocks/qt/app.py:103
 msgid "All"
 msgstr "Все"
+
+#: pyblocks/core/analysis.py:434
+#, python-brace-format
+msgid "Arguments do not match {signature}"
+msgstr "Аргументы не соответствуют {signature}"
+
+#: pyblocks/qt/structure.py:91
+#, python-brace-format
+msgid "Arguments: {name}"
+msgstr "Аргументы: {name}"
 
 #: pyblocks/qt/controls.py:338
 msgid ""
@@ -96,7 +114,7 @@ msgstr ""
 msgid "Bluetooth name"
 msgstr "Имя Bluetooth"
 
-#: pyblocks/qt/app.py:1015
+#: pyblocks/qt/app.py:1018
 msgid "Bluetooth, USB or virtual hub"
 msgstr "Bluetooth, USB или виртуальный хаб"
 
@@ -104,9 +122,27 @@ msgstr "Bluetooth, USB или виртуальный хаб"
 msgid "Brake both robot wheels."
 msgstr "Затормозить оба колеса робота."
 
+#: pyblocks/snippets/python/basics.py:104
+msgid ""
+"Call a function.\n"
+"\n"
+"Choose a function and add or remove its arguments."
+msgstr ""
+"Вызвать функцию.\n"
+"\n"
+"Выберите функцию, добавьте или удалите её аргументы."
+
 #: pyblocks/qt/app.py:346
 msgid "Cancel move"
 msgstr "Отменить перенос"
+
+#: pyblocks/qt/structure.py:188
+msgid "Cannot change this expression"
+msgstr "Не удалось изменить выражение"
+
+#: pyblocks/qt/structure.py:170
+msgid "Cannot change this list"
+msgstr "Не удалось изменить список"
 
 #: pyblocks/qt/controls.py:266
 msgid "Center, °"
@@ -159,6 +195,10 @@ msgstr "Выбрать одно из двух действий по услови
 #: pyblocks/qt/app.py:196
 msgid "Clear"
 msgstr "Очистить"
+
+#: pyblocks/qt/structure.py:206
+msgid "Clear expression"
+msgstr "Очистить выражение"
 
 #: pyblocks/qt/app.py:617
 msgid "Clear recent files"
@@ -242,11 +282,11 @@ msgid "Connect…"
 msgstr "Подключить…"
 
 #: pyblocks/qt/app.py:202 pyblocks/qt/app.py:460 pyblocks/qt/app.py:559
-#: pyblocks/qt/app.py:790
+#: pyblocks/qt/app.py:793
 msgid "Console"
 msgstr "Консоль"
 
-#: pyblocks/qt/app.py:559 pyblocks/qt/app.py:785
+#: pyblocks/qt/app.py:559 pyblocks/qt/app.py:788
 #, python-brace-format
 msgid "Console · {p0}"
 msgstr "Консоль · {p0}"
@@ -270,6 +310,16 @@ msgstr "По умолчанию"
 #: pyblocks/qt/annotations.py:26
 msgid "Define an action"
 msgstr "Описать действие"
+
+#: pyblocks/snippets/python/basics.py:95
+msgid ""
+"Define your own function.\n"
+"\n"
+"Edit its name and add parameters. Drag actions into its body."
+msgstr ""
+"Определить свою функцию.\n"
+"\n"
+"Измените имя и добавьте параметры. Перетащите действия в тело функции."
 
 #: pyblocks/qt/device.py:31
 msgid "Device"
@@ -309,6 +359,18 @@ msgstr "Расстояние"
 msgid "Distance: {p0:g} mm"
 msgstr "Расстояние: {p0:g} мм"
 
+#: pyblocks/snippets/python/basics.py:131
+msgid "Divide one value by another."
+msgstr "Разделить одно значение на другое."
+
+#: pyblocks/qt/structure.py:181
+msgid "Document changed; choose the expression again"
+msgstr "Документ изменился; выберите выражение заново"
+
+#: pyblocks/qt/structure.py:163
+msgid "Document changed; choose the list again"
+msgstr "Документ изменился; выберите список заново"
+
 #: pyblocks/qt/scratch.py:229 pyblocks/qt/scratch.py:274
 msgid ""
 "Drag a block here to set it aside.\n"
@@ -333,7 +395,7 @@ msgstr "Перетащите весь фрагмент в программу и�
 msgid "Drive at the chosen speed and turn rate."
 msgstr "Ехать с заданной скоростью и поворотом."
 
-#: pyblocks/qt/library.py:32
+#: pyblocks/qt/library.py:33
 msgid "Drive bases and clocks"
 msgstr "Движение и секундомеры"
 
@@ -341,9 +403,13 @@ msgstr "Движение и секундомеры"
 msgid "Edit"
 msgstr "Правка"
 
-#: pyblocks/qt/app.py:837
+#: pyblocks/qt/app.py:840
 msgid "Edit Python fragment"
 msgstr "Редактировать фрагмент Python"
+
+#: pyblocks/qt/structure.py:192 pyblocks/qt/structure.py:203
+msgid "Edit expression"
+msgstr "Изменить выражение"
 
 #: pyblocks/qt/device.py:25
 msgid "Empty"
@@ -356,6 +422,11 @@ msgstr "Пусто — первый найденный хаб"
 #: pyblocks/qt/controls.py:251
 msgid "Enable motor commands"
 msgstr "Передавать команды моторам"
+
+#: pyblocks/qt/annotations.py:93
+#, python-brace-format
+msgid "Error: {detail}"
+msgstr "Ошибка: {detail}"
 
 #: pyblocks/qt/app.py:325
 msgid "Expand block"
@@ -484,7 +555,7 @@ msgstr "Хаб и устройства"
 msgid "Hub firmware"
 msgstr "Прошивка хаба"
 
-#: pyblocks/qt/app.py:1013
+#: pyblocks/qt/app.py:1016
 msgid "Hub information and port readings"
 msgstr "Информация о хабе и показания портов"
 
@@ -512,7 +583,11 @@ msgstr "Внутрь"
 msgid "Input"
 msgstr "Орган управления"
 
-#: pyblocks/qt/editor.py:503 pyblocks/qt/scratch.py:337
+#: pyblocks/qt/structure.py:49
+msgid "Insert before selected item"
+msgstr "Вставить перед выбранным элементом"
+
+#: pyblocks/qt/editor.py:535 pyblocks/qt/scratch.py:337
 msgid "Insert here"
 msgstr "Вставить здесь"
 
@@ -608,9 +683,25 @@ msgstr "Режим"
 msgid "Motor"
 msgstr "Мотор"
 
-#: pyblocks/qt/library.py:30
+#: pyblocks/qt/library.py:31
 msgid "Motors"
 msgstr "Моторы"
+
+#: pyblocks/qt/structure.py:37
+msgid "Move item left"
+msgstr "Переместить элемент влево"
+
+#: pyblocks/qt/structure.py:38
+msgid "Move item right"
+msgstr "Переместить элемент вправо"
+
+#: pyblocks/snippets/python/basics.py:126
+msgid "Multiply two values."
+msgstr "Перемножить два значения."
+
+#: pyblocks/qt/library.py:29
+msgid "My functions"
+msgstr "Мои функции"
 
 #: pyblocks/qt/parameters.py:28
 msgid "N"
@@ -656,7 +747,7 @@ msgstr "Подходящий хаб в режиме загрузчика Bluetoo
 msgid "No recent files"
 msgstr "Нет недавних файлов"
 
-#: pyblocks/qt/app.py:872
+#: pyblocks/qt/app.py:875
 msgid "No unknown names found.\n"
 msgstr "Неизвестных имён не найдено.\n"
 
@@ -664,7 +755,7 @@ msgstr "Неизвестных имён не найдено.\n"
 msgid "Open"
 msgstr "Открыть"
 
-#: pyblocks/qt/app.py:933
+#: pyblocks/qt/app.py:936
 msgid "Open Python"
 msgstr "Открыть Python"
 
@@ -684,13 +775,27 @@ msgstr "Открыть монитор портов"
 msgid "Open recent"
 msgstr "Открыть недавние"
 
+#: pyblocks/qt/structure.py:87
+#, python-brace-format
+msgid "Operands: {operator}"
+msgstr "Операнды: {operator}"
+
 #: pyblocks/qt/app.py:331
 msgid "Outdent"
 msgstr "Наружу"
 
+#: pyblocks/qt/structure.py:153
+msgid "Parameter (name, optionally = default)"
+msgstr "Параметр (имя, при необходимости = значение)"
+
 #: pyblocks/qt/app.py:298 pyblocks/qt/help.py:61
 msgid "Parameters"
 msgstr "Параметры"
+
+#: pyblocks/qt/structure.py:83
+#, python-brace-format
+msgid "Parameters: {name}"
+msgstr "Параметры: {name}"
 
 #: pyblocks/qt/app.py:320
 msgid "Parent"
@@ -708,7 +813,7 @@ msgstr "Физический Xbox / SDL-контроллер"
 msgid "Place actions here"
 msgstr "Место для действий"
 
-#: pyblocks/qt/app.py:992 pyblocks/qt/app.py:1001
+#: pyblocks/qt/app.py:995 pyblocks/qt/app.py:1004
 msgid "Please wait…"
 msgstr "Подождите…"
 
@@ -728,7 +833,7 @@ msgstr "Загрузить и проверить"
 msgid "Previous node / target"
 msgstr "Предыдущий узел / цель"
 
-#: pyblocks/qt/editor.py:516 pyblocks/qt/editor.py:518 pyblocks/qt/scratch.py:141
+#: pyblocks/qt/editor.py:550 pyblocks/qt/scratch.py:141
 msgid "Previous position"
 msgstr "Прежнее положение"
 
@@ -744,9 +849,17 @@ msgstr "Вывод программы и сообщения"
 msgid "Program running"
 msgstr "Программа работает"
 
-#: pyblocks/qt/library.py:29
+#: pyblocks/qt/library.py:30
 msgid "Python basics"
 msgstr "Основы Python"
+
+#: pyblocks/qt/structure.py:192
+msgid "Python expression"
+msgstr "Выражение Python"
+
+#: pyblocks/qt/structure.py:155
+msgid "Python expression or named argument"
+msgstr "Выражение Python или именованный аргумент"
 
 #: pyblocks/qt/app.py:304
 msgid "Python fragment"
@@ -797,6 +910,10 @@ msgstr ""
 "Имя пишется без кавычек: например, speed или distance.\n"
 "Позже это имя можно использовать в других блоках."
 
+#: pyblocks/qt/structure.py:36
+msgid "Remove item"
+msgstr "Удалить элемент"
+
 #: pyblocks/snippets/python/basics.py:20
 msgid ""
 "Repeat actions a given number of times.\n"
@@ -827,6 +944,16 @@ msgstr "Повторять действия, пока условие истин�
 msgid "Repeat for each item"
 msgstr "Повторить для каждого элемента"
 
+#: pyblocks/snippets/python/basics.py:87
+msgid ""
+"Repeat over a range with a start, exclusive stop and step.\n"
+"\n"
+"The stop is not included. The step must not be zero."
+msgstr ""
+"Повторять по диапазону с началом, концом и шагом.\n"
+"\n"
+"Конечная граница не включается. Шаг не должен быть нулевым."
+
 #: pyblocks/qt/annotations.py:24
 msgid "Repeat while the condition is true"
 msgstr "Повторять, пока условие истинно"
@@ -850,6 +977,10 @@ msgstr "Восстановить прошивку LEGO"
 #: pyblocks/qt/annotations.py:27
 msgid "Return a result"
 msgstr "Вернуть результат"
+
+#: pyblocks/snippets/python/basics.py:111
+msgid "Return a value from the current function."
+msgstr "Вернуть значение из текущей функции."
 
 #: pyblocks/qt/controls.py:267
 msgid "Reverse"
@@ -911,7 +1042,7 @@ msgstr "Выполнить с обработкой ошибок"
 msgid "Save"
 msgstr "Сохранить"
 
-#: pyblocks/qt/app.py:946
+#: pyblocks/qt/app.py:949
 msgid "Save Python"
 msgstr "Сохранить Python"
 
@@ -940,7 +1071,7 @@ msgstr "Поиск в руководстве и блоках…"
 msgid "Searching for a matching hub in Bluetooth bootloader mode…"
 msgstr "Поиск подходящего хаба в режиме загрузчика Bluetooth…"
 
-#: pyblocks/qt/app.py:728
+#: pyblocks/qt/app.py:731
 msgid "Select a block"
 msgstr "Выберите блок"
 
@@ -957,7 +1088,7 @@ msgstr ""
 msgid "Send controller input to my program"
 msgstr "Передавать контроллер в мою программу"
 
-#: pyblocks/qt/library.py:31
+#: pyblocks/qt/library.py:32
 msgid "Sensors and timing"
 msgstr "Датчики и ожидание"
 
@@ -1005,6 +1136,10 @@ msgstr "Остановит пользовательскую программу �
 msgid "Store a value"
 msgstr "Сохранить значение"
 
+#: pyblocks/snippets/python/basics.py:121
+msgid "Subtract one value from another."
+msgstr "Вычесть одно значение из другого."
+
 #: pyblocks/qt/controls.py:379
 msgid "The port monitor is running. Assign a motor, then enable commands."
 msgstr "Монитор портов работает. Назначьте мотор, затем включите передачу команд."
@@ -1015,11 +1150,11 @@ msgstr ""
 "Образ восстановления устанавливает прошивку LEGO 1.3. Приложение LEGO может "
 "предложить более новую версию."
 
-#: pyblocks/qt/editor.py:826
+#: pyblocks/qt/editor.py:881
 msgid "This block has no editable parameters"
 msgstr "У этого блока нет изменяемых параметров"
 
-#: pyblocks/qt/app.py:960
+#: pyblocks/qt/app.py:963
 msgid "This file is already open in another tab"
 msgstr "Этот файл уже открыт в другой вкладке"
 
@@ -1091,7 +1226,7 @@ msgstr "Версия"
 msgid "View"
 msgstr "Вид"
 
-#: pyblocks/qt/app.py:1006 pyblocks/qt/device.py:154
+#: pyblocks/qt/app.py:1009 pyblocks/qt/device.py:154
 msgid "Virtual hub"
 msgstr "Виртуальный хаб"
 
@@ -1115,6 +1250,10 @@ msgstr "Дождитесь завершения операции с хабом"
 msgid "Workspaces"
 msgstr "Режимы"
 
+#: pyblocks/qt/structure.py:208
+msgid "Wrap expression"
+msgstr "Обернуть выражение"
+
 #: pyblocks/qt/parameters.py:23
 msgid "mm"
 msgstr "мм"
@@ -1127,6 +1266,14 @@ msgstr "мм/с"
 msgid "ms"
 msgstr "мс"
 
+#: pyblocks/core/analysis.py:446
+msgid "range expects one to three positional arguments"
+msgstr "range принимает от одного до трёх позиционных аргументов"
+
+#: pyblocks/core/analysis.py:452
+msgid "range step cannot be zero"
+msgstr "Шаг range не может быть нулевым"
+
 #: pyblocks/qt/parameters.py:26
 msgid "s"
 msgstr "с"
@@ -1136,7 +1283,7 @@ msgstr "с"
 msgid "{p0:g}°    {p1:g} °/s"
 msgstr "{p0:g}°    {p1:g} °/с"
 
-#: pyblocks/qt/app.py:732
+#: pyblocks/qt/app.py:735
 #, python-brace-format
 msgid "{p0} · warnings: {p1}"
 msgstr "{p0} · предупреждений: {p1}"
@@ -1153,7 +1300,7 @@ msgstr "← Назад"
 msgid "＋ Add selected block"
 msgstr "＋ Добавить выбранный блок"
 
-#: pyblocks/qt/app.py:1009
+#: pyblocks/qt/app.py:1012
 msgid "＋ Connect hub"
 msgstr "＋ Подключить хаб"
 

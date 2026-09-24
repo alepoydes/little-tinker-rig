@@ -138,7 +138,7 @@ class ScratchCell(QFrame):
 
     def show_drag_origin(self, transfer):
         self.whole_drag = True
-        self.origin_marker.setText("↶ # " + tr("Previous position"))
+        self.origin_marker.setText("# ↶ " + tr("Previous position"))
         self.stack.setCurrentWidget(self.origin_marker)
         self.fit()
 
@@ -189,7 +189,7 @@ class ScratchCell(QFrame):
 
     def insert_snippet(self, identity, target=None):
         snippet = next(
-            s for s in self.source.session.snippets if s.identity == identity
+            s for s in self.source.session.available_snippets if s.identity == identity
         )
         try:
             syntax = self.source.session.document.syntax
@@ -238,7 +238,7 @@ class ScratchPane(QScrollArea):
         self.drop_padding = None
         self.indicator = QLabel(self.content)
         self.indicator.setStyleSheet(
-            "background: #d9f0e7; color: #205e4b; padding: 7px; border: 1px solid #277c63"
+            "background: #76cba3; color: #123e2b; padding: 7px; border: 2px solid #207348"
         )
         self.indicator.hide()
 
@@ -334,7 +334,7 @@ class ScratchPane(QScrollArea):
                 else self.column.count() - 1
             )
             self.column.insertWidget(index, self.indicator)
-            self.indicator.setText("↳ # " + tr("Insert here"))
+            self.indicator.setText("# ↳ " + tr("Insert here"))
             self.indicator.show()
             self.column.activate()
             if anchor:
@@ -367,7 +367,7 @@ class ScratchPane(QScrollArea):
                 identity = bytes(data.data("application/x-pyblocks-snippet")).decode()
                 snippet = next(
                     s
-                    for s in self.session.snippets
+                    for s in self.session.available_snippets
                     if s.identity == identity and not s.historical
                 )
                 expansion = instantiate(

@@ -15,6 +15,9 @@ guide to Russian. Existing language preferences are preserved. Block reference
 pages collect all templates in a group, with direct links from the editor. Library
 levels (Beginner, Standard, Expert, All) combine with search. Drags keep a four-line
 colored preview, an origin marker and an insertion row; Escape cancels the gesture.
+Expressions expose their operands and operators. Function parameters, call arguments
+and logical operands support variable-length lists; user functions appear in the
+library, and known call errors are marked in place.
 
 Virtual Inventor/Prime, BOOST, and Technic profiles support learning without a
 robot. Physical connections target hubs running Pybricks firmware. The window

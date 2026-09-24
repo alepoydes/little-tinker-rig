@@ -133,3 +133,42 @@ before the target block's descriptions and any attached Python comments.
 
 Parameter editing (F3), To Scratch and Python fragment (F2) remain in the menus;
 the toolbar focuses on files, history and hub actions.
+
+## Expressions and your own functions
+
+Edit the receiver, callable name, operands and operators directly in the source.
+For example, `left.run(speed + 10)` has separate editable values. Click an operator
+to choose another; operand grouping is preserved. Right-click an expression to
+edit it as Python, clear it to `None`, or wrap it in a logical, arithmetic or
+comparison expression. Drag compatible blocks into the resulting empty fields.
+
+Click inside a call, function header or logical expression to show its compact
+list controls. Select the list when several are nested. **+** inserts after the
+selected item, or appends when no item is selected; its menu also inserts before
+an item. **−** removes an item, and the arrows reorder it. Calls and definitions
+may have no arguments; `and` and `or` retain at least two operands. Parameters may
+include annotations, defaults and Python's `/`, `*`, `*args` and `**kwargs` forms.
+Edits that violate Python syntax leave the document unchanged. Each accepted
+operation is one Undo step.
+
+Use **Define your own function** to create a definition, then edit its name and
+parameters and insert actions into its body. Module-level functions appear in
+**My functions** in the library. Their calls initially include required
+parameters as `None`; optional parameters use the function’s own defaults. Add
+optional arguments explicitly when needed. Renaming a function or parameter
+updates statically resolved references and known keyword calls. Conflicting or
+capturing renames are rejected. Changing a signature keeps existing calls visible.
+A known incompatible call receives a red border and an error comment; uncertain
+dynamic calls are not reported as signature errors. The program remains editable.
+Use **Return a value** inside a function.
+
+The Beginner repeat block exposes its counter and repeat count. The Standard
+range block exposes the counter, start, exclusive stop and step. Expand a template
+to edit its fixed Python parts. A zero range step is reported as an error.
+
+Search matches all entered words across the name, source, group and complete
+localized help text, regardless of word order. Comment rows start with `#`, followed
+by the enlarged block symbol and description, without additional line spacing.
+They share the block's background, hover and selection, including ancestor bands.
+
+![Function parameters, logical operands and a known call error](images/functions.png)

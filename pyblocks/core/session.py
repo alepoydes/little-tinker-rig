@@ -15,6 +15,7 @@ from .snippets import (
     Match,
     Snippet,
     builtin_snippets,
+    function_snippets,
     instantiate,
     load_collection,
     recognize,
@@ -110,6 +111,18 @@ class Session:
             )
             self._revision = self.document.syntax
             self._expanded.clear()
+            self._user_snippets = function_snippets(self.document.syntax)
+
+    @property
+    def available_snippets(self):
+        self._refresh()
+        context = getattr(self, "context", None)
+        local = self._user_snippets
+        if context:
+            context._refresh()
+            names = {s.identity for s in local}
+            local += tuple(s for s in context._user_snippets if s.identity not in names)
+        return self.snippets + local
 
     @property
     def visible_matches(self) -> tuple[Match, ...]:
@@ -143,11 +156,46 @@ class Session:
             None,
         )
         if match is None:
-            raise ValueError("Select a recognized snippet to expand or collapse")
-        if match.span in self._expanded:
-            self._expanded.remove(match.span)
+            loop = next(
+                (
+                    n
+                    for n in self.document.syntax.ancestors(self.editor.selection)
+                    if isinstance(n, ast.For)
+                    and isinstance(n.iter, ast.Call)
+                    and isinstance(n.iter.func, ast.Name)
+                    and n.iter.func.id == "range"
+                ),
+                None,
+            )
+            if loop is None:
+                raise ValueError("Select a recognized snippet to expand or collapse")
+            span = self.document.syntax.spans[loop]
         else:
-            self._expanded.add(match.span)
+            span = match.span
+        if span in self._expanded:
+            self._expanded.remove(span)
+        else:
+            self._expanded.add(span)
+
+    def simplified_range(self, call):
+        self._refresh()
+        parent = self.document.syntax.parent.get(call)
+        return (
+            isinstance(call, ast.Call)
+            and isinstance(call.func, ast.Name)
+            and call.func.id == "range"
+            and len(call.args) in {1, 3}
+            and not call.keywords
+            and isinstance(parent, ast.For)
+            and parent.iter is call
+            and self.analysis.resolve(call.func, "range") is None
+            and self.document.syntax.spans[parent] not in self._expanded
+        )
+
+    @property
+    def expanded_spans(self):
+        self._refresh()
+        return frozenset(self._expanded)
 
     def selected_text(self) -> str:
         match = self.selected_match()
@@ -185,7 +233,14 @@ class Session:
     ) -> None:
         syntax = self.document.syntax
         expansion = instantiate(snippet, bindings, identifiers(syntax.tree))
-        if snippet.expression:
+        if (
+            snippet.expression
+            and target is None
+            and not (
+                isinstance(snippet.body, ast.Call)
+                and not isinstance(self.editor.selection, ast.expr)
+            )
+        ):
             if not isinstance(self.editor.selection, ast.expr):
                 raise ValueError("Select an expression to replace with this snippet")
             offset = syntax.spans[self.editor.selection].start

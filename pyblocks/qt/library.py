@@ -26,6 +26,7 @@ LEVEL_TITLES = {
 
 
 GROUP_TITLES = {
+    "document/functions": N_("My functions"),
     "python/basics": N_("Python basics"),
     "pybricks/motors": N_("Motors"),
     "pybricks/sensors": N_("Sensors and timing"),
@@ -106,6 +107,11 @@ class Library(QTreeWidget):
         self.load(snippets)
 
     def load(self, snippets):
+        self.function_key = tuple(
+            (s.identity, s.parameters, s.help)
+            for s in snippets
+            if s.identity.startswith("document/")
+        )
         self.clear()
         for group, members in snippet_groups(snippets).items():
             heading = QTreeWidgetItem(self, [group_title(group)])
@@ -127,7 +133,21 @@ class Library(QTreeWidget):
                 item.setToolTip(0, expansion.source + "\n\n" + tr(snippet.help))
         self.expandAll()
 
+    def update_functions(self, snippets):
+        key = tuple(
+            (s.identity, s.parameters, s.help)
+            for s in snippets
+            if s.identity.startswith("document/")
+        )
+        if key != self.function_key:
+            self.load(snippets)
+            self.filter(getattr(self, "search", ""))
+            return True
+        return False
+
     def filter(self, search, level=None):
+        self.search = search
+        words = search.casefold().split()
         if level is not None:
             self.level = level
         for index in range(self.topLevelItemCount()):
@@ -136,8 +156,13 @@ class Library(QTreeWidget):
             for child in range(group.childCount()):
                 item = group.child(child)
                 match = (self.level == "all" or item.data(0, LEVEL) == self.level) and (
-                    search.casefold()
-                    in (item.text(0) + item.toolTip(0) + group.text(0)).casefold()
+                    all(
+                        word
+                        in (
+                            item.text(0) + " " + item.toolTip(0) + " " + group.text(0)
+                        ).casefold()
+                        for word in words
+                    )
                 )
                 item.setHidden(not match)
                 visible |= match

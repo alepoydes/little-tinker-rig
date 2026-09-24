@@ -185,14 +185,23 @@ def test_notes_have_owned_colors_rows_and_drop_boundary(tmp_path, qt_app):
         view.intensity = 1
         window.session.editor.selection = syntax.tree
         view.hover = None
-        image = view.viewport().grab().toImage()
+        image = view.viewport().grab().toImage().scaled(view.viewport().size())
         for rect, role in ((parent, "control"), (child, "value")):
-            assert image.pixelColor(
-                int(rect.left()) + 2, int(rect.top()) + 2
-            ) == QColor(PALETTE[role])
-            assert image.pixelColor(
-                int(rect.right()) - 70, int(rect.top()) + 2
-            ) == QColor(PALETTE[role])
+            color = QColor(PALETTE[role])
+            base = QColor("#fafbfc")
+            expected = QColor(
+                *(
+                    round(a * b / 255)
+                    for a, b in zip(color.getRgb()[:3], base.getRgb()[:3], strict=True)
+                )
+            )
+            assert (
+                image.pixelColor(int(rect.left()) + 2, int(rect.top()) + 2) == expected
+            )
+            assert (
+                image.pixelColor(int(rect.right()) - 70, int(rect.top()) + 2)
+                == expected
+            )
         motor = condition.body[0]
         region = next(r for r in view.presentation if r.span == syntax.spans[motor])
         assert region.line == syntax.position(original.index("# Slow approach"))[0]

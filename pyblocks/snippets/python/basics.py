@@ -82,3 +82,52 @@ def either(left: "bool" = True, right: "bool" = False) -> "bool":
 def opposite(test: "bool" = True) -> "bool":
     """Negate a condition."""
     return not test
+
+
+def count_range(start: "number" = 0, stop: "number" = 10, step: "number" = 1):
+    """Repeat over a range with a start, exclusive stop and step.
+
+    The stop is not included. The step must not be zero."""
+    for i in range(start, stop, step):
+        pass
+
+
+def define_function():
+    """Define your own function.
+
+    Edit its name and add parameters. Drag actions into its body."""
+
+    def action():
+        pass
+
+
+def call_function(function=action):
+    """Call a function.
+
+    Choose a function and add or remove its arguments."""
+    function()
+
+
+def return_value(value=0) -> "statement":
+    """Return a value from the current function."""
+    return value
+
+
+def sum_values(left=0, right=0):
+    """Add two values."""
+    return left + right
+
+
+def difference(left=0, right=0):
+    """Subtract one value from another."""
+    return left - right
+
+
+def product(left=1, right=1):
+    """Multiply two values."""
+    return left * right
+
+
+def quotient(left=1, right=1):
+    """Divide one value by another."""
+    return left / right

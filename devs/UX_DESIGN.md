@@ -86,7 +86,9 @@ imported classes from condition suggestions. Invalid input stays available for
 correction without changing the program.
 
 Descriptions and action symbols are display-only. Every description has its own
-row and the color of its block, including nested expression blocks. Drop boundaries
+row and the color of its block, including nested expression blocks. The hash comes
+first, followed by an enlarged symbol and description within the existing row height.
+Code and descriptions share hover, selection, ancestor bands and owner hit testing. Drop boundaries
 precede both descriptions and owned source comments. Selection pulses across the
 block background; blank lines preserve indentation bands. During a drag, the
 view shows a colored preview attached to the pointer (at most four displayed

@@ -304,11 +304,7 @@ def test_scratch_insert_marker_preserves_global_pointer_and_cell_geometry(
         pane.close()
 
 
-def test_nested_note_keeps_parent_color_band_and_icon_precedes_comment(qt_app):
-    from PySide6.QtGui import QColor
-
-    from pyblocks.core.presentation import PALETTE
-
+def test_nested_note_keeps_parent_color_bands_and_comment_prefix(qt_app):
     view = view_for(qt_app, "while True:\n    if True:\n        print(1)\n")
     try:
         view.intensity = 1
@@ -319,12 +315,14 @@ def test_nested_note_keeps_parent_color_band_and_icon_precedes_comment(qt_app):
         y = round(rect.top()) + 2
         loop = view._rect(3, 0)
         condition = view._rect(3, 4)
-        assert image.pixelColor(round(loop.left()) + 2, y) == QColor(PALETTE["loop"])
-        assert image.pixelColor(round(condition.left()) + 2, y) == QColor(
-            PALETTE["control"]
+        code_y = round(view._rect(3, 0).bottom()) - 2
+        for band in (loop, condition):
+            x = round(band.left()) + 2
+            assert image.pixelColor(x, y) == image.pixelColor(x, code_y)
+        assert image.pixelColor(round(rect.right()) - 50, y) == image.pixelColor(
+            round(rect.right()) - 50, code_y
         )
-        assert image.pixelColor(round(rect.left()) + 2, y) == QColor(PALETTE["action"])
-        # The symbol occupies the strip immediately before the comment's text.
+        # The comment starts with a visible hash before the enlarged symbol.
         strip = image.copy(
             round(rect.left()), round(rect.top()), 21, round(rect.height())
         )

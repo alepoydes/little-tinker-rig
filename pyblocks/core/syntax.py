@@ -5,8 +5,11 @@ conversion belongs here, so frontends never need to interpret AST coordinates.
 """
 
 import ast
-from bisect import bisect_right
+import io
+import tokenize
+from bisect import bisect_left, bisect_right
 from dataclasses import dataclass
+from functools import cached_property
 
 
 @dataclass(frozen=True, order=True)
@@ -111,6 +114,19 @@ class Syntax:
 
     def validate(self, source):
         return parse(source, fragment=self.fragment)
+
+    @cached_property
+    def tokens(self):
+        return tuple(tokenize.generate_tokens(io.StringIO(self.source).readline))
+
+    @cached_property
+    def token_starts(self):
+        return tuple(self.offset(*token.start) for token in self.tokens)
+
+    def tokens_between(self, start, end):
+        return self.tokens[
+            bisect_left(self.token_starts, start) : bisect_left(self.token_starts, end)
+        ]
 
     def _ast_offset(self, line: int, byte_column: int) -> int:
         prefix = self.lines[line - 1].encode("utf-8")[:byte_column]

@@ -176,3 +176,24 @@ Reject mismatched metadata before transport, check the connected model before
 erase, verify the reviewed digest again in the flash process, and propagate
 failures. Use mocked transport boundaries in automation; report physical flashing
 separately. A subprocess isolates public DFU routines that may call SystemExit.
+
+## Structural fields and shared painting
+
+Names, expression leaves, operators and editable lists refer to one Syntax
+revision. Token indexes locate fields absent from AST coordinates, such as a
+function name, and delimit argument lists without splitting strings or nested
+expressions. Edits validate before a single commit. Operator changes preserve
+operand ASTs; list edits retain comments and reject invalid parameter ordering.
+Signature checks use known lexical definitions without executing user code.
+Unknown unpacking, decorated functions and rebound callables do not produce
+speculative arity errors. Rename checks must cover shadowing, stores, declarations
+and keyword arguments, not just matching text.
+
+Code and generated notes share region geometry for background and interaction
+states. Drawing note backgrounds after selection used to erase hover; a separate
+comment palette also drifted from source colors. Use the shared region pass, with
+note-specific drawing limited to the hash, symbol and text. The hash follows the
+containing statement's indentation; the symbol may align with an inner expression.
+Drag markers explicitly set their brush and pen: inheriting a previous brush when
+drawing the frame can repaint the marker with an unrelated dark fill. Test pixel
+contrast, owner hit testing and hover on both notes and code, including nesting.

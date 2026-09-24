@@ -130,7 +130,9 @@ def load_module(
         local_names = _template_names(function, body, imports, parameters)
         template = (
             body[0].value
-            if len(body) == 1 and isinstance(body[0], ast.Return)
+            if len(body) == 1
+            and isinstance(body[0], ast.Return)
+            and annotation_text(function.returns) != "statement"
             else tuple(body)
         )
         if template is None:
@@ -146,6 +148,54 @@ def load_module(
                 local_names,
                 historical,
                 annotation_text(function.returns),
+            )
+        )
+    return tuple(result)
+
+
+def function_snippets(syntax):
+    """Calls to module-level user functions, rebuilt from the current document."""
+    result = []
+    for node in syntax.tree.body:
+        if not isinstance(node, ast.FunctionDef):
+            continue
+        args = node.args
+        positional = (args.posonlyargs + args.args)[
+            : len(args.posonlyargs) + len(args.args) - len(args.defaults)
+        ]
+        required_keywords = [
+            arg
+            for arg, default in zip(args.kwonlyargs, args.kw_defaults, strict=True)
+            if default is None
+        ]
+        parameters = tuple(
+            Parameter(arg.arg, "None", annotation_text(arg.annotation))
+            for arg in positional + required_keywords
+        )
+
+        def value(arg):
+            name = ast.Name(id=arg.arg, ctx=ast.Load())
+            name.template_parameter = arg.arg
+            return name
+
+        call = ast.Call(
+            func=ast.Name(id=node.name, ctx=ast.Load()),
+            args=[value(arg) for arg in positional],
+            keywords=[
+                ast.keyword(arg=arg.arg, value=value(arg)) for arg in required_keywords
+            ],
+        )
+        call = ast.fix_missing_locations(call)
+        result.append(
+            Snippet(
+                f"document/functions/{node.name}",
+                "1",
+                parameters,
+                call,
+                (),
+                ast.get_docstring(node) or node.name,
+                {},
+                level="beginner",
             )
         )
     return tuple(result)

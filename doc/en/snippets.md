@@ -97,3 +97,10 @@ Library cards and generated help use this same metadata.
 [levels]
 "motors/move_for" = "beginner"
 ```
+
+A template annotated `-> "statement"` keeps its `return` as a statement instead of
+turning it into an expression template. This supports the return block, which is
+valid in a function body or as a detached Scratch fragment. Other return
+annotations keep their existing expression/type meaning. Variable-length editing
+comes from the expanded Python call, definition or Boolean expression; template
+functions themselves still declare a fixed set of placeholders.

@@ -32,6 +32,7 @@ from pyblocks.i18n import language, tr
 from .annotations import block_notes
 from .drag import BlockMime, cancel_drag, drag_block
 from .parameters import ParameterEditor, unit_text
+from .structure import StructureBar, expression_menu
 
 
 @lru_cache(maxsize=8)
@@ -108,6 +109,7 @@ class SourceView(QTextEdit):
         self.parameter_choices = {}
         self.parameter_revision = None
         self.parameter_editor = None
+        self.structure_bar = StructureBar(self)
         self.pending_parameter = None
         self.scratch_owner = None
         self.scratch_index = None
@@ -136,6 +138,7 @@ class SourceView(QTextEdit):
         revision = (
             self.session.document.syntax,
             self.session.visible_matches,
+            self.session.expanded_spans,
             language(),
             getattr(self.session, "ports", None),
             context.document.syntax if context else None,
@@ -143,6 +146,7 @@ class SourceView(QTextEdit):
         if revision == self.parameter_revision:
             self.viewport().update()
             return
+        self.structure_bar.hide()
         source = self.session.document.state.source
         previous = self.toPlainText()
         anchor = self.cursorForPosition(QPoint(0, 0))
@@ -167,7 +171,9 @@ class SourceView(QTextEdit):
                 if self.parameter_editor:
                     self.parameter_editor.close()
                     self.parameter_editor = None
-                self.parameter_slots = slots(self.session)
+                self.parameter_slots = tuple(
+                    slot for slot in slots(self.session) if not slot.container
+                )
                 self.parameter_lines = tuple(
                     self.session.document.syntax.position(slot.span.start)[0]
                     for slot in self.parameter_slots
@@ -297,7 +303,6 @@ class SourceView(QTextEdit):
         if rect is None:
             return None
         block = self.document().findBlockByNumber(line - 1)
-        rect.setTop(rect.top() - block.blockFormat().topMargin())
         following = block.next()
         while following.isValid() and not following.isVisible():
             following = following.next()
@@ -307,6 +312,35 @@ class SourceView(QTextEdit):
                 self.cursorRect(cursor).top() - following.blockFormat().topMargin()
             )
         return rect
+
+    def region_rects(self, region, first_line, last_line):
+        for line in range(
+            max(first_line, region.line), min(last_line, region.end_line) + 1
+        ):
+            rect = self.background_rect(
+                line,
+                region.column if region.extend_line or line == region.line else 0,
+                (
+                    None
+                    if region.extend_line or line < region.end_line
+                    else region.end_column
+                ),
+            )
+            if rect:
+                yield rect
+            for index, note in enumerate(self.notes.get(line, ())):
+                if not (
+                    region.span == note.span
+                    or region.extend_line
+                    and region.span.start <= note.span.start
+                    and note.span.end <= region.span.end
+                ):
+                    continue
+                rect = self.note_rect(line, index)
+                anchor = self._rect(line, region.column)
+                if rect and anchor:
+                    rect.setLeft(anchor.left())
+                    yield rect
 
     def paintEvent(self, event):
         super().paintEvent(event)
@@ -330,20 +364,8 @@ class SourceView(QTextEdit):
             color = QColor(PALETTE[region.role])
             color.setAlphaF(self.intensity)
             painter.setBrush(color)
-            for line in range(
-                max(first_line, region.line), min(last_line, region.end_line) + 1
-            ):
-                end = (
-                    None
-                    if region.extend_line or line < region.end_line
-                    else region.end_column
-                )
-                rect = self.background_rect(
-                    line,
-                    region.column if region.extend_line or line == region.line else 0,
-                    end,
-                )
-                if rect and rect.intersects(QRectF(event.rect())):
+            for rect in self.region_rects(region, first_line, last_line):
+                if rect.intersects(QRectF(event.rect())):
                     area = QRegion(rect.toRect())
                     painter.setClipRegion(area - covered)
                     painter.drawRect(rect)
@@ -365,20 +387,8 @@ class SourceView(QTextEdit):
             color = QColor(PALETTE[region.role]).darker(145)
             color.setAlphaF(amount)
             painter.setBrush(color)
-            for line in range(
-                max(first_line, region.line), min(last_line, region.end_line) + 1
-            ):
-                rect = self.background_rect(
-                    line,
-                    region.column if region.extend_line or line == region.line else 0,
-                    (
-                        None
-                        if region.extend_line or line < region.end_line
-                        else region.end_column
-                    ),
-                )
-                if rect:
-                    painter.drawRect(rect)
+            for rect in self.region_rects(region, first_line, last_line):
+                painter.drawRect(rect)
         painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceOver)
         note_font = self.font()
         note_font.setPointSize(9)
@@ -394,48 +404,67 @@ class SourceView(QTextEdit):
                 rect = self.note_rect(line, index)
                 if rect is None or not rect.intersects(QRectF(event.rect())):
                     continue
-                painter.fillRect(
-                    QRectF(0, rect.top(), self.viewport().width(), rect.height()),
-                    QColor("#fafbfc"),
-                )
-                for ancestor in visible_regions:
-                    if (
-                        ancestor.extend_line
-                        and ancestor.span != note.span
-                        and ancestor.span.start <= note.span.start
-                        and note.span.end <= ancestor.span.end
-                    ):
-                        band = self._rect(line, ancestor.column)
-                        if band:
-                            band.setTop(rect.top())
-                            band.setBottom(rect.bottom())
-                            color = QColor(PALETTE[ancestor.role])
-                            color.setAlphaF(self.intensity)
-                            painter.fillRect(band, QColor("#fafbfc"))
-                            painter.fillRect(band, color)
-                color = QColor(PALETTE[note.role])
-                color.setAlphaF(self.intensity)
-                painter.fillRect(rect, QColor("#fafbfc"))
-                painter.fillRect(rect, color)
+                code = self.session.document.syntax.lines[line - 1]
+                indent = len(code) - len(code.lstrip())
+                hash_rect = self._rect(line, indent)
+                hash_rect.setTop(rect.top())
+                hash_rect.setBottom(rect.bottom())
                 painter.setFont(note_font)
-                painter.setPen(QColor("#617187"))
-                painter.drawText(
-                    rect.adjusted(23, 0, -4, 0),
-                    Qt.AlignmentFlag.AlignVCenter,
-                    QFontMetrics(note_font).elidedText(
-                        "# " + note.description,
-                        Qt.TextElideMode.ElideRight,
-                        max(1, int(rect.width() - 27)),
-                    ),
+                painter.setPen(QColor("#ab2027" if note.error else "#49596d"))
+                painter.drawText(hash_rect, Qt.AlignmentFlag.AlignVCenter, "#")
+                left = max(
+                    rect.left(),
+                    hash_rect.left() + QFontMetrics(note_font).horizontalAdvance("# "),
                 )
                 symbol_font = self.font()
-                symbol_font.setPointSize(12)
+                symbol_font.setPixelSize(max(12, int(rect.height() - 2)))
                 painter.setFont(symbol_font)
+                width = max(
+                    21, QFontMetrics(symbol_font).horizontalAdvance(note.icon) + 4
+                )
                 painter.drawText(
-                    QRectF(rect.left(), rect.top(), 21, rect.height()),
+                    QRectF(left, rect.top(), width, rect.height()),
                     Qt.AlignmentFlag.AlignVCenter,
                     note.icon,
                 )
+                painter.setFont(note_font)
+                text_rect = QRectF(
+                    left + width,
+                    rect.top(),
+                    max(1, rect.right() - left - width - 4),
+                    rect.height(),
+                )
+                painter.drawText(
+                    text_rect,
+                    Qt.AlignmentFlag.AlignVCenter,
+                    QFontMetrics(note_font).elidedText(
+                        note.description,
+                        Qt.TextElideMode.ElideRight,
+                        int(text_rect.width()),
+                    ),
+                )
+                if note.error:
+                    painter.save()
+                    painter.setBrush(Qt.BrushStyle.NoBrush)
+                    painter.setPen(QPen(QColor("#c02d35"), 2))
+                    owner = next(
+                        (r for r in visible_regions if r.span == note.span), None
+                    )
+                    if owner:
+                        area = None
+                        for part in self.region_rects(owner, first_line, last_line):
+                            area = part if area is None else area.united(part)
+                        if area:
+                            painter.drawRect(area.adjusted(1, 1, -1, -1))
+                    else:
+                        end_line, end_column = syntax.position(note.span.end)
+                        area = self._rect(
+                            line, note.column, end_column if line == end_line else None
+                        )
+                        if area:
+                            area.setTop(rect.top())
+                            painter.drawRect(area.adjusted(1, 1, -1, -1))
+                    painter.restore()
         painter.setFont(self.font())
         for slot in self.parameter_slots[
             bisect_left(self.parameter_lines, first_line) : bisect_right(
@@ -491,32 +520,34 @@ class SourceView(QTextEdit):
             if rect:
                 if isinstance(target, ast.expr):
                     painter.setPen(QPen(QColor("#277c63"), 2))
-                    painter.setBrush(QColor(220, 244, 234, 180))
+                    painter.setBrush(QColor("#76cba3"))
                     painter.drawRoundedRect(rect, 3, 3)
                 else:
                     rect.setHeight(self.marker_height())
-                    painter.fillRect(rect, QColor("#d9f0e7"))
-                    painter.setPen(QColor("#205e4b"))
+                    painter.fillRect(rect, QColor("#76cba3"))
+                    painter.setBrush(Qt.BrushStyle.NoBrush)
+                    painter.setPen(QPen(QColor("#207348"), 2))
+                    painter.drawRect(rect.adjusted(1, 1, -1, -1))
+                    painter.setPen(QColor("#123e2b"))
                     painter.drawText(
                         rect.adjusted(5, 0, -5, 0),
                         Qt.AlignmentFlag.AlignVCenter,
-                        "↳ # " + tr("Insert here"),
+                        "# ↳ " + tr("Insert here"),
                     )
         if self.origin_span is not None:
             rect = self.origin_rect()
             if rect:
                 painter.fillRect(rect, QColor("#ffe0a1"))
+                painter.setBrush(Qt.BrushStyle.NoBrush)
                 painter.setPen(QPen(QColor("#ae6810"), 2))
                 painter.drawRect(rect.adjusted(1, 1, -1, -1))
+                painter.setPen(QColor("#603900"))
                 painter.drawText(
                     rect.adjusted(5, 0, -5, 0),
                     Qt.AlignmentFlag.AlignVCenter,
-                    "↶ "
-                    + (
-                        tr("Previous position")
-                        if self.origin_expression
-                        else "# " + tr("Previous position")
-                    ),
+                    ("" if self.origin_expression else "# ")
+                    + "↶ "
+                    + tr("Previous position"),
                 )
         if self.fade_lines:
             opacity = float(self.fade.currentValue() or 0)
@@ -643,7 +674,8 @@ class SourceView(QTextEdit):
         if self.origin_expression:
             _, end = syntax.position(self.origin_span.end)
             return self._rect(line, column, end)
-        return self._rect(line, 0)
+        text = syntax.lines[line - 1]
+        return self._rect(line, len(text) - len(text.lstrip()))
 
     def scroll_area(self):
         widget = self.parentWidget() if self.scratch_owner else self
@@ -772,7 +804,30 @@ class SourceView(QTextEdit):
         end, end_column = syntax.position(slot.span.end)
         return self._rect(line, column, end_column) if line == end else None
 
+    def note_at(self, point):
+        line = self.cursorForPosition(point).blockNumber() + 1
+        for row in (line, line + 1):
+            for index, note in enumerate(self.notes.get(row, ())):
+                rect = self.note_rect(row, index)
+                if rect:
+                    rect.setLeft(self._rect(row, 0).left())
+                    if rect.contains(QPointF(point)):
+                        return note
+        return None
+
+    def node_at(self, point):
+        syntax = self.session.document.syntax
+        note = self.note_at(point)
+        if note:
+            return next(
+                (node for node, span in syntax.spans.items() if span == note.span),
+                syntax.at(note.span.start),
+            )
+        return syntax.at(self.offset_at(point))
+
     def parameter_at(self, point):
+        if self.note_at(point):
+            return None
         line = self.cursorForPosition(point).blockNumber() + 1
         return next(
             (
@@ -832,12 +887,20 @@ class SourceView(QTextEdit):
             self.pending_parameter = self.parameter_at(point)
             self.press_position = point
             syntax = self.session.document.syntax
-            node = syntax.at(self.offset_at(point))
-            self.session.editor.selection = next(
-                (n for n in syntax.ancestors(node) if isinstance(n, ast.stmt)), node
+            node = self.node_at(point)
+            self.session.editor.selection = (
+                node
+                if self.note_at(point) or self.pending_parameter
+                else next(
+                    (n for n in syntax.ancestors(node) if isinstance(n, ast.stmt)), node
+                )
             )
             self.selected.emit()
             self.viewport().update()
+            self.structure_bar.activate(point)
+
+    def contextMenuEvent(self, event):
+        expression_menu(self, event.pos())
 
     def mouseMoveEvent(self, event):
         point = event.position().toPoint()
@@ -869,6 +932,7 @@ class SourceView(QTextEdit):
                     )
                     self.press_position = self.pending_parameter = None
                     editor.cancel_move()
+                    self.structure_bar.hide()
                     drag_block(self, transfer)
                     return
                 except (ValueError, SyntaxError) as error:
@@ -876,10 +940,11 @@ class SourceView(QTextEdit):
                     self.failed.emit(str(error))
         else:
             syntax = self.session.document.syntax
-            node = syntax.at(self.offset_at(point))
-            node = next(
-                (n for n in syntax.ancestors(node) if isinstance(n, ast.stmt)), node
-            )
+            node = self.node_at(point)
+            if not self.note_at(point):
+                node = next(
+                    (n for n in syntax.ancestors(node) if isinstance(n, ast.stmt)), node
+                )
             self.hover = syntax.spans[node]
             self.viewport().setCursor(
                 Qt.CursorShape.PointingHandCursor
@@ -954,6 +1019,7 @@ class SourceView(QTextEdit):
         self.dragLeaveEvent(None)
 
     def dragEnterEvent(self, event):
+        self.structure_bar.hide()
         self.dragLeaveEvent(None)
         data = event.mimeData()
         if isinstance(data, BlockMime):
@@ -969,7 +1035,7 @@ class SourceView(QTextEdit):
             self.drop_snippet = next(
                 (
                     s
-                    for s in self.session.snippets
+                    for s in self.session.available_snippets
                     if s.identity == identity and not s.historical
                 ),
                 None,

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from . import edit
 from .analysis import identifiers, value_type
 from .snippets import Match, Parameter, instantiate
+from .structure import OPERATORS, change_operator, name_span, operator_spans, rename
 from .syntax import Span, Syntax
 
 
@@ -17,62 +18,45 @@ class Slot:
     parameter: Parameter
     match: Match | None = None
     binding: bool = False
+    node: ast.AST | None = None
+    field: str = ""
+    root: ast.AST | None = None
+    container: bool = False
+    operator_index: int = 0
 
 
 def slots(session):
     syntax = session.document.syntax
-    result = []
+    result = {}
     covered = []
-    conditions = [
-        syntax.spans[node.test]
-        for node in ast.walk(syntax.tree)
-        if isinstance(node, (ast.If, ast.While, ast.IfExp))
-    ]
-    for match in session.visible_matches:
-        if match.snippet.expression and any(
-            span.start <= match.span.start and match.span.end <= span.end
-            for span in conditions
+    covered_spans = set()
+    bindings = []
+    declarations = sorted(
+        (span.start, node)
+        for node, span in syntax.spans.items()
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.arg))
+        or isinstance(node, ast.Name)
+        and isinstance(node.ctx, ast.Store)
+    )
+    declaration_starts = [start for start, _ in declarations]
+
+    def add(
+        node,
+        name,
+        annotation=None,
+        match=None,
+        parameter=None,
+        field="",
+        root=None,
+        container=False,
+    ):
+        span = name_span(syntax, node) if field else syntax.spans.get(node)
+        if span is None:
+            return
+        if (
+            not container
+            and syntax.position(span.start)[0] != syntax.position(span.end)[0]
         ):
-            continue
-        body = match.snippet.body
-        assignment = (
-            not match.snippet.expression
-            and len(body) == 1
-            and isinstance(body[0], ast.Assign)
-            and getattr(body[0].value, "template_parameter", None)
-        )
-        for parameter in match.snippet.parameters:
-            if assignment == parameter.name and isinstance(
-                match.bindings[parameter.name], ast.Call
-            ):
-                continue
-            for node in match.occurrences.get(parameter.name, ()):
-                result.append(
-                    Slot(
-                        syntax,
-                        syntax.spans[node],
-                        parameter,
-                        match,
-                        isinstance(getattr(node, "ctx", None), ast.Store),
-                    )
-                )
-        if assignment and isinstance(match.bindings[assignment], ast.Call):
-            covered.extend(slot.span for slot in result if slot.match is match)
-        else:
-            covered.append(match.span)
-
-    covered.sort()
-    covered_starts = [span.start for span in covered]
-    blocked = set()
-
-    def add(node, name, annotation=None):
-        if node not in syntax.spans or node in blocked:
-            return
-        span = syntax.spans[node]
-        index = bisect_right(covered_starts, span.start) - 1
-        if index >= 0 and span.end <= covered[index].end:
-            return
-        if syntax.position(span.start)[0] != syntax.position(span.end)[0]:
             return
         if (
             isinstance(node, ast.Attribute)
@@ -80,55 +64,184 @@ def slots(session):
             and node.value.id == "Port"
         ):
             name, annotation = "port", "Port"
-        result.append(
+        if parameter is not None and root is not None and node is not root:
+            parameter = Parameter(
+                parameter.name,
+                None,
+                annotation if field else session.analysis.type_of(node),
+            )
+        result.setdefault(
+            span,
             Slot(
                 syntax,
                 span,
-                Parameter(name, None, annotation or session.analysis.type_of(node)),
-                binding=isinstance(getattr(node, "ctx", None), ast.Store),
-            )
+                parameter
+                or Parameter(name, None, annotation or session.analysis.type_of(node)),
+                match,
+                bool(field) or isinstance(getattr(node, "ctx", None), ast.Store),
+                node,
+                field,
+                root,
+                container,
+            ),
         )
-        blocked.update(ast.walk(node))
 
-    # Outer expressions are useful editing units: a condition or argument can
-    # be replaced as a whole without turning every identifier into a control.
-    for node in ast.walk(syntax.tree):
-        if isinstance(node, (ast.If, ast.While, ast.IfExp)):
-            add(node.test, "condition")
-        elif isinstance(node, (ast.For, ast.AsyncFor)):
-            add(node.iter, "iterable")
-        elif isinstance(node, ast.arguments):
-            for argument, default in zip(
-                (node.posonlyargs + node.args)[
-                    len(node.posonlyargs) + len(node.args) - len(node.defaults) :
-                ],
-                node.defaults,
-                strict=True,
-            ):
-                add(default, argument.arg)
-            for argument, default in zip(
-                node.kwonlyargs, node.kw_defaults, strict=True
-            ):
-                if default is not None:
-                    add(default, argument.arg)
+    def expression(
+        node, name="value", annotation=None, match=None, parameter=None, root=None
+    ):
+        if not isinstance(node, ast.expr):
+            return
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
+            name, annotation = "name", "identifier"
+        if isinstance(
+            node, (ast.BoolOp, ast.BinOp, ast.Compare, ast.UnaryOp, ast.Call)
+        ):
+            add(node, name, annotation, match, parameter, root=root, container=True)
+        if match is None and syntax.spans[node] in covered_spans:
+            return
+        if isinstance(node, (ast.Name, ast.Constant)) or (
+            isinstance(node, ast.Attribute)
+            and isinstance(node.value, ast.Name)
+            and node.value.id in {"Port", "Direction", "Stop", "Color"}
+        ):
+            add(
+                node,
+                name,
+                annotation or ("function" if name == "function" else None),
+                match,
+                parameter,
+                root=root,
+            )
+        elif isinstance(node, ast.Attribute):
+            expression(
+                node.value, "object", match=match, parameter=parameter, root=root
+            )
+            add(
+                node,
+                "attribute",
+                "identifier",
+                match,
+                parameter,
+                field="attr",
+                root=root,
+            )
         elif isinstance(node, ast.Call):
-            for index, argument in enumerate(node.args):
-                add(argument, f"argument {index + 1}")
-            for keyword in node.keywords:
-                add(keyword.value, keyword.arg or "arguments")
-        elif isinstance(node, (ast.Assign, ast.AnnAssign)):
-            for target in (
-                node.targets if isinstance(node, ast.Assign) else (node.target,)
-            ):
-                if isinstance(target, ast.Name):
-                    add(target, "name", "identifier")
-            if node.value is not None and not isinstance(node.value, ast.Call):
-                add(node.value, "value")
-    return tuple(sorted(result, key=lambda item: item.span))
+            if not session.simplified_range(node):
+                expression(
+                    node.func, "function", match=match, parameter=parameter, root=root
+                )
+            for index, arg in enumerate(node.args):
+                expression(
+                    arg,
+                    f"argument {index + 1}",
+                    match=match,
+                    parameter=parameter,
+                    root=root,
+                )
+            for kw in node.keywords:
+                if kw.arg:
+                    add(
+                        kw,
+                        "keyword",
+                        "identifier",
+                        match,
+                        parameter,
+                        field="keyword",
+                        root=root,
+                    )
+                expression(
+                    kw.value,
+                    kw.arg or "arguments",
+                    match=match,
+                    parameter=parameter,
+                    root=root,
+                )
+        else:
+            for child in ast.iter_child_nodes(node):
+                if isinstance(child, ast.expr):
+                    expression(child, "value", None, match, parameter, root)
+                elif isinstance(child, ast.comprehension):
+                    expression(child.target, "name", "identifier")
+                    expression(child.iter, "iterable")
+                    for test in child.ifs:
+                        expression(test, "condition")
+
+    for match in session.visible_matches:
+        covered.append(match.span)
+        covered_spans.add(match.span)
+        for parameter in match.snippet.parameters:
+            for node in match.occurrences.get(parameter.name, ()):
+                bindings.append((syntax.spans[node], match, parameter, node))
+                expression(
+                    node, parameter.name, parameter.annotation, match, parameter, node
+                )
+        # Template-local bindings (loop counters and function declarations) also
+        # remain editable; syntax keywords and fixed template operations do not.
+        for _, node in declarations[
+            bisect_right(declaration_starts, match.span.start - 1) : bisect_right(
+                declaration_starts, match.span.end - 1
+            )
+        ]:
+            span = syntax.spans[node]
+            if match.span.start <= span.start and span.end <= match.span.end:
+                if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
+                    add(node, "name", "identifier")
+                elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    add(node, "function name", "identifier", field="name")
+                elif isinstance(node, ast.arg):
+                    add(node, "parameter", "identifier", field="arg")
+
+    covered.sort()
+    starts = [span.start for span in covered]
+
+    def visit(node):
+        span = syntax.spans.get(node)
+        if span is not None:
+            index = bisect_right(starts, span.start) - 1
+            if index >= 0 and span.end <= covered[index].end:
+                return
+        if isinstance(node, (ast.If, ast.While, ast.IfExp)):
+            expression(node.test, "condition", "bool")
+        if isinstance(node, ast.expr):
+            expression(node)
+            return
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            add(node, "function name", "identifier", field="name")
+        elif isinstance(node, ast.arg):
+            add(node, "parameter", "identifier", field="arg")
+        for child in ast.iter_child_nodes(node):
+            visit(child)
+
+    visit(syntax.tree)
+    for node in syntax.spans:
+        if isinstance(node, ast.Call) and not session.simplified_range(node):
+            expression(node.func, "function")
+    bindings.sort(key=lambda item: item[0])
+    binding_starts = [item[0].start for item in bindings]
+    for node in syntax.spans:
+        for span, kind, index in operator_spans(syntax, node):
+            position = bisect_right(binding_starts, syntax.spans[node].start) - 1
+            match = root = None
+            name = "operator"
+            if position >= 0 and syntax.spans[node].end <= bindings[position][0].end:
+                _, match, parameter, root = bindings[position]
+                name = parameter.name
+            result[span] = Slot(
+                syntax,
+                span,
+                Parameter(name, None, kind),
+                match,
+                binding=True,
+                node=node,
+                field="operator",
+                root=root,
+                operator_index=index,
+            )
+    return tuple(result[span] for span in sorted(result))
 
 
 def has_choices(session, slot):
-    if slot.binding:
+    if slot.binding and slot.field != "operator":
         return False
     current = slot.syntax.source[slot.span.start : slot.span.end]
     return any(
@@ -142,6 +255,9 @@ def choices(session, parameter, offset):
 
 def _choices(session, parameter, offset):
     kind = value_type(parameter.annotation)
+    if kind in OPERATORS:
+        yield from OPERATORS[kind]
+        return
     if kind is None and parameter.name in {"test", "condition"}:
         kind = "bool"
     enums = {
@@ -250,21 +366,30 @@ def change_parameter(session, slot, expression):
     # The popup is attached to this revision. Publishing a new revision closes it.
     if slot.syntax is not syntax:
         raise ValueError("Document changed; choose the parameter again")
-    ast.parse(expression, mode="eval")
-    if slot.match is not None:
-        session.editor.commit(
-            edit.replace_expressions(
-                syntax,
-                [
-                    (syntax.spans[node], expression)
-                    for node in slot.match.occurrences[slot.parameter.name]
-                ],
-            )
-        )
+    if slot.field == "operator":
+        source = change_operator(syntax, slot.node, slot.operator_index, expression)
+    elif slot.field:
+        import keyword
+
+        if not expression.isidentifier() or keyword.iskeyword(expression):
+            raise ValueError("Enter a Python identifier")
+        if slot.field in {"name", "arg"}:
+            source = rename(session, slot.node, expression)
+        else:
+            source = edit.patches(syntax.source, [(slot.span, expression)])
+            syntax.validate(source)
     else:
-        session.editor.selection = next(
-            node
-            for node, span in syntax.spans.items()
-            if span == slot.span and isinstance(node, ast.expr)
+        source = edit.replace_expressions(syntax, [(slot.span, expression)])
+    if slot.match is not None:
+        root = slot.root or slot.node
+        root_span = syntax.spans[root]
+        length = len(source) - len(syntax.source)
+        replacement = source[root_span.start : root_span.end + length]
+        source = edit.replace_expressions(
+            syntax,
+            [
+                (syntax.spans[node], replacement)
+                for node in slot.match.occurrences[slot.parameter.name]
+            ],
         )
-        session.editor.replace(expression)
+    session.editor.commit(source, focus=slot.span.start)

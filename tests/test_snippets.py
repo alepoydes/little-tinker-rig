@@ -126,7 +126,12 @@ def test_bundled_libraries_can_load_without_robot_dependencies():
     for snippet in snippets:
         bindings = {p.name: "device" for p in snippet.parameters if p.default is None}
         expansion = instantiate(snippet, bindings)
-        Syntax(expansion.source + "\n")
+        if snippet.result_type == "statement":
+            from textwrap import indent
+
+            Syntax("def example():\n" + indent(expansion.source + "\n", "    "))
+        else:
+            Syntax(expansion.source + "\n")
 
 
 def test_hygiene_respects_nested_shadowing_and_keyword_arguments():

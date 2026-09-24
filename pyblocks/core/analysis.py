@@ -2,7 +2,11 @@
 
 import ast
 import builtins
+import inspect
 from dataclasses import dataclass, field
+from functools import cached_property
+
+from pyblocks.i18n import language, tr
 
 from .syntax import Span, Syntax
 
@@ -248,6 +252,36 @@ class Analysis(Scopes):
                     (-1, None, "type" if isinstance(node, ast.ClassDef) else "function")
                 ]
 
+    @cached_property
+    def definitions(self):
+        candidates = {}
+        for node in ast.walk(self.syntax.tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                key = (id(self.resolve(node, node.name)), node.name)
+                candidates.setdefault(key, []).append(node)
+            elif isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
+                key = (id(self.resolve(node, node.id)), node.id)
+                candidates.setdefault(key, []).append(node)
+            elif isinstance(node, (ast.Import, ast.ImportFrom)):
+                for alias in node.names:
+                    name = alias.asname or alias.name.split(".")[0]
+                    key = (id(self.resolve(node, name)), name)
+                    candidates.setdefault(key, []).append(node)
+        return {
+            key: nodes[0]
+            for key, nodes in candidates.items()
+            if len(nodes) == 1
+            and isinstance(nodes[0], (ast.FunctionDef, ast.AsyncFunctionDef))
+            and not nodes[0].decorator_list
+        }
+
+    def call_definition(self, call):
+        if not isinstance(call.func, ast.Name):
+            return None
+        return self.definitions.get(
+            (id(self.resolve(call.func, call.func.id)), call.func.id)
+        )
+
     def type_of(self, node, seen=frozenset()):
         """Conservative hints, not a type checker or a restriction on user input."""
         if isinstance(node, ast.Constant):
@@ -346,6 +380,12 @@ class Analysis(Scopes):
         return tuple(sorted(names))
 
     def diagnostics(self) -> tuple[Diagnostic, ...]:
+        if getattr(self, "_diagnostic_language", None) != language():
+            self._diagnostic_cache = self._diagnostics()
+            self._diagnostic_language = language()
+        return self._diagnostic_cache
+
+    def _diagnostics(self) -> tuple[Diagnostic, ...]:
         result = []
         for node, scope in self.references:
             name = node.id
@@ -374,4 +414,81 @@ class Analysis(Scopes):
                 result.append(
                     Diagnostic(self.syntax.spans[node], f"Name {name!r} is not defined")
                 )
+        for node in ast.walk(self.syntax.tree):
+            if not isinstance(node, ast.Call):
+                continue
+            if any(isinstance(arg, ast.Starred) for arg in node.args) or any(
+                kw.arg is None for kw in node.keywords
+            ):
+                continue
+            message = None
+            definition = self.call_definition(node)
+            if definition is not None:
+                try:
+                    function_signature(definition).bind(
+                        *[None for arg in node.args],
+                        **dict.fromkeys(kw.arg for kw in node.keywords),
+                    )
+                except TypeError:
+                    message = tr(
+                        "Arguments do not match {signature}",
+                        signature=definition.name
+                        + "("
+                        + ast.unparse(definition.args)
+                        + ")",
+                    )
+            elif (
+                isinstance(node.func, ast.Name)
+                and node.func.id == "range"
+                and self.resolve(node.func, "range") is None
+            ):
+                if not 1 <= len(node.args) <= 3 or node.keywords:
+                    message = tr("range expects one to three positional arguments")
+                elif (
+                    len(node.args) == 3
+                    and isinstance(node.args[2], ast.Constant)
+                    and node.args[2].value == 0
+                ):
+                    message = tr("range step cannot be zero")
+            if message:
+                result.append(Diagnostic(self.syntax.spans[node], message, "error"))
         return tuple(result)
+
+
+def function_signature(definition):
+    """An inspect signature made only from syntax; defaults are never evaluated."""
+    args = definition.args
+    positional = args.posonlyargs + args.args
+    defaults = [inspect.Parameter.empty] * (len(positional) - len(args.defaults))
+    defaults += [ast.unparse(value) for value in args.defaults]
+    parameters = [
+        inspect.Parameter(
+            arg.arg,
+            (
+                inspect.Parameter.POSITIONAL_ONLY
+                if i < len(args.posonlyargs)
+                else inspect.Parameter.POSITIONAL_OR_KEYWORD
+            ),
+            default=default,
+        )
+        for i, (arg, default) in enumerate(zip(positional, defaults, strict=True))
+    ]
+    if args.vararg:
+        parameters.append(
+            inspect.Parameter(args.vararg.arg, inspect.Parameter.VAR_POSITIONAL)
+        )
+    parameters.extend(
+        inspect.Parameter(
+            arg.arg,
+            inspect.Parameter.KEYWORD_ONLY,
+            default=(
+                inspect.Parameter.empty if default is None else ast.unparse(default)
+            ),
+        )
+        for arg, default in zip(args.kwonlyargs, args.kw_defaults, strict=True)
+    )
+    if args.kwarg:
+        parameters.append(
+            inspect.Parameter(args.kwarg.arg, inspect.Parameter.VAR_KEYWORD)
+        )
+    return inspect.Signature(parameters)
