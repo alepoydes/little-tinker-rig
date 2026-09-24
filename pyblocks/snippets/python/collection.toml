@@ -1,3 +1,18 @@
 [collection]
 id = "python"
 version = "1.0.0"
+
+[levels]
+"basics/display" = "beginner"
+"basics/assign" = "beginner"
+"basics/repeat" = "beginner"
+"basics/condition" = "beginner"
+"basics/forever" = "beginner"
+"basics/compare" = "beginner"
+"basics/condition_else" = "standard"
+"basics/while_condition" = "standard"
+"basics/add_to" = "standard"
+"basics/equal" = "beginner"
+"basics/both" = "standard"
+"basics/either" = "standard"
+"basics/opposite" = "standard"

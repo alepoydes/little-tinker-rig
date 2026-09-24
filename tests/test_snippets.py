@@ -170,3 +170,21 @@ def test_managed_import_survives_dirty_scratch_and_forward_annotation():
     assert "import Motor" in manage_imports(source, retain=("Motor(",))
     annotated = source.replace("pass", 'motor: "Motor"')
     assert "import Motor" in manage_imports(annotated)
+
+
+def test_difficulty_metadata_rejects_all_and_unknown_blocks(tmp_path):
+    from pyblocks.core.snippets import load_collection
+
+    (tmp_path / "motions.py").write_text(
+        'def go():\n    """Start moving."""\n    print("go")\n'
+    )
+    manifest = tmp_path / "collection.toml"
+    base = '[collection]\nid = "robot"\nversion = "1.0.0"\n'
+    manifest.write_text(base)
+    assert load_collection(tmp_path)[0].level == "standard"
+    manifest.write_text(base + '[levels]\n"motions/go" = "beginner"\n')
+    assert load_collection(tmp_path)[0].level == "beginner"
+    for field in ('"motions/go" = "all"', '"motions/typo" = "expert"'):
+        manifest.write_text(base + "[levels]\n" + field + "\n")
+        with pytest.raises(ValueError, match="difficulty"):
+            load_collection(tmp_path)

@@ -1,10 +1,12 @@
 """A local hub backend. Each program runs in a stoppable, independent process."""
 
+import ast
 import asyncio
 import json
 import sys
 from dataclasses import replace
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from .devices import PREFIX, HubInfo
 from .simulation import PROFILES, World
@@ -29,6 +31,8 @@ class VirtualConnection:
         self.ready = asyncio.Event()
         self.write_lock = asyncio.Lock()
         self.ports = world.snapshot()
+        self.stored = None
+        self.stored_path = None
 
     def _update(self, **values):
         self.info = replace(self.info, **values)
@@ -121,7 +125,66 @@ class VirtualConnection:
             self.process.stdin.write(data)
             await self.process.stdin.drain()
 
-    async def run(self, path, *, wait=False):
+    async def upload(self, path):
+        """Keep a source snapshot for the local simulator, without executing it."""
+        if not self.info.connected:
+            raise ValueError("Connect a virtual hub first")
+        path = Path(path).resolve()
+        if not path.is_file():
+            raise FileNotFoundError(path)
+        root = path.parent
+        snapshot = TemporaryDirectory(prefix="pyblocks-virtual-program-")
+        destination = Path(snapshot.name)
+        pending, seen = [path], set()
+        try:
+            while pending:
+                file = pending.pop()
+                if file in seen or not file.is_file() or not file.is_relative_to(root):
+                    continue
+                seen.add(file)
+                source = file.read_bytes()
+                tree = ast.parse(source)
+                compile(tree, str(file), "exec")
+                target = destination / file.relative_to(root)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(source)
+                for node in ast.walk(tree):
+                    names, base = [], root
+                    if isinstance(node, ast.Import):
+                        names = [alias.name for alias in node.names]
+                    elif isinstance(node, ast.ImportFrom):
+                        if node.level:
+                            base = file.parent
+                            for _ in range(node.level - 1):
+                                base = base.parent
+                        names = [node.module or ""] + [
+                            ".".join(filter(None, (node.module, alias.name)))
+                            for alias in node.names
+                        ]
+                    for name in names:
+                        module = base.joinpath(*name.split("."))
+                        pending.extend(
+                            (module.with_suffix(".py"), module / "__init__.py")
+                        )
+                        pending.extend(
+                            parent / "__init__.py"
+                            for parent in module.parents
+                            if parent.is_relative_to(root)
+                        )
+            await self.stop()
+        except BaseException:
+            snapshot.cleanup()
+            raise
+        if self.stored is not None:
+            self.stored.cleanup()
+        self.stored, self.stored_path = snapshot, destination / path.name
+
+    async def run(self, path=None, *, wait=False):
+        if path is not None:
+            await self.upload(path)
+        if self.stored_path is None:
+            raise ValueError("Upload a program before running it")
+        path = self.stored_path
         if not self.info.connected:
             raise ValueError("Connect a virtual hub first")
         if not Path(path).is_file():

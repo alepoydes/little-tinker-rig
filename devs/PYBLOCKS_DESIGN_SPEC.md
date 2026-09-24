@@ -352,15 +352,24 @@ This supports multiple interaction mechanisms with the same implementation.
 
 ### 11.1 GUI interaction
 
-In Qt, mouse movement can map onto target navigation.
+The library, document and Scratch share one cancellable pointer gesture. A colored
+preview attached to the pointer shows at most four displayed lines. The source
+is temporarily replaced by one highlighted Previous position row; expressions
+leave an inline origin marker. Source and history stay unchanged until a valid
+drop. Escape, invalid release, or return to origin restores the view without a
+history entry. One successful commit and Undo cover both affected areas.
 
-Vertical movement chooses earlier/later insertion positions.
+The upper/lower half of a source row selects insertion above/below. Below a
+compound header means its first body position. Insertion after the whole compound
+uses the next outside block or a following blank line. Horizontal position on a
+blank line selects nesting. Only compatible expressions fit empty parameter slots;
+populated slots are not replaced by a drop.
 
-Moving the mouse left can move outward in the indentation/AST structure. This should also drive automatic folding/collapse of deeply nested code so that large programs are easier to navigate while dragging.
-
-Moving right can move toward deeper structural targets where appropriate.
-
-Releasing the mouse commits the currently selected structural target.
+A new Insert here row opens space before descriptions and owned comments. Adding
+or removing it must preserve the same source row and relative pointer position.
+Decorations are not new structural targets. Invalid contexts offer no insertion;
+they must not snap to a distant valid context. Edge autoscroll is explicit; dragging
+does not automatically fold code.
 
 ### 11.2 TUI interaction
 
@@ -1054,7 +1063,7 @@ It should provide, as the design matures:
 - three-column Library / source / Scratch layout;
 - rich structural background rendering;
 - smooth drag-and-drop;
-- folding/collapse animation during navigation and dragging;
+- explicit folding/collapse animation without drag-induced folding;
 - tooltip quick help;
 - separate full documentation view;
 - virtual joystick/buttons/sliders;
@@ -1591,3 +1600,24 @@ PyBlocks Studio should be built around a very small set of strong ideas:
 - Code volume should be reduced by representation and algorithmic simplicity, not by collapsing modules or hiding complexity.
 
 The project should feel like ordinary Python that has acquired structure, constraints, discoverability, drag-and-drop, and domain-specific intelligence, rather than like a visual language that happens to generate Python.
+
+## Desktop library and hub actions
+
+Every block has one manifest level: beginner, standard, or expert. All exists only
+as a filter choice. Search, groups and the persisted level filter combine; help
+uses the same metadata. Generated comments place the action symbol before text,
+use the owning block's color, and preserve enclosing indentation bands.
+
+The toolbar omits Parameters, To Scratch and Python fragment; menus and shortcuts
+retain these actions. Upload saves and sends the active program without running.
+Run uploads and executes; Run stored program starts the existing hub program;
+Stop halts execution. Physical uploads contain compiled code without an additional
+source archive. Source read-back and bytecode decompilation are out of scope.
+
+Firmware installation is a desktop workflow with model, kind and version selection,
+local packages, cached official downloads, package review, progress and errors.
+Inventor/Prime uses USB DFU; BOOST and Technic use Bluetooth bootloaders. Model
+compatibility is checked before erase. LEGO downloads provide Inventor/Prime
+recovery 1.3; BOOST/Technic restoration requires a local compatible LEGO package.
+Automation prepares images and tests public transport boundaries; physical flashing
+requires separate hardware verification.

@@ -118,8 +118,9 @@ AST indexing is linear. Committed transformations format and parse again; hover
 and navigation reuse the index. History stores source/Scratch snapshots. Move
 validation normally compiles one candidate per statement suite; declarations such
 as global, nonlocal, and __future__ require per-position validation. The resulting
-move is always compiled before publication. Library insertion validates each
-position once on drag entry and reuses those candidates while the pointer moves.
+move is always compiled before publication. Pointer dragging chooses a geometric destination first, validates it lazily,
+and reuses that result until the source revision changes. An invalid destination
+must not snap to a different legal target.
 
 Compile the monitor and controller as well as the courier example:
 
@@ -154,3 +155,24 @@ Regression checks must exercise actual pointer activation for every enum value,
 plain identifier fields, source preservation while opening menus, comment colors,
 and the insertion marker above all owned descriptions. Window control tests click
 the visible buttons; window flags alone do not verify desktop decorations.
+
+## Pointer and firmware regression rules
+
+A drag is a display projection over an unchanged document. Do not maintain a
+second mutable source or add Undo entries during movement. Restore transient Qt
+formats before committing. Test Escape followed by movement with the button still
+held, return to origin, invalid contexts, expressions, and transfers in both areas.
+
+Insertion space changes layout. Test the global position of the same source row
+and the pointer's relative location after every marker update, including short
+documents, scroll limits, compound headers and Scratch cells. Reserve temporary
+scroll space and complete cell layout before compensating the anchor. A screenshot
+of the marker alone cannot verify this invariant. Notes must retain ancestor bands;
+painting their background without those bands erases structural information.
+
+Test upload without execution and stored execution after editing/deleting local
+source and imported modules. Firmware preparation must never access hardware.
+Reject mismatched metadata before transport, check the connected model before
+erase, verify the reviewed digest again in the flash process, and propagate
+failures. Use mocked transport boundaries in automation; report physical flashing
+separately. A subprocess isolates public DFU routines that may call SystemExit.

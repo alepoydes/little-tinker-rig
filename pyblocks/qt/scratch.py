@@ -3,12 +3,12 @@
 import math
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QColor, QPainter, QPen
 from PySide6.QtWidgets import (
     QApplication,
     QFrame,
     QHBoxLayout,
     QLabel,
+    QLayout,
     QScrollArea,
     QSizePolicy,
     QStackedWidget,
@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from pyblocks.core.edit import target_position
 from pyblocks.core.parameters import default_bindings
 from pyblocks.core.session import Session
 from pyblocks.core.snippets import instantiate
@@ -89,11 +90,18 @@ class ScratchCell(QFrame):
         self.source.scratch_index = index
         self.source.changed.connect(self.structural_changed)
         self.source.transferred.connect(pane.changed)
+        self.source.layout_changed.connect(self.fit)
         self.source.failed.connect(pane.failed)
         self.source.snippet_dropped.connect(self.insert_snippet)
         self.stack = QStackedWidget()
         self.stack.addWidget(self.source)
         self.stack.addWidget(self.code)
+        self.origin_marker = QLabel()
+        self.origin_marker.setStyleSheet(
+            "background: #ffe0a1; color: #804900; border: 2px solid #ae6810; padding: 5px"
+        )
+        self.stack.addWidget(self.origin_marker)
+        self.whole_drag = False
         layout.addWidget(self.stack)
         self.error = QLabel()
         self.error.setWordWrap(True)
@@ -128,6 +136,17 @@ class ScratchCell(QFrame):
             self.error.hide()
         self.fit()
 
+    def show_drag_origin(self, transfer):
+        self.whole_drag = True
+        self.origin_marker.setText("↶ # " + tr("Previous position"))
+        self.stack.setCurrentWidget(self.origin_marker)
+        self.fit()
+
+    def hide_drag_origin(self):
+        self.whole_drag = False
+        self.stack.setCurrentIndex(int(self.code_active))
+        self.fit()
+
     def fit(self):
         editor = self.code if self.code_active else self.source
         editor.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -142,8 +161,16 @@ class ScratchCell(QFrame):
                 math.ceil(editor.document().documentLayout().documentSize().height())
                 + 18
             )
-        editor.setFixedHeight(max(76, height))
-        self.stack.setFixedHeight(max(76, height))
+        minimum = 36 if editor is self.source and editor.origin_span is not None else 76
+        editor.setFixedHeight(max(minimum, height))
+        self.stack.setFixedHeight(
+            self.source.marker_height() + 10
+            if self.whole_drag
+            else max(minimum, height)
+        )
+        self.layout().activate()
+        self.setFixedHeight(self.layout().sizeHint().height())
+        self.pane.column.activate()
 
     def text_changed(self):
         self.text = self.code.toPlainText()
@@ -165,8 +192,14 @@ class ScratchCell(QFrame):
             s for s in self.source.session.snippets if s.identity == identity
         )
         try:
+            syntax = self.source.session.document.syntax
+            offset = (
+                target_position(syntax, target)[0]
+                if target
+                else syntax.spans[self.source.session.editor.selection].start
+            )
             self.source.session.insert_snippet(
-                snippet, default_bindings(self.source.session, snippet), target
+                snippet, default_bindings(self.source.session, snippet, offset), target
             )
             self.structural_changed()
         except (ValueError, SyntaxError) as error:
@@ -174,6 +207,7 @@ class ScratchCell(QFrame):
 
 
 class ScratchPane(QScrollArea):
+    block_drop_target = True
     changed = Signal()
     failed = Signal(str)
 
@@ -187,6 +221,7 @@ class ScratchPane(QScrollArea):
         self.setMinimumWidth(220)
         self.content = QWidget()
         self.column = QVBoxLayout(self.content)
+        self.column.setSizeConstraint(QLayout.SizeConstraint.SetMinAndMaxSize)
         self.column.setContentsMargins(8, 8, 8, 8)
         self.column.setSpacing(10)
         self.empty = QLabel(
@@ -200,6 +235,12 @@ class ScratchPane(QScrollArea):
         self.column.addStretch()
         self.setWidget(self.content)
         self.drop_position = None
+        self.drop_padding = None
+        self.indicator = QLabel(self.content)
+        self.indicator.setStyleSheet(
+            "background: #d9f0e7; color: #205e4b; padding: 7px; border: 1px solid #277c63"
+        )
+        self.indicator.hide()
 
     def refresh(self, session):
         if self.session is not session:
@@ -248,11 +289,26 @@ class ScratchPane(QScrollArea):
             and data.transfer.owner is self.session
             or data.hasFormat("application/x-pyblocks-snippet")
         ):
+            if isinstance(data, BlockMime):
+                try:
+                    data.transfer.validate()
+                except ValueError:
+                    event.ignore()
+                    return
+            if self.drop_padding is None:
+                self.drop_padding = self.column.contentsMargins()
+                margins = self.column.contentsMargins()
+                margins.setBottom(self.viewport().height() + 40)
+                self.column.setContentsMargins(margins)
+                self.column.activate()
             event.acceptProposedAction()
 
     def dragMoveEvent(self, event):
         point = self.content.mapFrom(self.viewport(), event.position().toPoint())
-        self.drop_position = next(
+        if self.indicator.isVisible() and self.indicator.geometry().contains(point):
+            event.acceptProposedAction()
+            return
+        position = next(
             (
                 i
                 for i, cell in enumerate(self.cells)
@@ -260,15 +316,47 @@ class ScratchPane(QScrollArea):
             ),
             len(self.cells),
         )
+        if position != self.drop_position:
+            anchor = next(
+                (cell for cell in self.cells if cell.geometry().bottom() >= point.y()),
+                None,
+            )
+            y = (
+                anchor.mapTo(self.viewport(), anchor.rect().topLeft()).y()
+                if anchor
+                else 0
+            )
+            self.column.removeWidget(self.indicator)
+            self.drop_position = position
+            index = (
+                self.column.indexOf(self.cells[position])
+                if position < len(self.cells)
+                else self.column.count() - 1
+            )
+            self.column.insertWidget(index, self.indicator)
+            self.indicator.setText("↳ # " + tr("Insert here"))
+            self.indicator.show()
+            self.column.activate()
+            if anchor:
+                self.verticalScrollBar().setValue(
+                    self.verticalScrollBar().value()
+                    + anchor.mapTo(self.viewport(), anchor.rect().topLeft()).y()
+                    - y
+                )
         event.acceptProposedAction()
-        self.viewport().update()
 
     def dragLeaveEvent(self, event):
         self.drop_position = None
-        self.viewport().update()
+        self.column.removeWidget(self.indicator)
+        self.indicator.hide()
+        if self.drop_padding is not None:
+            self.column.setContentsMargins(self.drop_padding)
+            self.drop_padding = None
+            self.column.activate()
 
     def dropEvent(self, event):
         position = len(self.cells) if self.drop_position is None else self.drop_position
+        self.dragLeaveEvent(event)
         try:
             data = event.mimeData()
             if isinstance(data, BlockMime):
@@ -297,17 +385,3 @@ class ScratchPane(QScrollArea):
             event.ignore()
         self.drop_position = None
         self.viewport().update()
-
-    def paintEvent(self, event):
-        super().paintEvent(event)
-        if self.drop_position is None:
-            return
-        y = (
-            self.cells[self.drop_position].y() - 5
-            if self.drop_position < len(self.cells)
-            else self.cells[-1].geometry().bottom() + 5 if self.cells else 8
-        )
-        y = self.content.mapTo(self.viewport(), self.content.rect().topLeft()).y() + y
-        painter = QPainter(self.viewport())
-        painter.setPen(QPen(QColor("#277c63"), 3))
-        painter.drawLine(8, y, self.viewport().width() - 8, y)

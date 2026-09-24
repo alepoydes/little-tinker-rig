@@ -8,6 +8,7 @@ from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QTextCursor
 from PySide6.QtWidgets import (
     QApplication,
+    QComboBox,
     QDialog,
     QDockWidget,
     QFileDialog,
@@ -32,6 +33,7 @@ from PySide6.QtWidgets import (
 
 from pyblocks.core.edit import target_position
 from pyblocks.core.parameters import default_bindings
+from pyblocks.core.snippets import LEVELS
 from pyblocks.core.transfer import Transfer
 from pyblocks.i18n import DEFAULT_LANGUAGE, LANGUAGES, N_, language, set_language, tr
 from pyblocks.pybricks.control import ControlState
@@ -43,7 +45,7 @@ from .dialogs import EditDialog
 from .document import DocumentPage
 from .editor import source_offset
 from .help import HelpPage
-from .library import IDENTITY, Library
+from .library import IDENTITY, LEVEL_TITLES, Library
 from .localization import localize, translate_standard_dialogs
 from .navigation import ModeTabs
 from .scratch import ScratchPane
@@ -96,10 +98,21 @@ class Studio(QMainWindow):
         self.search = QLineEdit()
         self.search.setPlaceholderText(N_("Find a block…"))
         self.search.textChanged.connect(self.library.filter)
+        self.level_filter = QComboBox()
+        self.level_filter.setToolTip(N_("Block level"))
+        self.level_filter.addItem(N_("All"), "all")
+        for level in LEVELS:
+            self.level_filter.addItem(LEVEL_TITLES[level], level)
+        saved_level = self.settings.value("blockLevel", "all")
+        self.level_filter.setCurrentIndex(
+            max(0, self.level_filter.findData(saved_level))
+        )
+        self.level_filter.currentIndexChanged.connect(self.filter_level)
         library = QWidget()
         layout = QVBoxLayout(library)
         layout.addWidget(QLabel(N_("Library · drag a block into the program")))
         layout.addWidget(self.search)
+        layout.addWidget(self.level_filter)
         layout.addWidget(self.library, 1)
         insert = QPushButton(N_("＋ Add selected block"))
         insert.clicked.connect(self.insert_selected)
@@ -301,7 +314,7 @@ class Studio(QMainWindow):
             ),
         ):
             self.structural_actions.append(
-                self._action(edit, label, key, callback, toolbar, icon)
+                self._action(edit, label, key, callback, icon=icon)
             )
         for label, key, callback in (
             (N_("Parent"), "Alt+Left", lambda: self.editing_session.editor.parent()),
@@ -332,7 +345,7 @@ class Studio(QMainWindow):
             (
                 N_("Cancel move"),
                 "Escape",
-                lambda: self.editing_session.editor.cancel_move(),
+                lambda: self.editing_source.cancel_pointer_move(),
             ),
             (
                 N_("Upgrade block"),
@@ -389,6 +402,14 @@ class Studio(QMainWindow):
         self._action(view, N_("Name diagnostics"), None, self.show_diagnostics)
         toolbar.addSeparator()
         robot = self.menuBar().addMenu(N_("Hub"))
+        self.upload_action = self._action(
+            robot,
+            N_("Upload"),
+            "Shift+F5",
+            self.upload_hub,
+            toolbar,
+            ("document-send", "SP_ArrowUp"),
+        )
         self.run_action = self._action(
             robot,
             N_("Run"),
@@ -408,6 +429,13 @@ class Studio(QMainWindow):
         self._action(robot, N_("Connect…"), "F7", self.connect_hub)
         self._action(robot, N_("Disconnect"), None, self.disconnect_hub)
         self._action(robot, N_("Manual control"), None, self.show_controls)
+        self.stored_action = self._action(
+            robot, N_("Run stored program"), None, self.run_stored_hub
+        )
+        robot.addSeparator()
+        self.firmware_action = self._action(
+            robot, N_("Firmware…"), None, self.show_firmware
+        )
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         toolbar.addWidget(spacer)
@@ -488,6 +516,11 @@ class Studio(QMainWindow):
     def change_editor(self, index):
         self.document_page.change_mode(index)
 
+    def filter_level(self):
+        level = self.level_filter.currentData()
+        self.settings.setValue("blockLevel", level)
+        self.library.filter(self.search.text(), level)
+
     def commit_code(self):
         self.document_page.commit_code()
 
@@ -495,7 +528,7 @@ class Studio(QMainWindow):
         if self.document_page is None:
             return
         self.library.load(self.session.snippets)
-        self.library.filter(self.search.text())
+        self.library.filter(self.search.text(), self.level_filter.currentData())
         self.help_page.snippets = self.session.snippets
         self.help_page.retranslate()
         self.document_mode_changed()
@@ -518,7 +551,7 @@ class Studio(QMainWindow):
         self.scratch.refresh(self.session)
         self.language_actions[language()].setChecked(True)
         self.library.load(self.session.snippets)
-        self.library.filter(self.search.text())
+        self.library.filter(self.search.text(), self.level_filter.currentData())
         self.help_page.retranslate()
         self.update_hub(self.hub_info)
         self.refresh_status()
@@ -952,6 +985,9 @@ class Studio(QMainWindow):
         self.hub_is_busy = busy
         self.hub_button.setEnabled(not busy)
         self.run_action.setEnabled(self.hub_info.connected and not busy)
+        self.upload_action.setEnabled(self.hub_info.connected and not busy)
+        self.stored_action.setEnabled(self.hub_info.connected and not busy)
+        self.firmware_action.setEnabled(not busy)
         if busy:
             self.hub_button.setText(tr("Please wait…"))
         else:
@@ -979,6 +1015,8 @@ class Studio(QMainWindow):
             else tr("Bluetooth, USB or virtual hub")
         )
         self.run_action.setEnabled(info.connected and not self.hub_is_busy)
+        self.upload_action.setEnabled(info.connected and not self.hub_is_busy)
+        self.stored_action.setEnabled(info.connected and not self.hub_is_busy)
         self.stop_action.setEnabled(info.connected)
         self.device_panel.update_info(info)
         self.controls.update_info(info)
@@ -997,6 +1035,21 @@ class Studio(QMainWindow):
         self.controls.armed.setChecked(False)
         self.save()
         self._robot().run_file(self.session.project.path)
+
+    def upload_hub(self):
+        self.controls.armed.setChecked(False)
+        self.save()
+        self._robot().upload_file(self.session.project.path)
+
+    def run_stored_hub(self):
+        self.controls.armed.setChecked(False)
+        self._robot().run_stored()
+
+    def show_firmware(self):
+        from .firmware import FirmwareDialog
+
+        dialog = FirmwareDialog(self)
+        dialog.exec()
 
     def stop_hub(self):
         self.controls.armed.setChecked(False)

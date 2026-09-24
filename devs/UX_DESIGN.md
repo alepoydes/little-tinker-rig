@@ -89,7 +89,9 @@ Descriptions and action symbols are display-only. Every description has its own
 row and the color of its block, including nested expression blocks. Drop boundaries
 precede both descriptions and owned source comments. Selection pulses across the
 block background; blank lines preserve indentation bands. During a drag, the
-view shows the target indentation and a source preview. Library blocks insert
+view shows a colored preview attached to the pointer (at most four displayed
+lines), an amber origin marker and a green insertion row. Escape restores the
+original projection and prevents a held pointer from restarting the gesture. Library blocks insert
 with defaults or context-derived values, without a dialog. The view preserves its
 anchor and scrolls only as needed to reveal the start of the inserted block.
 
@@ -112,3 +114,20 @@ expired commands provide observable results. The real monitor is compiled for
 MicroPython and tested at the public device API boundary. Localization checks cover
 captions, snippet help, corresponding documentation, links, package resources, and
 preservation of user data during language changes.
+
+## Drag boundaries, levels and firmware
+
+Pointer halves choose before/after a row; the lower half of a compound header
+chooses the body. The next outside block or a following blank line offers insertion
+after a compound. An insertion row cannot move the hovered source row relative
+to the pointer. Invalid contexts have no target; only empty parameters accept
+compatible expressions. One accepted gesture creates one Undo operation.
+
+Cards and help show beginner, standard or expert from collection metadata. The
+persisted All/Beginner/Standard/Expert filter combines with search and groups.
+
+The toolbar keeps file, history and hub actions. Structural commands remain in
+menus and shortcuts. Upload sends without execution; Run uploads and executes;
+Run stored program and Stop act on the hub. Firmware preparation and installation
+are separate steps with model checking, cached/local files, license review and
+progress. The dialog remains open during writing. There is no source read-back.

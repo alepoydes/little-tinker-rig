@@ -246,7 +246,26 @@ def replace(syntax: Syntax, node: ast.AST, fragment: str) -> str:
     return result
 
 
-def move(syntax: Syntax, node: ast.stmt | tuple[ast.stmt, ...], target: Target) -> str:
+def move(
+    syntax: Syntax, node: ast.AST | tuple[ast.stmt, ...], target: Target | ast.expr
+) -> str:
+    if isinstance(node, ast.expr):
+        span = syntax.spans[node]
+        if isinstance(target, ast.expr):
+            destination = syntax.spans[target]
+            if span.start < destination.end and destination.start < span.end:
+                raise ValueError("Cannot move an expression into itself")
+            return replace_expressions(
+                syntax, [(span, "None"), (destination, syntax.text(node))]
+            )
+        insertion = _insertion(syntax, target, syntax.text(node))
+        if span.start <= insertion[0].start <= span.end:
+            raise ValueError("Cannot move an expression into itself")
+        result = patches(syntax.source, [(span, "None"), insertion])
+        syntax.validate(result)
+        return result
+    if not isinstance(target, Target):
+        raise ValueError("Only expressions fit in parameters")
     removed = _removal(syntax, node)
     span = removed[0]
     offset, _ = target_position(syntax, target)

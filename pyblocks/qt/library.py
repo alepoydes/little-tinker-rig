@@ -1,7 +1,7 @@
 """Compact, colored source previews that remain recognizable after insertion."""
 
 from PySide6.QtCore import QMimeData, QSize, Qt
-from PySide6.QtGui import QColor, QDrag, QFontDatabase, QFontMetrics, QPainter, QPen
+from PySide6.QtGui import QColor, QFontDatabase, QFontMetrics, QPainter, QPen
 from PySide6.QtWidgets import QStyle, QStyledItemDelegate, QTreeWidget, QTreeWidgetItem
 
 from pyblocks.core.presentation import PALETTE, snippet_role
@@ -9,12 +9,20 @@ from pyblocks.core.snippets import instantiate, snippet_groups
 from pyblocks.i18n import N_, tr
 
 from .annotations import block_icon
+from .drag import Drag
 
 IDENTITY = Qt.ItemDataRole.UserRole
 PREVIEW = int(IDENTITY) + 1
 COLOR = int(IDENTITY) + 2
 DESCRIPTION = int(IDENTITY) + 3
 ICON = int(IDENTITY) + 4
+LEVEL = int(IDENTITY) + 5
+
+LEVEL_TITLES = {
+    "beginner": N_("Beginner"),
+    "standard": N_("Standard"),
+    "expert": N_("Expert"),
+}
 
 
 GROUP_TITLES = {
@@ -51,7 +59,7 @@ class CardDelegate(QStyledItemDelegate):
         painter.drawRoundedRect(rect, 6, 6)
         painter.setClipRect(rect)
         painter.setPen(QColor("#203040"))
-        description = index.data(DESCRIPTION)
+        description = index.data(ICON) + "  " + index.data(DESCRIPTION)
         font = option.font
         font.setBold(True)
         painter.setFont(font)
@@ -59,26 +67,29 @@ class CardDelegate(QStyledItemDelegate):
             rect.adjusted(10, 7, -8, 0),
             Qt.AlignmentFlag.AlignTop,
             QFontMetrics(font).elidedText(
-                description, Qt.TextElideMode.ElideRight, rect.width() - 45
+                description, Qt.TextElideMode.ElideRight, rect.width() - 20
             ),
         )
+        font.setBold(False)
+        font.setPointSize(8)
+        painter.setFont(font)
         painter.drawText(
-            rect.adjusted(0, 7, -8, 0),
-            Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight,
-            index.data(ICON),
+            rect.adjusted(10, 26, -8, 0),
+            Qt.AlignmentFlag.AlignTop,
+            tr(LEVEL_TITLES[index.data(LEVEL)]),
         )
         painter.setFont(QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont))
-        for row, line in enumerate(index.data(PREVIEW).splitlines()[:3]):
+        for row, line in enumerate(index.data(PREVIEW).splitlines()[:2]):
             text = painter.fontMetrics().elidedText(
                 line, Qt.TextElideMode.ElideRight, rect.width() - 20
             )
-            painter.drawText(rect.left() + 10, rect.top() + 42 + row * 17, text)
+            painter.drawText(rect.left() + 10, rect.top() + 57 + row * 17, text)
         painter.restore()
 
     def sizeHint(self, option, index):
         if index.data(IDENTITY):
             return QSize(
-                270, 54 + 17 * (min(3, len(index.data(PREVIEW).splitlines())) - 1)
+                270, 69 + 17 * (min(2, len(index.data(PREVIEW).splitlines())) - 1)
             )
         return super().sizeHint(option, index)
 
@@ -91,6 +102,7 @@ class Library(QTreeWidget):
         self.setIndentation(12)
         self.setItemDelegate(CardDelegate(self))
         self.setMinimumWidth(270)
+        self.level = "all"
         self.load(snippets)
 
     def load(self, snippets):
@@ -108,19 +120,22 @@ class Library(QTreeWidget):
                 item = QTreeWidgetItem(heading, [name])
                 item.setData(0, IDENTITY, snippet.identity)
                 item.setData(0, ICON, block_icon(snippet))
+                item.setData(0, LEVEL, snippet.level)
                 item.setData(0, PREVIEW, expansion.source)
                 item.setData(0, COLOR, PALETTE[snippet_role(snippet)])
                 item.setData(0, DESCRIPTION, snippet_title(snippet))
                 item.setToolTip(0, expansion.source + "\n\n" + tr(snippet.help))
         self.expandAll()
 
-    def filter(self, search):
+    def filter(self, search, level=None):
+        if level is not None:
+            self.level = level
         for index in range(self.topLevelItemCount()):
             group = self.topLevelItem(index)
             visible = False
             for child in range(group.childCount()):
                 item = group.child(child)
-                match = (
+                match = (self.level == "all" or item.data(0, LEVEL) == self.level) and (
                     search.casefold()
                     in (item.text(0) + item.toolTip(0) + group.text(0)).casefold()
                 )
@@ -140,8 +155,5 @@ class Library(QTreeWidget):
         item = self.currentItem()
         if not item or not item.data(0, IDENTITY):
             return
-        drag = QDrag(self)
-        drag.setMimeData(self.mimeData([item]))
         rect = self.visualItemRect(item)
-        drag.setPixmap(self.viewport().grab(rect))
-        drag.exec(Qt.DropAction.CopyAction)
+        Drag(self, self.mimeData([item]), self.viewport().grab(rect))

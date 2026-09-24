@@ -110,7 +110,11 @@ class Connection:
             raise ValueError("Connect a Pybricks hub first")
         return self.hub
 
-    async def run(self, path: Path, *, wait: bool = False) -> None:
+    async def upload(self, path: Path) -> None:
+        await self.stop()
+        await self._connected().download(str(path.resolve()))
+
+    async def run(self, path: Path | None = None, *, wait: bool = False) -> None:
         hub = self._connected()
         self._monitor_requested = False
         self._update(monitoring=False)
@@ -118,7 +122,10 @@ class Connection:
             await hub.stop_user_program()
             self._update(running=True)
             await hub.run(
-                str(path.resolve()), wait=wait, print_output=False, line_handler=False
+                str(path.resolve()) if path is not None else None,
+                wait=wait,
+                print_output=False,
+                line_handler=False,
             )
         except BaseException:
             self._update(running=False)

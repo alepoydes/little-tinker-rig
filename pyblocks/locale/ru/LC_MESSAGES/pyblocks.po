@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PyBlocks Studio 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-23 08:38+0300\n"
+"POT-Creation-Date: 2026-09-24 21:14+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -38,6 +38,10 @@ msgstr " · отпустите для возврата к нулю"
 msgid " · {p0:.2f} V"
 msgstr " · {p0:.2f} В"
 
+#: pyblocks/qt/app.py:103
+msgid "All"
+msgstr "Все"
+
 #: pyblocks/qt/controls.py:338
 msgid ""
 "Assign motors to axes or triggers. Scale sets the speed or the angle relative to the "
@@ -58,23 +62,41 @@ msgstr "Цвет / расстояние BOOST"
 msgid "BOOST distance, %"
 msgstr "Расстояние BOOST, %"
 
-#: pyblocks/qt/app.py:443
+#: pyblocks/qt/library.py:22
+msgid "Beginner"
+msgstr "Начинающий"
+
+#: pyblocks/qt/app.py:471
 msgid "Block color"
 msgstr "Цвет блоков"
 
-#: pyblocks/qt/help.py:239
+#: pyblocks/qt/app.py:102
+msgid "Block level"
+msgstr "Уровень блоков"
+
+#: pyblocks/qt/help.py:241
 msgid "Block library"
 msgstr "Библиотека блоков"
 
-#: pyblocks/qt/app.py:354 pyblocks/qt/document.py:60 pyblocks/qt/scratch.py:73
+#: pyblocks/qt/app.py:367 pyblocks/qt/document.py:60 pyblocks/qt/scratch.py:74
 msgid "Blocks"
 msgstr "Блоки"
+
+#: pyblocks/qt/firmware.py:166
+msgid ""
+"Bluetooth bootloader: turn the hub off. Hold its green button until the light flashes"
+" purple, then release it. Keep the hub near the computer and close other Bluetooth "
+"connections."
+msgstr ""
+"Загрузчик Bluetooth: выключите хаб. Удерживайте зелёную кнопку до мигания фиолетовым,"
+" затем отпустите. Держите хаб рядом с компьютером и закройте другие подключения "
+"Bluetooth."
 
 #: pyblocks/qt/device.py:71
 msgid "Bluetooth name"
 msgstr "Имя Bluetooth"
 
-#: pyblocks/qt/app.py:979
+#: pyblocks/qt/app.py:1015
 msgid "Bluetooth, USB or virtual hub"
 msgstr "Bluetooth, USB или виртуальный хаб"
 
@@ -82,7 +104,7 @@ msgstr "Bluetooth, USB или виртуальный хаб"
 msgid "Brake both robot wheels."
 msgstr "Затормозить оба колеса робота."
 
-#: pyblocks/qt/app.py:333
+#: pyblocks/qt/app.py:346
 msgid "Cancel move"
 msgstr "Отменить перенос"
 
@@ -90,11 +112,11 @@ msgstr "Отменить перенос"
 msgid "Center, °"
 msgstr "Центр, °"
 
-#: pyblocks/qt/annotations.py:30
+#: pyblocks/qt/annotations.py:31
 msgid "Change a value"
 msgstr "Изменить значение"
 
-#: pyblocks/qt/annotations.py:21
+#: pyblocks/qt/annotations.py:22
 msgid "Check a condition"
 msgstr "Проверить условие"
 
@@ -122,27 +144,31 @@ msgstr "Проверить, нажата ли кнопка датчика сил
 msgid "Check whether two values are equal."
 msgstr "Проверить, равны ли два значения."
 
-#: pyblocks/qt/app.py:308
+#: pyblocks/qt/app.py:321
 msgid "Child"
 msgstr "Потомок"
+
+#: pyblocks/pybricks/firmware.py:176
+msgid "Choose a firmware ZIP package for this hub"
+msgstr "Выберите ZIP-пакет прошивки для этого хаба"
 
 #: pyblocks/snippets/python/basics.py:48
 msgid "Choose between two actions using a condition."
 msgstr "Выбрать одно из двух действий по условию."
 
-#: pyblocks/qt/app.py:183
+#: pyblocks/qt/app.py:196
 msgid "Clear"
 msgstr "Очистить"
 
-#: pyblocks/qt/app.py:584
+#: pyblocks/qt/app.py:617
 msgid "Clear recent files"
 msgstr "Очистить список"
 
-#: pyblocks/qt/window.py:39
+#: pyblocks/qt/firmware.py:102 pyblocks/qt/window.py:39
 msgid "Close"
 msgstr "Закрыть"
 
-#: pyblocks/qt/app.py:259
+#: pyblocks/qt/app.py:272
 msgid "Close document"
 msgstr "Закрыть документ"
 
@@ -170,7 +196,8 @@ msgstr "Подключить датчик силы или аварийную к�
 msgid "Connect a hub at the top right of the window."
 msgstr "Подключение — в правом верхнем углу окна."
 
-#: pyblocks/qt/robot.py:105 pyblocks/qt/robot.py:110
+#: pyblocks/qt/robot.py:105 pyblocks/qt/robot.py:110 pyblocks/qt/robot.py:115
+#: pyblocks/qt/robot.py:120
 msgid "Connect a hub first"
 msgstr "Сначала подключите хаб"
 
@@ -198,6 +225,10 @@ msgstr "Подключите виртуальный или настоящий х
 msgid "Connect an ultrasonic distance sensor."
 msgstr "Подключить ультразвуковой датчик расстояния."
 
+#: pyblocks/pybricks/firmware.py:222
+msgid "Connect exactly one matching hub in USB DFU mode"
+msgstr "Подключите ровно один хаб нужной модели в режиме USB DFU"
+
 #: pyblocks/qt/device.py:38
 msgid "Connect hub"
 msgstr "Подключить хаб"
@@ -206,16 +237,16 @@ msgstr "Подключить хаб"
 msgid "Connection"
 msgstr "Подключение"
 
-#: pyblocks/qt/app.py:408
+#: pyblocks/qt/app.py:429
 msgid "Connect…"
 msgstr "Подключить…"
 
-#: pyblocks/qt/app.py:189 pyblocks/qt/app.py:432 pyblocks/qt/app.py:526
-#: pyblocks/qt/app.py:757
+#: pyblocks/qt/app.py:202 pyblocks/qt/app.py:460 pyblocks/qt/app.py:559
+#: pyblocks/qt/app.py:790
 msgid "Console"
 msgstr "Консоль"
 
-#: pyblocks/qt/app.py:526 pyblocks/qt/app.py:752
+#: pyblocks/qt/app.py:559 pyblocks/qt/app.py:785
 #, python-brace-format
 msgid "Console · {p0}"
 msgstr "Консоль · {p0}"
@@ -232,11 +263,11 @@ msgstr "Создать секундомер для измерения време
 msgid "Create a two-wheel robot from the left and right motors."
 msgstr "Создать двухколёсного робота из левого и правого моторов."
 
-#: pyblocks/qt/help.py:59
+#: pyblocks/qt/help.py:61
 msgid "Default"
 msgstr "По умолчанию"
 
-#: pyblocks/qt/annotations.py:25
+#: pyblocks/qt/annotations.py:26
 msgid "Define an action"
 msgstr "Описать действие"
 
@@ -249,7 +280,7 @@ msgstr "Устройство"
 msgid "Device ID {p0}"
 msgstr "Устройство ID {p0}"
 
-#: pyblocks/qt/app.py:409
+#: pyblocks/qt/app.py:430
 msgid "Disconnect"
 msgstr "Отключить"
 
@@ -278,7 +309,7 @@ msgstr "Расстояние"
 msgid "Distance: {p0:g} mm"
 msgstr "Расстояние: {p0:g} мм"
 
-#: pyblocks/qt/scratch.py:194 pyblocks/qt/scratch.py:233
+#: pyblocks/qt/scratch.py:229 pyblocks/qt/scratch.py:274
 msgid ""
 "Drag a block here to set it aside.\n"
 "Return it to the program when you need it."
@@ -294,7 +325,7 @@ msgstr "Перетаскивайте блоки. Нажмите на парам�
 msgid "Drag the stick; release to center it. Keyboard control is also available."
 msgstr "Перетаскивайте стик; отпустите для возврата в центр. Можно использовать клавиатуру."
 
-#: pyblocks/qt/scratch.py:37
+#: pyblocks/qt/scratch.py:38
 msgid "Drag the whole fragment into the program or another cell"
 msgstr "Перетащите весь фрагмент в программу или другую ячейку"
 
@@ -302,15 +333,15 @@ msgstr "Перетащите весь фрагмент в программу и�
 msgid "Drive at the chosen speed and turn rate."
 msgstr "Ехать с заданной скоростью и поворотом."
 
-#: pyblocks/qt/library.py:24
+#: pyblocks/qt/library.py:32
 msgid "Drive bases and clocks"
 msgstr "Движение и секундомеры"
 
-#: pyblocks/qt/app.py:264
+#: pyblocks/qt/app.py:277
 msgid "Edit"
 msgstr "Правка"
 
-#: pyblocks/qt/app.py:804
+#: pyblocks/qt/app.py:837
 msgid "Edit Python fragment"
 msgstr "Редактировать фрагмент Python"
 
@@ -326,19 +357,23 @@ msgstr "Пусто — первый найденный хаб"
 msgid "Enable motor commands"
 msgstr "Передавать команды моторам"
 
-#: pyblocks/qt/app.py:312
+#: pyblocks/qt/app.py:325
 msgid "Expand block"
 msgstr "Раскрыть блок"
 
-#: pyblocks/qt/app.py:229
+#: pyblocks/qt/library.py:24
+msgid "Expert"
+msgstr "Эксперт"
+
+#: pyblocks/qt/app.py:242
 msgid "File"
 msgstr "Файл"
 
-#: pyblocks/qt/app.py:350
+#: pyblocks/qt/app.py:363
 msgid "Find"
 msgstr "Найти"
 
-#: pyblocks/qt/app.py:97
+#: pyblocks/qt/app.py:99
 msgid "Find a block…"
 msgstr "Найти блок…"
 
@@ -346,11 +381,55 @@ msgstr "Найти блок…"
 msgid "Find in program · Enter — next match"
 msgstr "Найти в программе · Enter — следующее совпадение"
 
-#: pyblocks/qt/app.py:328
+#: pyblocks/qt/app.py:341
 msgid "Finish move"
 msgstr "Завершить перенос"
 
-#: pyblocks/qt/app.py:343
+#: pyblocks/qt/firmware.py:74
+msgid "Firmware"
+msgstr "Прошивка"
+
+#: pyblocks/pybricks/firmware.py:124
+msgid "Firmware checksum does not match; remove the cached file and download it again"
+msgstr "Контрольная сумма прошивки не совпадает; удалите файл из кеша и загрузите его заново"
+
+#: pyblocks/pybricks/firmware.py:260
+msgid "Firmware does not fit the connected hub"
+msgstr "Прошивка не подходит подключённому хабу"
+
+#: pyblocks/pybricks/firmware.py:158 pyblocks/pybricks/firmware.py:178
+msgid "Firmware does not match the selected hub model"
+msgstr "Прошивка не соответствует выбранной модели хаба"
+
+#: pyblocks/pybricks/firmware.py:74
+msgid "Firmware download is too large"
+msgstr "Загружаемая прошивка слишком велика"
+
+#: pyblocks/pybricks/firmware.py:287
+msgid "Firmware file changed after review; prepare it again"
+msgstr "Файл прошивки изменился после проверки; подготовьте его заново"
+
+#: pyblocks/qt/firmware.py:286
+msgid "Firmware installation completed. Restart the hub before reconnecting."
+msgstr "Прошивка установлена. Перезапустите хаб перед подключением."
+
+#: pyblocks/qt/firmware.py:289
+msgid ""
+"Firmware installation failed. Check the log, return the hub to bootloader mode and "
+"try again."
+msgstr ""
+"Установить прошивку не удалось. Проверьте журнал, верните хаб в режим загрузчика и "
+"повторите попытку."
+
+#: pyblocks/pybricks/firmware.py:146
+msgid "Firmware package is too large"
+msgstr "Пакет прошивки слишком велик"
+
+#: pyblocks/qt/app.py:437
+msgid "Firmware…"
+msgstr "Прошивка…"
+
+#: pyblocks/qt/app.py:356
 msgid "Fold region"
 msgstr "Свернуть область"
 
@@ -377,33 +456,45 @@ msgstr "Датчик силы"
 msgid "Force: {p0:g} N"
 msgstr "Сила: {p0:g} Н"
 
-#: pyblocks/qt/app.py:349
+#: pyblocks/qt/app.py:362
 msgid "Format Python"
 msgstr "Форматировать Python"
 
-#: pyblocks/qt/app.py:384
+#: pyblocks/qt/app.py:397
 msgid "Full screen"
 msgstr "Полный экран"
 
-#: pyblocks/qt/help.py:225
+#: pyblocks/qt/help.py:227
 msgid "Guide"
 msgstr "Руководство"
 
-#: pyblocks/qt/app.py:388 pyblocks/qt/navigation.py:19
+#: pyblocks/qt/app.py:401 pyblocks/qt/navigation.py:19
 msgid "Help"
 msgstr "Помощь"
 
-#: pyblocks/qt/app.py:391
+#: pyblocks/qt/app.py:404
 msgid "Hub"
 msgstr "Хаб"
 
-#: pyblocks/qt/app.py:211
+#: pyblocks/qt/app.py:224
 msgid "Hub and devices"
 msgstr "Хаб и устройства"
 
-#: pyblocks/qt/app.py:977
+#: pyblocks/qt/firmware.py:47
+msgid "Hub firmware"
+msgstr "Прошивка хаба"
+
+#: pyblocks/qt/app.py:1013
 msgid "Hub information and port readings"
 msgstr "Информация о хабе и показания портов"
+
+#: pyblocks/qt/firmware.py:73
+msgid "Hub model"
+msgstr "Модель хаба"
+
+#: pyblocks/qt/firmware.py:97
+msgid "I agree to the firmware license and replacing the current firmware and stored program"
+msgstr "Я принимаю лицензию прошивки и замену текущей прошивки и сохранённой программы"
 
 #: pyblocks/qt/device.py:161
 msgid "Idle"
@@ -413,7 +504,7 @@ msgstr "Ожидание"
 msgid "Increase a variable value."
 msgstr "Увеличить значение переменной."
 
-#: pyblocks/qt/app.py:323
+#: pyblocks/qt/app.py:336
 msgid "Indent"
 msgstr "Внутрь"
 
@@ -421,11 +512,43 @@ msgstr "Внутрь"
 msgid "Input"
 msgstr "Орган управления"
 
-#: pyblocks/qt/app.py:366
+#: pyblocks/qt/editor.py:503 pyblocks/qt/scratch.py:337
+msgid "Insert here"
+msgstr "Вставить здесь"
+
+#: pyblocks/qt/firmware.py:71
+msgid "Install Pybricks"
+msgstr "Установить Pybricks"
+
+#: pyblocks/qt/firmware.py:101
+msgid "Install firmware"
+msgstr "Установить прошивку"
+
+#: pyblocks/pybricks/firmware.py:139
+msgid "Invalid firmware file size"
+msgstr "Недопустимый размер файла прошивки"
+
+#: pyblocks/pybricks/firmware.py:180
+msgid "Invalid firmware image size"
+msgstr "Недопустимый размер образа прошивки"
+
+#: pyblocks/pybricks/firmware.py:173
+msgid "LEGO firmware is proprietary. Use it only with your LEGO hub."
+msgstr "Прошивка LEGO является проприетарной. Используйте её только со своим хабом LEGO."
+
+#: pyblocks/pybricks/firmware.py:150 pyblocks/pybricks/firmware.py:170
+msgid "LEGO recovery packages must declare firmware-type as lego"
+msgstr "В пакете восстановления LEGO поле firmware-type должно иметь значение lego"
+
+#: pyblocks/qt/app.py:379
 msgid "Language"
 msgstr "Язык"
 
-#: pyblocks/qt/annotations.py:27
+#: pyblocks/pybricks/firmware.py:250
+msgid "Leave only one matching hub in Bluetooth bootloader mode"
+msgstr "Оставьте в режиме загрузчика Bluetooth только один хаб нужной модели"
+
+#: pyblocks/qt/annotations.py:28
 msgid "Leave the loop"
 msgstr "Выйти из цикла"
 
@@ -441,11 +564,11 @@ msgstr "Левый Y"
 msgid "Left stick · WASD"
 msgstr "Левый стик · WASD"
 
-#: pyblocks/qt/app.py:101
+#: pyblocks/qt/app.py:113
 msgid "Library · drag a block into the program"
 msgstr "Библиотека · перетащите блок в программу"
 
-#: pyblocks/qt/app.py:410 pyblocks/qt/controls.py:316
+#: pyblocks/qt/app.py:431 pyblocks/qt/controls.py:316
 msgid "Manual control"
 msgstr "Ручное управление"
 
@@ -485,7 +608,7 @@ msgstr "Режим"
 msgid "Motor"
 msgstr "Мотор"
 
-#: pyblocks/qt/library.py:22
+#: pyblocks/qt/library.py:30
 msgid "Motors"
 msgstr "Моторы"
 
@@ -493,11 +616,11 @@ msgstr "Моторы"
 msgid "N"
 msgstr "Н"
 
-#: pyblocks/qt/help.py:59
+#: pyblocks/qt/help.py:61
 msgid "Name"
 msgstr "Имя"
 
-#: pyblocks/qt/app.py:389
+#: pyblocks/qt/app.py:402
 msgid "Name diagnostics"
 msgstr "Диагностика имён"
 
@@ -505,15 +628,15 @@ msgstr "Диагностика имён"
 msgid "Negate a condition."
 msgstr "Изменить условие на противоположное."
 
-#: pyblocks/qt/app.py:232
+#: pyblocks/qt/app.py:245
 msgid "New"
 msgstr "Новый"
 
-#: pyblocks/qt/annotations.py:28
+#: pyblocks/qt/annotations.py:29
 msgid "Next iteration"
 msgstr "Следующее повторение"
 
-#: pyblocks/qt/app.py:310
+#: pyblocks/qt/app.py:323
 msgid "Next node / target"
 msgstr "Следующий узел / цель"
 
@@ -525,43 +648,55 @@ msgstr "Нет устройства"
 msgid "No hub connected"
 msgstr "Хаб не подключён"
 
-#: pyblocks/qt/app.py:569
+#: pyblocks/pybricks/firmware.py:248
+msgid "No matching hub found in Bluetooth bootloader mode"
+msgstr "Подходящий хаб в режиме загрузчика Bluetooth не найден"
+
+#: pyblocks/qt/app.py:602
 msgid "No recent files"
 msgstr "Нет недавних файлов"
 
-#: pyblocks/qt/app.py:839
+#: pyblocks/qt/app.py:872
 msgid "No unknown names found.\n"
 msgstr "Неизвестных имён не найдено.\n"
 
-#: pyblocks/qt/app.py:240
+#: pyblocks/qt/app.py:253
 msgid "Open"
 msgstr "Открыть"
 
-#: pyblocks/qt/app.py:900
+#: pyblocks/qt/app.py:933
 msgid "Open Python"
 msgstr "Открыть Python"
+
+#: pyblocks/qt/firmware.py:207
+msgid "Open firmware"
+msgstr "Открыть прошивку"
+
+#: pyblocks/qt/firmware.py:80
+msgid "Open local firmware…"
+msgstr "Открыть файл прошивки…"
 
 #: pyblocks/qt/device.py:100 pyblocks/qt/device.py:175
 msgid "Open port monitor"
 msgstr "Открыть монитор портов"
 
-#: pyblocks/qt/app.py:246
+#: pyblocks/qt/app.py:259
 msgid "Open recent"
 msgstr "Открыть недавние"
 
-#: pyblocks/qt/app.py:318
+#: pyblocks/qt/app.py:331
 msgid "Outdent"
 msgstr "Наружу"
 
-#: pyblocks/qt/app.py:285 pyblocks/qt/help.py:59
+#: pyblocks/qt/app.py:298 pyblocks/qt/help.py:61
 msgid "Parameters"
 msgstr "Параметры"
 
-#: pyblocks/qt/app.py:307
+#: pyblocks/qt/app.py:320
 msgid "Parent"
 msgstr "Родитель"
 
-#: pyblocks/qt/annotations.py:31
+#: pyblocks/qt/annotations.py:32
 msgid "Perform an action"
 msgstr "Выполнить действие"
 
@@ -569,11 +704,11 @@ msgstr "Выполнить действие"
 msgid "Physical Xbox / SDL controller"
 msgstr "Физический Xbox / SDL-контроллер"
 
-#: pyblocks/qt/annotations.py:32
+#: pyblocks/qt/annotations.py:33
 msgid "Place actions here"
 msgstr "Место для действий"
 
-#: pyblocks/qt/app.py:956 pyblocks/qt/app.py:965
+#: pyblocks/qt/app.py:992 pyblocks/qt/app.py:1001
 msgid "Please wait…"
 msgstr "Подождите…"
 
@@ -585,15 +720,23 @@ msgstr "Порт"
 msgid "Port monitor"
 msgstr "Монитор портов"
 
-#: pyblocks/qt/app.py:309
+#: pyblocks/qt/firmware.py:79
+msgid "Prepare download"
+msgstr "Загрузить и проверить"
+
+#: pyblocks/qt/app.py:322
 msgid "Previous node / target"
 msgstr "Предыдущий узел / цель"
 
-#: pyblocks/qt/app.py:224 pyblocks/qt/navigation.py:19
+#: pyblocks/qt/editor.py:516 pyblocks/qt/editor.py:518 pyblocks/qt/scratch.py:141
+msgid "Previous position"
+msgstr "Прежнее положение"
+
+#: pyblocks/qt/app.py:237 pyblocks/qt/navigation.py:19
 msgid "Program"
 msgstr "Программа"
 
-#: pyblocks/qt/app.py:181
+#: pyblocks/qt/app.py:194
 msgid "Program output and messages"
 msgstr "Вывод программы и сообщения"
 
@@ -601,11 +744,11 @@ msgstr "Вывод программы и сообщения"
 msgid "Program running"
 msgstr "Программа работает"
 
-#: pyblocks/qt/library.py:21
+#: pyblocks/qt/library.py:29
 msgid "Python basics"
 msgstr "Основы Python"
 
-#: pyblocks/qt/app.py:291
+#: pyblocks/qt/app.py:304
 msgid "Python fragment"
 msgstr "Фрагмент Python"
 
@@ -629,7 +772,7 @@ msgstr "Узнать текущую скорость мотора."
 msgid "Read the surface color under the sensor."
 msgstr "Узнать цвет поверхности под датчиком."
 
-#: pyblocks/qt/app.py:275
+#: pyblocks/qt/app.py:288
 msgid "Redo"
 msgstr "Повторить"
 
@@ -637,6 +780,10 @@ msgstr "Повторить"
 #, python-brace-format
 msgid "Reflection: {p0:g} %"
 msgstr "Отражение: {p0:g} %"
+
+#: pyblocks/qt/firmware.py:78
+msgid "Refresh versions"
+msgstr "Обновить список версий"
 
 #: pyblocks/snippets/python/basics.py:12
 msgid ""
@@ -676,11 +823,11 @@ msgstr ""
 msgid "Repeat actions while the condition is true."
 msgstr "Повторять действия, пока условие истинно."
 
-#: pyblocks/qt/annotations.py:22
+#: pyblocks/qt/annotations.py:23
 msgid "Repeat for each item"
 msgstr "Повторить для каждого элемента"
 
-#: pyblocks/qt/annotations.py:23
+#: pyblocks/qt/annotations.py:24
 msgid "Repeat while the condition is true"
 msgstr "Повторять, пока условие истинно"
 
@@ -696,7 +843,11 @@ msgstr "Начать отсчёт времени заново."
 msgid "Restore"
 msgstr "Восстановить"
 
-#: pyblocks/qt/annotations.py:26
+#: pyblocks/qt/firmware.py:72
+msgid "Restore LEGO firmware"
+msgstr "Восстановить прошивку LEGO"
+
+#: pyblocks/qt/annotations.py:27
 msgid "Return a result"
 msgstr "Вернуть результат"
 
@@ -720,7 +871,7 @@ msgstr "Правый стик · стрелки"
 msgid "Rotation, °/s"
 msgstr "Вращение, °/с"
 
-#: pyblocks/qt/app.py:394
+#: pyblocks/qt/app.py:415
 msgid "Run"
 msgstr "Запустить"
 
@@ -744,27 +895,31 @@ msgstr "Запустите программу с модулем Controller (см
 msgid "Run actions when a condition is true."
 msgstr "Выполнить действия, если условие истинно."
 
+#: pyblocks/qt/app.py:433
+msgid "Run stored program"
+msgstr "Запустить сохранённую программу"
+
 #: pyblocks/snippets/pybricks/motors.py:50
 msgid "Run the motor for a set time, then stop."
 msgstr "Вращать мотор заданное время, затем остановить."
 
-#: pyblocks/qt/annotations.py:24
+#: pyblocks/qt/annotations.py:25
 msgid "Run with error handling"
 msgstr "Выполнить с обработкой ошибок"
 
-#: pyblocks/qt/app.py:250
+#: pyblocks/qt/app.py:263
 msgid "Save"
 msgstr "Сохранить"
 
-#: pyblocks/qt/app.py:913
+#: pyblocks/qt/app.py:946
 msgid "Save Python"
 msgstr "Сохранить Python"
 
-#: pyblocks/qt/app.py:256
+#: pyblocks/qt/app.py:269
 msgid "Save as…"
 msgstr "Сохранить как…"
 
-#: pyblocks/qt/app.py:628
+#: pyblocks/qt/app.py:661
 #, python-brace-format
 msgid "Save {p0} before closing?"
 msgstr "Сохранить {p0} перед закрытием?"
@@ -773,23 +928,36 @@ msgstr "Сохранить {p0} перед закрытием?"
 msgid "Scale"
 msgstr "Масштаб"
 
-#: pyblocks/qt/app.py:197 pyblocks/qt/app.py:438
+#: pyblocks/qt/app.py:210 pyblocks/qt/app.py:466
 msgid "Scratch"
 msgstr "Черновики"
 
-#: pyblocks/qt/help.py:199
+#: pyblocks/qt/help.py:201
 msgid "Search the guide and blocks…"
 msgstr "Поиск в руководстве и блоках…"
 
-#: pyblocks/qt/app.py:695
+#: pyblocks/pybricks/firmware.py:240
+msgid "Searching for a matching hub in Bluetooth bootloader mode…"
+msgstr "Поиск подходящего хаба в режиме загрузчика Bluetooth…"
+
+#: pyblocks/qt/app.py:728
 msgid "Select a block"
 msgstr "Выберите блок"
+
+#: pyblocks/qt/firmware.py:170
+msgid ""
+"Select a local LEGO recovery ZIP for this model. Its metadata must declare firmware-"
+"type as lego. Automatic LEGO downloads are available only for Inventor / SPIKE Prime."
+msgstr ""
+"Выберите ZIP-пакет восстановления LEGO для этой модели. В метаданных поле firmware-"
+"type должно иметь значение lego. Автоматическая загрузка LEGO доступна только для "
+"Inventor / SPIKE Prime."
 
 #: pyblocks/qt/controls.py:257
 msgid "Send controller input to my program"
 msgstr "Передавать контроллер в мою программу"
 
-#: pyblocks/qt/library.py:23
+#: pyblocks/qt/library.py:31
 msgid "Sensors and timing"
 msgstr "Датчики и ожидание"
 
@@ -801,11 +969,15 @@ msgstr "Серво, °"
 msgid "Set the angle reading at the current motor position."
 msgstr "Назначить текущему положению мотора выбранный угол."
 
+#: pyblocks/qt/library.py:23
+msgid "Standard"
+msgstr "Стандартный"
+
 #: pyblocks/qt/controls.py:248
 msgid "Start manual control"
 msgstr "Включить ручной режим"
 
-#: pyblocks/qt/app.py:316
+#: pyblocks/qt/app.py:329
 msgid "Start move"
 msgstr "Начать перенос"
 
@@ -813,7 +985,7 @@ msgstr "Начать перенос"
 msgid "Start with a virtual hub or connect your robot."
 msgstr "Начните с виртуального хаба или подключите свой робот."
 
-#: pyblocks/qt/app.py:402
+#: pyblocks/qt/app.py:423
 msgid "Stop"
 msgstr "Стоп"
 
@@ -829,7 +1001,7 @@ msgstr "Остановить программу и открыть порты"
 msgid "Stops the user program and starts the port monitor"
 msgstr "Остановит пользовательскую программу и запустит монитор портов"
 
-#: pyblocks/qt/annotations.py:29
+#: pyblocks/qt/annotations.py:30
 msgid "Store a value"
 msgstr "Сохранить значение"
 
@@ -837,15 +1009,25 @@ msgstr "Сохранить значение"
 msgid "The port monitor is running. Assign a motor, then enable commands."
 msgstr "Монитор портов работает. Назначьте мотор, затем включите передачу команд."
 
-#: pyblocks/qt/editor.py:576
+#: pyblocks/qt/firmware.py:162
+msgid "The recovery image restores LEGO firmware 1.3. The LEGO app may offer a later update."
+msgstr ""
+"Образ восстановления устанавливает прошивку LEGO 1.3. Приложение LEGO может "
+"предложить более новую версию."
+
+#: pyblocks/qt/editor.py:826
 msgid "This block has no editable parameters"
 msgstr "У этого блока нет изменяемых параметров"
 
-#: pyblocks/qt/app.py:927
+#: pyblocks/qt/app.py:960
 msgid "This file is already open in another tab"
 msgstr "Этот файл уже открыт в другой вкладке"
 
-#: pyblocks/qt/app.py:297
+#: pyblocks/pybricks/firmware.py:156
+msgid "This is not a Pybricks firmware package"
+msgstr "Это не пакет прошивки Pybricks"
+
+#: pyblocks/qt/app.py:310
 msgid "To Scratch"
 msgstr "В черновики"
 
@@ -857,31 +1039,59 @@ msgstr "Повернуть мотор на заданный угол и дожд
 msgid "Turn the motor to a target position and wait until it finishes."
 msgstr "Повернуть мотор в заданное положение и дождаться завершения."
 
+#: pyblocks/qt/firmware.py:158
+msgid ""
+"USB DFU: turn the hub off and unplug USB. Hold the Bluetooth button while "
+"reconnecting USB; release it when the light flashes red, green and blue. Connect only"
+" one hub. On Linux, USB access requires libusb/udev permissions; dfu-util is the "
+"fallback."
+msgstr ""
+"USB DFU: выключите хаб и отключите USB. Удерживая кнопку Bluetooth, подключите USB; "
+"отпустите кнопку, когда индикатор начнёт мигать красным, зелёным и синим. Подключите "
+"только один хаб. В Linux нужны libusb и разрешения udev; запасной способ использует "
+"dfu-util."
+
 #: pyblocks/qt/controls.py:287
 msgid "Unassigned"
 msgstr "Не назначен"
 
-#: pyblocks/qt/app.py:267
+#: pyblocks/qt/app.py:280
 msgid "Undo"
 msgstr "Отменить"
 
-#: pyblocks/qt/help.py:59
+#: pyblocks/qt/help.py:61
 msgid "Unit / type"
 msgstr "Единица / тип"
 
-#: pyblocks/qt/app.py:627
+#: pyblocks/qt/app.py:660
 msgid "Unsaved changes"
 msgstr "Несохранённые изменения"
 
-#: pyblocks/qt/app.py:338
+#: pyblocks/pybricks/firmware.py:69
+msgid "Unsupported firmware download address"
+msgstr "Неподдерживаемый адрес загрузки прошивки"
+
+#: pyblocks/pybricks/firmware.py:136
+msgid "Unsupported firmware target"
+msgstr "Неподдерживаемая модель или тип прошивки"
+
+#: pyblocks/qt/app.py:351
 msgid "Upgrade block"
 msgstr "Обновить блок"
 
-#: pyblocks/qt/app.py:351
+#: pyblocks/qt/app.py:407
+msgid "Upload"
+msgstr "Отправить на хаб"
+
+#: pyblocks/qt/firmware.py:75
+msgid "Version"
+msgstr "Версия"
+
+#: pyblocks/qt/app.py:364
 msgid "View"
 msgstr "Вид"
 
-#: pyblocks/qt/app.py:970 pyblocks/qt/device.py:154
+#: pyblocks/qt/app.py:1006 pyblocks/qt/device.py:154
 msgid "Virtual hub"
 msgstr "Виртуальный хаб"
 
@@ -926,7 +1136,7 @@ msgstr "с"
 msgid "{p0:g}°    {p1:g} °/s"
 msgstr "{p0:g}°    {p1:g} °/с"
 
-#: pyblocks/qt/app.py:699
+#: pyblocks/qt/app.py:732
 #, python-brace-format
 msgid "{p0} · warnings: {p1}"
 msgstr "{p0} · предупреждений: {p1}"
@@ -935,15 +1145,15 @@ msgstr "{p0} · предупреждений: {p1}"
 msgid "°/s"
 msgstr "°/с"
 
-#: pyblocks/qt/help.py:201
+#: pyblocks/qt/help.py:203
 msgid "← Back"
 msgstr "← Назад"
 
-#: pyblocks/qt/app.py:104
+#: pyblocks/qt/app.py:117
 msgid "＋ Add selected block"
 msgstr "＋ Добавить выбранный блок"
 
-#: pyblocks/qt/app.py:973
+#: pyblocks/qt/app.py:1009
 msgid "＋ Connect hub"
 msgstr "＋ Подключить хаб"
 

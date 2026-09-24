@@ -27,7 +27,7 @@ The bottom Scratch button restores it. Control mode hides Scratch. The title bar
 always shows minimize, maximize/restore, and close. Double-click it to toggle
 maximization; drag it or a window edge to move or resize. F11 toggles full screen.
 
-Descriptions above blocks and symbols on the right explain their purpose without
+Descriptions above blocks and symbols before the comment text explain their purpose without
 adding comments to the Python file. Indentation colors continue through blank
 lines. A motor definition is one block with the same color as its library card.
 
@@ -47,20 +47,31 @@ lines. A motor definition is one block with the same color as its library card.
 | Fold region | Ctrl+Shift+F | Ctrl+F |
 | Upgrade old snippet | Ctrl+U | Ctrl+U |
 
-Dragging an existing block or library card displays the insertion position,
-indentation and a source preview. Library insertion uses template defaults;
-existing device variables are suggested when available. Undefined references
-remain visible as Python and can be corrected through parameter fields.
+Dragging a block attaches a colored preview of at most four displayed lines to the
+pointer. The source is temporarily replaced by an amber **Previous position** row;
+an expression leaves this marker in its original parameter. Escape cancels, even
+while the mouse button remains held. Returning to the amber row changes nothing.
 
-After insertion, visible text keeps its position; the view scrolls only as needed
-to show the beginning of the inserted block. Dropping outside a valid target
-changes neither area. A move preserves attached leading and trailing comments. A blank line separates
-a leading comment from a block; file headers stay in place. Syntax validity does
-not prove that a moved program still has the intended meaning.
+Hover the upper half of a source row to insert above it, or the lower half to
+insert below it. Below a loop or `if` header means the beginning of its body. To
+insert after a compound block, hover the next outside block or a following blank
+line; horizontal position selects nesting on blank lines. A green **Insert here**
+row opens space before the destination's descriptions. Its appearance keeps the
+same source row and relative point under the pointer. Edges scroll the view;
+dragging does not fold code automatically.
+
+Only an empty parameter (`None`) accepts a compatible expression. Populated
+parameters are not replaced by a drop. Invalid contexts offer no insertion and
+release restores the source. Library blocks use defaults and known device names.
+A successful transfer commits once; Undo restores both program and Scratch.
+Attached Python comments move with the block. Syntax validity does not prove that
+a moved program still has the intended meaning.
 
 ## Library, Scratch and help
 
-Search the library by name, category or description. Cards use the same semantic
+Search the library by name, category or description. The level filter combines
+with search: **Beginner**, **Standard**, **Expert**, or **All**. Each block has one
+level; All is only a filter choice. The selected level is remembered. Cards use the same semantic
 color as inserted blocks. Hover shows the full preview. F1 opens the selected
 block's section on its group page or the guide. Help includes offline Markdown and snippet
 parameters/source, with search, internal links and Back.
@@ -119,3 +130,6 @@ Missing files remain visible but disabled. **Clear recent files** clears the lis
 A block description occupies a separate row in its own semantic color. Nested
 expression blocks have their own description rows. The insertion marker appears
 before the target block's descriptions and any attached Python comments.
+
+Parameter editing (F3), To Scratch and Python fragment (F2) remain in the menus;
+the toolbar focuses on files, history and hub actions.

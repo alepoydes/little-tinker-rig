@@ -140,3 +140,29 @@ async def test_real_transport_monitor_identity_telemetry_and_braking(monkeypatch
     ]
     assert not connection.info.connected
     assert output == []
+
+
+@pytest.mark.asyncio
+async def test_upload_uses_download_without_running_and_stored_run_sends_no_source(
+    tmp_path,
+):
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock
+
+    path = tmp_path / "main.py"
+    path.write_text("print(1)\n")
+    hub = SimpleNamespace(
+        stop_user_program=AsyncMock(), download=AsyncMock(), run=AsyncMock()
+    )
+    connection = Connection()
+    connection.hub = hub
+    await connection.upload(path)
+    hub.stop_user_program.assert_awaited_once()
+    hub.download.assert_awaited_once_with(str(path.resolve()))
+    hub.run.assert_not_awaited()
+    assert not connection.info.running
+    await connection.run()
+    hub.run.assert_awaited_once_with(
+        None, wait=False, print_output=False, line_handler=False
+    )
+    assert hub.download.await_count == 1

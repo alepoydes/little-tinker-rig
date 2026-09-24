@@ -12,11 +12,15 @@ The desktop editor supports document tabs, Blocks / Python views, inline paramet
 editing, and a visible Scratch ribbon with drag-and-drop. English is the default
 language; **View → Language → Русский** switches both the interface and its offline
 guide to Russian. Existing language preferences are preserved. Block reference
-pages collect all templates in a group, with direct links from the editor.
+pages collect all templates in a group, with direct links from the editor. Library
+levels (Beginner, Standard, Expert, All) combine with search. Drags keep a four-line
+colored preview, an origin marker and an insertion row; Escape cancels the gesture.
 
 Virtual Inventor/Prime, BOOST, and Technic profiles support learning without a
 robot. Physical connections target hubs running Pybricks firmware. The window
-also includes a console and an Xbox-style controller with motor assignments.
+also includes a console and an Xbox-style controller with motor assignments. Upload
+without running, run stored programs, and install Pybricks or restore compatible
+LEGO firmware through the desktop [firmware dialog](doc/en/robotics.md#installing-and-restoring-firmware).
 
 ## Quick start
 

@@ -85,3 +85,15 @@ groups have translated captions, and additional collections keep their module
 identity as the heading. All blocks in a group appear on one reference page.
 English docstrings are the original descriptions; the interface catalog supplies
 translations. F1 opens the selected block's stable section within its group.
+
+## Difficulty levels
+
+The collection manifest assigns each block one level. Unlisted blocks default
+to `standard`; allowed levels are `beginner`, `standard`, and `expert`. Unknown
+block identities and levels are rejected. `all` is only a library filter value.
+Library cards and generated help use this same metadata.
+
+```toml
+[levels]
+"motors/move_for" = "beginner"
+```

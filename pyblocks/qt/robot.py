@@ -104,6 +104,16 @@ class Robot(QObject):
             return self.submit(self.connection.run(path), operation=True)
         self.failed.emit(tr("Connect a hub first"))
 
+    def upload_file(self, path):
+        if self.connection:
+            return self.submit(self.connection.upload(path), operation=True)
+        self.failed.emit(tr("Connect a hub first"))
+
+    def run_stored(self):
+        if self.connection:
+            return self.submit(self.connection.run(), operation=True)
+        self.failed.emit(tr("Connect a hub first"))
+
     def start_monitor(self):
         if self.connection:
             return self.submit(self.connection.start_monitor(), operation=True)

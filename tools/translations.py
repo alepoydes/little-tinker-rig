@@ -17,7 +17,7 @@ LOCALES = ROOT / "pyblocks/locale"
 
 def messages():
     catalog = Catalog(project="PyBlocks Studio", version="0.1", charset="utf-8")
-    for path in sorted((ROOT / "pyblocks/qt").glob("*.py")):
+    for path in sorted((ROOT / "pyblocks").rglob("*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"))
         parents = {
             child: node

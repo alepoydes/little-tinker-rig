@@ -15,7 +15,10 @@ USB. Choose the model for a virtual hub, or optionally a Bluetooth name. An empt
 name selects the first available hub. Real connections require the `pybricks`
 extra. USB depends on model support and OS permissions.
 
-F5 saves and runs the active file; F6 stops it. Console output is indicated in the
+**Upload / Shift+F5** saves and sends the active program without executing it.
+**Run / F5** saves, uploads and runs it; **Stop / F6** stops execution.
+**Hub → Run stored program** starts the previously uploaded program. On physical
+hubs only compiled code is sent; source read-back is not supported. Console output is indicated in the
 bottom bar. TUI uses F7/F5/F6 and F8 for its console. CLI can wait for completion:
 
 ```sh
@@ -109,3 +112,39 @@ Official references: [Pybricks installation](https://pybricks.com/learn/getting-
 [Inventor/Prime](https://docs.pybricks.com/en/stable/hubs/primehub.html),
 [BOOST](https://docs.pybricks.com/en/stable/hubs/movehub.html),
 [Technic](https://docs.pybricks.com/en/stable/hubs/technichub.html).
+
+## Installing and restoring firmware
+
+**Hub → Firmware…** offers Pybricks installation and LEGO recovery. Select the hub
+model and firmware kind, refresh the official Pybricks release list, and choose a
+version. **Prepare download** downloads, caches and checks the package. Previously
+downloaded versions and the cached catalog work offline; **Open local firmware…**
+accepts local packages. Preparation does not contact a hub. Review the version,
+SHA-256 and license, accept replacement, then press **Install firmware**. The
+editor disconnects its existing hub connection before flashing. Progress and
+errors appear in the dialog; it cannot close while flashing.
+
+Inventor / SPIKE Prime uses USB DFU. Turn it off, unplug USB, hold Bluetooth while
+reconnecting USB, then release at the red/green/blue light. BOOST and Technic use
+the Bluetooth bootloader: hold the green button until purple flashes. Leave only
+one matching hub in bootloader mode. The installer checks the physical model
+before erasing. It uses the public `pybricksdev` API; Linux USB access needs libusb
+and suitable udev permissions, with `dfu-util` as fallback.
+
+The built-in LEGO download for Inventor/Prime is recovery firmware **1.3.00.0000**,
+from the [official Pybricks recovery assets](https://github.com/pybricks/pybricks-code/tree/master/src/firmware/assets).
+The LEGO app may offer an update afterwards. BOOST and Technic recovery requires
+a local LEGO image packaged as a firmware ZIP; automatic original-firmware
+downloads for these two models are not provided.
+
+A ZIP uses the public Pybricks firmware format: `firmware-base.bin`,
+`firmware.metadata.json`, and `ReadMe_OSS.txt`. A LEGO recovery package additionally
+declares `"firmware-type": "lego"`; `device-id` is 64 for BOOST, 128 for Technic, or
+129 for Inventor/Prime. Metadata 2.1 supports `checksum-type: none` for a complete
+image that already includes its checksum. Do not relabel an image for another
+model. A raw Inventor/Prime `.bin` is accepted if it matches the built-in recovery
+image, or has a sibling `.metadata.json` declaring its type, device and version.
+Use packages supplied for your hardware; renaming a file does not convert it.
+
+Automated tests validate packages and transport boundaries without flashing a
+physical hub. Physical installation and recovery still need hardware verification.

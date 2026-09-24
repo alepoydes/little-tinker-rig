@@ -4,12 +4,14 @@ import ast
 import copy
 import tomllib
 from bisect import bisect_left
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from functools import cached_property
 from pathlib import Path
 
 from .analysis import Analysis, Scopes, annotation_text, identifiers, value_type
 from .syntax import Span, Syntax
+
+LEVELS = ("beginner", "standard", "expert")
 
 
 @dataclass(frozen=True)
@@ -30,6 +32,7 @@ class Snippet:
     locals: dict[str, str]
     historical: bool = False
     result_type: str | None = None
+    level: str = "standard"
 
     @property
     def expression(self) -> bool:
@@ -262,7 +265,16 @@ def load_collection(directory: Path) -> tuple[Snippet, ...]:
     identities = [(snippet.identity, snippet.version) for snippet in result]
     if len(identities) != len(set(identities)):
         raise ValueError("Duplicate snippet identity and version")
-    return tuple(result)
+    levels = manifest.get("levels", {})
+    names = {s.identity.removeprefix(identity + "/") for s in result}
+    if levels.keys() - names or any(level not in LEVELS for level in levels.values()):
+        raise ValueError("Unknown block or difficulty level in collection.toml")
+    return tuple(
+        replace(
+            s, level=levels.get(s.identity.removeprefix(identity + "/"), "standard")
+        )
+        for s in result
+    )
 
 
 def builtin_snippets() -> tuple[Snippet, ...]:

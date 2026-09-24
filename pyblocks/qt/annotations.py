@@ -6,6 +6,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 from pyblocks.core.presentation import role, snippet_role
+from pyblocks.core.syntax import Span
 from pyblocks.i18n import N_, tr
 
 ICONS = {
@@ -39,6 +40,7 @@ class BlockNote:
     description: str
     icon: str
     role: str
+    span: Span
 
 
 def block_notes(session):
@@ -57,7 +59,11 @@ def block_notes(session):
         line, column = syntax.position(span.start)
         notes[line].append(
             BlockNote(
-                column, tr(LABELS[type(node)]), ICONS.get(role(node), "▶"), role(node)
+                column,
+                tr(LABELS[type(node)]),
+                ICONS.get(role(node), "▶"),
+                role(node),
+                span,
             )
         )
     for match in matches:
@@ -73,6 +79,7 @@ def block_notes(session):
                 description,
                 block_icon(match.snippet),
                 snippet_role(match.snippet),
+                match.span,
             )
         )
     return {

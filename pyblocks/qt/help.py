@@ -32,7 +32,7 @@ from pyblocks.core.snippets import snippet_groups
 from pyblocks.documentation import heading_anchors
 from pyblocks.i18n import DEFAULT_LANGUAGE, LANGUAGES, N_, language, tr
 
-from .library import group_title, snippet_title
+from .library import LEVEL_TITLES, group_title, snippet_title
 
 
 def group_document(identity, snippets):
@@ -48,6 +48,8 @@ def group_document(identity, snippets):
         help = tr(snippet.help).splitlines()
         parts.append(
             f'<a name="{name}"></a>\n\n## {snippet_title(snippet)}\n\n'
+            + tr(LEVEL_TITLES[snippet.level])
+            + "\n\n"
             + "\n".join(help[1:])
         )
         if snippet.parameters:
