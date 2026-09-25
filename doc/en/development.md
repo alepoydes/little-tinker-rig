@@ -28,6 +28,18 @@ operate on the active tab. Changing language must not translate user text or cle
 histories. Drops preview the committed destination and insert without dialogs.
 Parameter edits preserve expression grouping and reject stale revisions.
 
+Text persistence and structural validity are separate contracts. Saving unfinished
+Python preserves the visible text; Run/Upload/Blocks still require syntax validation.
+Recovery checkpoints retain the original source/workspace hashes and saved state,
+never silently accepting external edits as a new save baseline. Restoring an AST
+revision must rebind the editor selection before any view refresh. Check live-window
+locks, interrupted recovery transfer, Scratch and conflicting recovered versions.
+Runtime locations belong to immutable uploaded sources, including local imports.
+Never mark a changed document using an old line number. Traceback parsing must
+handle fragmented output without modifying it, and stop interrupts are not failures.
+Examples menus derive from the packaged directory listing, without a second catalog.
+Repeated refreshes must release obsolete Qt submenus.
+
 Definition drafts are independent of both committed programs and their text
 drafts. Static validation must accept template placeholders without evaluating
 them. Collection reload invalidates recognition caches, including Scratch, while

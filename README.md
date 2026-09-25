@@ -24,6 +24,11 @@ Expressions expose their operands and operators. Function parameters, call argum
 and logical operands support variable-length lists; user functions appear in the
 library, and known call errors are marked in place.
 
+**Examples** opens programs directly from the bundled directory tree. Unfinished
+Python can be saved and reopened; crash recovery restores open documents and
+Scratch. Runtime errors explain common failures and locate their blocks using
+the executed source snapshot, with a read-only view when the file has changed.
+
 The [Block Editor](doc/en/block-editor.md) shows a live preview above Python
 definitions. Inspect built-in blocks, copy them into a project collection, or
 create your own. Decorators define inline blocks or calls to shared helpers, with

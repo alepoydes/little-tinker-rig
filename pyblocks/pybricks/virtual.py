@@ -1,14 +1,13 @@
 """A local hub backend. Each program runs in a stoppable, independent process."""
 
-import ast
 import asyncio
 import json
 import sys
 from dataclasses import replace
 from pathlib import Path
-from tempfile import TemporaryDirectory
 
 from .devices import PREFIX, HubInfo
+from .program import Program
 from .simulation import PROFILES, World
 
 
@@ -129,55 +128,16 @@ class VirtualConnection:
         """Keep a source snapshot for the local simulator, without executing it."""
         if not self.info.connected:
             raise ValueError("Connect a virtual hub first")
-        path = Path(path).resolve()
-        if not path.is_file():
-            raise FileNotFoundError(path)
-        root = path.parent
-        snapshot = TemporaryDirectory(prefix="pyblocks-virtual-program-")
-        destination = Path(snapshot.name)
-        pending, seen = [path], set()
+        snapshot = path if isinstance(path, Program) else Program(path)
         try:
-            while pending:
-                file = pending.pop()
-                if file in seen or not file.is_file() or not file.is_relative_to(root):
-                    continue
-                seen.add(file)
-                source = file.read_bytes()
-                tree = ast.parse(source)
-                compile(tree, str(file), "exec")
-                target = destination / file.relative_to(root)
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_bytes(source)
-                for node in ast.walk(tree):
-                    names, base = [], root
-                    if isinstance(node, ast.Import):
-                        names = [alias.name for alias in node.names]
-                    elif isinstance(node, ast.ImportFrom):
-                        if node.level:
-                            base = file.parent
-                            for _ in range(node.level - 1):
-                                base = base.parent
-                        names = [node.module or ""] + [
-                            ".".join(filter(None, (node.module, alias.name)))
-                            for alias in node.names
-                        ]
-                    for name in names:
-                        module = base.joinpath(*name.split("."))
-                        pending.extend(
-                            (module.with_suffix(".py"), module / "__init__.py")
-                        )
-                        pending.extend(
-                            parent / "__init__.py"
-                            for parent in module.parents
-                            if parent.is_relative_to(root)
-                        )
+            for file, source in snapshot.sources.items():
+                compile(source, str(file), "exec")
             await self.stop()
         except BaseException:
-            snapshot.cleanup()
+            if snapshot is not path:
+                snapshot.cleanup()
             raise
-        if self.stored is not None:
-            self.stored.cleanup()
-        self.stored, self.stored_path = snapshot, destination / path.name
+        self.stored, self.stored_path = snapshot, snapshot.entry
 
     async def run(self, path=None, *, wait=False):
         if path is not None:

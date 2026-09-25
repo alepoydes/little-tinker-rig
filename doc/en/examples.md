@@ -2,7 +2,7 @@
 
 The repository includes all 37 Python files for the supported hub families from the official
 [Pybricks Projects repository](https://github.com/pybricks/pybricks-projects).
-Open a file from `examples/pybricks/` using **File → Open**. Select **All** in the
+Open a file using **Examples → pybricks** or **File → Open**. Select **All** in the
 library to find every component used by a program. The level filter limits new
 choices, never the blocks already in the document.
 

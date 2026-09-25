@@ -11,8 +11,10 @@ the source; see [its guide](block-editor.md).
 
 The Python editor has syntax highlighting, line numbers, indentation with
 Tab/Shift+Tab, word completion with Ctrl+Space, and search with Ctrl+F. Ruff
-formats committed edits. Invalid drafts never replace the committed document
-or file; a file containing invalid Python opens as a text draft.
+formats valid committed edits. **Ctrl+S** also saves unfinished Python exactly as
+shown. Such files reopen in Python view; Run, Upload and switching to Blocks
+require valid syntax. A failed structural edit still leaves the block document
+unchanged.
 
 In Blocks, clicking a parameter opens a text field over its source value.
 When alternatives exist, an arrow opens a list below the field; otherwise the
@@ -193,3 +195,31 @@ block and shows a tooltip such as `speed · 3 uses`. Editing any occurrence chan
 the whole group in one Undo step. Identical text in a different parameter or block
 is independent. Escape discards an unfinished edit. Explicit Python edits can
 break the pattern and leave ordinary Python.
+
+## Recovery, examples and runtime errors
+
+The desktop keeps separate recovery checkpoints of open documents, unsaved text
+and Scratch in the operating system's user data directory (`pyblocks-studio/recovery`).
+Changes are checkpointed within about a second while the interface is responsive.
+After an abnormal exit, **Recover work** offers to restore them. Yes restores;
+No discards that checkpoint; Cancel keeps it for later. Other live windows are
+excluded. Normal Save/Discard on closing still applies. Recovery never overwrites
+source files, and later saves retain external-change checks. If another restored
+version would replace unsaved work in an open tab, it opens as a separate
+`*_recovered_N.py` document. Recovery does not retain undo history.
+
+**Examples** mirrors the bundled `examples/` directory: subdirectories are submenus,
+and `.py` filenames are actions. The menu refreshes when opened. Selecting a file
+opens it normally, or selects its existing tab without losing edits. These are the
+actual example files; use **Save as** to keep a separate variation. Examples are
+included in installed distributions and do not depend on the working directory.
+
+Execution errors open the Console with a short explanation and **Show block**.
+Known source locations receive a red block annotation or Python line highlight.
+Errors inside managed helper functions lead to the calling user block. Full
+tracebacks and unknown exception messages remain in the Console. Diagnostics use
+the uploaded source snapshot, including local Python modules. If the file has
+changed, Show block opens the executed source read-only instead of highlighting
+an obsolete line in the current document. Starting another program clears the
+previous marker. Run stored uses the last successfully uploaded snapshot from
+the current connection; an unknown hub program has no editor source mapping.

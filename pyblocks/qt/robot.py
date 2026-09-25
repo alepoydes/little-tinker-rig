@@ -7,9 +7,11 @@ from threading import Event, Thread
 
 from PySide6.QtCore import QObject, Signal
 
+from pyblocks.core.runtime_errors import Tracebacks
 from pyblocks.i18n import tr
 from pyblocks.pybricks.connection import Connection
 from pyblocks.pybricks.devices import HubInfo
+from pyblocks.pybricks.program import Program
 from pyblocks.pybricks.virtual import VirtualConnection
 
 
@@ -18,6 +20,8 @@ class Robot(QObject):
     failed = Signal(str)
     updated = Signal(object)
     busy_changed = Signal(bool)
+    problem = Signal(object)
+    program_started = Signal(object)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -25,6 +29,8 @@ class Robot(QObject):
         self.updated.connect(self._remember)
         self.connection = None
         self.operation = self.pending = None
+        self.tracebacks = None
+        self.stored_program = None
         self.lock = asyncio.Lock()
         self.generation = 0
         ready = Event()
@@ -84,13 +90,21 @@ class Robot(QObject):
         return future
 
     async def _connect(self, name, transport, model):
+        self.tracebacks = self.stored_program = None
         if self.connection:
             await self.connection.disconnect()
         decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
+
+        def output(data):
+            text = decoder.decode(data)
+            self.output.emit(text)
+            if self.tracebacks is not None:
+                self.tracebacks.feed(text)
+
         factory = VirtualConnection if transport == "virtual" else Connection
         options = {"model": model} if transport == "virtual" else {}
         self.connection = factory(
-            lambda data: self.output.emit(decoder.decode(data)),
+            output,
             self.updated.emit,
             **options,
         )
@@ -101,23 +115,55 @@ class Robot(QObject):
 
     def run_file(self, path):
         if self.connection:
-            return self.submit(self.connection.run(path), operation=True)
+            return self.submit(self._transfer(Program(path), run=True), operation=True)
         self.failed.emit(tr("Connect a hub first"))
 
     def upload_file(self, path):
         if self.connection:
-            return self.submit(self.connection.upload(path), operation=True)
+            return self.submit(self._transfer(Program(path), run=False), operation=True)
         self.failed.emit(tr("Connect a hub first"))
 
     def run_stored(self):
         if self.connection:
-            return self.submit(self.connection.run(), operation=True)
+
+            async def run():
+                await self.connection.stop()
+                self._start_trace(self.stored_program)
+                await self.connection.run()
+
+            return self.submit(run(), operation=True)
         self.failed.emit(tr("Connect a hub first"))
 
     def start_monitor(self):
         if self.connection:
-            return self.submit(self.connection.start_monitor(), operation=True)
+
+            async def monitor():
+                await self.connection.stop()
+                self.tracebacks = None
+                if not isinstance(self.connection, VirtualConnection):
+                    self.stored_program = None
+                await self.connection.start_monitor()
+
+            return self.submit(monitor(), operation=True)
         self.failed.emit(tr("Connect a hub first"))
+
+    def _start_trace(self, program):
+        self.tracebacks = Tracebacks(program, self.problem.emit)
+        self.program_started.emit(program)
+
+    async def _transfer(self, program, *, run):
+        await self.connection.stop()
+        self.tracebacks = None
+        self.stored_program = None
+        path = (
+            program if isinstance(self.connection, VirtualConnection) else program.entry
+        )
+        if run:
+            self._start_trace(program)
+            await self.connection.run(path)
+        else:
+            await self.connection.upload(path)
+        self.stored_program = program
 
     def stop_program(self):
         async def stop():

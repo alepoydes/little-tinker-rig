@@ -1,4 +1,4 @@
-"""Ordinary Python text editing; invalid drafts remain outside the main document."""
+"""Ordinary Python text editing, including unfinished saved programs."""
 
 import keyword
 import re
@@ -98,6 +98,7 @@ class LineNumbers(QWidget):
 class CodeEdit(QPlainTextEdit):
     def __init__(self):
         super().__init__()
+        self.runtime_problem = None
         font = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
         font.setPointSize(11)
         self.setFont(font)
@@ -111,6 +112,7 @@ class CodeEdit(QPlainTextEdit):
         self.blockCountChanged.connect(self.update_gutter)
         self.updateRequest.connect(lambda rect, dy: self.gutter.update())
         self.cursorPositionChanged.connect(self.highlight_line)
+        self.textChanged.connect(self.highlight_line)
         self.completer = QCompleter(self)
         self.completer.setWidget(self)
         self.completer.activated.connect(self.complete)
@@ -141,7 +143,19 @@ class CodeEdit(QPlainTextEdit):
         selection.format.setProperty(QTextCharFormat.Property.FullWidthSelection, True)
         selection.cursor = self.textCursor()
         selection.cursor.clearSelection()
-        self.setExtraSelections([selection])
+        selections = [selection]
+        problem = self.runtime_problem
+        if problem and self.toPlainText() == problem.source:
+            block = self.document().findBlockByNumber(problem.line - 1)
+            if block.isValid():
+                error = QTextEdit.ExtraSelection()
+                error.format.setBackground(QColor("#ffd8dc"))
+                error.format.setProperty(
+                    QTextCharFormat.Property.FullWidthSelection, True
+                )
+                error.cursor = QTextCursor(block)
+                selections.append(error)
+        self.setExtraSelections(selections)
 
     def complete(self, word):
         cursor = self.textCursor()

@@ -96,18 +96,56 @@ class DocumentPage(QWidget):
         self.update_mode()
 
     @property
-    def draft_dirty(self):
-        return (
-            self.code_active
-            and self.code.toPlainText() != self.session.document.state.source
-        )
+    def dirty(self):
+        return self.session.project.text_dirty(self.text)
 
     @property
-    def dirty(self):
-        project = self.session.project
-        state = self.session.document.state
-        untouched = not project.path.exists() and not state.source and not state.scratch
-        return self.draft_dirty or (project.dirty and not untouched)
+    def text(self):
+        return (
+            self.code.toPlainText()
+            if self.code_active
+            else self.session.document.state.source
+        )
+
+    def prepare_save(self):
+        try:
+            self.commit_code()
+        except (SyntaxError, ValueError):
+            # Text persistence does not require a valid structural projection.
+            self.session.project.draft = self.code.toPlainText()
+
+    def save(self):
+        self.prepare_save()
+        self.session.project.save()
+
+    def checkpoint(self):
+        editor = self.code if self.code_active else self.source
+        return dict(
+            self.session.project.checkpoint(self.text),
+            python=self.code_active,
+            cursor=editor.textCursor().position(),
+            scroll=editor.verticalScrollBar().value(),
+        )
+
+    def restore(self, checkpoint):
+        self.session.project.restore(checkpoint)
+        self.session.editor.select(0)
+        self.session.set_snippets(self.session.load_snippets())
+        self.code_active = (
+            checkpoint["python"] or self.session.project.draft is not None
+        )
+        self.code.setPlainText(checkpoint["source"])
+        self.editor_stack.setCurrentIndex(int(self.code_active))
+        self.source.refresh_source()
+        editor = self.code if self.code_active else self.source
+        cursor = editor.textCursor()
+        cursor.setPosition(
+            min(checkpoint["cursor"], editor.document().characterCount() - 1)
+        )
+        editor.setTextCursor(cursor)
+        editor.verticalScrollBar().setValue(checkpoint["scroll"])
+        self.update_mode()
+        self.changed.emit()
 
     def update_mode(self):
         self.mode_actions[int(self.code_active)].setChecked(True)

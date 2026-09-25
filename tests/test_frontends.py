@@ -140,8 +140,8 @@ def test_qt_python_draft_save_format_undo_and_native_cut(tmp_path, qt_app):
     window.show()
     qt_app.processEvents()
     assert window.code_active and window.code.toPlainText() == "value =\n"
-    with pytest.raises(SyntaxError):
-        window.save()
+    window.save()
+    assert not window.document_page.dirty
     assert path.read_text() == "value =\n"
     assert window.session.document.state.source == ""
     window.code.setPlainText("value=  42\nprint(value)")

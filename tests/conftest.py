@@ -28,6 +28,10 @@ def isolated_qt_settings(request, tmp_path, monkeypatch):
         from PySide6.QtCore import QSettings
 
         import pyblocks.qt.app
+        import pyblocks.qt.recovery
 
         settings = QSettings(str(tmp_path / "settings.ini"), QSettings.Format.IniFormat)
         monkeypatch.setattr(pyblocks.qt.app, "QSettings", lambda *args: settings)
+        monkeypatch.setattr(
+            pyblocks.qt.recovery, "recovery_directory", lambda: tmp_path / "recovery"
+        )

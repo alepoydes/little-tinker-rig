@@ -94,6 +94,7 @@ class SourceView(QTextEdit):
         self.setTabStopDistance(self.fontMetrics().horizontalAdvance(" ") * 4)
         self.presentation = ()
         self.notes = {}
+        self.runtime_problem = None
         self.folded = set()
         self.press_position = None
         self.hover = None
@@ -146,6 +147,7 @@ class SourceView(QTextEdit):
             language(),
             getattr(self.session, "ports", None),
             context.document.syntax if context else None,
+            self.runtime_problem,
         )
         if revision == self.parameter_revision:
             self.viewport().update()
@@ -187,7 +189,7 @@ class SourceView(QTextEdit):
                     slot.span: has_choices(self.session, slot)
                     for slot in self.parameter_slots
                 }
-                self.notes = block_notes(self.session)
+                self.notes = block_notes(self.session, self.runtime_problem)
                 cursor = QTextCursor(self.document())
                 cursor.beginEditBlock()
                 cursor.select(QTextCursor.SelectionType.Document)
@@ -245,6 +247,11 @@ class SourceView(QTextEdit):
         self.viewport().update()
 
     def reveal(self, offset):
+        line = self.session.document.syntax.position(offset)[0]
+        hidden_by = {pair for pair in self.folded if pair[0] < line <= pair[1]}
+        if hidden_by:
+            self.folded -= hidden_by
+            self._apply_folds()
         cursor = QTextCursor(self.document())
         cursor.setPosition(qt_offset(self.toPlainText(), offset))
         rect = self.cursorRect(cursor)

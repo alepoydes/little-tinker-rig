@@ -14,6 +14,9 @@ between **Blocks** and **Python**; the same commands are in the View menu.
 **Scratch** is visible on the right; drag blocks there to set them aside.
 **Console** opens from the bottom bar.
 
+The **Examples** menu opens the bundled programs, including all subdirectories.
+It opens the example file itself; use **Save as** to keep your own variation.
+
 ## Change a parameter
 
 Click the visible field around `message` in `print(message)`. Select a suggestion
@@ -60,3 +63,9 @@ beside it in `name.py.pyblocks.json`; the Python program does not need that file
 run. In Blocks, Ctrl+X moves a fragment to Scratch. In Python, Ctrl+X is ordinary
 text cutting. External changes to a file are detected before saving: reopen the
 current file or use Save as to another path.
+
+Ctrl+S also saves unfinished Python. Fix its syntax before running or switching
+back to Blocks. After a crash, the editor offers to recover open tabs, unsaved text
+and Scratch. Execution errors show a short explanation and **Show block** in the
+Console; if you have edited the program meanwhile, it shows the executed source
+read-only. See [editing and recovery](../usage.md#recovery-examples-and-runtime-errors).

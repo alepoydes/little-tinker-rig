@@ -5,7 +5,7 @@ import ast
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QSettings, QSize, Qt
+from PySide6.QtCore import QSettings, QSize, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QTextCursor
 from PySide6.QtWidgets import (
     QApplication,
@@ -37,6 +37,7 @@ from pyblocks.core.edit import target_position
 from pyblocks.core.parameters import default_bindings
 from pyblocks.core.snippets import LEVELS
 from pyblocks.core.transfer import Transfer
+from pyblocks.examples import examples_directory
 from pyblocks.i18n import DEFAULT_LANGUAGE, LANGUAGES, N_, language, set_language, tr
 from pyblocks.pybricks.control import ControlState
 from pyblocks.pybricks.devices import HubInfo
@@ -51,6 +52,8 @@ from .help import HelpPage
 from .library import IDENTITY, LEVEL_TITLES, Library
 from .localization import localize, translate_standard_dialogs
 from .navigation import ModeTabs
+from .recovery import Recovery
+from .runtime import RuntimePanel
 from .scratch import ScratchPane
 from .window import TitleBar, resize_edges
 
@@ -184,6 +187,10 @@ class Studio(QMainWindow):
         self.retranslate()
         QApplication.instance().applicationStateChanged.connect(self.application_state)
         QApplication.instance().focusChanged.connect(self.focus_changed)
+        self.recovery = Recovery(self)
+        self.documents.tabBar().tabMoved.connect(lambda *_: self.recovery.schedule())
+        self.recovery.schedule()
+        QTimer.singleShot(0, self.recovery.offer)
 
     def _icon(self, theme, fallback):
         return QIcon.fromTheme(
@@ -216,6 +223,8 @@ class Studio(QMainWindow):
         clear.clicked.connect(self.console.clear)
         row.addWidget(clear)
         layout.addLayout(row)
+        self.runtime_panel = RuntimePanel(self)
+        layout.addWidget(self.runtime_panel)
         layout.addWidget(self.console)
         self.console_dock = self.dock(
             N_("Console"), console_page, Qt.DockWidgetArea.BottomDockWidgetArea
@@ -279,6 +288,8 @@ class Studio(QMainWindow):
         )
         self.recent_menu = file.addMenu(N_("Open recent"))
         self.recent_menu.aboutToShow.connect(self.refresh_recent_files)
+        self.examples_menu = self.menuBar().addMenu(N_("Examples"))
+        self.examples_menu.aboutToShow.connect(self.refresh_examples)
         self._action(
             file,
             N_("Save"),
@@ -529,10 +540,6 @@ class Studio(QMainWindow):
         return self.document_page.find_bar
 
     @property
-    def draft_dirty(self):
-        return self.document_page.draft_dirty
-
-    @property
     def editing_source(self):
         cell = self.scratch.focused_cell()
         return cell.source if cell is not None and not cell.code_active else self.source
@@ -592,6 +599,7 @@ class Studio(QMainWindow):
         self.library.filter(self.search.text(), self.level_filter.currentData())
         self.help_page.retranslate()
         self.block_editor.retranslate()
+        self.runtime_panel.retranslate()
         self.update_hub(self.hub_info)
         self.refresh_status()
         self.console_button.setText(
@@ -634,6 +642,45 @@ class Studio(QMainWindow):
             self.settings.setValue(
                 "recentFiles", [str(path), *(p for p in recent if p != str(path))][:10]
             )
+
+    def refresh_examples(self):
+        def populate(menu, directory):
+            for action in menu.actions():
+                if submenu := action.menu():
+                    submenu.deleteLater()
+            menu.clear()
+            for path in sorted(
+                directory.iterdir(),
+                key=lambda p: (not p.is_dir(), p.name.casefold(), p.name),
+            ):
+                if (
+                    path.name.startswith(".")
+                    or path.name == "__pycache__"
+                    or path.is_symlink()
+                ):
+                    continue
+                if path.is_dir():
+                    submenu = menu.addMenu(path.name.replace("&", "&&"))
+                    populate(submenu, path)
+                    if not submenu.actions():
+                        menu.removeAction(submenu.menuAction())
+                        submenu.deleteLater()
+                elif path.suffix == ".py":
+                    action = menu.addAction(path.name.replace("&", "&&"))
+                    action.setData(str(path))
+                    action.setToolTip(str(path))
+                    action.triggered.connect(
+                        lambda checked=False, p=path: self.perform(
+                            lambda: self.open_recent(p)
+                        )
+                    )
+
+        try:
+            populate(self.examples_menu, examples_directory())
+        except OSError as error:
+            self.error(str(error))
+        if not self.examples_menu.actions():
+            self.examples_menu.addAction(tr("No examples found")).setEnabled(False)
 
     def refresh_recent_files(self):
         self.recent_menu.clear()
@@ -708,8 +755,7 @@ class Studio(QMainWindow):
             return False
         if result == QMessageBox.StandardButton.Save:
             try:
-                page.commit_code()
-                page.session.project.save()
+                page.save()
                 self.remember_file(page.session.project.path)
             except (ValueError, SyntaxError, OSError) as error:
                 self.documents.setCurrentWidget(page)
@@ -725,6 +771,7 @@ class Studio(QMainWindow):
             self.new_file()
         self.documents.removeTab(self.documents.indexOf(page))
         page.deleteLater()
+        self.recovery.flush()
 
     def scratch_visibility(self, visible):
         if self.pages.currentIndex() == 0:
@@ -756,6 +803,8 @@ class Studio(QMainWindow):
             self.help_page.retranslate()
         self.scratch.refresh(self.session)
         self.refresh_status()
+        if hasattr(self, "recovery"):
+            self.recovery.schedule()
 
     def focus_changed(self, old, new):
         if hasattr(self, "undo_action"):
@@ -979,9 +1028,9 @@ class Studio(QMainWindow):
         if self.pages.currentIndex() == 3:
             self.block_editor.save()
             return
-        self.commit_code()
-        self.session.project.save()
+        self.document_page.save()
         self.remember_file(self.session.project.path)
+        self.recovery.flush()
 
     def new_file(self):
         parent = self.session.project.path.parent
@@ -1014,7 +1063,7 @@ class Studio(QMainWindow):
         if self.pages.currentIndex() == 3:
             self.block_editor.copy_block()
             return
-        self.commit_code()
+        self.document_page.prepare_save()
         path, _ = QFileDialog.getSaveFileName(
             self,
             tr("Save Python"),
@@ -1037,12 +1086,13 @@ class Studio(QMainWindow):
                 return
             project = Project(destination, allow_draft=True)
             project.document = self.session.document
-            project.draft = None
+            project.draft = self.session.project.draft
             project.collections = self.session.project.collections
             project.pins = self.session.project.pins
             project.save()
             self.session.project = project
             self.remember_file(destination)
+            self.recovery.flush()
 
     def _robot(self):
         if self.robot is None:
@@ -1053,6 +1103,8 @@ class Studio(QMainWindow):
             self.robot.failed.connect(self.error)
             self.robot.updated.connect(self.update_hub)
             self.robot.busy_changed.connect(self.hub_busy)
+            self.robot.problem.connect(self.runtime_panel.receive)
+            self.robot.program_started.connect(self.runtime_panel.clear)
         return self.robot
 
     def hub_busy(self, busy):
@@ -1115,11 +1167,13 @@ class Studio(QMainWindow):
 
     def run_hub(self):
         self.controls.armed.setChecked(False)
+        self.commit_code()
         self.save()
         self._robot().run_file(self.session.project.path)
 
     def upload_hub(self):
         self.controls.armed.setChecked(False)
+        self.commit_code()
         self.save()
         self._robot().upload_file(self.session.project.path)
 
@@ -1169,6 +1223,12 @@ class Studio(QMainWindow):
         self.controls.close()
         if self.robot:
             self.robot.close()
+        try:
+            self.recovery.close()
+        except OSError as error:
+            self.error(str(error))
+            event.ignore()
+            return
         event.accept()
 
     def ensure_user_collection(self):

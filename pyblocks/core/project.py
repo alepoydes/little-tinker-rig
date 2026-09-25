@@ -92,7 +92,69 @@ class Project:
 
     @property
     def dirty(self) -> bool:
-        return self.document.state != self._saved or not self.path.exists()
+        return self.state != self._saved or not self.path.exists()
+
+    @property
+    def state(self) -> State:
+        return State(
+            self.draft if self.draft is not None else self.document.state.source,
+            self.document.state.scratch,
+        )
+
+    def text_dirty(self, source: str) -> bool:
+        return State(source, self.document.state.scratch) != self._saved or (
+            not self.path.exists() and bool(source or self.document.state.scratch)
+        )
+
+    def checkpoint(self, source: str) -> dict:
+        """Keep the original save baseline, so recovery cannot hide disk conflicts."""
+        return {
+            "path": str(self.path),
+            "source": source,
+            "committed": self.document.state.source,
+            "scratch": list(self.document.state.scratch),
+            "collections": [str(p) for p in self.collections],
+            "pins": self.pins,
+            "encoding": self.encoding,
+            "disk_hash": self._disk_hash,
+            "workspace_hash": self._workspace_hash,
+            "saved_source": self._saved.source,
+            "saved_scratch": list(self._saved.scratch),
+        }
+
+    def restore(self, checkpoint: dict) -> None:
+        """Restore memory only; subsequent saves still check the pre-crash files."""
+        for key in ("source", "committed", "saved_source", "encoding"):
+            if not isinstance(checkpoint[key], str):
+                raise ValueError("Invalid recovery text")
+        for key in ("scratch", "saved_scratch", "collections"):
+            if not isinstance(checkpoint[key], list) or not all(
+                isinstance(item, str) for item in checkpoint[key]
+            ):
+                raise ValueError("Invalid recovery workspace")
+        if not isinstance(checkpoint["pins"], dict) or not all(
+            isinstance(k, str) and isinstance(v, str)
+            for k, v in checkpoint["pins"].items()
+        ):
+            raise ValueError("Invalid recovery pins")
+        prepare, self.document.prepare = self.document.prepare, None
+        try:
+            self.document.commit(checkpoint["committed"], tuple(checkpoint["scratch"]))
+        finally:
+            self.document.prepare = prepare
+        self.draft = (
+            checkpoint["source"]
+            if checkpoint["source"] != self.document.state.source
+            else None
+        )
+        self.collections = [Path(p) for p in checkpoint["collections"]]
+        self.pins = checkpoint["pins"]
+        self.encoding = checkpoint["encoding"]
+        self._disk_hash = checkpoint["disk_hash"]
+        self._workspace_hash = checkpoint["workspace_hash"]
+        self._saved = State(
+            checkpoint["saved_source"], tuple(checkpoint["saved_scratch"])
+        )
 
     def _hash(self, path: Path) -> str | None:
         return hashlib.sha256(path.read_bytes()).hexdigest() if path.exists() else None
@@ -115,8 +177,6 @@ class Project:
 
     def save(self) -> None:
         """Refuse to overwrite a file changed externally since opening/saving."""
-        if self.draft is not None:
-            raise ValueError("Correct the Python draft before saving the main document")
         if self._hash(self.path) != self._disk_hash:
             raise ValueError(
                 "File changed outside PyBlocks; reopen it or save to another path"
@@ -125,7 +185,7 @@ class Project:
             raise ValueError(
                 "Workspace changed outside PyBlocks; reopen it or save to another path"
             )
-        state = self.document.state
+        state = self.state
         metadata = {
             "format": 1,
             "scratch": list(state.scratch),

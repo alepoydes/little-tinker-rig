@@ -1283,15 +1283,37 @@ This graceful degradation is more important than perfect preservation of every e
 
 ## 43. Error handling and validity
 
-The main source should maintain a strong invariant:
+The structural projection maintains a strong invariant:
 
-> Between committed operations, the document is syntactically valid Python.
+> Between committed structural operations, the block document is syntactically valid Python.
 
 Structural edits must be atomic.
 
 A failed edit should leave the previous source unchanged.
 
-Temporary text-edit widgets may contain invalid text while active, but invalid text cannot be committed to the main document.
+Full-document Python editing may contain unfinished text. Save writes that text to
+the ordinary `.py` file, which reopens in Python view. Run, Upload and switching to
+Blocks require valid syntax. Local structural edit dialogs still reject invalid
+commits. Text persistence must not depend on structural validity.
+
+Desktop recovery checkpoints preserve open tabs, unsaved text, Scratch, collection
+settings and the original save baselines. They are separate from source files,
+written atomically and protected by per-window process locks. Recovery is offered
+after an abnormal exit, never overwrites disk sources, and retains external-change
+checks. Conflicting unsaved versions open separately. Checkpoint ownership moves
+only after the replacement is durable; normal close removes the window checkpoint.
+After restoring a structural revision, rebind selection before refreshing views.
+
+Runtime errors carry immutable uploaded source snapshots, including local modules.
+Known failures have localized explanations and source navigation. Managed helper
+frames prefer the calling user block. If source has changed, show the executed
+snapshot read-only instead of attaching an old line number to the new source.
+Keep complete tracebacks and unknown messages; user stop interrupts are not errors.
+
+The desktop Examples menu mirrors `examples/` recursively, sorting directories
+and Python filenames and refreshing when opened. Opening uses normal document-tab
+semantics. Bundle examples with installed distributions; no lesson manifest or
+second examples registry is required.
 
 Scratch is explicitly exempt from this rule.
 
@@ -1561,7 +1583,7 @@ PyBlocks Studio should be built around a very small set of strong ideas:
 - The AST turns Python into manipulable structure.
 - Structural blocks are source ranges, not a second model.
 - Indentation plus semantic backgrounds can provide a Scratch-like visual hierarchy while showing real Python.
-- Main source remains syntactically valid; Scratch is the place for unfinished code.
+- Structural commits remain syntactically valid; full-document Python and Scratch may contain saved unfinished text.
 - Drag-and-drop is generalized as navigation through legal structural insertion targets.
 - Block definitions are statically parsed Python functions. Decorators specify inline substitution or a generated helper call, level, appearance and editable declarations. Signatures and annotations specify fields and type/unit contracts; docstrings and imports provide help and dependencies.
 - Snippets are recognized structurally in ordinary Python source.

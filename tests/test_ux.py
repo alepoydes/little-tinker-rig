@@ -255,10 +255,7 @@ def test_closing_invalid_draft_and_save_as_preserve_other_documents(
         window.editor_actions[0].trigger()
         assert window.code_active and window.editor_actions[1].isChecked()
         assert two.mode_actions[1].isChecked()
-        for answer in (
-            QMessageBox.StandardButton.Cancel,
-            QMessageBox.StandardButton.Save,
-        ):
+        for answer in (QMessageBox.StandardButton.Cancel,):
             monkeypatch.setattr(
                 QMessageBox, "question", lambda *args, answer=answer: answer
             )
