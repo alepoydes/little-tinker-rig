@@ -664,9 +664,39 @@ snippets/
         line.py
 ```
 
-The exact package/manifest format is not yet fixed.
+Collections use `collection.toml` for identity, version, history and difficulty
+levels. Python modules define groups; functions define the blocks in each group.
 
 A major design goal is that writing a new snippet should require mostly writing normal Python rather than authoring a large schema or UI definition.
+
+### 19.1 Block Editor workspace
+
+The desktop has a separate text-based definition editor. Collections, modules and
+blocks appear on the left. A wide preview is above the Python source, using the
+program's renderer; a switch shows the library card. Initially the preview shows
+at most four source lines, with explicit expansion and a resizable divider.
+Typing does not resize or move the editor. Preview values are independent of
+template defaults and are never executed.
+
+Built-in definitions are read-only examples with a copy-to-user-collection action.
+User modules have ordinary text editing, undo, template-aware highlighting,
+context hints, source-located validation errors and recoverable invalid drafts.
+Preview parameter/description clicks navigate to their declarations/docstrings.
+The cursor selects the enclosing function; intervening text and invalid edits
+retain the last valid preview. New blocks use action, expression or multi-command
+starters. A program selection can become a draft, with explicit parameter choices.
+
+The default user collection is `blocks/` beside the program, connected using a
+relative path in the program workspace. A group field chooses the module, so
+related blocks share one file and reference page. Difficulty lives only in the
+manifest. Invalid drafts live separately in `.drafts/*.py.json`; saving validates
+the collection before replacing active definitions and detects external changes.
+The library and help expose Open definition links.
+
+Applying definitions refreshes recognition in connected documents and Scratch.
+It never rewrites program source, commits program drafts, or alters their undo
+histories. Unmatched old code remains ordinary Python; upgrades stay explicit.
+Hub upload/run is disabled in the definition workspace.
 
 ---
 

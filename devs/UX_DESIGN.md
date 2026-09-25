@@ -5,7 +5,7 @@ Every frontend uses the same document model and core editing operations.
 
 ## Workspace
 
-- A narrow vertical strip switches between Program, Control, and Help.
+- A narrow vertical strip switches between Program, Control, Help, and Block Editor.
 - Programs have structural and full Python views. Text drafts may be invalid;
   save, run, and returning to Blocks validate and format them atomically. Text
   edits and formatting remain undoable.

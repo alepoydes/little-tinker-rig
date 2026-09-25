@@ -6,6 +6,8 @@ Files have independent tabs, drafts and undo histories. The hub connection and
 console belong to the window. Run always saves and runs the active document.
 Use the two document icons or **View → Blocks / Python** to change the editor mode.
 Global workspaces use narrow rotated labels and neutral active indicators.
+**Block Editor** (**Ctrl+Alt+3**) edits template definitions with a preview above
+the source; see [its guide](block-editor.md).
 
 The Python editor has syntax highlighting, line numbers, indentation with
 Tab/Shift+Tab, word completion with Ctrl+Space, and search with Ctrl+F. Ruff

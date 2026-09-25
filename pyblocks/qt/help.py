@@ -4,7 +4,7 @@ import ast
 from importlib.resources import files
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QUrl
+from PySide6.QtCore import Qt, QUrl, Signal
 from PySide6.QtGui import (
     QColor,
     QDesktopServices,
@@ -66,6 +66,9 @@ def group_document(identity, snippets):
             else "\n".join(ast.unparse(node) for node in snippet.body)
         )
         parts.append(f"### Python\n\n```python\n{source}\n```")
+        parts.append(
+            f"[{tr('Open definition')}](pyblocks-definition:{snippet.identity})"
+        )
     return "\n\n".join(parts) + "\n"
 
 
@@ -166,6 +169,8 @@ class HelpBrowser(QTextBrowser):
 
 
 class HelpPage(QWidget):
+    definition_requested = Signal(str)
+
     def __init__(self, snippets):
         super().__init__()
         repository = Path(__file__).resolve().parents[2] / "doc"
@@ -314,6 +319,9 @@ class HelpPage(QWidget):
             item.setHidden(query.casefold() not in (identity + text).casefold())
 
     def follow_link(self, url):
+        if url.scheme() == "pyblocks-definition":
+            self.definition_requested.emit(url.path())
+            return
         if url.scheme() in {"https", "http"}:
             QDesktopServices.openUrl(url)
             return

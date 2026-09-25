@@ -1,6 +1,6 @@
 """Compact, colored source previews that remain recognizable after insertion."""
 
-from PySide6.QtCore import QMimeData, QSize, Qt
+from PySide6.QtCore import QMimeData, QSize, Qt, Signal
 from PySide6.QtGui import QColor, QFontDatabase, QFontMetrics, QPainter, QPen
 from PySide6.QtWidgets import QStyle, QStyledItemDelegate, QTreeWidget, QTreeWidgetItem
 
@@ -106,6 +106,8 @@ class CardDelegate(QStyledItemDelegate):
 
 
 class Library(QTreeWidget):
+    definition_requested = Signal(str)
+
     def __init__(self, snippets):
         super().__init__()
         self.setHeaderHidden(True)
@@ -217,3 +219,15 @@ class Library(QTreeWidget):
             return
         rect = self.visualItemRect(item)
         Drag(self, self.mimeData([item]), self.viewport().grab(rect))
+
+    def contextMenuEvent(self, event):
+        from PySide6.QtWidgets import QMenu
+
+        item = self.itemAt(event.pos())
+        if item and item.data(0, IDENTITY):
+            menu = QMenu(self)
+            menu.addAction(
+                tr("Open definition"),
+                lambda: self.definition_requested.emit(item.data(0, IDENTITY)),
+            )
+            menu.exec(event.globalPos())

@@ -28,6 +28,13 @@ operate on the active tab. Changing language must not translate user text or cle
 histories. Drops preview the committed destination and insert without dialogs.
 Parameter edits preserve expression grouping and reject stale revisions.
 
+Definition drafts are independent of both committed programs and their text
+drafts. Static validation must accept template placeholders without evaluating
+them. Collection reload invalidates recognition caches, including Scratch, while
+preserving source and undo histories. Test invalid-draft recovery, read-only
+built-ins, external-change detection, and a failed manifest write after a module
+write. Preview values must not leak into saved defaults or library cards.
+
 Motor tests check motion and stopping, not just encoding. Simulate a device failing
 after another motor has started: cleanup must brake the newly started motor too.
 Check cancellation before the next connection operation. Test the real monitor

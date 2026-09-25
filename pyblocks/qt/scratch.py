@@ -256,7 +256,10 @@ class ScratchPane(QScrollArea):
             cell.deleteLater()
         for index, text in enumerate(texts):
             if index < len(self.cells) and self.cells[index].text == text:
-                self.cells[index].source.refresh_source()
+                view = self.cells[index].source
+                if view.session.snippets is not session.snippets:
+                    view.session.set_snippets(session.snippets)
+                view.refresh_source()
                 self.cells[index].fit()
                 continue
             cell = ScratchCell(self, index, text)

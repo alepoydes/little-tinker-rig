@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PyBlocks Studio 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-25 14:35+0300\n"
+"POT-Creation-Date: 2026-09-25 16:41+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -38,6 +38,10 @@ msgstr " · отпустите для возврата к нулю"
 msgid " · {p0:.2f} V"
 msgstr " · {p0:.2f} В"
 
+#: pyblocks/qt/authoring.py:194 pyblocks/qt/authoring.py:786
+msgid "Action"
+msgstr "Действие"
+
 #: pyblocks/qt/structure.py:35 pyblocks/qt/structure.py:151
 msgid "Add item"
 msgstr "Добавить элемент"
@@ -50,7 +54,7 @@ msgstr "Сложить два значения."
 msgid "Advanced"
 msgstr "Продвинутый"
 
-#: pyblocks/qt/app.py:103
+#: pyblocks/qt/app.py:107
 msgid "All"
 msgstr "Все"
 
@@ -103,19 +107,27 @@ msgstr "Расстояние BOOST, %"
 msgid "Beginner"
 msgstr "Начинающий"
 
-#: pyblocks/qt/app.py:476
+#: pyblocks/qt/app.py:427 pyblocks/qt/navigation.py:19
+msgid "Block Editor"
+msgstr "Редактор блоков"
+
+#: pyblocks/qt/app.py:497
 msgid "Block color"
 msgstr "Цвет блоков"
 
-#: pyblocks/qt/app.py:102
+#: pyblocks/qt/app.py:106
 msgid "Block level"
 msgstr "Уровень блоков"
 
-#: pyblocks/qt/help.py:241
+#: pyblocks/qt/authoring.py:227
+msgid "Block level · stored in collection.toml"
+msgstr "Уровень блока · хранится в collection.toml"
+
+#: pyblocks/qt/help.py:246
 msgid "Block library"
 msgstr "Библиотека блоков"
 
-#: pyblocks/qt/app.py:372 pyblocks/qt/document.py:60 pyblocks/qt/scratch.py:74
+#: pyblocks/qt/app.py:392 pyblocks/qt/document.py:60 pyblocks/qt/scratch.py:74
 msgid "Blocks"
 msgstr "Блоки"
 
@@ -133,9 +145,13 @@ msgstr ""
 msgid "Bluetooth name"
 msgstr "Имя Bluetooth"
 
-#: pyblocks/qt/app.py:1023
+#: pyblocks/qt/app.py:1085
 msgid "Bluetooth, USB or virtual hub"
 msgstr "Bluetooth, USB или виртуальный хаб"
+
+#: pyblocks/qt/authoring.py:599
+msgid "Body: the Python inserted into the program."
+msgstr "Тело: код Python, вставляемый в программу."
 
 #: pyblocks/snippets/pybricks/drive.py:43
 msgid "Brake both robot wheels."
@@ -153,6 +169,11 @@ msgstr ""
 "Выберите встроенную или собственную функцию. Для фильтрации и более сложного\n"
 "выражения отредактируйте списковое включение в Python."
 
+#: pyblocks/qt/authoring.py:383
+#, python-brace-format
+msgid "Built-in · {name}"
+msgstr "Встроенная · {name}"
+
 #: pyblocks/snippets/python/basics.py:104
 msgid ""
 "Call a function.\n"
@@ -163,7 +184,7 @@ msgstr ""
 "\n"
 "Выберите функцию, добавьте или удалите её аргументы."
 
-#: pyblocks/qt/app.py:351
+#: pyblocks/qt/app.py:365
 msgid "Cancel move"
 msgstr "Отменить перенос"
 
@@ -245,9 +266,17 @@ msgstr "Проверить, равны ли два значения."
 msgid "Check which side of the hub faces upward."
 msgstr "Проверить, какая сторона хаба направлена вверх."
 
-#: pyblocks/qt/app.py:326
+#: pyblocks/qt/authoring.py:512
+msgid "Checking… · showing the last valid preview"
+msgstr "Проверка… · показан последний корректный предпросмотр"
+
+#: pyblocks/qt/app.py:340
 msgid "Child"
 msgstr "Потомок"
+
+#: pyblocks/qt/authoring.py:793
+msgid "Choose a block to inspect its definition."
+msgstr "Выберите блок, чтобы изучить его определение."
 
 #: pyblocks/pybricks/firmware.py:176
 msgid "Choose a firmware ZIP package for this hub"
@@ -287,7 +316,7 @@ msgstr "Выбрать большее значение."
 msgid "Choose the smaller value."
 msgstr "Выбрать меньшее значение."
 
-#: pyblocks/qt/app.py:201
+#: pyblocks/qt/app.py:215
 msgid "Clear"
 msgstr "Очистить"
 
@@ -295,7 +324,7 @@ msgstr "Очистить"
 msgid "Clear expression"
 msgstr "Очистить выражение"
 
-#: pyblocks/qt/app.py:622
+#: pyblocks/qt/app.py:654
 msgid "Clear recent files"
 msgstr "Очистить список"
 
@@ -319,7 +348,7 @@ msgstr ""
 "Повторяется до остановки программы. Открывание ждёт остановки об упор,\n"
 "поэтому новое нажатие проверяется после его завершения. Нужны физические упоры."
 
-#: pyblocks/qt/app.py:277
+#: pyblocks/qt/app.py:291
 msgid "Close document"
 msgstr "Закрыть документ"
 
@@ -416,16 +445,16 @@ msgstr "Подключиться к хабу Technic."
 msgid "Connection"
 msgstr "Подключение"
 
-#: pyblocks/qt/app.py:434
+#: pyblocks/qt/app.py:455
 msgid "Connect…"
 msgstr "Подключить…"
 
-#: pyblocks/qt/app.py:207 pyblocks/qt/app.py:465 pyblocks/qt/app.py:564
-#: pyblocks/qt/app.py:798
+#: pyblocks/qt/app.py:221 pyblocks/qt/app.py:486 pyblocks/qt/app.py:596
+#: pyblocks/qt/app.py:842
 msgid "Console"
 msgstr "Консоль"
 
-#: pyblocks/qt/app.py:564 pyblocks/qt/app.py:793
+#: pyblocks/qt/app.py:596 pyblocks/qt/app.py:837
 #, python-brace-format
 msgid "Console · {p0}"
 msgstr "Консоль · {p0}"
@@ -437,6 +466,14 @@ msgstr "Управление"
 #: pyblocks/snippets/python/data.py:37
 msgid "Convert a value to text."
 msgstr "Преобразовать значение в текст."
+
+#: pyblocks/qt/authoring.py:217
+msgid "Copy to my collection"
+msgstr "Копировать в мою коллекцию"
+
+#: pyblocks/qt/authoring.py:838
+msgid "Correct this module's draft or choose another group before adding a block."
+msgstr "Исправьте черновик модуля или выберите другую группу перед добавлением блока."
 
 #: pyblocks/snippets/python/data.py:32
 msgid "Count the items in a collection or text."
@@ -472,6 +509,10 @@ msgstr "Создать секундомер для измерения време
 msgid "Create a two-wheel robot from the left and right motors."
 msgstr "Создать двухколёсного робота из левого и правого моторов."
 
+#: pyblocks/qt/app.py:385
+msgid "Create block from selection"
+msgstr "Создать блок из выделения"
+
 #: pyblocks/qt/help.py:61
 msgid "Default"
 msgstr "По умолчанию"
@@ -499,7 +540,19 @@ msgstr "Устройство"
 msgid "Device ID {p0}"
 msgstr "Устройство ID {p0}"
 
-#: pyblocks/qt/app.py:435
+#: pyblocks/qt/authoring.py:895
+msgid "Discard draft"
+msgstr "Отбросить черновик"
+
+#: pyblocks/qt/authoring.py:223
+msgid "Discard this module draft and reload its saved definition"
+msgstr "Отбросить черновик модуля и загрузить сохранённое определение"
+
+#: pyblocks/qt/authoring.py:897
+msgid "Discard this module's changes and reopen the saved definition?"
+msgstr "Отбросить изменения этого модуля и открыть сохранённое определение?"
+
+#: pyblocks/qt/app.py:456
 msgid "Disconnect"
 msgstr "Отключить"
 
@@ -544,6 +597,10 @@ msgstr "Расстояние: {p0:g} мм"
 msgid "Divide one value by another."
 msgstr "Разделить одно значение на другое."
 
+#: pyblocks/qt/authoring.py:607
+msgid "Docstring: the block description and search text."
+msgstr "Строка документации: описание блока и текст для поиска."
+
 #: pyblocks/qt/structure.py:181
 msgid "Document changed; choose the expression again"
 msgstr "Документ изменился; выберите выражение заново"
@@ -552,7 +609,11 @@ msgstr "Документ изменился; выберите выражение
 msgid "Document changed; choose the list again"
 msgstr "Документ изменился; выберите список заново"
 
-#: pyblocks/qt/scratch.py:229 pyblocks/qt/scratch.py:274
+#: pyblocks/qt/authoring.py:781
+msgid "Draft"
+msgstr "Черновик"
+
+#: pyblocks/qt/scratch.py:229 pyblocks/qt/scratch.py:277
 msgid ""
 "Drag a block here to set it aside.\n"
 "Return it to the program when you need it."
@@ -655,11 +716,11 @@ msgstr ""
 "завершает блок и позволяет выполнить следующее действие. При ошибке связи\n"
 "робот тормозит перед передачей ошибки."
 
-#: pyblocks/qt/app.py:282
+#: pyblocks/qt/app.py:296
 msgid "Edit"
 msgstr "Правка"
 
-#: pyblocks/qt/app.py:845
+#: pyblocks/qt/app.py:889
 msgid "Edit Python fragment"
 msgstr "Редактировать фрагмент Python"
 
@@ -684,25 +745,37 @@ msgstr "Передавать команды моторам"
 msgid "Error: {detail}"
 msgstr "Ошибка: {detail}"
 
-#: pyblocks/qt/app.py:330
+#: pyblocks/qt/app.py:344
 msgid "Expand block"
 msgstr "Раскрыть блок"
+
+#: pyblocks/qt/authoring.py:262
+msgid "Expand preview"
+msgstr "Развернуть предпросмотр"
 
 #: pyblocks/qt/library.py:26
 msgid "Expert"
 msgstr "Эксперт"
 
-#: pyblocks/qt/app.py:247
+#: pyblocks/qt/authoring.py:195 pyblocks/qt/authoring.py:784
+msgid "Expression"
+msgstr "Выражение"
+
+#: pyblocks/qt/app.py:261
 msgid "File"
 msgstr "Файл"
 
-#: pyblocks/qt/app.py:368
+#: pyblocks/qt/app.py:382
 msgid "Find"
 msgstr "Найти"
 
-#: pyblocks/qt/app.py:99
+#: pyblocks/qt/app.py:103
 msgid "Find a block…"
 msgstr "Найти блок…"
+
+#: pyblocks/qt/authoring.py:187
+msgid "Find a definition…"
+msgstr "Найти определение…"
 
 #: pyblocks/snippets/pybricks/motors.py:145
 msgid ""
@@ -742,7 +815,7 @@ msgstr ""
 "\n"
 "Условие value % 2 == 0 проверяет чётность целого числа. Делитель не может быть нулём."
 
-#: pyblocks/qt/app.py:346
+#: pyblocks/qt/app.py:360
 msgid "Finish move"
 msgstr "Завершить перенос"
 
@@ -786,11 +859,11 @@ msgstr ""
 msgid "Firmware package is too large"
 msgstr "Пакет прошивки слишком велик"
 
-#: pyblocks/qt/app.py:442
+#: pyblocks/qt/app.py:463
 msgid "Firmware…"
 msgstr "Прошивка…"
 
-#: pyblocks/qt/app.py:361
+#: pyblocks/qt/app.py:375
 msgid "Fold region"
 msgstr "Свернуть область"
 
@@ -829,15 +902,19 @@ msgstr "Датчик силы"
 msgid "Force: {p0:g} N"
 msgstr "Сила: {p0:g} Н"
 
-#: pyblocks/qt/app.py:367
+#: pyblocks/qt/app.py:381
 msgid "Format Python"
 msgstr "Форматировать Python"
 
-#: pyblocks/qt/app.py:402
+#: pyblocks/qt/app.py:422
 msgid "Full screen"
 msgstr "Полный экран"
 
-#: pyblocks/qt/help.py:227
+#: pyblocks/qt/authoring.py:200
+msgid "Group / module"
+msgstr "Группа / модуль"
+
+#: pyblocks/qt/help.py:232
 msgid "Guide"
 msgstr "Руководство"
 
@@ -853,15 +930,15 @@ msgstr ""
 "Поместите операцию в try, восстановление после ошибки — в except.\n"
 "Выберите ожидаемое исключение, чтобы не скрывать все ошибки."
 
-#: pyblocks/qt/app.py:406 pyblocks/qt/navigation.py:19
+#: pyblocks/qt/app.py:426 pyblocks/qt/navigation.py:19
 msgid "Help"
 msgstr "Помощь"
 
-#: pyblocks/qt/app.py:409
+#: pyblocks/qt/app.py:430
 msgid "Hub"
 msgstr "Хаб"
 
-#: pyblocks/qt/app.py:229
+#: pyblocks/qt/app.py:243
 msgid "Hub and devices"
 msgstr "Хаб и устройства"
 
@@ -869,7 +946,7 @@ msgstr "Хаб и устройства"
 msgid "Hub firmware"
 msgstr "Прошивка хаба"
 
-#: pyblocks/qt/app.py:1021
+#: pyblocks/qt/app.py:1083
 msgid "Hub information and port readings"
 msgstr "Информация о хабе и показания портов"
 
@@ -889,11 +966,23 @@ msgstr "Я принимаю лицензию прошивки и замену т
 msgid "Idle"
 msgstr "Ожидание"
 
+#: pyblocks/qt/authoring.py:610
+msgid "Imports: dependencies added automatically on insertion."
+msgstr "Импорты: зависимости, автоматически добавляемые при вставке."
+
+#: pyblocks/qt/authoring.py:255
+msgid "In the library"
+msgstr "В библиотеке"
+
+#: pyblocks/qt/authoring.py:255
+msgid "In the program"
+msgstr "В программе"
+
 #: pyblocks/snippets/python/basics.py:62
 msgid "Increase a variable value."
 msgstr "Увеличить значение переменной."
 
-#: pyblocks/qt/app.py:341
+#: pyblocks/qt/app.py:355
 msgid "Indent"
 msgstr "Внутрь"
 
@@ -905,7 +994,7 @@ msgstr "Орган управления"
 msgid "Insert before selected item"
 msgstr "Вставить перед выбранным элементом"
 
-#: pyblocks/qt/editor.py:537 pyblocks/qt/scratch.py:337
+#: pyblocks/qt/editor.py:537 pyblocks/qt/scratch.py:340
 msgid "Insert here"
 msgstr "Вставить здесь"
 
@@ -929,6 +1018,11 @@ msgstr "Недопустимый размер файла прошивки"
 msgid "Invalid firmware image size"
 msgstr "Недопустимый размер образа прошивки"
 
+#: pyblocks/qt/authoring.py:655
+#, python-brace-format
+msgid "Invalid test value: {error} · showing the last valid preview"
+msgstr "Ошибка проверочного значения: {error} · показан последний корректный предпросмотр"
+
 #: pyblocks/qt/library.py:34
 msgid "Iteration and exceptions"
 msgstr "Перебор и исключения"
@@ -941,7 +1035,7 @@ msgstr "Прошивка LEGO является проприетарной. Ис�
 msgid "LEGO recovery packages must declare firmware-type as lego"
 msgstr "В пакете восстановления LEGO поле firmware-type должно иметь значение lego"
 
-#: pyblocks/qt/app.py:384
+#: pyblocks/qt/app.py:404
 msgid "Language"
 msgstr "Язык"
 
@@ -975,15 +1069,20 @@ msgstr "Левый Y"
 msgid "Left stick · WASD"
 msgstr "Левый стик · WASD"
 
-#: pyblocks/qt/app.py:118
+#: pyblocks/qt/app.py:122
 msgid "Library · drag a block into the program"
 msgstr "Библиотека · перетащите блок в программу"
+
+#: pyblocks/qt/authoring.py:532
+#, python-brace-format
+msgid "Line {line}: {error} · showing the last valid preview"
+msgstr "Строка {line}: {error} · показан последний корректный предпросмотр"
 
 #: pyblocks/qt/library.py:33
 msgid "Lists, text and dictionaries"
 msgstr "Списки, текст и словари"
 
-#: pyblocks/qt/app.py:436 pyblocks/qt/controls.py:316
+#: pyblocks/qt/app.py:457 pyblocks/qt/controls.py:316
 msgid "Manual control"
 msgstr "Ручное управление"
 
@@ -1019,6 +1118,10 @@ msgstr "Свернуть"
 msgid "Mode"
 msgstr "Режим"
 
+#: pyblocks/qt/authoring.py:202
+msgid "Module in your collection; its functions form one block group."
+msgstr "Модуль вашей коллекции; его функции образуют одну группу блоков."
+
 #: pyblocks/qt/device.py:26
 msgid "Motor"
 msgstr "Мотор"
@@ -1039,9 +1142,18 @@ msgstr "Переместить элемент вправо"
 msgid "Move to a target, then release the motor."
 msgstr "Дойти до заданного угла и отпустить мотор."
 
+#: pyblocks/qt/authoring.py:196
+msgid "Multi-command action"
+msgstr "Последовательность команд"
+
 #: pyblocks/snippets/python/basics.py:126
 msgid "Multiply two values."
 msgstr "Перемножить два значения."
+
+#: pyblocks/qt/authoring.py:385
+#, python-brace-format
+msgid "My collection · {name}"
+msgstr "Моя коллекция · {name}"
 
 #: pyblocks/qt/library.py:31
 msgid "My functions"
@@ -1055,7 +1167,7 @@ msgstr "Н"
 msgid "Name"
 msgstr "Имя"
 
-#: pyblocks/qt/app.py:407
+#: pyblocks/qt/app.py:428
 msgid "Name diagnostics"
 msgstr "Диагностика имён"
 
@@ -1063,15 +1175,19 @@ msgstr "Диагностика имён"
 msgid "Negate a condition."
 msgstr "Изменить условие на противоположное."
 
-#: pyblocks/qt/app.py:250
+#: pyblocks/qt/app.py:264
 msgid "New"
 msgstr "Новый"
+
+#: pyblocks/qt/authoring.py:204
+msgid "New block"
+msgstr "Новый блок"
 
 #: pyblocks/qt/annotations.py:29
 msgid "Next iteration"
 msgstr "Следующее повторение"
 
-#: pyblocks/qt/app.py:328
+#: pyblocks/qt/app.py:342
 msgid "Next node / target"
 msgstr "Следующий узел / цель"
 
@@ -1087,11 +1203,11 @@ msgstr "Хаб не подключён"
 msgid "No matching hub found in Bluetooth bootloader mode"
 msgstr "Подходящий хаб в режиме загрузчика Bluetooth не найден"
 
-#: pyblocks/qt/app.py:607
+#: pyblocks/qt/app.py:639
 msgid "No recent files"
 msgstr "Нет недавних файлов"
 
-#: pyblocks/qt/app.py:880
+#: pyblocks/qt/app.py:928
 msgid "No unknown names found.\n"
 msgstr "Неизвестных имён не найдено.\n"
 
@@ -1099,13 +1215,17 @@ msgstr "Неизвестных имён не найдено.\n"
 msgid "Numbers"
 msgstr "Числа"
 
-#: pyblocks/qt/app.py:258
+#: pyblocks/qt/app.py:272
 msgid "Open"
 msgstr "Открыть"
 
-#: pyblocks/qt/app.py:941
+#: pyblocks/qt/app.py:996
 msgid "Open Python"
 msgstr "Открыть Python"
+
+#: pyblocks/qt/help.py:70 pyblocks/qt/library.py:230
+msgid "Open definition"
+msgstr "Открыть определение"
 
 #: pyblocks/qt/firmware.py:207
 msgid "Open firmware"
@@ -1119,7 +1239,7 @@ msgstr "Открыть файл прошивки…"
 msgid "Open port monitor"
 msgstr "Открыть монитор портов"
 
-#: pyblocks/qt/app.py:264
+#: pyblocks/qt/app.py:278
 msgid "Open recent"
 msgstr "Открыть недавние"
 
@@ -1128,7 +1248,7 @@ msgstr "Открыть недавние"
 msgid "Operands: {operator}"
 msgstr "Операнды: {operator}"
 
-#: pyblocks/qt/app.py:336
+#: pyblocks/qt/app.py:350
 msgid "Outdent"
 msgstr "Наружу"
 
@@ -1136,7 +1256,7 @@ msgstr "Наружу"
 msgid "Parameter (name, optionally = default)"
 msgstr "Параметр (имя, при необходимости = значение)"
 
-#: pyblocks/qt/app.py:303 pyblocks/qt/help.py:61
+#: pyblocks/qt/app.py:317 pyblocks/qt/help.py:61
 msgid "Parameters"
 msgstr "Параметры"
 
@@ -1145,7 +1265,7 @@ msgstr "Параметры"
 msgid "Parameters: {name}"
 msgstr "Параметры: {name}"
 
-#: pyblocks/qt/app.py:325
+#: pyblocks/qt/app.py:339
 msgid "Parent"
 msgstr "Родитель"
 
@@ -1185,7 +1305,7 @@ msgstr ""
 "Частота — 64–24000 Гц. При конечной длительности блок ждёт окончания звука.\n"
 "Записанные звуки и речь требуют компьютера и не являются тонами хаба."
 
-#: pyblocks/qt/app.py:1000 pyblocks/qt/app.py:1009
+#: pyblocks/qt/app.py:1062 pyblocks/qt/app.py:1071
 msgid "Please wait…"
 msgstr "Подождите…"
 
@@ -1201,7 +1321,15 @@ msgstr "Монитор портов"
 msgid "Prepare download"
 msgstr "Загрузить и проверить"
 
-#: pyblocks/qt/app.py:327
+#: pyblocks/qt/authoring.py:539 pyblocks/qt/authoring.py:711 pyblocks/qt/authoring.py:795
+msgid "Preview only; template code is never executed."
+msgstr "Только предпросмотр; код шаблона не выполняется."
+
+#: pyblocks/qt/authoring.py:683
+msgid "Preview value only; does not change the definition default."
+msgstr "Только для предпросмотра; значение по умолчанию в определении не меняется."
+
+#: pyblocks/qt/app.py:341
 msgid "Previous node / target"
 msgstr "Предыдущий узел / цель"
 
@@ -1209,11 +1337,11 @@ msgstr "Предыдущий узел / цель"
 msgid "Previous position"
 msgstr "Прежнее положение"
 
-#: pyblocks/qt/app.py:242 pyblocks/qt/navigation.py:19
+#: pyblocks/qt/app.py:256 pyblocks/qt/navigation.py:19
 msgid "Program"
 msgstr "Программа"
 
-#: pyblocks/qt/app.py:199
+#: pyblocks/qt/app.py:213
 msgid "Program output and messages"
 msgstr "Вывод программы и сообщения"
 
@@ -1233,7 +1361,7 @@ msgstr "Выражение Python"
 msgid "Python expression or named argument"
 msgstr "Выражение Python или именованный аргумент"
 
-#: pyblocks/qt/app.py:309
+#: pyblocks/qt/app.py:323
 msgid "Python fragment"
 msgstr "Фрагмент Python"
 
@@ -1310,7 +1438,11 @@ msgstr "Узнать угол поворота робота."
 msgid "Read the surface color under the sensor."
 msgstr "Узнать цвет поверхности под датчиком."
 
-#: pyblocks/qt/app.py:293
+#: pyblocks/qt/authoring.py:779
+msgid "Read-only"
+msgstr "Только чтение"
+
+#: pyblocks/qt/app.py:307
 msgid "Redo"
 msgstr "Повторить"
 
@@ -1346,6 +1478,10 @@ msgstr "Управление пультом"
 #: pyblocks/qt/structure.py:36
 msgid "Remove item"
 msgstr "Удалить элемент"
+
+#: pyblocks/qt/authoring.py:221
+msgid "Reopen saved"
+msgstr "Открыть сохранённое"
 
 #: pyblocks/snippets/python/basics.py:20
 msgid ""
@@ -1415,6 +1551,10 @@ msgstr ""
 msgid "Replaces the running program with the port monitor. Motors remain stopped."
 msgstr "Запустит монитор вместо текущей программы. Моторы останутся остановленными."
 
+#: pyblocks/qt/authoring.py:272
+msgid "Reset test values"
+msgstr "Сбросить проверочные значения"
+
 #: pyblocks/snippets/pybricks/drive.py:86
 msgid "Restart the stopwatch."
 msgstr "Начать отсчёт времени заново."
@@ -1463,7 +1603,7 @@ msgstr "Вращение, °/с"
 msgid "Round a number to the nearest integer."
 msgstr "Округлить число до ближайшего целого."
 
-#: pyblocks/qt/app.py:420
+#: pyblocks/qt/app.py:441
 msgid "Run"
 msgstr "Запустить"
 
@@ -1499,7 +1639,7 @@ msgstr ""
 "Поместите операции в try, а завершение, например остановку мотора, — в finally.\n"
 "Принудительное завершение программы может прервать эти действия."
 
-#: pyblocks/qt/app.py:438
+#: pyblocks/qt/app.py:459
 msgid "Run stored program"
 msgstr "Запустить сохранённую программу"
 
@@ -1531,32 +1671,40 @@ msgstr ""
 msgid "Run with error handling"
 msgstr "Выполнить с обработкой ошибок"
 
-#: pyblocks/qt/app.py:268
+#: pyblocks/qt/app.py:282
 msgid "Save"
 msgstr "Сохранить"
 
-#: pyblocks/qt/app.py:954
+#: pyblocks/qt/app.py:1012
 msgid "Save Python"
 msgstr "Сохранить Python"
 
-#: pyblocks/qt/app.py:274
+#: pyblocks/qt/authoring.py:219
+msgid "Save and apply"
+msgstr "Сохранить и применить"
+
+#: pyblocks/qt/app.py:288
 msgid "Save as…"
 msgstr "Сохранить как…"
 
-#: pyblocks/qt/app.py:666
+#: pyblocks/qt/app.py:698
 #, python-brace-format
 msgid "Save {p0} before closing?"
 msgstr "Сохранить {p0} перед закрытием?"
+
+#: pyblocks/qt/authoring.py:781
+msgid "Saved"
+msgstr "Сохранено"
 
 #: pyblocks/qt/controls.py:265
 msgid "Scale"
 msgstr "Масштаб"
 
-#: pyblocks/qt/app.py:215 pyblocks/qt/app.py:471
+#: pyblocks/qt/app.py:229 pyblocks/qt/app.py:492
 msgid "Scratch"
 msgstr "Черновики"
 
-#: pyblocks/qt/help.py:201
+#: pyblocks/qt/help.py:206
 msgid "Search the guide and blocks…"
 msgstr "Поиск в руководстве и блоках…"
 
@@ -1564,7 +1712,11 @@ msgstr "Поиск в руководстве и блоках…"
 msgid "Searching for a matching hub in Bluetooth bootloader mode…"
 msgstr "Поиск подходящего хаба в режиме загрузчика Bluetooth…"
 
-#: pyblocks/qt/app.py:736
+#: pyblocks/qt/app.py:1221
+msgid "Select Python source to create a block."
+msgstr "Выделите исходник Python для создания блока."
+
+#: pyblocks/qt/app.py:775
 msgid "Select a block"
 msgstr "Выберите блок"
 
@@ -1682,6 +1834,10 @@ msgstr "Показать число на дисплее Prime или Inventor."
 msgid "Show an icon on the Prime or Inventor display."
 msgstr "Показать значок на дисплее Prime или Inventor."
 
+#: pyblocks/qt/authoring.py:602
+msgid "Signature: block name, parameters, defaults and units/types."
+msgstr "Сигнатура: имя блока, параметры, значения по умолчанию и единицы/типы."
+
 #: pyblocks/snippets/python/flow.py:20
 msgid "Skip to the next iteration of the nearest loop."
 msgstr "Перейти к следующему повторению ближайшего цикла."
@@ -1690,7 +1846,7 @@ msgstr "Перейти к следующему повторению ближай
 msgid "Start manual control"
 msgstr "Включить ручной режим"
 
-#: pyblocks/qt/app.py:334
+#: pyblocks/qt/app.py:348
 msgid "Start move"
 msgstr "Начать перенос"
 
@@ -1710,7 +1866,7 @@ msgstr ""
 msgid "Start with a virtual hub or connect your robot."
 msgstr "Начните с виртуального хаба или подключите свой робот."
 
-#: pyblocks/qt/app.py:428
+#: pyblocks/qt/app.py:449
 msgid "Stop"
 msgstr "Стоп"
 
@@ -1752,6 +1908,10 @@ msgstr ""
 msgid "Take the absolute value of a number."
 msgstr "Получить модуль числа."
 
+#: pyblocks/qt/authoring.py:265
+msgid "Test values"
+msgstr "Проверочные значения"
+
 #: pyblocks/qt/controls.py:379
 msgid "The port monitor is running. Assign a motor, then enable commands."
 msgstr "Монитор портов работает. Назначьте мотор, затем включите передачу команд."
@@ -1766,7 +1926,7 @@ msgstr ""
 msgid "This block has no editable parameters"
 msgstr "У этого блока нет изменяемых параметров"
 
-#: pyblocks/qt/app.py:968
+#: pyblocks/qt/app.py:1026
 msgid "This file is already open in another tab"
 msgstr "Этот файл уже открыт в другой вкладке"
 
@@ -1774,7 +1934,7 @@ msgstr "Этот файл уже открыт в другой вкладке"
 msgid "This is not a Pybricks firmware package"
 msgstr "Это не пакет прошивки Pybricks"
 
-#: pyblocks/qt/app.py:315
+#: pyblocks/qt/app.py:329
 msgid "To Scratch"
 msgstr "В черновики"
 
@@ -1826,7 +1986,7 @@ msgstr ""
 msgid "Unassigned"
 msgstr "Не назначен"
 
-#: pyblocks/qt/app.py:285
+#: pyblocks/qt/app.py:299
 msgid "Undo"
 msgstr "Отменить"
 
@@ -1834,7 +1994,7 @@ msgstr "Отменить"
 msgid "Unit / type"
 msgstr "Единица / тип"
 
-#: pyblocks/qt/app.py:665
+#: pyblocks/qt/app.py:697
 msgid "Unsaved changes"
 msgstr "Несохранённые изменения"
 
@@ -1846,23 +2006,27 @@ msgstr "Неподдерживаемый адрес загрузки проши�
 msgid "Unsupported firmware target"
 msgstr "Неподдерживаемая модель или тип прошивки"
 
-#: pyblocks/qt/app.py:356
+#: pyblocks/qt/app.py:370
 msgid "Upgrade block"
 msgstr "Обновить блок"
 
-#: pyblocks/qt/app.py:412
+#: pyblocks/qt/app.py:433
 msgid "Upload"
 msgstr "Отправить на хаб"
+
+#: pyblocks/qt/authoring.py:831
+msgid "Use a Python module name, for example custom or robots/motors."
+msgstr "Используйте имя модуля Python, например custom или robots/motors."
 
 #: pyblocks/qt/firmware.py:75
 msgid "Version"
 msgstr "Версия"
 
-#: pyblocks/qt/app.py:369
+#: pyblocks/qt/app.py:389
 msgid "View"
 msgstr "Вид"
 
-#: pyblocks/qt/app.py:1014 pyblocks/qt/device.py:154
+#: pyblocks/qt/app.py:1076 pyblocks/qt/device.py:154
 msgid "Virtual hub"
 msgstr "Виртуальный хаб"
 
@@ -1943,7 +2107,7 @@ msgstr "с"
 msgid "{p0:g}°    {p1:g} °/s"
 msgstr "{p0:g}°    {p1:g} °/с"
 
-#: pyblocks/qt/app.py:740
+#: pyblocks/qt/app.py:779
 #, python-brace-format
 msgid "{p0} · warnings: {p1}"
 msgstr "{p0} · предупреждений: {p1}"
@@ -1952,15 +2116,20 @@ msgstr "{p0} · предупреждений: {p1}"
 msgid "°/s"
 msgstr "°/с"
 
-#: pyblocks/qt/help.py:203
+#: pyblocks/qt/authoring.py:814
+#, python-brace-format
+msgid "… {count} more lines"
+msgstr "… ещё строк: {count}"
+
+#: pyblocks/qt/help.py:208
 msgid "← Back"
 msgstr "← Назад"
 
-#: pyblocks/qt/app.py:122
+#: pyblocks/qt/app.py:126
 msgid "＋ Add selected block"
 msgstr "＋ Добавить выбранный блок"
 
-#: pyblocks/qt/app.py:1017
+#: pyblocks/qt/app.py:1079
 msgid "＋ Connect hub"
 msgstr "＋ Подключить хаб"
 

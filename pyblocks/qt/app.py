@@ -1,6 +1,7 @@
 """Desktop workspaces with independent source documents and one hub connection."""
 
 import argparse
+import ast
 import sys
 from pathlib import Path
 
@@ -31,6 +32,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from pyblocks.core.authoring import template_from_source, user_collection
 from pyblocks.core.edit import target_position
 from pyblocks.core.parameters import default_bindings
 from pyblocks.core.snippets import LEVELS
@@ -39,6 +41,7 @@ from pyblocks.i18n import DEFAULT_LANGUAGE, LANGUAGES, N_, language, set_languag
 from pyblocks.pybricks.control import ControlState
 from pyblocks.pybricks.devices import HubInfo
 
+from .authoring import BlockEditor
 from .controls import ControlsPage
 from .device import ConnectDialog, DevicePanel
 from .dialogs import EditDialog
@@ -94,6 +97,7 @@ class Studio(QMainWindow):
         self.documents.setMovable(True)
         self.open_document(path)
         self.library = Library(self.session.available_snippets)
+        self.library.definition_requested.connect(self.open_definition)
         self.library.itemDoubleClicked.connect(self.insert_selected)
         self.search = QLineEdit()
         self.search.setPlaceholderText(N_("Find a block…"))
@@ -139,8 +143,15 @@ class Studio(QMainWindow):
         scroll.setFrameShape(QScrollArea.Shape.NoFrame)
         scroll.setWidget(self.controls)
         self.help_page = HelpPage(self.session.available_snippets)
+        self.help_page.definition_requested.connect(self.open_definition)
+        self.block_editor = BlockEditor(
+            self.ensure_user_collection, self.validate_collection
+        )
+        self.block_editor.saved.connect(self.collection_saved)
+        self.block_editor.failed.connect(self.error)
+        self.block_editor.changed.connect(self.refresh_status)
         self.pages = QStackedWidget()
-        for page in (self.program_page, scroll, self.help_page):
+        for page in (self.program_page, scroll, self.help_page, self.block_editor):
             self.pages.addWidget(page)
         self.mode_tabs = ModeTabs()
         self.mode_tabs.currentChanged.connect(self.set_mode)
@@ -153,6 +164,9 @@ class Studio(QMainWindow):
         self.setCentralWidget(workspace)
         self._docks()
         self._menus()
+        self.block_editor.configure(
+            self.session.snippets, self.session.project.collections
+        )
         menu = self.menuBar()
         header = QWidget()
         header_layout = QVBoxLayout(header)
@@ -366,6 +380,12 @@ class Studio(QMainWindow):
             self.structural_actions.append(self._action(edit, label, key, callback))
         self._action(edit, N_("Format Python"), "Ctrl+Alt+L", self.commit_code)
         self._action(edit, N_("Find"), "Ctrl+F", self.show_find)
+        self.create_block_action = self._action(
+            edit,
+            N_("Create block from selection"),
+            None,
+            self.create_block_from_selection,
+        )
         view = self.menuBar().addMenu(N_("View"))
         group = QActionGroup(self)
         self.editor_actions = []
@@ -404,6 +424,7 @@ class Studio(QMainWindow):
             lambda: self.showNormal() if self.isFullScreen() else self.showFullScreen(),
         )
         self._action(view, N_("Help"), "F1", self.show_help)
+        self._action(view, N_("Block Editor"), "Ctrl+Alt+3", lambda: self.set_mode(3))
         self._action(view, N_("Name diagnostics"), None, self.show_diagnostics)
         toolbar.addSeparator()
         robot = self.menuBar().addMenu(N_("Hub"))
@@ -527,6 +548,13 @@ class Studio(QMainWindow):
         self.library.filter(self.search.text(), level)
 
     def commit_code(self):
+        if self.pages.currentIndex() == 3:
+            code = self.block_editor.code
+            if code and not code.isReadOnly():
+                from pyblocks.core.formatting import format_source
+
+                code.replace_formatted(format_source(code.toPlainText()))
+            return
         self.document_page.commit_code()
 
     def document_changed(self, *_):
@@ -536,6 +564,9 @@ class Studio(QMainWindow):
         self.library.filter(self.search.text(), self.level_filter.currentData())
         self.help_page.snippets = self.session.available_snippets
         self.help_page.retranslate()
+        self.block_editor.configure(
+            self.session.snippets, self.session.project.collections
+        )
         self.document_mode_changed()
         self.refresh_views()
 
@@ -558,6 +589,7 @@ class Studio(QMainWindow):
         self.library.load(self.session.available_snippets)
         self.library.filter(self.search.text(), self.level_filter.currentData())
         self.help_page.retranslate()
+        self.block_editor.retranslate()
         self.update_hub(self.hub_info)
         self.refresh_status()
         self.console_button.setText(
@@ -702,8 +734,13 @@ class Studio(QMainWindow):
         self.scratch_button.setEnabled(index == 0)
         if index == 1:
             self.device_dock.show()
-        elif index == 2:
+        elif index in (2, 3):
             self.device_dock.hide()
+        if index == 3:
+            self.block_editor.configure(
+                self.session.snippets, self.session.project.collections
+            )
+        self.update_hub(self.hub_info)
         self.refresh_status()
 
     def refresh_views(self):
@@ -721,6 +758,8 @@ class Studio(QMainWindow):
             self.refresh_status()
 
     def text_editor(self):
+        if self.pages.currentIndex() == 3:
+            return self.block_editor.code or self.block_editor.empty
         cell = self.scratch.focused_cell()
         if cell is not None:
             return cell.code if cell.code_active else None
@@ -758,6 +797,11 @@ class Studio(QMainWindow):
         )
         for action in self.structural_actions:
             action.setEnabled(text_editor is None and self.pages.currentIndex() == 0)
+        self.create_block_action.setEnabled(self.pages.currentIndex() == 0)
+        for action in self.editor_actions:
+            action.setEnabled(self.pages.currentIndex() != 3)
+        if self.pages.currentIndex() == 3:
+            self.statusBar().showMessage(self.block_editor.caption.text())
         for index in range(self.documents.count()):
             page = self.documents.widget(index)
             self.documents.setTabText(
@@ -862,6 +906,10 @@ class Studio(QMainWindow):
         self.scratch_dock.show()
 
     def show_help(self):
+        if self.pages.currentIndex() == 3:
+            self.help_page.show_page("block-editor.md")
+            self.set_mode(2)
+            return
         item = self.library.currentItem() if self.library.hasFocus() else None
         identity = item.data(0, IDENTITY) if item else None
         match = self.session.selected_match()
@@ -881,6 +929,10 @@ class Studio(QMainWindow):
         self.console_dock.show()
 
     def show_find(self):
+        if self.pages.currentIndex() == 3:
+            self.block_editor.search.setFocus()
+            self.block_editor.search.selectAll()
+            return
         self.set_mode(0)
         self.find_bar.show()
         self.find_bar.setFocus()
@@ -916,6 +968,9 @@ class Studio(QMainWindow):
         editor.redo() if editor else self.session.editor.redo()
 
     def save(self):
+        if self.pages.currentIndex() == 3:
+            self.block_editor.save()
+            return
         self.commit_code()
         self.session.project.save()
         self.remember_file(self.session.project.path)
@@ -948,6 +1003,9 @@ class Studio(QMainWindow):
             self.set_mode(0)
 
     def save_as(self):
+        if self.pages.currentIndex() == 3:
+            self.block_editor.copy_block()
+            return
         self.commit_code()
         path, _ = QFileDialog.getSaveFileName(
             self,
@@ -992,8 +1050,12 @@ class Studio(QMainWindow):
     def hub_busy(self, busy):
         self.hub_is_busy = busy
         self.hub_button.setEnabled(not busy)
-        self.run_action.setEnabled(self.hub_info.connected and not busy)
-        self.upload_action.setEnabled(self.hub_info.connected and not busy)
+        self.run_action.setEnabled(
+            self.hub_info.connected and not busy and self.pages.currentIndex() != 3
+        )
+        self.upload_action.setEnabled(
+            self.hub_info.connected and not busy and self.pages.currentIndex() != 3
+        )
         self.stored_action.setEnabled(self.hub_info.connected and not busy)
         self.firmware_action.setEnabled(not busy)
         if busy:
@@ -1022,8 +1084,12 @@ class Studio(QMainWindow):
             if info.connected
             else tr("Bluetooth, USB or virtual hub")
         )
-        self.run_action.setEnabled(info.connected and not self.hub_is_busy)
-        self.upload_action.setEnabled(info.connected and not self.hub_is_busy)
+        self.run_action.setEnabled(
+            info.connected and not self.hub_is_busy and self.pages.currentIndex() != 3
+        )
+        self.upload_action.setEnabled(
+            info.connected and not self.hub_is_busy and self.pages.currentIndex() != 3
+        )
         self.stored_action.setEnabled(info.connected and not self.hub_is_busy)
         self.stop_action.setEnabled(info.connected)
         self.device_panel.update_info(info)
@@ -1082,6 +1148,12 @@ class Studio(QMainWindow):
             self.controls.controller.display(ControlState())
 
     def closeEvent(self, event):
+        try:
+            self.block_editor.flush()
+        except OSError as error:
+            self.error(str(error))
+            event.ignore()
+            return
         for index in range(self.documents.count()):
             if not self.confirm_close(self.documents.widget(index)):
                 event.ignore()
@@ -1090,6 +1162,89 @@ class Studio(QMainWindow):
         if self.robot:
             self.robot.close()
         event.accept()
+
+    def ensure_user_collection(self):
+        project = self.session.project
+        root = user_collection(project.path.parent)
+        if root not in project.collections:
+            project.collections.append(root)
+            try:
+                snippets = self.session.load_snippets()
+                self.session.validate_snippets(snippets)
+                project.save_collections()
+            except (ValueError, OSError):
+                project.collections.remove(root)
+                raise
+            self.session.set_snippets(snippets)
+        self.block_editor.configure(self.session.snippets, project.collections)
+        return root
+
+    def validate_collection(self, root, snippets):
+        for index in range(self.documents.count()):
+            session = self.documents.widget(index).session
+            if root in session.project.collections:
+                session.validate_snippets(session.load_snippets({root: snippets}))
+
+    def collection_saved(self, root, snippets):
+        for index in range(self.documents.count()):
+            page = self.documents.widget(index)
+            if root in page.session.project.collections:
+                page.session.set_snippets(page.session.load_snippets({root: snippets}))
+                page.source.refresh_source()
+        self.document_changed()
+
+    def open_definition(self, identity):
+        snippet = next(
+            (
+                s
+                for s in self.session.available_snippets
+                if s.identity == identity and not s.historical
+            ),
+            None,
+        )
+        if snippet is None:
+            return
+        if snippet.source_path:
+            self.set_mode(3)
+            self.block_editor.open_definition(snippet)
+        elif identity.startswith("document/functions/"):
+            self.set_mode(0)
+            self.change_editor(1)
+            self.code.moveCursor(QTextCursor.MoveOperation.Start)
+            self.code.find("def " + identity.rsplit("/", 1)[1] + "(")
+
+    def create_block_from_selection(self):
+        expression = False
+        if self.code_active:
+            cursor = self.code.textCursor()
+            if not cursor.hasSelection():
+                raise ValueError(tr("Select Python source to create a block."))
+            source = cursor.selectedText().replace("\u2029", "\n")
+            prefix_cursor = QTextCursor(cursor)
+            prefix_cursor.setPosition(cursor.selectionStart())
+            prefix_cursor.movePosition(
+                QTextCursor.MoveOperation.StartOfBlock, QTextCursor.MoveMode.KeepAnchor
+            )
+            prefix = prefix_cursor.selectedText()
+            if not prefix.strip():
+                source = prefix + source
+        else:
+            source, _ = self.editing_session.extract_selection()
+            match = self.editing_session.selected_match()
+            expression = (
+                match.snippet.expression
+                if match
+                else isinstance(self.editing_session.editor.selection, ast.expr)
+            )
+        imports = tuple(
+            ast.unparse(node)
+            for node in self.session.document.syntax.tree.body
+            if isinstance(node, (ast.Import, ast.ImportFrom))
+            and not (isinstance(node, ast.ImportFrom) and node.module == "__future__")
+        )
+        definition = template_from_source(source, imports, expression=expression)
+        self.set_mode(3)
+        self.block_editor.create(definition)
 
 
 def launch(path: Path, collections=()) -> int:

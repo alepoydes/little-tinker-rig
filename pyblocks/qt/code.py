@@ -149,6 +149,8 @@ class CodeEdit(QPlainTextEdit):
         cursor.insertText(word)
 
     def keyPressEvent(self, event):
+        if self.isReadOnly():
+            return super().keyPressEvent(event)
         if self.completer.popup().isVisible() and event.key() in (
             Qt.Key.Key_Enter,
             Qt.Key.Key_Return,

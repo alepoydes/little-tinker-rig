@@ -97,6 +97,22 @@ class Project:
     def _hash(self, path: Path) -> str | None:
         return hashlib.sha256(path.read_bytes()).hexdigest() if path.exists() else None
 
+    def save_collections(self) -> None:
+        """Persist library connections independently of unsaved program/scratch text."""
+        if self._hash(self.workspace_path) != self._workspace_hash:
+            raise ValueError("Workspace changed outside PyBlocks; reopen it first")
+        metadata = (
+            json.loads(self.workspace_path.read_text(encoding="utf-8"))
+            if self.workspace_path.exists()
+            else {"format": 1, "scratch": list(self._saved.scratch), "pins": self.pins}
+        )
+        metadata["collections"] = [
+            os.path.relpath(p, self.path.parent) for p in self.collections
+        ]
+        text = json.dumps(metadata, ensure_ascii=False, indent=2) + "\n"
+        atomic_write(self.workspace_path, text)
+        self._workspace_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
+
     def save(self) -> None:
         """Refuse to overwrite a file changed externally since opening/saving."""
         if self.draft is not None:

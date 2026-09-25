@@ -1,5 +1,8 @@
 # Authoring snippet libraries
 
+Use the desktop [Block Editor](block-editor.md) to inspect built-ins, edit user
+definitions, and preview blocks above their source.
+
 A collection is a directory of Python modules plus `collection.toml`. Functions
 are parsed as static templates; they are never imported or executed by the editor.
 The function signature defines parameters/default expressions, the docstring is

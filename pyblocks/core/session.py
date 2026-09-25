@@ -44,19 +44,33 @@ class Session:
             if resolved not in self.project.collections:
                 self.project.collections.append(resolved)
         self.editor = Editor(self.project.document)
-        self.snippets = builtin_snippets() + tuple(
-            s for path in self.project.collections for s in load_collection(path)
+        self.set_snippets(self.load_snippets())
+
+    def load_snippets(self, overrides=None):
+        """Read connected collections, optionally substituting a validated candidate."""
+        overrides = overrides or {}
+        return builtin_snippets() + tuple(
+            s
+            for path in self.project.collections
+            for s in (overrides[path] if path in overrides else load_collection(path))
         )
-        identities = [s.identity for s in self.snippets if not s.historical]
+
+    def validate_snippets(self, snippets):
+        identities = [s.identity for s in snippets if not s.historical]
         if len(identities) != len(set(identities)):
             raise ValueError("Collections define duplicate current snippet identities")
-        for snippet in self.snippets:
+        for snippet in snippets if self.project else ():
             collection = snippet.identity.split("/")[0]
             pinned = self.project.pins.get(collection)
             if pinned and not snippet.historical and pinned != snippet.version:
                 raise ValueError(
                     f"Collection {collection!r} requires version {pinned}, installed {snippet.version}"
                 )
+
+    def set_snippets(self, snippets):
+        """Refresh recognition without committing, formatting or rewriting source."""
+        self.validate_snippets(snippets)
+        self.snippets = snippets
         self._reset_cache()
 
     def _reset_cache(self):

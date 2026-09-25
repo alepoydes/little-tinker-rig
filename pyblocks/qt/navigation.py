@@ -16,7 +16,7 @@ class ModeTabs(QTabBar):
         self.setExpanding(False)
         self.setDrawBase(False)
         self.setFixedWidth(36)
-        for label in (N_("Program"), N_("Control"), N_("Help")):
+        for label in (N_("Program"), N_("Control"), N_("Help"), N_("Block Editor")):
             self.addTab(label)
         self.setAccessibleName(N_("Workspaces"))
 

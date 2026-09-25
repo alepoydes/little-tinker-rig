@@ -16,6 +16,7 @@ on a virtual Inventor / SPIKE Prime hub.
 - [Editing, documents, Scratch, and CLI](usage.md)
 - [Hubs, sensors, motors, and controllers](robotics.md)
 - [Create your own block library](snippets.md)
+- [Block Editor and live preview](block-editor.md)
 
 The **Block library** section in the help contents lists groups. Each group page
 contains its blocks, parameter tables, and Python code. F1 opens the selected

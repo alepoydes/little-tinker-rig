@@ -33,6 +33,7 @@ class Snippet:
     historical: bool = False
     result_type: str | None = None
     level: str = "intermediate"
+    source_path: Path | None = None
 
     @property
     def expression(self) -> bool:
@@ -280,10 +281,23 @@ def _template_names(function, body, imports, parameters) -> dict[str, str]:
     return result
 
 
-def load_collection(directory: Path) -> tuple[Snippet, ...]:
-    """Load collection.toml, modules and optional historical versions."""
-    with (directory / "collection.toml").open("rb") as stream:
-        manifest = tomllib.load(stream)
+def load_collection(
+    directory: Path, *, overrides: dict[str, str] | None = None
+) -> tuple[Snippet, ...]:
+    """Load static templates, optionally validating unsaved relative file contents."""
+    directory = directory.resolve()
+    overrides = overrides or {}
+    for name in overrides:
+        if not (directory / name).resolve().is_relative_to(directory):
+            raise ValueError("Collection overrides must stay inside the collection")
+
+    def read(path):
+        name = path.relative_to(directory).as_posix()
+        return (
+            overrides[name] if name in overrides else path.read_text(encoding="utf-8")
+        )
+
+    manifest = tomllib.loads(read(directory / "collection.toml"))
     identity, version = manifest["collection"]["id"], manifest["collection"]["version"]
     histories = []
     for history in manifest.get("history", []):
@@ -296,23 +310,26 @@ def load_collection(directory: Path) -> tuple[Snippet, ...]:
             raise ValueError(f"Historical template directory does not exist: {root}")
         histories.append((root, history["version"]))
     result = []
-    for path in sorted(directory.rglob("*.py")):
+    paths = set(directory.rglob("*.py")) | {
+        directory / name for name in overrides if name.endswith(".py")
+    }
+    for path in sorted(paths):
         if path.name == "__init__.py" or any(
             path.resolve().is_relative_to(root) for root, _ in histories
         ):
             continue
         module = path.relative_to(directory).with_suffix("").as_posix()
         result.extend(
-            load_module(
-                path.read_text(encoding="utf-8"), f"{identity}/{module}", version
-            )
+            replace(s, source_path=path)
+            for s in load_module(read(path), f"{identity}/{module}", version)
         )
     for root, historical_version in histories:
         for path in sorted(root.rglob("*.py")):
             module = path.relative_to(root).with_suffix("").as_posix()
             result.extend(
-                load_module(
-                    path.read_text(encoding="utf-8"),
+                replace(s, source_path=path)
+                for s in load_module(
+                    read(path),
                     f"{identity}/{module}",
                     historical_version,
                     historical=True,

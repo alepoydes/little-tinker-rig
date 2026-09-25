@@ -24,6 +24,10 @@ Expressions expose their operands and operators. Function parameters, call argum
 and logical operands support variable-length lists; user functions appear in the
 library, and known call errors are marked in place.
 
+The [Block Editor](doc/en/block-editor.md) shows a live preview above Python
+definitions. Inspect built-in blocks, copy them into a project collection, or
+create your own. Invalid drafts stay separate from the working library.
+
 Virtual Inventor/Prime, BOOST, and Technic profiles support learning without a
 robot. Physical connections target hubs running Pybricks firmware. The window
 also includes a console and an Xbox-style controller with motor assignments. Upload
@@ -61,6 +65,7 @@ following, obstacle detection, a gripper, and an emergency button. Open
 - [Editing and command-line tools](doc/en/usage.md)
 - [Robots and controls](doc/en/robotics.md)
 - [Authoring snippet libraries](doc/en/snippets.md)
+- [Block Editor and live preview](doc/en/block-editor.md)
 - [Developer API](doc/en/api.md)
 - [Architecture](doc/en/architecture.md)
 - [Development and invariants](doc/en/development.md)
