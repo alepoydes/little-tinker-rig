@@ -97,6 +97,15 @@ original projection and prevents a held pointer from restarting the gesture. Lib
 with defaults or context-derived values, without a dialog. The view preserves its
 anchor and scrolls only as needed to reveal the start of the inserted block.
 
+Logical blocks have thin semantic outlines, with one shared edge between adjacent
+blocks. Comments and code are inside the same contour; nested blocks retain parent
+color bands. Outlines strengthen with focus and do not add line spacing.
+
+Personal collections live in the user data directory and are shared by documents.
+Block Editor offers editable icon/color catalogs, Open blocks folder and Start next
+version. A new version archives the saved definitions before further editing.
+Program upgrades have a read-only diff preview, explicit acceptance and Undo.
+
 ## Detached block ribbon
 
 Scratch is visible when opening a program and hidden in hub Control. Its dock

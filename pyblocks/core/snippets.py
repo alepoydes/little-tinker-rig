@@ -479,6 +479,12 @@ def load_collection(
         directory / name for name in overrides if name.endswith(".py")
     }
     for path in sorted(paths):
+        # Unregistered/staged history is never an active module.
+        if any(
+            part.startswith(".") or part in {"history", "__pycache__"}
+            for part in path.relative_to(directory).parts
+        ):
+            continue
         if path.name == "__init__.py" or any(
             path.resolve().is_relative_to(root) for root, _ in histories
         ):
@@ -895,4 +901,16 @@ def upgrade(
         raise ValueError("Major-version upgrades require manual editing")
     if match.snippet.expression != current.expression:
         raise ValueError("Cannot change statement/expression kind automatically")
+    if any(
+        canonical(old[name].annotation) != canonical(new[name].annotation)
+        for name in old
+    ):
+        raise ValueError("Changed parameter types or units require manual editing")
+    if (
+        canonical(match.snippet.result_type) != canonical(current.result_type)
+        or match.snippet.names != current.names
+    ):
+        raise ValueError(
+            "Changed result or declaration contracts require manual editing"
+        )
     return instantiate(current, match.bindings, occupied, local_names=match.locals)

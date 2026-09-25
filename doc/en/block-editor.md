@@ -64,11 +64,28 @@ changes to the same module or collection settings prevent an accidental overwrit
 Legacy modules are converted into a source draft; obsolete manifest levels are
 removed only when that draft is saved.
 
-The default user collection lives in `blocks/` beside the program; its relative
-connection is stored in the program's `.pyblocks.json` workspace. Copy that
-workspace and the collection with the program to another computer. Drafts are
-stored in `blocks/.drafts/` as JSON, outside the active Python library. They are
-only needed when continuing unfinished definition edits.
+The personal collection lives in the operating system's user data directory:
+`~/.local/share/pyblocks-studio/blocks/` on Linux by default, respecting
+`XDG_DATA_HOME`. **Open blocks folder** opens it. Existing personal blocks are
+available to every document and frontend automatically; this implicit connection
+is not written into each program's workspace. Explicit external collections can
+still be connected per project. The folder is created only when first needed.
+Built-in collections remain in the installed application and are read-only.
+Personal drafts remain under the collection's `.drafts/` directory.
+
+Icon and color fields are editable lists. Symbols have suggested meanings; colors
+show swatches and semantic roles. Custom symbols and `#RRGGBB` colors are accepted.
+The decorator stores literal symbols and stable role keys such as `action`,
+independently of the interface language. Source edits and selectors update each
+other and the preview, with ordinary text Undo.
+
+**Start next version…** archives the saved collection before advancing its version.
+Save or discard all module drafts first, then enter a greater `MAJOR.MINOR.PATCH`
+version. The previous definitions, helpers and manifest snapshot remain under
+`history/<version>/`. Begin a new version *before* changing published definitions;
+ordinary Save does not create a snapshot. Historical definitions open read-only.
+Use **Upgrade block** in a program to review a diff before applying a compatible
+upgrade; Cancel leaves the program unchanged and Undo restores an accepted change.
 
 Saving definitions never rewrites open programs or Scratch, commits their Python
 drafts, or changes their undo history. Recognition uses the new definitions;

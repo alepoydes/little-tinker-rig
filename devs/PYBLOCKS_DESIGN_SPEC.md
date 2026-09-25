@@ -291,6 +291,14 @@ Possible semantic roles include:
 
 The exact palette is a design parameter, but default semantic color guidance should be shared between frontends.
 
+Logical blocks have subtle one-pixel semantic contours. Recognized compact blocks
+have one outline; expanded structural children have their own. Adjacent contours
+share an opaque boundary, and descriptions/source comments belong inside the
+same outline as code. Reuse the fill geometry instead of outlining all AST nodes.
+Borders preserve line heights, hit testing and drop coordinates; scrolling does
+not add artificial caps at the viewport edge. Hover and selection strengthen the
+outline, while error borders and drag markers retain visual priority.
+
 ### 9.2 Hover and selection
 
 Permanent coloring should remain pale enough that the source still looks like readable Python.
@@ -649,10 +657,15 @@ The cursor selects the enclosing function; intervening text and invalid edits
 retain the last valid preview. New blocks use action, expression or multi-command
 starters. A program selection can become a draft, with explicit parameter choices.
 
-The default user collection is `blocks/` beside the program, connected using a
-relative path in the program workspace. A group field chooses the module, so
-related blocks share one file and reference page. Level, icon and color controls edit decorator literals with normal text Undo. Invalid drafts live separately in `.drafts/*.py.json`; saving validates
-the collection before replacing active definitions and detects external changes.
+The default personal collection uses the operating system's user data directory:
+`$XDG_DATA_HOME/pyblocks-studio/blocks` on Linux, with the usual `~/.local/share`
+default. All frontends automatically connect it without persisting its location
+in every project. The directory is created on demand. Built-ins remain packaged
+with source; external project collections may be connected explicitly. A group
+field chooses the Python module. Icon and color controls are editable selectors
+with localized meanings, semantic swatches and custom values. They edit decorator
+literals with text Undo; no separate metadata store exists. Invalid drafts live
+in `.drafts/*.py.json`. Saving validates the collection and checks external changes.
 The library and help expose Open definition links.
 
 Applying definitions refreshes recognition in connected documents and Scratch.
@@ -686,6 +699,14 @@ Multiple collections from different sources must be able to coexist.
 
 Project-level knowledge of which collections are relevant may be stored outside the Python source if useful, but the exact project manifest format is still open.
 
+Before editing a published collection, Start next version or the
+`next-block-version` CLI command archives its saved modules and manifest under
+`history/<previous-version>/`, validates a staged candidate and advances the
+manifest version. Drafts must be resolved first. Snapshots are read-only in the
+editor and included in distributions. Unregistered history directories are inert.
+Version history starts with these explicit transitions; no reconstruction of older
+development revisions or migration of personal directories is required.
+
 ### 20.3 Historical template matching
 
 Recognition should first attempt installed/current snippet templates.
@@ -698,7 +719,7 @@ The source is still ordinary Python; historical matching is an optional enhancem
 
 ### 20.4 Automatic upgrade by preserving bindings
 
-If old and new snippet versions have compatible signatures, an upgrade can be generated mechanically:
+If old and new snippet versions have compatible signatures and contracts, an upgrade can be generated mechanically:
 
 ```text
 match old template
@@ -707,7 +728,7 @@ match old template
     -> replace old source region
 ```
 
-This avoids requiring explicit migration code for ordinary snippet evolution.
+The desktop shows a diff before committing. Cancel preserves the source; Undo restores the whole change, including managed helpers. Type/unit and result/declaration contract changes require manual editing. Helpers already use implementation fingerprints, so old and new implementations can coexist.
 
 ### 20.5 Compatibility rule
 

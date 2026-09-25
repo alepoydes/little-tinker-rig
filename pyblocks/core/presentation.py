@@ -86,6 +86,7 @@ class Region:
     extend_line: bool
     foldable: bool
     movable: bool
+    outlined: bool = False
 
 
 def regions(syntax: Syntax, matches=()) -> tuple[Region, ...]:
@@ -110,6 +111,7 @@ def regions(syntax: Syntax, matches=()) -> tuple[Region, ...]:
                     end_column,
                     isinstance(node, ast.stmt),
                     isinstance(node, ast.stmt) and end_line > line,
+                    isinstance(node, ast.stmt),
                     isinstance(node, ast.stmt),
                 )
             )
@@ -146,6 +148,7 @@ def regions(syntax: Syntax, matches=()) -> tuple[Region, ...]:
                 not match.snippet.expression,
                 end_line > line,
                 not match.snippet.expression,
+                True,
             )
         )
     result.sort(key=lambda region: (region.depth, region.span.start, -region.span.end))

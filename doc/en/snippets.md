@@ -26,6 +26,29 @@ Historical directories must stay inside the collection. Historical definitions
 remain recognizable, and explicit upgrades preserve compatible parameters and
 names. A major version change requires manual review.
 
+## Starting a collection version
+
+Before changing a published collection, archive its saved definitions and advance
+the version with **Start next version…** in Block Editor or:
+
+```sh
+uv run pyblocks next-block-version ./my_blocks 1.1.0
+```
+
+The same command works for built-in collections in `pyblocks/snippets/` during
+release development. Versions use `MAJOR.MINOR.PATCH`. The command validates a
+staged collection, archives current Python modules and `snapshot.toml` under
+`history/<previous-version>/`, then updates `collection.toml`. Existing archives
+are not overwritten. Drafts must be saved or discarded first. Both wheel and source
+distributions include historical definitions. An unregistered history directory
+is never loaded as an active module.
+
+Historical templates support explicit upgrades with preserved bindings, declaration
+names and comments. Changes to parameter types/units, result/declaration contracts
+or major versions require manual editing. Semantic compatibility is the author's
+responsibility; equal signatures alone do not prove equivalent behavior. Changed
+helper implementations have distinct generated names and can coexist in a program.
+
 ## Two insertion modes
 
 ```python

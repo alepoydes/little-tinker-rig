@@ -44,8 +44,8 @@ class Document:
     def can_redo(self) -> bool:
         return bool(self._redo)
 
-    def commit(self, source: str, scratch: tuple[str, ...] | None = None) -> bool:
-        """Validate and format before publishing; return whether state changed."""
+    def candidate(self, source: str, scratch: tuple[str, ...] | None = None) -> State:
+        """Prepare an edit for review without publishing it or changing history."""
         scratch = self.state.scratch if scratch is None else tuple(scratch)
         if self.prepare is not None:
             source = self.prepare(source, scratch)
@@ -54,7 +54,12 @@ class Document:
             if source != self.state.source
             else source
         )
-        state = State(source, scratch)
+        return State(source, scratch)
+
+    def commit(self, source: str, scratch: tuple[str, ...] | None = None) -> bool:
+        """Validate and format before publishing; return whether state changed."""
+        state = self.candidate(source, scratch)
+        source = state.source
         if state == self.state:
             return False
         syntax = (

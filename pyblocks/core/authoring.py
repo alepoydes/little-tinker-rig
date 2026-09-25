@@ -10,6 +10,7 @@ from .analysis import Analysis, annotation_text
 from .edit import reindent
 from .helpers import function_dependencies
 from .migration import migrate_module, module_levels, remove_levels
+from .paths import personal_collection
 from .project import atomic_write
 from .snippets import instantiate, load_collection, load_module
 from .syntax import Syntax
@@ -31,8 +32,8 @@ def collection_root(path: Path) -> Path:
     )
 
 
-def user_collection(parent: Path) -> Path:
-    root = parent / "blocks"
+def user_collection(parent: Path | None = None) -> Path:
+    root = parent / "blocks" if parent is not None else personal_collection()
     manifest = root / "collection.toml"
     if not manifest.exists():
         if root.exists() and any(root.iterdir()):

@@ -15,6 +15,15 @@ def qt_app(tmp_path_factory):
 
 
 @pytest.fixture(autouse=True)
+def isolated_personal_collection(tmp_path, monkeypatch):
+    import pyblocks.core.paths
+
+    monkeypatch.setattr(
+        pyblocks.core.paths, "user_data_path", lambda *a, **k: tmp_path / "user-data"
+    )
+
+
+@pytest.fixture(autouse=True)
 def interface_language():
     from pyblocks.i18n import DEFAULT_LANGUAGE, language, set_language
 

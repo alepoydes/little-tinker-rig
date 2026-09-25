@@ -273,7 +273,8 @@ def test_studio_applies_definitions_without_committing_program_drafts(tmp_path, 
         assert any(
             s.identity == "my_blocks/custom/show" for s in window.session.snippets
         )
-        assert Session(program).project.collections == [root]
+        assert Session(program).project.collections == []
+        assert Session(program).collection_paths == (root,)
         window.set_mode(0)
         window.session.editor.commit("print(1)\n", ("print(2)",))
         window.refresh_views()
@@ -394,10 +395,10 @@ def test_metadata_controls_are_source_edits_with_undo_and_no_manifest_changes(
         page.check()
         assert page.code.toPlainText() == original
         assert page.preview_snippet.level == "intermediate"
-        page.icon.setText("↪")
-        page.icon.editingFinished.emit()
-        page.color.setText("#88bbcc")
-        page.color.editingFinished.emit()
+        page.icon.setEditText("↪")
+        page.icon.lineEdit().editingFinished.emit()
+        page.color.setEditText("#88bbcc")
+        page.color.lineEdit().editingFinished.emit()
         page.save()
         saved = load_collection(root)[0]
         assert (saved.icon, saved.color) == ("↪", "#88bbcc")

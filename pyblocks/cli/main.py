@@ -44,6 +44,12 @@ def parser() -> argparse.ArgumentParser:
         help="Additional snippet collection directory",
     )
     commands = result.add_subparsers(dest="command", required=True)
+    version = commands.add_parser(
+        "next-block-version",
+        help="Archive saved definitions and start a new collection version",
+    )
+    version.add_argument("directory", type=Path)
+    version.add_argument("version", help="New MAJOR.MINOR.PATCH version")
     migration = commands.add_parser(
         "migrate-blocks", help="Convert a legacy block collection to source decorators"
     )
@@ -124,6 +130,12 @@ def parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     arguments = parser().parse_args(argv)
     try:
+        if arguments.command == "next-block-version":
+            from pyblocks.core.versions import next_version
+
+            next_version(arguments.directory, arguments.version)
+            print(f"Started collection version {arguments.version}")
+            return 0
         if arguments.command == "migrate-blocks":
             from difflib import unified_diff
 

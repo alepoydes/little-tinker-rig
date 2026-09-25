@@ -5,12 +5,13 @@ import keyword
 import tomllib
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QTimer, Signal
-from PySide6.QtGui import QColor, QTextCharFormat, QTextCursor
+from PySide6.QtCore import Qt, QTimer, QUrl, Signal
+from PySide6.QtGui import QColor, QDesktopServices, QTextCharFormat, QTextCursor
 from PySide6.QtWidgets import (
     QComboBox,
     QFormLayout,
     QHBoxLayout,
+    QInputDialog,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -39,8 +40,10 @@ from pyblocks.core.session import Session
 from pyblocks.core.snippets import LEVELS, instantiate, load_module
 from pyblocks.core.structure import name_span, rename
 from pyblocks.core.syntax import Syntax
+from pyblocks.core.versions import next_version
 from pyblocks.i18n import N_, tr
 
+from .appearance import AppearanceChoice
 from .code import CodeEdit
 from .editor import SourceView, qt_offset
 from .library import LEVEL_TITLES, Library, group_title, snippet_title
@@ -240,6 +243,18 @@ class BlockEditor(QWidget):
         layout.addWidget(self.module_name)
         layout.addWidget(self.starters)
         layout.addWidget(self.new_button)
+        self.folder_button = QPushButton(N_("Open blocks folder"))
+        self.folder_button.clicked.connect(
+            lambda: self.attempt(
+                lambda: QDesktopServices.openUrl(
+                    QUrl.fromLocalFile(str(self.ensure_collection()))
+                )
+            )
+        )
+        layout.addWidget(self.folder_button)
+        self.version_button = QPushButton(N_("Start next version…"))
+        self.version_button.clicked.connect(lambda: self.attempt(self.start_version))
+        layout.addWidget(self.version_button)
         self.copy_button = QPushButton(N_("Copy to my collection"))
         self.copy_button.clicked.connect(lambda: self.attempt(self.copy_block))
         self.save_button = QPushButton(N_("Save and apply"))
@@ -254,21 +269,15 @@ class BlockEditor(QWidget):
         for level in LEVELS:
             self.level.addItem(LEVEL_TITLES[level], level)
         self.level.currentIndexChanged.connect(self.change_level)
-        self.icon = QLineEdit()
-        self.icon.setMaximumWidth(65)
-        self.icon.setPlaceholderText(N_("Icon"))
+        self.icon = AppearanceChoice()
         self.icon.setToolTip(N_("Block icon · stored in the decorator"))
-        self.icon.editingFinished.connect(
-            lambda: self.attempt(lambda: self.change_metadata("icon", self.icon.text()))
+        self.icon.changed.connect(
+            lambda value: self.attempt(lambda: self.change_metadata("icon", value))
         )
-        self.color = QLineEdit()
-        self.color.setMaximumWidth(125)
-        self.color.setPlaceholderText(N_("Color"))
+        self.color = AppearanceChoice(color=True)
         self.color.setToolTip(N_("Palette role or #RRGGBB · stored in the decorator"))
-        self.color.editingFinished.connect(
-            lambda: self.attempt(
-                lambda: self.change_metadata("color", self.color.text())
-            )
+        self.color.changed.connect(
+            lambda value: self.attempt(lambda: self.change_metadata("color", value))
         )
         self.caption = QLabel()
         self.caption.setProperty("translationSources", {})
@@ -776,8 +785,8 @@ class BlockEditor(QWidget):
         self.level.blockSignals(True)
         self.level.setCurrentIndex(self.level.findData(level))
         self.level.blockSignals(False)
-        self.icon.setText(snippet.icon or "▶")
-        self.color.setText(snippet.color or "snippet")
+        self.icon.set_value(snippet.icon or "▶")
+        self.color.set_value(snippet.color or "snippet")
         self.update_status(keep_message=True)
 
     def test_value(self, name, value):
@@ -913,6 +922,7 @@ class BlockEditor(QWidget):
         editable = code is not None and not code.draft.read_only
         self.save_button.setEnabled(editable)
         self.reopen_button.setEnabled(editable)
+        self.version_button.setEnabled(editable)
         self.level.setEnabled(editable and self.function() is not None)
         self.icon.setEnabled(editable and self.function() is not None)
         self.color.setEnabled(editable and self.function() is not None)
@@ -969,6 +979,7 @@ class BlockEditor(QWidget):
                 for part in module.split("/")
             )
             or module.endswith("__init__")
+            or module.split("/")[0] == "history"
         ):
             raise ValueError(
                 tr("Use a Python module name, for example custom or robots/motors.")
@@ -1072,6 +1083,34 @@ class BlockEditor(QWidget):
             self.update_status()
             self.changed.emit()
 
+    def start_version(self):
+        if not self.code or self.code.draft.read_only:
+            return
+        self.flush()
+        root = self.code.draft.root
+        old = tomllib.loads((root / "collection.toml").read_text())["collection"][
+            "version"
+        ]
+        major, minor, _ = map(int, old.split("."))
+        version, accepted = QInputDialog.getText(
+            self,
+            tr("Start next version"),
+            tr(
+                "Archive saved version {version} before editing the next version. Save or discard every draft first.",
+                version=old,
+            ),
+            text=f"{major}.{minor + 1}.0",
+        )
+        if not accepted:
+            return
+        snippets = next_version(root, version.strip(), self.validate_collection)
+        for code in self.buffers.values():
+            if code.draft.root == root and not code.draft.historical:
+                code.draft = DefinitionDraft(code.draft.path)
+        self.saved.emit(root, snippets)
+        self.check()
+        self.changed.emit()
+
     def reopen(self):
         if self.code:
             from PySide6.QtWidgets import QMessageBox
@@ -1099,5 +1138,7 @@ class BlockEditor(QWidget):
 
     def retranslate(self):
         localize(self)
+        self.icon.retranslate()
+        self.color.retranslate()
         self.rebuild_tree()
         self.check()

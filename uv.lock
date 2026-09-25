@@ -393,6 +393,7 @@ name = "pyblocks-studio"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "platformdirs" },
     { name = "ruff" },
 ]
 
@@ -424,6 +425,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "jedi", marker = "extra == 'qt'", specifier = ">=0.20,<0.21" },
+    { name = "platformdirs", specifier = ">=4,<5" },
     { name = "pybricks", marker = "extra == 'qt'", specifier = ">=4,<5" },
     { name = "pybricksdev", marker = "extra == 'pybricks'", specifier = ">=2.3,<3" },
     { name = "pygame-ce", marker = "extra == 'gamepad'", specifier = ">=2.5,<3" },

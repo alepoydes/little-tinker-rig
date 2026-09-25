@@ -19,6 +19,7 @@ from .helpers import START as HELPERS_START
 from .helpers import dependencies, manage_helpers
 from .imports import import_entries, manage_imports
 from .interaction import Editor
+from .paths import personal_collection
 from .project import Project
 from .snippets import (
     Match,
@@ -48,12 +49,20 @@ class Session:
         self.editor = Editor(self.project.document)
         self.set_snippets(self.load_snippets())
 
+    @property
+    def collection_paths(self):
+        personal = personal_collection()
+        roots = [*self.project.collections]
+        if (personal / "collection.toml").is_file():
+            roots.append(personal)
+        return tuple(dict.fromkeys(path.resolve() for path in roots))
+
     def load_snippets(self, overrides=None):
         """Read connected collections, optionally substituting a validated candidate."""
         overrides = overrides or {}
         return builtin_snippets() + tuple(
             s
-            for path in self.project.collections
+            for path in self.collection_paths
             for s in (overrides[path] if path in overrides else load_collection(path))
         )
 
@@ -518,15 +527,20 @@ class Session:
         )
         return self.editor.begin_move(nodes)
 
-    def upgrade_selected(self) -> None:
+    def upgraded_source(self) -> str:
         match = self.selected_match()
         if match is None or not match.snippet.historical:
             raise ValueError("Select a snippet recognized from a historical template")
         current = next(
-            s
-            for s in self.snippets
-            if s.identity == match.snippet.identity and not s.historical
+            (
+                s
+                for s in self.snippets
+                if s.identity == match.snippet.identity and not s.historical
+            ),
+            None,
         )
+        if current is None:
+            raise ValueError("This block has no current definition to upgrade to")
         expansion = upgrade(match, current, identifiers(self.document.syntax.tree))
         comments = [
             token.string
@@ -537,7 +551,12 @@ class Session:
         ]
         replacement = "\n".join([*comments, expansion.source])
         source = self._replace_match(match, replacement)
-        self.editor.commit(self.with_imports(source, expansion.imports))
+        return self.document.candidate(
+            self.with_imports(source, expansion.imports)
+        ).source
+
+    def upgrade_selected(self) -> None:
+        self.editor.commit(self.upgraded_source())
 
     def extract_selection(self):
         """Return detached text and the valid remainder, without changing state."""

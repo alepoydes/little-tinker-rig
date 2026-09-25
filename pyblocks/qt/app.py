@@ -35,7 +35,7 @@ from PySide6.QtWidgets import (
 from pyblocks.core.authoring import template_from_source, user_collection
 from pyblocks.core.edit import target_position
 from pyblocks.core.parameters import default_bindings
-from pyblocks.core.snippets import LEVELS
+from pyblocks.core.snippets import LEVELS, load_collection
 from pyblocks.core.transfer import Transfer
 from pyblocks.examples import examples_directory
 from pyblocks.i18n import DEFAULT_LANGUAGE, LANGUAGES, N_, language, set_language, tr
@@ -168,7 +168,7 @@ class Studio(QMainWindow):
         self._docks()
         self._menus()
         self.block_editor.configure(
-            self.session.snippets, self.session.project.collections
+            self.session.snippets, self.session.collection_paths
         )
         menu = self.menuBar()
         header = QWidget()
@@ -382,7 +382,7 @@ class Studio(QMainWindow):
             (
                 N_("Upgrade block"),
                 "Ctrl+U",
-                lambda: self.editing_session.upgrade_selected(),
+                self.upgrade_block,
             ),
             (
                 N_("Fold region"),
@@ -574,7 +574,7 @@ class Studio(QMainWindow):
         self.help_page.snippets = self.session.available_snippets
         self.help_page.retranslate()
         self.block_editor.configure(
-            self.session.snippets, self.session.project.collections
+            self.session.snippets, self.session.collection_paths
         )
         self.document_mode_changed()
         self.refresh_views()
@@ -789,7 +789,7 @@ class Studio(QMainWindow):
             self.device_dock.hide()
         if index == 3:
             self.block_editor.configure(
-                self.session.snippets, self.session.project.collections
+                self.session.snippets, self.session.collection_paths
             )
         self.update_hub(self.hub_info)
         self.refresh_status()
@@ -899,6 +899,36 @@ class Studio(QMainWindow):
         self.append_output(message + "\n")
         self.console_dock.show()
         self.controls.armed.setChecked(False)
+
+    def upgrade_block(self):
+        from difflib import unified_diff
+
+        session = self.editing_session
+        revision = session.document.state
+        candidate = session.upgraded_source()
+        diff = "".join(
+            unified_diff(
+                revision.source.splitlines(keepends=True),
+                candidate.splitlines(keepends=True),
+                fromfile="Current program",
+                tofile="Upgraded program",
+            )
+        )
+
+        def apply(_):
+            if (
+                session.document.state is not revision
+                or session.upgraded_source() != candidate
+            ):
+                raise ValueError(
+                    tr("Document or definitions changed; review the upgrade again")
+                )
+            session.editor.commit(candidate)
+
+        dialog = EditDialog(self, tr("Review block upgrade"), apply, text=diff)
+        dialog.text.setReadOnly(True)
+        dialog.text.highlighter.setDocument(None)
+        dialog.exec()
 
     def _dialog(self, title, apply, **kwargs):
         dialog = EditDialog(self, tr(title), apply, **kwargs)
@@ -1233,31 +1263,23 @@ class Studio(QMainWindow):
         event.accept()
 
     def ensure_user_collection(self):
-        project = self.session.project
-        root = user_collection(project.path.parent)
-        if root not in project.collections:
-            project.collections.append(root)
-            try:
-                snippets = self.session.load_snippets()
-                self.session.validate_snippets(snippets)
-                project.save_collections()
-            except (ValueError, OSError):
-                project.collections.remove(root)
-                raise
-            self.session.set_snippets(snippets)
-        self.block_editor.configure(self.session.snippets, project.collections)
+        root = user_collection()
+        self.collection_saved(root, load_collection(root))
+        self.block_editor.configure(
+            self.session.snippets, self.session.collection_paths
+        )
         return root
 
     def validate_collection(self, root, snippets):
         for index in range(self.documents.count()):
             session = self.documents.widget(index).session
-            if root in session.project.collections:
+            if root in session.collection_paths:
                 session.validate_snippets(session.load_snippets({root: snippets}))
 
     def collection_saved(self, root, snippets):
         for index in range(self.documents.count()):
             page = self.documents.widget(index)
-            if root in page.session.project.collections:
+            if root in page.session.collection_paths:
                 page.session.set_snippets(page.session.load_snippets({root: snippets}))
                 page.source.refresh_source()
         self.document_changed()

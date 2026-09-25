@@ -11,6 +11,7 @@ from PySide6.QtGui import (
     QFontDatabase,
     QFontMetrics,
     QPainter,
+    QPainterPath,
     QPen,
     QPolygonF,
     QRegion,
@@ -354,6 +355,14 @@ class SourceView(QTextEdit):
                     rect.setLeft(anchor.left())
                     yield rect
 
+    def outline_path(self, region, first_line, last_line):
+        path = QPainterPath()
+        path.setFillRule(Qt.FillRule.WindingFill)
+        # One offscreen row prevents false caps while scrolling through a block.
+        for rect in self.region_rects(region, max(1, first_line - 1), last_line + 1):
+            path.addRect(rect)
+        return path.simplified()
+
     def paintEvent(self, event):
         super().paintEvent(event)
         first_line = self.cursorForPosition(QPoint(0, 0)).blockNumber() + 1
@@ -378,6 +387,7 @@ class SourceView(QTextEdit):
         if self.session.editor.selection is syntax.tree:
             selected = None
         pulse = float(self.pulse.currentValue() or 0)
+        outlines = []
         for region in reversed(visible_regions):
             amount = max(
                 (
@@ -401,8 +411,22 @@ class SourceView(QTextEdit):
                     painter.setClipRegion(area - covered)
                     painter.drawRect(rect)
                     covered |= area
+            if region.outlined:
+                outlines.append((region, amount))
         painter.setClipping(False)
         painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceOver)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        seen = set()
+        for region, amount in outlines:
+            if region.span in seen:
+                continue
+            seen.add(region.span)
+            path = self.outline_path(region, first_line, last_line)
+            pen = QPen(saturated(role_color(region.role), 0.45 + amount * 0.4), 1)
+            pen.setCosmetic(True)
+            painter.setPen(pen)
+            # Opaque shared edges occupy the same pixel without accumulating alpha.
+            painter.drawPath(path)
         note_font = self.font()
         note_font.setPointSize(9)
         note_font.setItalic(True)

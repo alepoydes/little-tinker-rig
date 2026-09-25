@@ -11,7 +11,7 @@ requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE.txt", "examples/pybricks/LICENSE.txt"]
 authors = [{ name = "Igor Lobanov", email = "lobanov.igor@gmail.com" }]
-dependencies = ["ruff>=0.14,<1"]
+dependencies = ["platformdirs>=4,<5", "ruff>=0.14,<1"]
 
 [project.optional-dependencies]
 tui = ["textual>=8,<9"]
@@ -45,7 +45,7 @@ namespaces = false
 build_py = "build_support.BuildPy"
 
 [tool.setuptools.package-data]
-pyblocks = ["snippets/**/*.toml", "core/formatting.toml", "locale/languages.json", "locale/**/*.po", "locale/**/*.mo"]
+pyblocks = ["snippets/**/*.py", "snippets/**/*.toml", "core/formatting.toml", "locale/languages.json", "locale/**/*.po", "locale/**/*.mo"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

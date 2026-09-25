@@ -10,7 +10,7 @@ uv run python tools/check_docs.py
 uv build
 ```
 
-Core uses the standard library and Ruff's supported CLI with packaged settings.
+Core uses the standard library, platformdirs for user-data paths and Ruff's supported CLI with packaged settings.
 Qt tests run offscreen. Tests covering asyncio worker threads require local
 socketpair communication; a sandbox that denies socketpair writes cannot run
 those tests correctly. No test requires a physical robot.
@@ -285,3 +285,24 @@ revision. Test executable AST rebuilding and MicroPython compilation separately
 from virtual command traces. Exclude generic assignment/call placeholders when
 checking device-operation coverage. Record scripted boundaries and hardware-only
 behavior explicitly. A successful compiler check is not a physical robot test.
+
+## Personal libraries, releases and block contours
+
+The personal collection is an implicit runtime connection shared by frontends.
+Resolving it never creates directories; tests isolate it through the path resolver.
+Only explicit project collection connections belong in workspace metadata.
+Built-in collections remain packaged with the application.
+
+Before changing published definitions, run `pyblocks next-block-version DIRECTORY
+MAJOR.MINOR.PATCH` or use the equivalent authoring action. A saved snapshot includes
+current modules and its manifest, without recursively archiving existing history.
+Validate the staged collection and compare live sources before registration. A
+failed manifest replacement removes the new snapshot; an unregistered history
+folder is never treated as current source. Existing helper fingerprints already
+separate implementations: test two versions executing in one program and Undo of
+an explicit upgrade. Exact-version pins retain their strict existing semantics.
+
+Contours use logical block ownership and shared fill/comment geometry. Opaque
+cosmetic strokes share edge pixels; they do not change layout. Test same-color
+siblings, nested comments, scrolling, error overlays and unchanged drop geometry.
+Keep viewport work bounded and verify the rendered result at multiple DPI scales.

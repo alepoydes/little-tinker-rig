@@ -232,3 +232,12 @@ changed, Show block opens the executed source read-only instead of highlighting
 an obsolete line in the current document. Starting another program clears the
 previous marker. Run stored uses the last successfully uploaded snapshot from
 the current connection; an unknown hub program has no editor source mapping.
+
+## Block boundaries
+
+Logical blocks have thin contours in their semantic color. Equal-color neighboring
+blocks share a visible boundary; descriptions and code remain inside one outline.
+Compound blocks retain their outer contour and their children's boundaries. Hover
+and selection strengthen both fill and border. The renderer is shared by Program,
+Scratch, definition previews and drag previews; borders add no row spacing and do
+not change drop targets. Error borders and insertion markers remain distinct.
