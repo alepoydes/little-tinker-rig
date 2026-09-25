@@ -49,7 +49,11 @@ def rename(session, node, name):
     if not name.isidentifier() or keyword.iskeyword(name):
         raise ValueError("Enter a Python identifier")
     syntax, analysis = session.document.syntax, session.analysis
-    old = node.arg if isinstance(node, ast.arg) else node.name
+    old = (
+        node.arg
+        if isinstance(node, ast.arg)
+        else node.id if isinstance(node, ast.Name) else node.name
+    )
     scope = analysis.resolve(node, old)
     if name != old and name in scope.bindings:
         raise ValueError(f"Name {name!r} is already defined in this scope")
@@ -79,6 +83,8 @@ def rename(session, node, name):
             )
     changes = [(name_span(syntax, node), name)]
     for ref in syntax.spans:
+        if ref is node:
+            continue
         if (
             isinstance(ref, ast.Name)
             and ref.id == old

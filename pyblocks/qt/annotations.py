@@ -5,19 +5,10 @@ from bisect import bisect_right
 from collections import defaultdict
 from dataclasses import dataclass
 
-from pyblocks.core.presentation import role, snippet_role
+from pyblocks.core.presentation import ICONS, block_icon, role, snippet_role
 from pyblocks.core.syntax import Span
 from pyblocks.i18n import N_, tr
 
-ICONS = {
-    "loop": "⟳",
-    "control": "◇",
-    "action": "▶",
-    "state": "▣",
-    "definition": "ƒ",
-    "value": "＝",
-    "placeholder": "…",
-}
 LABELS = {
     ast.If: N_("Check a condition"),
     ast.For: N_("Repeat for each item"),
@@ -101,14 +92,3 @@ def block_notes(session):
         line: tuple(sorted(items, key=lambda note: note.column))
         for line, items in notes.items()
     }
-
-
-def block_icon(snippet):
-    identity = snippet.identity
-    if "/motors/" in identity:
-        return "⚙" if "/create_" in identity else "↻"
-    if "/sensors/" in identity:
-        return "⏱" if identity.endswith("/wait_ms") else "◉"
-    if "/drive/" in identity:
-        return "⏱" if "clock" in identity or "elapsed" in identity else "➜"
-    return ICONS.get(snippet_role(snippet), "▶")

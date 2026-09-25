@@ -111,6 +111,69 @@ async def test_virtual_hub_program_sensors_console_and_stop(tmp_path):
     assert not hub.info.connected and hub.process is None
 
 
+@pytest.fixture
+def generated_helper_program(tmp_path):
+    from pyblocks.core.session import Session
+    from pyblocks.core.snippets import load_module
+
+    (snippet,) = load_module(
+        """
+def advance(motor, angle=90):
+    motor.run_angle(360, angle)
+
+@block(level="beginner", icon="↻", color="action")
+def turn(motor: "Motor" = motor, angle: "number[deg]" = 90) -> "number[deg]":
+    initial = motor.angle()
+    advance(motor, angle)
+    return motor.angle() - initial
+""",
+        "test/motors",
+        "1",
+    )
+    session = Session(tmp_path / "turn.py")
+    setup = next(
+        s for s in session.snippets if s.identity == "pybricks/motors/create_motor"
+    )
+    session.insert_snippet(setup, {"name": "motor"})
+    session.editor.commit(session.document.state.source + "result = None\n")
+    session.editor.select(session.document.state.source.index("None"))
+    session.insert_snippet(snippet, {})
+    session.editor.commit(
+        session.document.state.source + "print('turn:', result, motor.angle())\n"
+    )
+    session.project.save()
+    return session.project.path
+
+
+@pytest.mark.parametrize("model", ["inventor", "boost", "technic"])
+@pytest.mark.asyncio
+async def test_generated_block_helpers_drive_virtual_hub(
+    generated_helper_program, model
+):
+    output = []
+    hub = VirtualConnection(output.append, model=model)
+    try:
+        await hub.connect()
+        await hub.run(generated_helper_program, wait=True)
+        await wait_until(lambda: b"turn:" in b"".join(output))
+        assert b"turn: 90 90" in b"".join(output)
+        assert hub.info.ports["A"]["angle"] == pytest.approx(90, abs=1)
+        assert hub.info.ports["A"]["speed"] == 0
+    finally:
+        await hub.disconnect()
+
+
+@pytest.mark.asyncio
+async def test_generated_block_helpers_compile_for_hub_abis(generated_helper_program):
+    from pybricksdev.compile import compile_file
+
+    for abi in (5, 6):
+        compiled = await compile_file(
+            str(generated_helper_program.parent), generated_helper_program.name, abi
+        )
+        assert compiled[:2] == bytes((ord("M"), abi))
+
+
 @pytest.mark.asyncio
 async def test_virtual_manual_motor_lease_and_disconnect():
     hub = VirtualConnection()

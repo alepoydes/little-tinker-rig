@@ -49,7 +49,12 @@ class Transfer:
             remainder,
             nodes,
             fragment.document.syntax if fragment else None,
-            session.analysis.type_of(nodes) if isinstance(nodes, ast.expr) else None,
+            (
+                str(value)
+                if isinstance(nodes, ast.expr)
+                and (value := session.analysis.type_info(nodes)) is not None
+                else None
+            ),
         )
 
     def validate(self):
@@ -83,6 +88,8 @@ class Transfer:
 
     def to_program(self, target):
         self.validate()
+        if not self.owner.accepts_target(target):
+            raise ValueError("Expand the block to edit its fixed implementation")
         if self.origin is not None:
             self.owner.restore_scratch(
                 self.origin, target, fragment=(self.text, self.remainder)
@@ -99,6 +106,8 @@ class Transfer:
 
     def to_fragment(self, index, fragment, target):
         self.validate()
+        if not fragment.accepts_target(target):
+            raise ValueError("Expand the block to edit its fixed implementation")
         syntax = fragment.document.syntax
         if self.origin == index:
             if syntax is not self.fragment_syntax:

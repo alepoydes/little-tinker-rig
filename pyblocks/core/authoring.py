@@ -1,24 +1,25 @@
-"""Editable template sources; drafts never replace the working collection.
-
-Validation and preview use the same static loader as insertion. Template code is
-never imported or evaluated. Saving changes definitions, never program text.
-"""
+"""Source-only definition drafts; validation and preview never execute code."""
 
 import ast
 import json
-import re
 import tomllib
+from dataclasses import replace
 from pathlib import Path
 
+from .analysis import Analysis, annotation_text
 from .edit import reindent
+from .helpers import function_dependencies
+from .migration import migrate_module, module_levels, remove_levels
 from .project import atomic_write
 from .snippets import instantiate, load_collection, load_module
+from .syntax import Syntax
+from .types import Compatibility, compatibility, numeric_literal
 
 BUILTINS = Path(__file__).resolve().parents[1] / "snippets"
 STARTERS = {
-    "action": 'def my_action(value=1):\n    """Show a value."""\n    print(value)\n',
-    "expression": 'def my_expression(value=1) -> "number":\n    """Double a value."""\n    return value * 2\n',
-    "sequence": 'def my_sequence(motor: "Motor" = motor, speed: "deg/s" = 300, duration: "ms" = 500):\n    """Run a motor for a time, then brake."""\n    from pybricks.tools import wait\n\n    motor.run(speed)\n    wait(duration)\n    motor.brake()\n',
+    "action": '@inline_block(level="beginner", icon="▶", color="action")\ndef my_action(value=1):\n    """Show a value."""\n    print(value)\n',
+    "expression": '@inline_block(level="intermediate", icon="＝", color="value")\ndef my_expression(value: "number" = 1) -> "number":\n    """Double a value."""\n    return value * 2\n',
+    "sequence": '@block(level="intermediate", icon="↻", color="action")\ndef my_sequence(motor: "Motor" = motor, speed: "number[deg/s]" = 300, duration: "int[ms]" = 500):\n    """Run a motor for a time, then brake."""\n    from pybricks.tools import wait\n\n    motor.run(speed)\n    wait(duration)\n    motor.brake()\n',
 }
 
 
@@ -37,42 +38,14 @@ def user_collection(parent: Path) -> Path:
         if root.exists() and any(root.iterdir()):
             raise ValueError(f"{root} is not a block collection")
         root.mkdir(parents=True, exist_ok=True)
-        atomic_write(manifest, '[collection]\nid = "my_blocks"\nversion = "1.0.0"\n')
+        atomic_write(
+            manifest, '[collection]\nid = "my_blocks"\nversion = "1.0.0"\nformat = 2\n'
+        )
     return root.resolve()
 
 
-def module_levels(manifest, module):
-    return {
-        key: value
-        for key, value in manifest.get("levels", {}).items()
-        if key.rsplit("/", 1)[0] == module
-    }
-
-
-def update_levels(source, module, levels):
-    """Replace one module's assignments, preserving unrelated TOML sections."""
-    parsed = tomllib.loads(source)
-    values = parsed.get("levels", {}).copy()
-    values = {
-        key: value for key, value in values.items() if key.rsplit("/", 1)[0] != module
-    }
-    values.update(levels)
-    table = "[levels]\n" + "".join(
-        f"{json.dumps(key, ensure_ascii=False)} = {json.dumps(value)}\n"
-        for key, value in sorted(values.items())
-    )
-    match = re.search(r"(?m)^\[levels\][ \t]*(?:#[^\n]*)?$", source)
-    if match:
-        end = re.search(r"(?m)^\s*\[", source[match.end() :])
-        finish = match.end() + end.start() if end else len(source)
-        return source[: match.start()] + table + "\n" + source[finish:]
-    if parsed.get("levels"):
-        raise ValueError("Use a [levels] table in collection.toml to edit levels here")
-    return source.rstrip() + "\n\n" + table
-
-
 def template_from_source(source: str, imports=(), *, expression=False) -> str:
-    """Capture a fragment as a draft. Parameter choices remain explicit in Python."""
+    """Capture ordinary source as an inline draft, preserving literal contents."""
     source = reindent(source, 0)
     tree = ast.parse(source)
     if expression:
@@ -83,11 +56,40 @@ def template_from_source(source: str, imports=(), *, expression=False) -> str:
         lines[row] = "return " + lines[row]
         source = "".join(lines)
     body = "\n".join((*imports, source))
-    return 'def my_block():\n    """Describe this block."""\n' + reindent(body, 4)
+    return (
+        '@inline_block(level="intermediate", icon="▶", color="snippet")\ndef my_block():\n    """Describe this block."""\n'
+        + reindent(body, 4)
+    )
+
+
+def copy_definition(source, name):
+    """Copy a block with its authored imports and reachable helper definitions."""
+    syntax = Syntax(source, fragment=True)
+    functions, dependencies = function_dependencies(syntax.tree)
+    included = set()
+
+    def visit(name):
+        if name in included:
+            return
+        included.add(name)
+        for dependency in dependencies[name]:
+            visit(dependency)
+
+    visit(name)
+    return (
+        "\n\n".join(
+            syntax.text(node)
+            for node in syntax.tree.body
+            if isinstance(node, (ast.Import, ast.ImportFrom))
+            or isinstance(node, ast.FunctionDef)
+            and node.name in included
+        )
+        + "\n"
+    )
 
 
 class DefinitionDraft:
-    """One module, including unsaved levels and recoverable invalid Python."""
+    """One Python buffer, with a saved baseline for conflict detection and recovery."""
 
     def __init__(self, path: Path):
         self.path = path.resolve()
@@ -101,20 +103,40 @@ class DefinitionDraft:
         manifest = tomllib.loads(
             (self.root / "collection.toml").read_text(encoding="utf-8")
         )
-        self.identity = manifest["collection"]["id"] + "/" + self.module
-        self.version = manifest["collection"]["version"]
+        self.collection = manifest["collection"]
+        self.identity = self.collection["id"] + "/" + self.module
+        self.version = self.collection["version"]
         self.saved_levels = module_levels(manifest, self.module)
+        self.legacy_levels = self.saved_levels.copy()
         self.source = self.saved_source or ""
         self.preview_source = self.source
-        self.levels = self.saved_levels.copy()
         if not self.read_only and self.draft_path.exists():
             draft = json.loads(self.draft_path.read_text(encoding="utf-8"))
-            self.source, self.levels = draft["source"], draft["levels"]
-            self.saved_source, self.saved_levels = (
-                draft["base_source"],
-                draft["base_levels"],
-            )
+            self.source, self.saved_source = draft["source"], draft["base_source"]
+            self.collection = draft.get("base_collection", self.collection)
+            self.saved_levels = {
+                key.rsplit("/", 1)[-1]: value
+                for key, value in draft.get("base_levels", self.saved_levels).items()
+            }
+            self.legacy_levels = {
+                key.rsplit("/", 1)[-1]: value
+                for key, value in draft.get(
+                    "levels", draft.get("legacy_levels", self.legacy_levels)
+                ).items()
+            }
             self.preview_source = draft.get("preview_source", self.saved_source or "")
+        if not self.read_only:
+            try:
+                self.source = self.migrated_source()
+            except (SyntaxError, ValueError):
+                pass  # Keep invalid historical drafts verbatim until they are repaired.
+
+    def migrated_source(self):
+        if self.collection.get("format", 1) == 2:
+            return self.source
+        return migrate_module(
+            self.source, self.identity, self.version, self.legacy_levels
+        )
 
     @property
     def draft_path(self):
@@ -122,7 +144,7 @@ class DefinitionDraft:
 
     @property
     def dirty(self):
-        return self.source != self.saved_source or self.levels != self.saved_levels
+        return self.source != self.saved_source
 
     def persist(self):
         if self.read_only:
@@ -131,92 +153,119 @@ class DefinitionDraft:
             self.draft_path.unlink(missing_ok=True)
             return
         self.draft_path.parent.mkdir(parents=True, exist_ok=True)
-        atomic_write(
-            self.draft_path,
-            json.dumps(
-                {
-                    "source": self.source,
-                    "levels": self.levels,
-                    "base_source": self.saved_source,
-                    "base_levels": self.saved_levels,
-                    "preview_source": self.preview_source,
-                },
-                ensure_ascii=False,
-                indent=2,
+        state = {
+            "source": self.source,
+            "base_source": self.saved_source,
+            "base_collection": self.collection,
+            "preview_source": self.preview_source,
+        }
+        if self.saved_levels or self.legacy_levels:
+            state.update(
+                base_levels=self.saved_levels, legacy_levels=self.legacy_levels
             )
-            + "\n",
+        atomic_write(
+            self.draft_path, json.dumps(state, ensure_ascii=False, indent=2) + "\n"
         )
 
     def inspect(self):
-        """Return AST and templates, with loader failures located in the source."""
-        tree = ast.parse(self.source, filename=str(self.path))
-        # compile checks duplicate arguments and invalid control context but does
-        # not resolve or evaluate template defaults such as motor=motor.
-        compile(tree, str(self.path), "exec")
-        snippets = []
-        for node in tree.body:
-            if isinstance(node, ast.FunctionDef):
-                try:
-                    module = ast.Module(body=[node], type_ignores=[])
-                    loaded = load_module(
-                        ast.unparse(module), self.identity, self.version
-                    )
-                    for snippet in loaded:
-                        instantiate(
-                            snippet,
-                            {
-                                p.name: p.name
-                                for p in snippet.parameters
-                                if p.default is None
-                            },
-                        )
-                    snippets.extend(loaded)
-                except (ValueError, SyntaxError) as error:
-                    raise SyntaxError(
-                        str(error),
-                        (
-                            str(self.path),
-                            node.lineno,
-                            node.col_offset + 1,
-                            self.source.splitlines()[node.lineno - 1],
-                        ),
-                    ) from error
-            elif not (
-                isinstance(node, ast.Expr)
-                and isinstance(node.value, ast.Constant)
-                and isinstance(node.value.value, str)
-            ):
-                raise SyntaxError(
-                    "Place dependencies and code inside template functions",
-                    (
-                        str(self.path),
-                        node.lineno,
-                        node.col_offset + 1,
-                        self.source.splitlines()[node.lineno - 1],
-                    ),
+        """Validate the whole module so shared helper dependencies remain visible."""
+        syntax = Syntax(self.source)
+        tree = syntax.tree
+        functions = {
+            node.name: node for node in tree.body if isinstance(node, ast.FunctionDef)
+        }
+
+        def error_at(message, node):
+            row = getattr(node, "lineno", 1)
+            return SyntaxError(
+                message,
+                (
+                    str(self.path),
+                    row,
+                    getattr(node, "col_offset", 0) + 1,
+                    self.source.splitlines()[row - 1] if self.source else "",
+                ),
+            )
+
+        try:
+            snippets = load_module(
+                self.source,
+                self.identity,
+                self.version,
+                legacy=False if self.collection.get("format", 1) == 2 else None,
+            )
+        except ValueError as error:
+            node = functions.get(str(error).split(":", 1)[0], tree)
+            if str(error).startswith("Duplicate"):
+                raise
+            raise error_at(str(error), node) from error
+        for snippet in snippets:
+            try:
+                instantiate(
+                    snippet,
+                    {p.name: p.name for p in snippet.parameters if p.default is None},
                 )
-        identities = [s.identity for s in snippets]
-        if len(identities) != len(set(identities)):
-            raise ValueError("Duplicate block name in this module")
+            except (ValueError, SyntaxError) as error:
+                raise error_at(
+                    str(error), functions[snippet.identity.rsplit("/", 1)[1]]
+                ) from error
+        analysis = Analysis(syntax)
+        for diagnostic in analysis.diagnostics():
+            if diagnostic.severity == "error":
+                raise error_at(
+                    diagnostic.message, analysis.syntax.at(diagnostic.span.start)
+                )
+        for function in functions.values():
+            args = function.args
+            positional = args.posonlyargs + args.args
+            defaults = [None] * (len(positional) - len(args.defaults)) + args.defaults
+            for arg, default in zip(
+                positional + args.kwonlyargs, defaults + args.kw_defaults, strict=True
+            ):
+                if default is None or arg.annotation is None:
+                    continue
+                # Defaults are caller expressions, not references to this module's
+                # template functions (a sensor may be named like its reading block).
+                default_syntax = Syntax(ast.unparse(default), fragment=True)
+                actual = Analysis(default_syntax).type_info(
+                    default_syntax.tree.body[0].value
+                )
+                try:
+                    status = compatibility(
+                        annotation_text(arg.annotation),
+                        actual,
+                        literal=numeric_literal(default),
+                    )
+                except ValueError:
+                    continue
+                if status is Compatibility.INCOMPATIBLE:
+                    raise error_at(
+                        f"Default for {arg.arg!r} does not match {annotation_text(arg.annotation)}",
+                        default,
+                    )
+        snippets = tuple(
+            (
+                replace(
+                    s,
+                    level=self.saved_levels.get(s.identity.rsplit("/", 1)[1], s.level),
+                )
+                if s.mode == "legacy"
+                else s
+            )
+            for s in snippets
+        )
         self.preview_source = self.source
-        return tree, tuple(snippets)
+        return tree, snippets
 
     def candidate(self):
-        tree, _ = self.inspect()
-        names = {node.name for node in tree.body if isinstance(node, ast.FunctionDef)}
-        levels = {
-            f"{self.module}/{name}": self.levels.get(
-                f"{self.module}/{name}", "intermediate"
-            )
-            for name in names
-        }
+        self.inspect()
         manifest = (self.root / "collection.toml").read_text(encoding="utf-8")
-        updated = update_levels(manifest, self.module, levels)
+        updated = remove_levels(manifest, self.module)
         snippets = load_collection(
             self.root,
             overrides={self.relative: self.source, "collection.toml": updated},
         )
-        return updated, snippets, levels
+        return updated, snippets
 
     def save(self, validate=None):
         if self.read_only:
@@ -224,21 +273,25 @@ class DefinitionDraft:
         current = self.path.read_text(encoding="utf-8") if self.path.exists() else None
         manifest_path = self.root / "collection.toml"
         manifest = manifest_path.read_text(encoding="utf-8")
+        parsed = tomllib.loads(manifest)
         if (
             current != self.saved_source
-            or module_levels(tomllib.loads(manifest), self.module) != self.saved_levels
+            or module_levels(parsed, self.module) != self.saved_levels
+            or parsed["collection"] != self.collection
         ):
             raise ValueError(
                 "Definition changed outside this editor; reopen it before saving"
             )
-        updated, snippets, levels = self.candidate()
+        self.source = self.migrated_source()
+        updated, snippets = self.candidate()
         if validate:
             validate(self.root, snippets)
         self.persist()
         self.path.parent.mkdir(parents=True, exist_ok=True)
         atomic_write(self.path, self.source)
         try:
-            atomic_write(manifest_path, updated)
+            if updated != manifest:
+                atomic_write(manifest_path, updated)
         except OSError:
             if current is None:
                 self.path.unlink()
@@ -246,7 +299,6 @@ class DefinitionDraft:
                 atomic_write(self.path, current)
             raise
         self.saved_source = self.source
-        self.levels = levels
-        self.saved_levels = levels.copy()
+        self.saved_levels = self.legacy_levels = {}
         self.draft_path.unlink(missing_ok=True)
         return snippets

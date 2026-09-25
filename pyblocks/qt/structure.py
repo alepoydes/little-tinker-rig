@@ -12,7 +12,6 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from pyblocks.core import edit
 from pyblocks.core.structure import sequence
 from pyblocks.i18n import tr
 
@@ -76,6 +75,8 @@ class StructureBar(QWidget):
             ):
                 continue
             if self.view.session.simplified_range(owner):
+                continue
+            if not self.view.session.editable(owner, "sequence"):
                 continue
             item = sequence(syntax, owner)
             self.sequences.append(item)
@@ -161,9 +162,7 @@ class StructureBar(QWidget):
         try:
             if seq.syntax is not self.view.session.document.syntax:
                 raise ValueError(tr("Document changed; choose the list again"))
-            self.view.session.editor.commit(
-                seq.change(index, action, text), focus=seq.span.start
-            )
+            self.view.session.change_sequence(seq, index, action, text)
             self.view.refresh_source()
             self.view.changed.emit()
         except (ValueError, SyntaxError) as error:
@@ -179,9 +178,7 @@ def expression_menu(view, point):
         try:
             if syntax is not view.session.document.syntax:
                 raise ValueError(tr("Document changed; choose the expression again"))
-            view.session.editor.commit(
-                edit.replace(syntax, owner, text), focus=syntax.spans[owner].start
-            )
+            view.session.replace_expression(owner, text)
             view.refresh_source()
             view.changed.emit()
         except (ValueError, SyntaxError) as error:
@@ -195,7 +192,7 @@ def expression_menu(view, point):
             replace(owner, text)
 
     for owner in syntax.ancestors(node):
-        if not isinstance(owner, ast.expr):
+        if not isinstance(owner, ast.expr) or not view.session.editable(owner):
             continue
         text = syntax.text(owner)
         submenu = menu.addMenu(text[:65] + ("…" if len(text) > 65 else ""))

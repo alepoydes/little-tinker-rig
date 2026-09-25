@@ -9,6 +9,7 @@ from .analysis import annotation_types, attribute_path, identifiers, value_type
 from .snippets import Match, Parameter, instantiate
 from .structure import OPERATORS, change_operator, name_span, operator_spans, rename
 from .syntax import Span, Syntax
+from .types import Compatibility, compatibility, known_type
 
 ENUM_VALUES = {
     "Direction": ("CLOCKWISE", "COUNTERCLOCKWISE"),
@@ -198,13 +199,14 @@ def slots(session):
         covered.append(match.span)
         covered_spans.add(match.span)
         for parameter in match.snippet.parameters:
+            if parameter.name in match.snippet.names:
+                continue
             for node in match.occurrences.get(parameter.name, ()):
                 bindings.append((syntax.spans[node], match, parameter, node))
                 expression(
                     node, parameter.name, parameter.annotation, match, parameter, node
                 )
-        # Template-local bindings (loop counters and function declarations) also
-        # remain editable; syntax keywords and fixed template operations do not.
+        # Only published declarations are name fields in a decorated block.
         for _, node in declarations[
             bisect_right(declaration_starts, match.span.start - 1) : bisect_right(
                 declaration_starts, match.span.end - 1
@@ -212,12 +214,31 @@ def slots(session):
         ]:
             span = syntax.spans[node]
             if match.span.start <= span.start and span.end <= match.span.end:
+                if not session.editable(node, "name"):
+                    continue
+                published = next(
+                    (
+                        name
+                        for name, key in match.snippet.names.items()
+                        if node in match.named.get(key, ())
+                    ),
+                    None,
+                )
+                owner = match if published else None
                 if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
-                    add(node, "name", "identifier")
+                    add(node, published or "name", "identifier", owner, field="id")
                 elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                    add(node, "function name", "identifier", field="name")
+                    add(
+                        node,
+                        published or "function name",
+                        "identifier",
+                        owner,
+                        field="name",
+                    )
                 elif isinstance(node, ast.arg):
-                    add(node, "parameter", "identifier", field="arg")
+                    add(
+                        node, published or "parameter", "identifier", owner, field="arg"
+                    )
 
     covered.sort()
     starts = [span.start for span in covered]
@@ -242,11 +263,17 @@ def slots(session):
 
     visit(syntax.tree)
     for node in syntax.spans:
-        if isinstance(node, ast.Call) and not session.simplified_range(node):
+        if (
+            isinstance(node, ast.Call)
+            and not session.simplified_range(node)
+            and session.editable(node.func)
+        ):
             expression(node.func, "function")
     bindings.sort(key=lambda item: item[0])
     binding_starts = [item[0].start for item in bindings]
     for node in syntax.spans:
+        if not session.editable(node):
+            continue
         for span, kind, index in operator_spans(syntax, node):
             position = bisect_right(binding_starts, syntax.spans[node].start) - 1
             match = root = None
@@ -282,12 +309,13 @@ def choices(session, parameter, offset):
 
 
 def _choices(session, parameter, offset):
-    kind = value_type(parameter.annotation)
-    if kind in OPERATORS:
-        yield from OPERATORS[kind]
+    expected = parameter.annotation
+    if expected in OPERATORS:
+        yield from OPERATORS[expected]
         return
+    kind = value_type(parameter.annotation)
     if kind is None and parameter.name in {"test", "condition"}:
-        kind = "bool"
+        expected = kind = "bool"
     if kind == "Port":
         yield from (f"Port.{port}" for port in getattr(session, "ports", "ABCDEF"))
         return
@@ -298,27 +326,32 @@ def _choices(session, parameter, offset):
         yield parameter.default
     if kind == "bool":
         yield from ("True", "False")
-    names = session.analysis.name_types(offset)
+    names = session.analysis.name_type_info(offset)
     if context := getattr(session, "context", None):
         position = context.document.syntax.spans[context.editor.selection].start
-        names = context.analysis.name_types(position) | names
+        names = context.analysis.name_type_info(position) | names
     yield from (
-        name for name, actual in names.items() if actual in annotation_types(kind)
+        name
+        for name, actual in names.items()
+        if kind is not None
+        and actual is not None
+        and compatibility(expected, actual) is not Compatibility.INCOMPATIBLE
     )
-    if parameter.default is not None and names.get(parameter.default) == kind:
-        yield parameter.default
     if kind is None:
         yield from (
             name
             for name, actual in names.items()
-            if actual not in {"type", "function", "module"}
+            if actual is None or actual.name not in {"type", "function", "module"}
         )
     # Static library definitions supply readings without importing user modules.
     for snippet in session.snippets:
         body = snippet.body
         if not (
             snippet.expression
-            and value_type(snippet.result_type) == kind
+            and kind is not None
+            and known_type(snippet.result_type) is not None
+            and compatibility(expected, known_type(snippet.result_type))
+            is not Compatibility.INCOMPATIBLE
             and isinstance(body, ast.Call)
             and isinstance(body.func, ast.Attribute)
         ):
@@ -328,7 +361,11 @@ def _choices(session, parameter, offset):
         device = next((p for p in snippet.parameters if p.name == receiver), None)
         if device is not None:
             for name, actual in names.items():
-                if actual in annotation_types(device.annotation):
+                if (
+                    actual is not None
+                    and compatibility(device.annotation, actual)
+                    is Compatibility.COMPATIBLE
+                ):
                     yield instantiate(snippet, {device.name: name}).source
 
 
@@ -397,14 +434,14 @@ def change_parameter(session, slot, expression):
 
         if not expression.isidentifier() or keyword.iskeyword(expression):
             raise ValueError("Enter a Python identifier")
-        if slot.field in {"name", "arg"}:
+        if slot.field in {"id", "name", "arg"}:
             source = rename(session, slot.node, expression)
         else:
             source = edit.patches(syntax.source, [(slot.span, expression)])
             syntax.validate(source)
     else:
         source = edit.replace_expressions(syntax, [(slot.span, expression)])
-    if slot.match is not None:
+    if slot.match is not None and slot.field not in {"id", "name", "arg"}:
         root = slot.root or slot.node
         root_span = syntax.spans[root]
         length = len(source) - len(syntax.source)

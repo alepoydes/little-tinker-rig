@@ -118,8 +118,9 @@ Physical LEGO remote pairing and `Car` calibration require hardware. Control-loo
 tests script remote button states while using virtual motors, including release,
 center-button exit and connection failure. They do not verify Bluetooth hardware.
 
-General event scheduling, gait libraries, cloud/media services, and automatically
-managed shared helper definitions are deferred. The new behaviors use short
+General event scheduling, gait libraries, cloud and media services are deferred.
+Shared helper definitions are managed automatically;
+the bundled activities keep their existing inline behavior. New behaviors use short
 ordinary Python templates and the existing automatic imports, with no new runtime
 dependency. The research catalog in `AI/LEGO_CURRICULUM_AND_BLOCK_CATALOG.md`
 describes the broader proposal, not only shipped capabilities.

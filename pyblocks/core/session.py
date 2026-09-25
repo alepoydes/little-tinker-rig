@@ -3,6 +3,7 @@
 import ast
 import io
 import tokenize
+from bisect import bisect_right
 from pathlib import Path
 
 from . import edit
@@ -12,10 +13,11 @@ from .analysis import (
     annotation_types,
     attribute_path,
     identifiers,
-    value_type,
 )
 from .document import Document
-from .imports import manage_imports
+from .helpers import START as HELPERS_START
+from .helpers import dependencies, manage_helpers
+from .imports import import_entries, manage_imports
 from .interaction import Editor
 from .project import Project
 from .snippets import (
@@ -71,7 +73,32 @@ class Session:
         """Refresh recognition without committing, formatting or rewriting source."""
         self.validate_snippets(snippets)
         self.snippets = snippets
+        self._helpers = {
+            node.name: node for snippet in snippets for node in snippet.helpers
+        }
+        self._helper_imports = {}
+        for snippet in snippets:
+            for function in snippet.helpers:
+                used = dependencies(ast.Module(body=[function], type_ignores=[]))
+                self._helper_imports[function.name] = tuple(
+                    text
+                    for name, text in import_entries(snippet.imports)
+                    if name in used
+                )
+        self.document.prepare = None if self.document.fragment else self._prepare_source
         self._reset_cache()
+
+    def _prepare_source(self, source, scratch):
+        if not self._helpers and HELPERS_START not in source:
+            return source
+        source, functions = manage_helpers(source, self._helpers, retain=scratch)
+        required = tuple(
+            text
+            for function in functions
+            if function is self._helpers.get(function.name)
+            for text in self._helper_imports[function.name]
+        )
+        return manage_imports(source, required, retain=scratch)
 
     def _reset_cache(self):
         self._revision = None
@@ -111,6 +138,27 @@ class Session:
     def _refresh(self):
         if self._revision is not self.document.syntax:
             self._analysis = Analysis(self.document.syntax)
+            if self.document.fragment:
+                # Scratch deliberately omits imports. Only unambiguous library
+                # dependencies supply hints for its otherwise unbound names.
+                imports = {}
+                for snippet in self.snippets:
+                    for node in snippet.imports:
+                        for alias in node.names:
+                            name = alias.asname or alias.name.split(".")[0]
+                            path = (
+                                f"{node.module}.{alias.name}"
+                                if isinstance(node, ast.ImportFrom)
+                                else alias.name if alias.asname else name
+                            )
+                            imports.setdefault(name, set()).add(path)
+                self._analysis.imports.update(
+                    {
+                        (id(None), name): next(iter(paths))
+                        for name, paths in imports.items()
+                        if len(paths) == 1
+                    }
+                )
             for snippet in self.snippets:
                 body = snippet.body
                 if (
@@ -126,12 +174,14 @@ class Session:
                     )
                     if parameter and parameter.annotation:
                         for kind in annotation_types(parameter.annotation):
-                            self._analysis.method_types[kind, path] = value_type(
+                            self._analysis.method_types[kind, path] = (
                                 snippet.result_type
                             )
             self._matches = recognize(
                 self.document.syntax, self.snippets, self._analysis
             )
+            self._analysis.apply_contracts(self._matches)
+            self._match_starts = [match.span.start for match in self._matches]
             self._revision = self.document.syntax
             self._expanded.clear()
             self._user_snippets = function_snippets(self.document.syntax)
@@ -166,6 +216,109 @@ class Session:
             ),
             None,
         )
+
+    def enclosing_match(self, node):
+        self._refresh()
+        span = self.document.syntax.spans[node]
+        index = bisect_right(self._match_starts, span.start) - 1
+        if index >= 0:
+            match = self._matches[index]
+            if span.end <= match.span.end and match.span not in self._expanded:
+                return match
+        return None
+
+    def field_binding(self, node):
+        """The declared expression containing a node, if it belongs to a block."""
+        match = self.enclosing_match(node)
+        if match:
+            spans = self.document.syntax.spans
+            span = spans[node]
+            for parameter in match.snippet.parameters:
+                if parameter.name in match.snippet.names:
+                    continue
+                for root in match.occurrences.get(parameter.name, ()):
+                    if spans[root].start <= span.start and span.end <= spans[root].end:
+                        return match, parameter, root
+        return None
+
+    def editable(self, node, part="expression"):
+        """Structural edits follow declared fields; explicit Python editing is free."""
+        match = self.enclosing_match(node)
+        if match is None:
+            return True
+        if part == "name":
+            return match.snippet.mode == "legacy" or any(
+                node in nodes for nodes in match.named.values()
+            )
+        if self.field_binding(node) is not None:
+            return True
+        if part == "sequence":
+            if isinstance(node, ast.Call):
+                return self.field_binding(node.func) is not None
+            if isinstance(node, ast.BoolOp):
+                return all(
+                    self.field_binding(value) is not None for value in node.values
+                )
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                return self.editable(node, "name") and all(
+                    self.editable(arg, "name")
+                    for arg in (
+                        *node.args.posonlyargs,
+                        *node.args.args,
+                        *node.args.kwonlyargs,
+                    )
+                )
+        return False
+
+    def _commit_field(self, node, source, *, focus):
+        if binding := self.field_binding(node):
+            match, parameter, root = binding
+            span = self.document.syntax.spans[root]
+            length = len(source) - len(self.document.state.source)
+            replacement = source[span.start : span.end + length]
+            source = edit.replace_expressions(
+                self.document.syntax,
+                [
+                    (self.document.syntax.spans[item], replacement)
+                    for item in match.occurrences[parameter.name]
+                ],
+            )
+        self.editor.commit(source, focus=focus)
+
+    def replace_expression(self, node, text):
+        if not self.editable(node):
+            raise ValueError("Expand the block to edit its fixed implementation")
+        self._commit_field(
+            node,
+            edit.replace(self.document.syntax, node, text),
+            focus=self.document.syntax.spans[node].start,
+        )
+
+    def change_sequence(self, sequence, index, action, text=None):
+        if sequence.syntax is not self.document.syntax:
+            raise ValueError("Document changed; choose the list again")
+        if not self.editable(sequence.node, "sequence"):
+            raise ValueError("Expand the block to edit its fixed implementation")
+        self._commit_field(
+            sequence.node,
+            sequence.change(index, action, text),
+            focus=sequence.span.start,
+        )
+
+    def accepts_target(self, target):
+        if isinstance(target, ast.expr):
+            return self.editable(target)
+        suite, index = target.suite, target.index
+        if self.enclosing_match(suite.owner):
+            return len(suite.statements) == 1 and isinstance(
+                suite.statements[0], ast.Pass
+            )
+        if 0 < index < len(suite.statements):
+            before = self.enclosing_match(suite.statements[index - 1])
+            after = self.enclosing_match(suite.statements[index])
+            if before is not None and before is after:
+                return False
+        return True
 
     def toggle_expansion(self) -> None:
         self._refresh()
@@ -266,13 +419,19 @@ class Session:
         ):
             if not isinstance(self.editor.selection, ast.expr):
                 raise ValueError("Select an expression to replace with this snippet")
+            if not self.accepts_target(self.editor.selection):
+                raise ValueError("Expand the block to edit its fixed implementation")
             offset = syntax.spans[self.editor.selection].start
             source = edit.replace(syntax, self.editor.selection, expansion.source)
         else:
             target = target or self.destination()
+            if not self.accepts_target(target):
+                raise ValueError("Expand the block to edit its fixed implementation")
             offset = self.insertion_offset(target)
             source = edit.insert(syntax, target, expansion.source)
-        self.commit_insertion(source, offset, expansion.imports)
+        self.commit_insertion(
+            source, offset, expansion.imports, helpers=expansion.helpers
+        )
 
     def insertion_offset(self, target):
         syntax = self.document.syntax
@@ -281,8 +440,17 @@ class Session:
             return syntax.block_span(statements[0]).start
         return edit.target_position(syntax, target)[0]
 
-    def commit_insertion(self, source, offset, required=(), scratch=None):
-        imported = self.with_imports(source, required)
+    def commit_insertion(
+        self, source, offset, required=(), scratch=None, *, helpers=()
+    ):
+        prepared = source
+        if helpers and not self.document.fragment:
+            prepared, _ = manage_helpers(
+                source,
+                {node.name: node for text in helpers for node in ast.parse(text).body},
+                retain=self.document.state.scratch if scratch is None else scratch,
+            )
+        imported = self.with_imports(prepared, required)
         self.editor.commit(
             imported, scratch, focus=edit.map_offset(source, imported, offset)
         )
@@ -433,10 +601,14 @@ class Session:
             except SyntaxError:
                 pass
         if expression:
+            if not self.accepts_target(node):
+                raise ValueError("Expand the block to edit its fixed implementation")
             offset = syntax.spans[node].start
             source = edit.replace(syntax, node, text)
         else:
             target = target or self.destination()
+            if not self.accepts_target(target):
+                raise ValueError("Expand the block to edit its fixed implementation")
             offset = self.insertion_offset(target)
             source = edit.insert(syntax, target, text)
         remaining = (

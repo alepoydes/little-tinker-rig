@@ -1,14 +1,17 @@
-"""Short complete behaviors, recognizable and decomposable as ordinary Python."""
+"""Robot activities
+
+Short complete behaviors, recognizable and decomposable as ordinary Python."""
 
 # Set activities adapted from Pybricks Projects, copyright 2018-2023 The Pybricks
 # Authors (MIT). Full notice: examples/pybricks/LICENSE.txt, included in distributions.
 
 
+@inline_block(level="beginner", icon="◇", color="control")
 def stop_at_line(
     drive: "DriveBase" = drive,
     sensor: "ColorSensor | ColorDistanceSensor" = sensor,
-    threshold: "%" = 30,
-    speed: "mm/s" = 100,
+    threshold: "number[%]" = 30,
+    speed: "number[mm/s]" = 100,
 ):
     """Drive until a dark line, then brake.
 
@@ -24,11 +27,12 @@ def stop_at_line(
         drive.brake()
 
 
+@inline_block(level="intermediate", icon="◇", color="control")
 def stop_near_object(
     drive: "DriveBase" = drive,
     sensor: "UltrasonicSensor" = distance,
-    distance: "mm" = 100,
-    speed: "mm/s" = 100,
+    distance: "number[mm]" = 100,
+    speed: "number[mm/s]" = 100,
 ):
     """Drive until an ultrasonic obstacle, then brake.
 
@@ -44,12 +48,13 @@ def stop_near_object(
         drive.brake()
 
 
+@inline_block(level="beginner", icon="▣", color="state")
 def follow_for(
     drive: "DriveBase" = drive,
     sensor: "ColorSensor | ColorDistanceSensor" = sensor,
-    duration: "ms" = 3000,
-    speed: "mm/s" = 100,
-    target: "%" = 50,
+    duration: "number[ms]" = 3000,
+    speed: "number[mm/s]" = 100,
+    target: "number[%]" = 50,
     gain=2,
 ):
     """Follow a line edge for a set time, then brake.
@@ -58,7 +63,7 @@ def follow_for(
     Expand the block to inspect the timer, repeated measurement and correction."""
     from pybricks.tools import StopWatch, wait
 
-    clock = StopWatch()
+    clock: "StopWatch" = StopWatch()
     try:
         while clock.time() < duration:
             error = sensor.reflection() - target
@@ -68,11 +73,12 @@ def follow_for(
         drive.brake()
 
 
+@inline_block(level="beginner", icon="▶", color="action")
 def conveyor_transfer(
     arm: "Motor" = arm,
     belt: "Motor" = belt,
-    pickup: "deg" = 0,
-    destination: "deg" = 697,
+    pickup: "number[deg]" = 0,
+    destination: "number[deg]" = 697,
 ):
     """Pick up a conveyor part and place it at the assembly position.
 
@@ -89,12 +95,13 @@ def conveyor_transfer(
     arm.run_target(300, 0)
 
 
+@inline_block(level="beginner", icon="▶", color="action")
 def draw_rectangle(
     horizontal: "Motor" = horizontal_motor,
     vertical: "Motor" = vertical_motor,
-    width: "deg" = 400,
-    height: "deg" = 100,
-    speed: "deg/s" = 1000,
+    width: "number[deg]" = 400,
+    height: "number[deg]" = 100,
+    speed: "number[deg/s]" = 1000,
 ):
     """Draw a rectangle with two motor axes and return to the start.
 
@@ -106,14 +113,18 @@ def draw_rectangle(
     vertical.run_angle(speed, -height)
 
 
-def dance_turns(drive: "DriveBase" = drive, angle: "deg" = 360):
+@inline_block(level="beginner", icon="▶", color="action")
+def dance_turns(drive: "DriveBase" = drive, angle: "number[deg]" = 360):
     """Turn one way and back, like Tricky's dance."""
     drive.turn(angle)
     drive.turn(-angle)
 
 
+@inline_block(level="beginner", icon="⟳", color="loop")
 def force_gripper(
-    motor: "Motor" = motor, sensor: "ForceSensor" = force_sensor, speed: "deg/s" = 1000
+    motor: "Motor" = motor,
+    sensor: "ForceSensor" = force_sensor,
+    speed: "number[deg/s]" = 1000,
 ):
     """Close a gripper while pressed; open to its stop when released.
 

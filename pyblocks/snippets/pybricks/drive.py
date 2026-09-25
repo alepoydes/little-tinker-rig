@@ -1,12 +1,14 @@
-"""Drive-base and clock building blocks."""
+"""Drive bases and clocks
 
+Drive-base and clock building blocks."""
 
+@inline_block(level="beginner", icon="➜", color="state", names=("name",))
 def create_robot(
     name=drive,
     left_port: "Port" = Port.A,
     right_port: "Port" = Port.B,
-    wheel: "mm" = 56,
-    track: "mm" = 112,
+    wheel: "number[mm]" = 56,
+    track: "number[mm]" = 112,
 ):
     """Set up a two-wheel robot in one block.
 
@@ -17,35 +19,43 @@ def create_robot(
     from pybricks.pupdevices import Motor
     from pybricks.robotics import DriveBase
 
-    left_motor = Motor(left_port, Direction.COUNTERCLOCKWISE)
-    right_motor = Motor(right_port)
-    name = DriveBase(left_motor, right_motor, wheel_diameter=wheel, axle_track=track)
+    left_motor: "Motor" = Motor(left_port, Direction.COUNTERCLOCKWISE)
+    right_motor: "Motor" = Motor(right_port)
+    name: "DriveBase" = DriveBase(
+        left_motor, right_motor, wheel_diameter=wheel, axle_track=track
+    )
 
 
+@inline_block(level="intermediate", icon="➜", color="state", names=("name",))
 def create_drive(
     name=drive,
     left: "Motor" = left,
     right: "Motor" = right,
-    wheel: "mm" = 56,
-    track: "mm" = 112,
+    wheel: "number[mm]" = 56,
+    track: "number[mm]" = 112,
 ):
     """Create a two-wheel robot from the left and right motors."""
     from pybricks.robotics import DriveBase
 
-    name = DriveBase(left, right, wheel_diameter=wheel, axle_track=track)
+    name: "DriveBase" = DriveBase(left, right, wheel_diameter=wheel, axle_track=track)
 
 
-def drive(drive: "DriveBase" = drive, speed: "mm/s" = 180, turn: "deg/s" = 0):
+@inline_block(level="intermediate", icon="➜", color="action")
+def drive(
+    drive: "DriveBase" = drive, speed: "number[mm/s]" = 180, turn: "number[deg/s]" = 0
+):
     """Drive at the chosen speed and turn rate."""
     drive.drive(speed, turn)
 
 
+@inline_block(level="beginner", icon="➜", color="action")
 def brake(drive: "DriveBase" = drive):
     """Brake both robot wheels."""
     drive.brake()
 
 
-def straight(drive: "DriveBase" = drive, distance: "mm" = 200):
+@inline_block(level="beginner", icon="➜", color="action")
+def straight(drive: "DriveBase" = drive, distance: "number[mm]" = 200):
     """Drive a distance, then stop.
 
     Distance is in millimeters. Negative values drive backward.
@@ -53,7 +63,8 @@ def straight(drive: "DriveBase" = drive, distance: "mm" = 200):
     drive.straight(distance)
 
 
-def turn(drive: "DriveBase" = drive, angle: "deg" = 90):
+@inline_block(level="beginner", icon="➜", color="action")
+def turn(drive: "DriveBase" = drive, angle: "number[deg]" = 90):
     """Turn the robot in place, then stop.
 
     Positive angles turn right; negative angles turn left.
@@ -61,38 +72,44 @@ def turn(drive: "DriveBase" = drive, angle: "deg" = 90):
     drive.turn(angle)
 
 
-def drive_distance(drive: "DriveBase" = drive) -> "mm":
+@inline_block(level="intermediate", icon="➜", color="action")
+def drive_distance(drive: "DriveBase" = drive) -> "number[mm]":
     """Read the distance traveled by the robot."""
     return drive.distance()
 
 
-def drive_angle(drive: "DriveBase" = drive) -> "deg":
+@inline_block(level="intermediate", icon="➜", color="action")
+def drive_angle(drive: "DriveBase" = drive) -> "number[deg]":
     """Read the robot's turn angle."""
     return drive.angle()
 
 
+@inline_block(level="intermediate", icon="⏱", color="state", names=("name",))
 def create_clock(name=clock):
     """Create a stopwatch to measure time."""
     from pybricks.tools import StopWatch
 
-    name = StopWatch()
+    name: "StopWatch" = StopWatch()
 
 
-def elapsed(clock: "StopWatch" = clock) -> "ms":
+@inline_block(level="intermediate", icon="⏱", color="action")
+def elapsed(clock: "StopWatch" = clock) -> "number[ms]":
     """Read elapsed milliseconds from the stopwatch."""
     return clock.time()
 
 
+@inline_block(level="intermediate", icon="⏱", color="action")
 def reset_clock(clock: "StopWatch" = clock):
     """Restart the stopwatch."""
     clock.reset()
 
 
+@inline_block(level="advanced", icon="➜", color="action")
 def drive_settings(
     drive: "DriveBase" = drive,
-    speed: "mm/s" = 200,
+    speed: "number[mm/s]" = 200,
     acceleration=400,
-    turn_rate: "deg/s" = 90,
+    turn_rate: "number[deg/s]" = 90,
     turn_acceleration=180,
 ):
     """Set the speed and acceleration of finite robot moves.
@@ -102,7 +119,10 @@ def drive_settings(
     drive.settings(speed, acceleration, turn_rate, turn_acceleration)
 
 
-def curve(drive: "DriveBase" = drive, radius: "mm" = 200, angle: "deg" = 90):
+@inline_block(level="advanced", icon="➜", color="action")
+def curve(
+    drive: "DriveBase" = drive, radius: "number[mm]" = 200, angle: "number[deg]" = 90
+):
     """Drive along an arc, then stop.
 
     Positive radius curves right; negative radius curves left.
@@ -110,11 +130,13 @@ def curve(drive: "DriveBase" = drive, radius: "mm" = 200, angle: "deg" = 90):
     drive.arc(radius, angle=angle)
 
 
+@inline_block(level="advanced", icon="➜", color="action")
 def reset_drive(drive: "DriveBase" = drive):
     """Stop and reset the robot's distance and angle readings."""
     drive.reset()
 
 
+@inline_block(level="advanced", icon="➜", color="state", names=("name",))
 def create_car(name=car, steering: "Motor" = steering, propulsion: "Motor" = motor):
     """Set up a car with a steering motor.
 
@@ -123,15 +145,17 @@ def create_car(name=car, steering: "Motor" = steering, propulsion: "Motor" = mot
     Steering calibration is not modeled by the virtual hub."""
     from pybricks.robotics import Car
 
-    name = Car(steering, propulsion)
+    name: "Car" = Car(steering, propulsion)
 
 
-def steer_car(car: "Car" = car, steering: "%" = 0):
+@inline_block(level="advanced", icon="➜", color="action")
+def steer_car(car: "Car" = car, steering: "number[%]" = 0):
     """Set car steering between -100 and 100 percent."""
     car.steer(steering)
 
 
-def power_car(car: "Car" = car, power: "%" = 0):
+@inline_block(level="advanced", icon="➜", color="action")
+def power_car(car: "Car" = car, power: "number[%]" = 0):
     """Set car propulsion power; zero lets the car coast.
 
     Positive power drives forward and negative power drives backward.

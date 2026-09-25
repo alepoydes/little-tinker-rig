@@ -4,7 +4,7 @@ from PySide6.QtCore import QMimeData, QSize, Qt, Signal
 from PySide6.QtGui import QColor, QFontDatabase, QFontMetrics, QPainter, QPen
 from PySide6.QtWidgets import QStyle, QStyledItemDelegate, QTreeWidget, QTreeWidgetItem
 
-from pyblocks.core.presentation import PALETTE, snippet_role
+from pyblocks.core.presentation import role_color, snippet_role
 from pyblocks.core.snippets import LEVELS, instantiate, snippet_groups
 from pyblocks.i18n import N_, tr
 
@@ -27,24 +27,10 @@ LEVEL_TITLES = {
 }
 
 
-GROUP_TITLES = {
-    "document/functions": N_("My functions"),
-    "python/basics": N_("Python basics"),
-    "python/data": N_("Lists, text and dictionaries"),
-    "python/flow": N_("Iteration and exceptions"),
-    "python/numbers": N_("Numbers"),
-    "pybricks/motors": N_("Motors"),
-    "pybricks/sensors": N_("Sensors and timing"),
-    "pybricks/drive": N_("Drive bases and clocks"),
-    "pybricks/randomness": N_("Random choices"),
-    "pybricks/hubs": N_("Hub lights, sound and motion"),
-    "pybricks/lessons": N_("Robot activities"),
-    "pybricks/remote": N_("Remote control"),
-}
-
-
-def group_title(identity):
-    return tr(GROUP_TITLES[identity]) if identity in GROUP_TITLES else identity
+def group_title(identity, snippets=()):
+    if snippets and snippets[0].group_help:
+        return tr(snippets[0].group_help).splitlines()[0]
+    return identity
 
 
 def snippet_title(snippet):
@@ -131,7 +117,7 @@ class Library(QTreeWidget):
         )
         self.clear()
         for group, members in snippet_groups(snippets).items():
-            heading = QTreeWidgetItem(self, [group_title(group)])
+            heading = QTreeWidgetItem(self, [group_title(group, members)])
             heading.setToolTip(0, group)
             heading.setFlags(heading.flags() & ~Qt.ItemFlag.ItemIsDragEnabled)
             heading.setExpanded(expanded.get(group, self.level == "beginner"))
@@ -146,7 +132,7 @@ class Library(QTreeWidget):
                 item.setData(0, ICON, block_icon(snippet))
                 item.setData(0, LEVEL, snippet.level)
                 item.setData(0, PREVIEW, expansion.source)
-                item.setData(0, COLOR, PALETTE[snippet_role(snippet)])
+                item.setData(0, COLOR, role_color(snippet_role(snippet)))
                 item.setData(0, DESCRIPTION, snippet_title(snippet))
                 item.setToolTip(0, expansion.source + "\n\n" + tr(snippet.help))
 

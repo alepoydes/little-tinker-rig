@@ -26,7 +26,7 @@ from textual.widgets import (
 from textual.widgets.option_list import Option
 
 from pyblocks.core.edit import target_position
-from pyblocks.core.presentation import PALETTE, regions, snippet_role
+from pyblocks.core.presentation import regions, role_color, snippet_role
 from pyblocks.core.session import Session
 from pyblocks.core.snippets import instantiate
 
@@ -249,7 +249,7 @@ class Studio(App):
                     style="bold",
                 )
                 text.append("\n" + "\n".join(preview.splitlines()[:3]))
-                text.stylize(f"#203040 on {PALETTE[snippet_role(snippet)]}")
+                text.stylize(f"#203040 on {role_color(snippet_role(snippet))}")
                 widget.add_option(Option(text, id=snippet.identity))
 
     @on(Input.Changed, "#search")
@@ -293,7 +293,7 @@ class Studio(App):
                         if region.extend_line or row < region.end_line
                         else region.end_column
                     )
-                    code.stylize(f"on {PALETTE[region.role]}", start, end)
+                    code.stylize(f"on {role_color(region.role)}", start, end)
             if first_line <= row <= last_line:
                 code.stylize(
                     "bold underline",

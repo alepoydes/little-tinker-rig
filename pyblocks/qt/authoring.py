@@ -3,7 +3,6 @@
 import ast
 import keyword
 import tomllib
-from dataclasses import replace
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer, Signal
@@ -26,10 +25,19 @@ from PySide6.QtWidgets import (
 )
 
 from pyblocks.core.analysis import Scopes
-from pyblocks.core.authoring import BUILTINS, STARTERS, DefinitionDraft, collection_root
+from pyblocks.core.authoring import (
+    BUILTINS,
+    STARTERS,
+    DefinitionDraft,
+    collection_root,
+    copy_definition,
+)
+from pyblocks.core.block_metadata import change_property, decorator
+from pyblocks.core.imports import import_entries
+from pyblocks.core.migration import migrate_module
 from pyblocks.core.session import Session
 from pyblocks.core.snippets import LEVELS, instantiate, load_module
-from pyblocks.core.structure import name_span
+from pyblocks.core.structure import name_span, rename
 from pyblocks.core.syntax import Syntax
 from pyblocks.i18n import N_, tr
 
@@ -95,6 +103,10 @@ class DefinitionCode(CodeEdit):
             for node in self.syntax.tree.body:
                 if not isinstance(node, ast.FunctionDef):
                     continue
+                if decorator(node) is None:
+                    continue
+                for item in node.decorator_list:
+                    self.semantic.append((self.syntax.spans[item], "#754499", False))
                 self.semantic.append((name_span(self.syntax, node), "#754499", False))
                 for arg in (
                     *node.args.posonlyargs,
@@ -107,6 +119,20 @@ class DefinitionCode(CodeEdit):
                     if arg.annotation:
                         self.semantic.append(
                             (self.syntax.spans[arg.annotation], "#9c5318", False)
+                        )
+                for value in ast.walk(node):
+                    annotation = (
+                        value.annotation
+                        if isinstance(value, ast.AnnAssign)
+                        else (
+                            value.returns
+                            if isinstance(value, ast.FunctionDef)
+                            else None
+                        )
+                    )
+                    if annotation is not None:
+                        self.semantic.append(
+                            (self.syntax.spans[annotation], "#9c5318", False)
                         )
             return None
         except (ValueError, SyntaxError) as error:
@@ -224,10 +250,26 @@ class BlockEditor(QWidget):
         )
         self.reopen_button.clicked.connect(lambda: self.attempt(self.reopen))
         self.level = QComboBox()
-        self.level.setToolTip(N_("Block level · stored in collection.toml"))
+        self.level.setToolTip(N_("Block level · stored in the decorator"))
         for level in LEVELS:
             self.level.addItem(LEVEL_TITLES[level], level)
         self.level.currentIndexChanged.connect(self.change_level)
+        self.icon = QLineEdit()
+        self.icon.setMaximumWidth(65)
+        self.icon.setPlaceholderText(N_("Icon"))
+        self.icon.setToolTip(N_("Block icon · stored in the decorator"))
+        self.icon.editingFinished.connect(
+            lambda: self.attempt(lambda: self.change_metadata("icon", self.icon.text()))
+        )
+        self.color = QLineEdit()
+        self.color.setMaximumWidth(125)
+        self.color.setPlaceholderText(N_("Color"))
+        self.color.setToolTip(N_("Palette role or #RRGGBB · stored in the decorator"))
+        self.color.editingFinished.connect(
+            lambda: self.attempt(
+                lambda: self.change_metadata("color", self.color.text())
+            )
+        )
         self.caption = QLabel()
         self.caption.setProperty("translationSources", {})
         self.caption.setTextInteractionFlags(
@@ -301,6 +343,8 @@ class BlockEditor(QWidget):
         row = QHBoxLayout()
         row.addWidget(self.copy_button)
         row.addWidget(self.level)
+        row.addWidget(self.icon)
+        row.addWidget(self.color)
         row.addStretch()
         row.addWidget(self.reopen_button)
         row.addWidget(self.save_button)
@@ -523,6 +567,13 @@ class BlockEditor(QWidget):
         code = self.code
         if code is None:
             return
+        if not code.draft.read_only:
+            try:
+                migrated = code.draft.migrated_source()
+            except (SyntaxError, ValueError):
+                migrated = code.toPlainText()
+            if migrated != code.toPlainText():
+                self.replace_source(migrated)
         error = code.inspect()
         self.attempt(code.draft.persist)
         if error:
@@ -581,11 +632,32 @@ class BlockEditor(QWidget):
         if not code or not code.syntax:
             return
         row = code.textCursor().blockNumber() + 1
+        helper = next(
+            (
+                node
+                for node in code.syntax.tree.body
+                if isinstance(node, ast.FunctionDef)
+                and decorator(node) is None
+                and node.lineno <= row <= node.end_lineno
+            ),
+            None,
+        )
+        if helper:
+            self.hint.setText(
+                tr(
+                    "Helper: shared ordinary Python; it does not appear in the block library."
+                )
+            )
+            return
         function = next(
             (
                 n
                 for n in code.syntax.tree.body
-                if isinstance(n, ast.FunctionDef) and n.lineno <= row <= n.end_lineno
+                if isinstance(n, ast.FunctionDef)
+                and decorator(n)
+                and (n.decorator_list[0].lineno if n.decorator_list else n.lineno)
+                <= row
+                <= n.end_lineno
             ),
             None,
         )
@@ -597,9 +669,17 @@ class BlockEditor(QWidget):
         function = function or self.function()
         if function:
             label = tr("Body: the Python inserted into the program.")
+            if self.preview_snippet and self.preview_snippet.mode == "function":
+                label = tr(
+                    "Body: an ordinary helper function with private local variables."
+                )
             if row < function.body[0].lineno:
                 label = tr(
                     "Signature: block name, parameters, defaults and units/types."
+                )
+            if row < function.lineno:
+                label = tr(
+                    "Decorator: insertion mode, level, appearance and editable names."
                 )
             for node in function.body:
                 if node.lineno <= row <= node.end_lineno:
@@ -657,12 +737,7 @@ class BlockEditor(QWidget):
                 )
             )
             return
-        level = code.draft.levels.get(
-            f"{code.draft.module}/{self.selected_name}", "intermediate"
-        )
-        if level == "standard":
-            level = "intermediate"
-        snippet = replace(snippet, level=level)
+        level = snippet.level
         self.preview_snippet = snippet
         self.preview.session = Session.fragment(expansion.source + "\n", (snippet,))
         self.preview.refresh_source()
@@ -701,6 +776,8 @@ class BlockEditor(QWidget):
         self.level.blockSignals(True)
         self.level.setCurrentIndex(self.level.findData(level))
         self.level.blockSignals(False)
+        self.icon.setText(snippet.icon or "▶")
+        self.color.setText(snippet.color or "snippet")
         self.update_status(keep_message=True)
 
     def test_value(self, name, value):
@@ -724,21 +801,52 @@ class BlockEditor(QWidget):
         if not function:
             return
         syntax = self.code.syntax
+        path = name.split(".")
+        owner_node = function
+        for part in path[:-1]:
+            owner_node = next(
+                (
+                    n
+                    for n in owner_node.body
+                    if isinstance(n, ast.FunctionDef) and n.name == part
+                ),
+                None,
+            )
+            if owner_node is None:
+                return
+        name = path[-1]
         parameter = next(
             (
                 p
                 for p in (
-                    *function.args.posonlyargs,
-                    *function.args.args,
-                    *function.args.kwonlyargs,
+                    *owner_node.args.posonlyargs,
+                    *owner_node.args.args,
+                    *owner_node.args.kwonlyargs,
                 )
                 if p.arg == name
             ),
             None,
         )
+        scopes = Scopes(syntax.tree)
+        owner = scopes.defined_scopes[owner_node]
+        if parameter is None:
+            parameter = next(
+                (
+                    n
+                    for n in ast.walk(owner_node)
+                    if (
+                        isinstance(n, ast.Name)
+                        and isinstance(n.ctx, ast.Store)
+                        and n.id == name
+                        or isinstance(n, ast.FunctionDef)
+                        and n is not owner_node
+                        and n.name == name
+                    )
+                    and scopes.resolve(n, name) is owner
+                ),
+                None,
+            )
         if parameter:
-            scopes = Scopes(syntax.tree)
-            owner = scopes.defined_scopes[function]
             self.code.references = [
                 (syntax.spans[n], "#ffe09a", True)
                 for n in ast.walk(function)
@@ -762,8 +870,41 @@ class BlockEditor(QWidget):
 
     def change_level(self):
         if self.code and not self.code.draft.read_only and self.selected_name:
-            self.code.draft.levels[f"{self.code.draft.module}/{self.selected_name}"] = (
-                self.level.currentData()
+            self.attempt(
+                lambda: self.change_metadata("level", self.level.currentData())
+            )
+
+    def replace_source(self, source):
+        """One ordinary text edit, retaining the buffer's undo history."""
+        previous = self.code.toPlainText()
+        if source == previous:
+            return
+        start = 0
+        while (
+            start < min(len(previous), len(source)) and previous[start] == source[start]
+        ):
+            start += 1
+        end = 0
+        while (
+            end < min(len(previous), len(source)) - start
+            and previous[-end - 1] == source[-end - 1]
+        ):
+            end += 1
+        cursor = QTextCursor(self.code.document())
+        cursor.beginEditBlock()
+        cursor.setPosition(qt_offset(previous, start))
+        cursor.setPosition(
+            qt_offset(previous, len(previous) - end), QTextCursor.MoveMode.KeepAnchor
+        )
+        cursor.insertText(source[start : len(source) - end])
+        cursor.endEditBlock()
+
+    def change_metadata(self, name, value):
+        if self.code and not self.code.draft.read_only and self.function():
+            self.replace_source(
+                change_property(
+                    self.code.toPlainText(), self.selected_name, name, value
+                )
             )
             self.check()
 
@@ -773,6 +914,8 @@ class BlockEditor(QWidget):
         self.save_button.setEnabled(editable)
         self.reopen_button.setEnabled(editable)
         self.level.setEnabled(editable and self.function() is not None)
+        self.icon.setEnabled(editable and self.function() is not None)
+        self.color.setEnabled(editable and self.function() is not None)
         self.copy_button.setEnabled(self.function() is not None)
         if code:
             state = (
@@ -786,7 +929,7 @@ class BlockEditor(QWidget):
                 else tr("Action")
             )
             self.caption.setText(
-                f"{code.draft.path.name} · {group_title(code.draft.identity)} · {kind} · {state}"
+                f"{code.draft.path.name} · {group_title(code.draft.identity, code.snippets)} · {kind} · {state}"
             )
             self.caption.setToolTip(str(code.draft.path))
         else:
@@ -816,7 +959,7 @@ class BlockEditor(QWidget):
             else ""
         )
 
-    def create(self, source, *, level="intermediate"):
+    def create(self, source, *, level=None):
         root = self.ensure_collection()
         module = self.module_name.text().strip()
         if (
@@ -831,6 +974,20 @@ class BlockEditor(QWidget):
                 tr("Use a Python module name, for example custom or robots/motors.")
             )
         path = root / (module + ".py")
+        source = migrate_module(
+            source,
+            root.name + "/" + module,
+            "1",
+            (
+                {
+                    node.name: level
+                    for node in ast.parse(source).body
+                    if isinstance(node, ast.FunctionDef)
+                }
+                if level
+                else None
+            ),
+        )
         self.open_path(path)
         if self.code.tree is None:
             raise ValueError(
@@ -838,21 +995,56 @@ class BlockEditor(QWidget):
                     "Correct this module's draft or choose another group before adding a block."
                 )
             )
-        names = {n.name for n in self.code.tree.body if isinstance(n, ast.FunctionDef)}
-        syntax = Syntax(source, fragment=True)
-        functions = [n for n in syntax.tree.body if isinstance(n, ast.FunctionDef)]
+        names = set(Scopes(self.code.tree).root.bindings)
+        copied = Session.fragment(source, ())
+
+        def imports(tree):
+            return dict(
+                import_entries(
+                    node
+                    for node in tree.body
+                    if isinstance(node, (ast.Import, ast.ImportFrom))
+                )
+            )
+
+        existing = imports(self.code.tree)
+        conflicts = {
+            name
+            for name, text in imports(copied.document.syntax.tree).items()
+            if name in names and existing.get(name) != text
+        }
+        if conflicts:
+            raise ValueError(
+                tr(
+                    "Import names conflict: {names}. Choose another group or use aliases.",
+                    names=", ".join(sorted(conflicts)),
+                )
+            )
+        functions = [
+            n
+            for n in copied.document.syntax.tree.body
+            if isinstance(n, ast.FunctionDef)
+        ]
+        reserved = names | {n.name for n in functions}
         added = []
-        for function in reversed(functions):
+        for original in functions:
+            function = next(
+                n
+                for n in copied.document.syntax.tree.body
+                if isinstance(n, ast.FunctionDef) and n.name == original.name
+            )
             name = function.name
             index = 2
-            while name in names:
+            while name in names or name != function.name and name in reserved:
                 name = f"{function.name}_{index}"
                 index += 1
             names.add(name)
-            added.append(name)
-            span = name_span(syntax, function)
-            source = source[: span.start] + name + source[span.end :]
-            self.code.draft.levels[f"{self.code.draft.module}/{name}"] = level
+            reserved.add(name)
+            if name != function.name:
+                copied.editor.commit(rename(copied, function, name))
+            if decorator(function):
+                added.append(name)
+        source = copied.document.state.source
         cursor = self.code.textCursor()
         cursor.movePosition(QTextCursor.MoveOperation.End)
         cursor.insertText(("\n\n" if self.code.toPlainText().strip() else "") + source)
@@ -869,11 +1061,8 @@ class BlockEditor(QWidget):
         function = self.function()
         if function:
             source = self.code.draft.source
-            span = self.code.syntax.spans[function]
-            level = self.code.draft.levels.get(
-                f"{self.code.draft.module}/{function.name}", "intermediate"
-            )
-            self.create(source[span.start : span.end] + "\n", level=level)
+            level = self.preview_snippet.level
+            self.create(copy_definition(source, function.name), level=level)
 
     def save(self):
         if self.code:

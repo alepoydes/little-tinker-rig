@@ -1,22 +1,51 @@
-# Authoring snippet libraries
+# Authoring block libraries
 
-Use the desktop [Block Editor](block-editor.md) to inspect built-ins, edit user
-definitions, and preview blocks above their source.
+Use the [Block Editor](block-editor.md) to inspect built-ins, edit user definitions,
+and preview a block above its source. Definitions are parsed statically: decorators,
+defaults, imports and function bodies are never executed by the editor.
 
-A collection is a directory of Python modules plus `collection.toml`. Functions
-are parsed as static templates; they are never imported or executed by the editor.
-The function signature defines parameters/default expressions, the docstring is
-help, and the body is the inserted source. A single return expression defines an
-expression template. Imports are gathered into the managed import section.
+## Collections and groups
+
+A collection contains Python modules and this `collection.toml`:
 
 ```toml
 [collection]
 id = "my_robot"
 version = "1.0.0"
+format = 2
 ```
 
+The manifest contains collection information and optional `[[history]]` entries
+with `version` and `path`. Each module defines a group. Its docstring supplies the
+group title and description; each decorated function supplies a block. A block's
+identity is `collection/module/function`. Ordinary undecorated functions are
+helpers and do not appear in the library.
+
+Connect a collection with `pyblocks --collection ./my_robot qt main.py`.
+Historical directories must stay inside the collection. Historical definitions
+remain recognizable, and explicit upgrades preserve compatible parameters and
+names. A major version change requires manual review.
+
+## Two insertion modes
+
 ```python
-def move_for(motor: "Motor" = motor, speed: "deg/s" = 300, duration: "ms" = 500):
+"""Motors
+
+Connect motors and control their movement.
+"""
+
+@inline_block(level="beginner", icon="⚙", color="state", names=("motor",))
+def create_motor(port: "Port" = Port.A):
+    """Connect a motor to a hub port."""
+    from pybricks.parameters import Port
+    from pybricks.pupdevices import Motor
+
+    motor: "Motor" = Motor(port)
+
+@block(level="intermediate", icon="↻", color="action")
+def move_for(motor: "Motor" = motor,
+             speed: "number[deg/s]" = 300,
+             duration: "int[ms]" = 500):
     """Run a motor for a time and brake it."""
     from pybricks.tools import wait
 
@@ -25,97 +54,132 @@ def move_for(motor: "Motor" = motor, speed: "deg/s" = 300, duration: "ms" = 500)
     motor.brake()
 ```
 
-Defaults are source expressions. `motor=motor` is a placeholder reference, not
-an object created by the template module; this file must not be executed. Provide
-defaults so dragging requires no dialog. New declared names receive a free suffix
-when needed; existing visible device names are suggested from typed parameters.
-String annotations describe units or device types without changing numeric values.
+`@inline_block` inserts its body. A single `return expression` defines an
+expression block. Inline variables live in the destination scope; hygienic
+renaming prevents capture and collisions. Repeated parameter occurrences repeat
+the supplied expression, including any side effects.
 
-Connect a library with `pyblocks --collection ./my_robot qt main.py`. A snippet's
-identity is `collection/module/function`; current identities must be unique.
-Recognition compares AST structure and binds parameter occurrences, not source
-markers. Repeated parameters are substituted as repeated Python expressions;
-an expression with side effects can therefore run more than once.
+`@block` inserts a call to an automatically managed ordinary function. Arguments
+are evaluated once per call and local variables remain inside the function.
+A function with a returned value supplies an expression block; an action supplies
+a statement block. The choice of mode is explicit: the editor never silently
+replaces inline code with a function call.
 
-Locally defined names are renamed hygienically to avoid collisions. This uses
-lexical scopes, not text substitution. Functions, comprehensions and shadowing
-are distinguished. Unsupported patterns such as recursive templates, classes,
-global/nonlocal declarations and variadic signatures are rejected explicitly.
+Decorators belong only to library definitions. Programs sent to a hub contain
+ordinary Python, imports and helper functions, without PyBlocks decorators or a
+PyBlocks runtime dependency.
 
-Recognition favors specific algorithms over generic one-statement templates.
-The editor can expand a recognized block for ordinary structural editing. Changes
-that no longer match a template remain ordinary Python.
+## Properties in the source
 
-Historical versions live in directories referenced by manifest `[[history]]`
-entries with `version` and `path`. Paths must remain inside the collection.
-Historical forms are recognized alongside current forms; Ctrl+U updates a selected
-old form while preserving compatible parameters. Incompatible signatures or a
-major version change prevent automatic upgrades. Workspace `pins` can require an
-installed collection version.
+| Property | Meaning |
+|---|---|
+| `level` | Introduction level: `beginner`, `intermediate`, `advanced`, `expert`; default `intermediate` |
+| `icon` | A nonempty symbol or short text; default `▶` |
+| `color` | A palette role or `#RRGGBB`; default `snippet` |
+| `names` | Renameable declarations in an inline block; default empty |
+| `kind` | Optional `statement` or `expression` override |
+| `context` | Optional `loop` wrapper for inline loop-control statements |
 
-Managed imports are marked explicitly. Existing unmanaged imports remain user
-code. References in ordinary code and Scratch keep managed dependencies alive.
-Do not rely on comments or editor metadata as part of a template's identity.
+Palette roles are `control`, `loop`, `action`, `value`, `state`, `definition`,
+`placeholder`, `snippet`, and `warning`. Metadata values must be literals.
+`all` is a cumulative library filter, not a block level. The source defines the
+appearance for the card, inserted block, preview and generated reference page.
 
-Translate snippet docstrings through the same gettext catalog as the interface;
-see [development](development.md#translations).
+The signature supplies expression fields and defaults. Defaults such as
+`motor=motor` are caller expressions, not objects created by loading the library.
+Provide defaults to allow insertion without a dialog. A docstring supplies help
+and search text. English is the source language; gettext provides translations
+for descriptions and group documentation.
 
-## Types and bundled blocks
+## Types and units
 
-An expression return annotation (`-> "bool"`, `-> "mm"`) gives its suggestion
-type. Annotations are read statically. Numeric units belong to the numeric type;
-no automatic unit conversion is performed. Known receiver types distinguish
-`motor.brake()` from `drive.brake()`. Unknown dynamic values remain ordinary Python.
+Annotations are strings with a type and an optional numeric unit:
 
-Bundled blocks cover motor creation and direction, speed, angle and timed moves,
-motor readings; DriveBase; color, reflection, ultrasonic distance, force and BOOST
-color/distance sensors; waits and stopwatches; variables, comparisons, logic and
-loops. Ports are expressions such as `Port.A`, without quotes. A whole device
-definition is recognized as one block. Scratch uses these templates without
-adding imports.
+| Annotation | Contract |
+|---|---|
+| `"Motor"` | A motor object |
+| `"int"` | An integer, excluding Boolean values |
+| `"number[deg/s]"` | A numeric angular speed |
+| `"int[ms]"` | An integer duration in milliseconds |
+| `"Motor | DriveBase"` | Either supported object type |
 
-BOOST distance is a relative percentage; ultrasonic distance uses millimeters.
-See the [BOOST sensor API](https://docs.pybricks.com/en/latest/pupdevices/colordistancesensor.html)
-and [UltrasonicSensor API](https://docs.pybricks.com/en/latest/pupdevices/ultrasonicsensor.html).
+Numeric types are `int`, `float`, and `number`. Units are `deg`, `deg/s`, `deg/s²`,
+`mm`, `mm/s`, `ms`, `s`, `%`, `N`, and `Hz`. Values on the hub remain ordinary
+numbers; there is no automatic unit conversion.
 
+Annotate input parameters in the signature. Use `-> "number[mm]"`, for example,
+only for a returned value. An action may omit the return annotation or use
+`-> "None"`. Annotate created variables in the body, as in `motor: "Motor"` above.
+Existing unannotated assignments can still match the same declaration block.
 
-## Groups and reference pages
+Static checks distinguish compatible, incompatible and unknown values. Obvious
+wrong types or units produce a red diagnostic; unknown dynamic values remain
+usable. A bare numeric literal adopts the field's unit. Types, suggestions, drag
+compatibility and diagnostics share the same contracts. This is conservative
+analysis, not a complete Python type checker or physical-units algebra.
 
-A module defines a group: `collection/motors.py` contributes `collection/motors`.
-Use a separate module for each coherent topic. The library and help share these
-groups; historical templates are excluded from the visible collection. Built-in
-groups have translated captions, and additional collections keep their module
-identity as the heading. All blocks in a group appear on one reference page.
-English docstrings are the original descriptions; the interface catalog supplies
-translations. F1 opens the selected block's stable section within its group.
+## Public fields and names
 
-## Difficulty levels
+Only signature fields and explicitly published declarations are editable inside
+a recognized block. `names=("motor",)` allows the created variable to be renamed,
+including its resolved uses in surrounding code. Nested declarations use lexical
+paths, such as `names=("action", "action.value")` for a function and its parameter.
+A signature parameter used as a declaration target can also be listed in `names`.
+Renames check scope collisions and accidental capture.
 
-The collection manifest assigns each block one level. Unlisted blocks default
-to `intermediate`; allowed levels are `beginner`, `intermediate`, `advanced`, and
-`expert`. Legacy `standard` entries are read as `intermediate`. Unknown
-block identities and levels are rejected. `all` is only a library filter value.
-Library cards and generated help use this same metadata. This is the level at
-which a block is introduced: the filters are cumulative. Keep Beginner small;
-follow the [learning paths](learning.md) when classifying new blocks.
+Methods, operators, constants and private names stay fixed unless they occur
+inside a public expression. Public expression lists can be edited structurally.
+Expand a block or edit Python to change its implementation. If the result no
+longer matches, it becomes ordinary Python and loses the old block description.
 
-```toml
-[levels]
-"motors/move_for" = "beginner"
+## Dependencies and helpers
+
+Imports may be module-level or inside an inline template. Required global imports
+are gathered into the managed import header; user imports remain untouched.
+Function-local imports in generated helpers retain their normal Python scope.
+
+Undecorated functions in the same module can be shared by several blocks. The
+editor includes their reachable dependencies once in the managed helper section.
+Removing the last use removes unused helpers and imports. References in ordinary
+code and Scratch count too, including unfinished Scratch text. Undo restores the
+source and dependencies together. Existing generated implementations are retained
+when a library changes; applying definitions does not rewrite open programs.
+
+Block modules contain a docstring, imports and function definitions. Block
+signatures have fixed parameters; inline bodies cannot use recursive templates,
+classes, or `global`/`nonlocal`. These restrictions keep substitution explicit.
+Ordinary helper functions retain ordinary Python signatures and local scopes.
+Calling a decorated block from helper code requires all its fields explicitly:
+block defaults fill the editor's insertion fields, not a runtime function signature.
+Use an undecorated helper when ordinary Python default arguments are needed.
+
+## Control statements
+
+Use `kind="statement"` to retain `return` as a statement:
+
+```python
+@inline_block(kind="statement", level="intermediate", icon="↩", color="control")
+def return_value(value=0):
+    """Return a result."""
+    return value
 ```
 
-A template annotated `-> "statement"` keeps its `return` as a statement instead of
-turning it into an expression template. This supports the return block, which is
-valid in a function body or as a detached Scratch fragment. A `-> "loop"` template
-contains one `while` wrapper: only its body is inserted. This lets `break` and
-`continue` templates remain compilable Python while insertion validates the
-destination's loop context. Other return
-annotations keep their existing expression/type meaning. Variable-length editing
-comes from the expanded Python call, definition or Boolean expression; template
-functions themselves still declare a fixed set of placeholders.
+For `break` and `continue`, use `context="loop"` and one `while` wrapper. Only its
+body is inserted. The wrapper makes the definition valid Python; insertion still
+checks that the destination is inside a loop. Context and insertion kind are not
+encoded in the return type.
 
-Parameter hints can list simple alternatives, such as
-`"ColorSensor | ColorDistanceSensor"`. Recognition, name suggestions and method
-result hints use the same alternatives without executing annotations. Use this
-for operations shared by devices; keep distinct units separate (BOOST distance
-is a percentage, ultrasonic distance is in millimeters).
+## Migrating older collections
+
+Older undecorated templates and manifest `[levels]` remain readable. Migrate a
+collection explicitly with:
+
+```sh
+pyblocks migrate-blocks ./my_robot
+pyblocks migrate-blocks ./my_robot --write
+```
+
+The first command prints a diff. The second applies the validated conversion,
+retaining inline algorithms, levels and historical versions. Existing programs
+are unchanged. The Block Editor also converts an opened legacy module into a
+source draft and removes its obsolete level entries when that draft is saved.

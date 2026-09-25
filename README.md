@@ -26,7 +26,9 @@ library, and known call errors are marked in place.
 
 The [Block Editor](doc/en/block-editor.md) shows a live preview above Python
 definitions. Inspect built-in blocks, copy them into a project collection, or
-create your own. Invalid drafts stay separate from the working library.
+create your own. Decorators define inline blocks or calls to shared helpers, with
+levels, icons, colors and editable names in the source. String annotations describe
+types and units. Invalid drafts stay separate from the working library.
 
 Virtual Inventor/Prime, BOOST, and Technic profiles support learning without a
 robot. Physical connections target hubs running Pybricks firmware. The window

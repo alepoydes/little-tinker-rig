@@ -37,7 +37,8 @@ from .library import LEVEL_TITLES, group_title, snippet_title
 
 def group_document(identity, snippets):
     parts = [
-        f"# {group_title(identity)}",
+        f"# {group_title(identity, snippets)}",
+        "\n".join(tr(snippets[0].group_help).splitlines()[1:]) if snippets else "",
         "\n".join(
             f"- [{snippet_title(snippet)}](#{snippet.identity.rsplit('/', 1)[1]})"
             for snippet in snippets
@@ -59,6 +60,13 @@ def group_document(identity, snippets):
             )
             parts.append(
                 f"### {tr('Parameters')}\n\n| {tr('Name')} | {tr('Unit / type')} | {tr('Default')} |\n|---|---|---|\n{parameters}"
+            )
+        if snippet.result_type and snippet.result_type not in {"statement", "loop"}:
+            parts.append(f"**{tr('Result')}:** `{snippet.result_type}`")
+        if snippet.names:
+            parts.append(
+                f"**{tr('Editable names')}:** "
+                + ", ".join(f"`{name}`" for name in snippet.names)
             )
         source = (
             ast.unparse(snippet.body)
@@ -247,7 +255,10 @@ class HelpPage(QWidget):
         for group, members in self.groups.items():
             identity = "library/" + group
             self.add_page(
-                templates, identity, group_title(group), group_document(group, members)
+                templates,
+                identity,
+                group_title(group, members),
+                group_document(group, members),
             )
             self.page_paths[identity] = self.root / "snippets.md"
             for snippet in members:

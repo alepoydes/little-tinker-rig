@@ -304,11 +304,18 @@ def test_library_search_uses_all_words_from_full_help_and_dynamic_functions(qt_a
         library.close()
 
 
-def test_receivers_and_methods_are_editable_in_templates_and_range_stays_simple():
+def test_receivers_are_editable_and_fixed_methods_require_expansion():
     owner = session(
         "from pybricks.pupdevices import Motor\nfrom pybricks.parameters import Port\nleft = Motor(Port.A)\nleft.run(100)\nfor i in range(10):\n    print(i)\n",
         builtin_snippets(),
     )
+    assert field(owner, "left", 1)
+    assert not any(
+        owner.document.syntax.source[s.span.start : s.span.end] == "run"
+        for s in slots(owner)
+    )
+    owner.editor.selection = owner.document.syntax.tree.body[-2]
+    owner.toggle_expansion()
     assert field(owner, "run").field == "attr"
     change_parameter(owner, field(owner, "run"), "stop")
     assert "left.stop(100)" in owner.document.syntax.source

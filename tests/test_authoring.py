@@ -11,10 +11,11 @@ from pyblocks.core.authoring import (
     template_from_source,
     user_collection,
 )
+from pyblocks.core.block_metadata import change_property
 from pyblocks.core.session import Session
 from pyblocks.core.snippets import builtin_snippets, instantiate, load_collection
 
-SOURCE = 'def show(value=1):\n    """Show a value."""\n    print(value)\n'
+SOURCE = '@inline_block(level="intermediate", icon="▶", color="action")\ndef show(value=1):\n    """Show a value."""\n    print(value)\n'
 
 
 def definition(tmp_path, source=SOURCE):
@@ -36,44 +37,48 @@ def test_drafts_recover_invalid_source_without_touching_library(tmp_path):
     assert reopened.source == draft.source
     assert reopened.dirty
     reopened.source = SOURCE.replace("print(value)", "print(value + 1)")
-    reopened.levels["actions/show"] = "beginner"
+    reopened.source = change_property(reopened.source, "show", "level", "beginner")
     reopened.save()
     assert not reopened.dirty
     assert not reopened.draft_path.exists()
     assert load_collection(reopened.root)[0].level == "beginner"
-    reopened.levels["actions/show"] = "advanced"
+    reopened.source = change_property(reopened.source, "show", "level", "advanced")
     assert reopened.dirty
 
 
 def test_template_validation_is_static_and_locates_errors(tmp_path):
     draft = definition(
         tmp_path,
-        'def run(motor: "Motor" = motor, speed=300):\n    """Run."""\n    motor.run(speed)\n',
+        '@inline_block\ndef run(motor: "Motor" = motor, speed=300):\n    """Run."""\n    motor.run(speed)\n',
     )
     _, snippets = draft.inspect()
     assert instantiate(snippets[0], {}).source == "motor.run(300)"
-    draft.source = 'def run(value=__import__("pathlib").Path("DO_NOT_CREATE").touch()):\n    print(value)\n'
+    draft.source = '@inline_block\ndef run(value=__import__("pathlib").Path("DO_NOT_CREATE").touch()):\n    print(value)\n'
     with patch("pathlib.Path.touch", side_effect=AssertionError("executed")):
         draft.inspect()
         draft.save()
-    draft.source = "def ok():\n    print(1)\n\ndef invalid(*args):\n    print(args)\n"
+    draft.source = "@inline_block\ndef ok():\n    print(1)\n\n@inline_block\ndef invalid(*args):\n    print(args)\n"
     with pytest.raises(SyntaxError) as error:
         draft.inspect()
-    assert error.value.lineno == 4
+    assert error.value.lineno == 6
     draft.source = "import math\n" + SOURCE
-    with pytest.raises(SyntaxError, match="inside template functions"):
+    assert draft.inspect()[1]
+    draft.source = 'print("must not execute")\n' + SOURCE
+    with pytest.raises(SyntaxError, match="only"):
         draft.inspect()
 
 
 def test_save_validates_whole_collection_and_preserves_other_modules(tmp_path):
     first = definition(tmp_path)
     second = DefinitionDraft(first.root / "numbers.py")
-    second.source = "def double(value=1):\n    return value * 2\n"
-    second.levels["numbers/double"] = "advanced"
+    second.source = (
+        '@inline_block(level="advanced")\ndef double(value=1):\n    return value * 2\n'
+    )
     second.save()
     first.source = SOURCE.replace("show", "display")
-    first.levels["actions/display"] = "beginner"
+    first.source = change_property(first.source, "display", "level", "beginner")
     first.save()
+    saved = first.source
     snippets = load_collection(first.root)
     assert {s.identity: s.level for s in snippets} == {
         "my_blocks/actions/display": "beginner",
@@ -82,7 +87,7 @@ def test_save_validates_whole_collection_and_preserves_other_modules(tmp_path):
     first.source = SOURCE + SOURCE
     with pytest.raises(ValueError, match="Duplicate"):
         first.save()
-    assert first.path.read_text() == SOURCE.replace("show", "display")
+    assert first.path.read_text() == saved
 
 
 def test_save_refuses_external_edits_and_rolls_back_manifest_failure(tmp_path):
@@ -92,9 +97,13 @@ def test_save_refuses_external_edits_and_rolls_back_manifest_failure(tmp_path):
     with pytest.raises(ValueError, match="outside"):
         draft.save()
     assert draft.path.read_text().endswith("print(value)\n")
+    # Migrating an old module is the one operation that also updates its manifest.
+    (draft.root / "collection.toml").write_text(
+        '[collection]\nid="my_blocks"\nversion="1"\n[levels]\n"actions/show"="beginner"\n'
+    )
+    draft.path.write_text(SOURCE.split("\n", 1)[1])
     draft = DefinitionDraft(draft.path)
     original = draft.saved_source
-    draft.source = SOURCE
     from pyblocks.core.project import atomic_write
 
     def fail_manifest(path, text):
@@ -182,7 +191,7 @@ def test_editor_preview_navigation_drafts_and_test_values(tmp_path, qt_app):
         assert not page.code.isReadOnly()
         page.code.setPlainText(
             SOURCE
-            + '\n\n# between functions\n\ndef other(value=2):\n    """Other."""\n    print(value + 2)\n'
+            + '\n\n# between functions\n\n@inline_block\ndef other(value=2):\n    """Other."""\n    print(value + 2)\n'
         )
         page.check()
         page.code.moveCursor(QTextCursor.MoveOperation.Start)
@@ -365,3 +374,172 @@ def test_editor_groups_copies_and_language_changes_keep_edits(tmp_path, qt_app):
     finally:
         window.close()
         window.deleteLater()
+
+
+def test_metadata_controls_are_source_edits_with_undo_and_no_manifest_changes(
+    tmp_path, qt_app
+):
+    from pyblocks.qt.authoring import BlockEditor
+
+    root = user_collection(tmp_path)
+    manifest = (root / "collection.toml").read_bytes()
+    page = BlockEditor(lambda: root, lambda *_: None)
+    try:
+        page.create(SOURCE)
+        original = page.code.toPlainText()
+        page.level.setCurrentIndex(page.level.findData("expert"))
+        assert page.preview_snippet.level == "expert"
+        assert "expert" in page.code.toPlainText()
+        page.code.undo()
+        page.check()
+        assert page.code.toPlainText() == original
+        assert page.preview_snippet.level == "intermediate"
+        page.icon.setText("↪")
+        page.icon.editingFinished.emit()
+        page.color.setText("#88bbcc")
+        page.color.editingFinished.emit()
+        page.save()
+        saved = load_collection(root)[0]
+        assert (saved.icon, saved.color) == ("↪", "#88bbcc")
+        assert (root / "collection.toml").read_bytes() == manifest
+        page.code.undo()
+        page.check()
+        assert page.preview_snippet.color == "action"
+        assert page.preview_snippet.icon == "↪"
+    finally:
+        page.flush()
+        page.close()
+
+
+def test_shared_helpers_preview_copy_and_rename_together(tmp_path, qt_app):
+    from pyblocks.qt.authoring import BlockEditor
+
+    root = user_collection(tmp_path)
+    source = '''"""Measurements"""
+from math import sqrt
+
+def magnitude(value):
+    return sqrt(value * value)
+
+@block(level="beginner", color="value", icon="＝")
+def measure(value=-3) -> "number":
+    """Measure a value."""
+    return magnitude(value)
+'''
+    path = root / "measurements.py"
+    path.write_text(source)
+    page = BlockEditor(lambda: root, lambda *_: None)
+    try:
+        page.configure(load_collection(root), (root,))
+        page.open_path(path, "measure")
+        assert page.preview_snippet.identity.endswith("/measure")
+        assert len(page.preview_snippet.helpers) == 2
+        page.copy_block()
+        page.copy_block()
+        page.save()
+        snippets = [s for s in load_collection(root) if "/custom/" in s.identity]
+        assert len(snippets) == 2
+        for snippet in snippets:
+            expanded = instantiate(snippet, {})
+            namespace = {}
+            exec("\n".join((*expanded.imports, *expanded.helpers)), namespace)
+            assert eval(expanded.source, namespace) == 3
+        assert "magnitude_2" in page.code.toPlainText()
+    finally:
+        page.flush()
+        page.close()
+
+
+def test_copy_checks_import_collisions_before_changing_module(tmp_path, qt_app):
+    from pyblocks.qt.authoring import BlockEditor
+
+    root = user_collection(tmp_path)
+    page = BlockEditor(lambda: root, lambda *_: None)
+    try:
+        page.create(
+            "from math import sqrt as show\n@block\ndef calculate(value=4):\n    return show(value)\n"
+        )
+        page.create(SOURCE)
+        assert "def show_2(" in page.code.toPlainText()
+        previous = page.code.toPlainText()
+        with pytest.raises(ValueError, match="Import names conflict"):
+            page.create("from math import cos as show\n" + SOURCE)
+        assert page.code.toPlainText() == previous
+        page.save()
+        for snippet in load_collection(root):
+            expanded = instantiate(snippet, {})
+            namespace = {}
+            exec("\n".join((*expanded.imports, *expanded.helpers)), namespace)
+            if snippet.expression:
+                assert eval(expanded.source, namespace) == 2
+    finally:
+        page.flush()
+        page.close()
+
+
+def test_created_name_preview_navigates_to_its_typed_declaration(tmp_path, qt_app):
+    from pyblocks.qt.authoring import BlockEditor
+
+    root = user_collection(tmp_path)
+    page = BlockEditor(lambda: root, lambda *_: None)
+    try:
+        page.create(
+            '@inline_block(names=("counter",))\ndef create():\n    counter: "int" = 0\n'
+        )
+        field = next(
+            slot
+            for slot in page.preview.parameter_slots
+            if slot.parameter.name == "counter"
+        )
+        assert field.match is not None
+        page.preview.parameter_clicked.emit(field.parameter.name)
+        assert page.code.textCursor().selectedText() == "counter"
+        assert page.code.textCursor().blockNumber() == 2
+        assert page.code.references
+    finally:
+        page.close()
+
+
+def test_invalid_default_and_result_types_are_located_without_execution(tmp_path):
+    draft = definition(
+        tmp_path, '@block\ndef duration(value: "int[ms]" = 0.5):\n    print(value)\n'
+    )
+    with pytest.raises(SyntaxError, match="Default") as failure:
+        draft.inspect()
+    assert failure.value.lineno == 2
+    draft.source = '@block\ndef duration() -> "int[ms]":\n    return "wrong"\n'
+    with pytest.raises(SyntaxError, match="Expected") as failure:
+        draft.inspect()
+    assert failure.value.lineno == 3
+
+
+def test_legacy_draft_levels_migrate_without_losing_invalid_text(tmp_path):
+    root = tmp_path / "blocks"
+    root.mkdir()
+    (root / "collection.toml").write_text(
+        '[collection]\nid="old"\nversion="1"\n[levels]\n"actions/show"="standard"\n'
+    )
+    path = root / "actions.py"
+    legacy_source = SOURCE.split("\n", 1)[1]
+    path.write_text(legacy_source)
+    drafts = root / ".drafts"
+    drafts.mkdir()
+    (drafts / "actions.py.json").write_text(
+        json.dumps(
+            {
+                "source": "def show(\n",
+                "base_source": legacy_source,
+                "levels": {"actions/show": "beginner"},
+                "base_levels": {"actions/show": "standard"},
+            }
+        )
+    )
+    draft = DefinitionDraft(path)
+    assert draft.source == "def show(\n"
+    draft.persist()
+    draft = DefinitionDraft(path)
+    draft.source = legacy_source
+    draft.save()
+    assert load_collection(root)[0].level == "beginner"
+    assert "[levels]" not in (root / "collection.toml").read_text()
+    assert not draft.draft_path.exists()

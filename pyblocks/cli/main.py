@@ -44,6 +44,15 @@ def parser() -> argparse.ArgumentParser:
         help="Additional snippet collection directory",
     )
     commands = result.add_subparsers(dest="command", required=True)
+    migration = commands.add_parser(
+        "migrate-blocks", help="Convert a legacy block collection to source decorators"
+    )
+    migration.add_argument("directory", type=Path)
+    migration.add_argument(
+        "--write",
+        action="store_true",
+        help="Apply the validated migration; otherwise print its diff",
+    )
     for name in (
         "inspect",
         "diagnose",
@@ -115,6 +124,42 @@ def parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     arguments = parser().parse_args(argv)
     try:
+        if arguments.command == "migrate-blocks":
+            from difflib import unified_diff
+
+            from pyblocks.core.migration import migrate_collection
+            from pyblocks.core.project import atomic_write
+
+            changes = migrate_collection(arguments.directory)
+            originals = {
+                name: (arguments.directory / name).read_text(encoding="utf-8")
+                for name in changes
+            }
+            if arguments.write:
+                written = []
+                try:
+                    for name, source in changes.items():
+                        if source != originals[name]:
+                            atomic_write(arguments.directory / name, source)
+                            written.append(name)
+                except OSError:
+                    for name in reversed(written):
+                        atomic_write(arguments.directory / name, originals[name])
+                    raise
+            else:
+                for name, source in changes.items():
+                    print(
+                        "".join(
+                            unified_diff(
+                                originals[name].splitlines(keepends=True),
+                                source.splitlines(keepends=True),
+                                fromfile=name,
+                                tofile=name,
+                            )
+                        ),
+                        end="",
+                    )
+            return 0
         if arguments.command == "controller":
             from pyblocks.core.project import atomic_write
 

@@ -52,7 +52,10 @@ def test_fragment_library_imports_partial_transfer_and_reorder(tmp_path):
     fragment = Session.fragment("", session.snippets)
     fragment.insert_snippet(snippet(session, "create_ultrasonic_sensor"), {})
     assert "import" not in fragment.document.state.source
-    assert fragment.document.state.source == "distance = UltrasonicSensor(Port.D)\n"
+    declaration = fragment.document.syntax.tree.body[0]
+    assert isinstance(declaration, ast.AnnAssign)
+    assert declaration.annotation.value == "UltrasonicSensor"
+    assert ast.unparse(declaration.value) == "UltrasonicSensor(Port.D)"
     session.set_scratch(
         None, fragment.document.state.source + "print(distance.distance())\n"
     )
@@ -115,7 +118,8 @@ def test_typed_choices_and_coherent_constructor_blocks(tmp_path):
     } & set(boolean)
     assert choices(session, Parameter("motor", None, "Motor"), offset) == ("left",)
     numeric = choices(session, Parameter("speed", None, "deg/s"), offset)
-    assert {"speed", "left.angle()", "distance.distance()"} <= set(numeric)
+    assert "speed" in numeric
+    assert not {"left.angle()", "distance.distance()"} & set(numeric)
     assert "button.pressed()" not in numeric and "ready" not in numeric
     match = next(
         m for m in session.matches if m.snippet.identity.endswith("/create_motor")
@@ -191,13 +195,17 @@ def test_qt_drag_library_scratch_program_undo_and_raw_draft(tmp_path, qt_app):
         assert not window.session.document.state.source
         assert len(window.scratch.cells) == 1
         cell = window.scratch.cells[0]
-        assert cell.source.toPlainText() == "motor = Motor(Port.A)\n"
+        motor_source = cell.source.toPlainText()
+        declaration = ast.parse(motor_source).body[0]
+        assert isinstance(declaration, ast.AnnAssign)
+        assert declaration.annotation.value == "Motor"
+        assert ast.unparse(declaration.value) == "Motor(Port.A)"
         assert cell.source.isVisible() and not cell.code_active
         assert cell.source.notes[1][0].description
         data = BlockMime(Transfer.capture(window.session, index=0))
         send_drop(qt_app, window.source.viewport(), data, QPoint(30, 30))
         assert not window.scratch.cells and not window.session.analysis.diagnostics()
-        assert "motor = Motor(Port.A)" in window.source.toPlainText()
+        assert "Motor(Port.A)" in window.source.toPlainText()
         main = window.session.document.state
         window.session.editor.selection = window.session.document.syntax.tree.body[-1]
         data = BlockMime(Transfer.capture(window.session))
@@ -215,7 +223,9 @@ def test_qt_drag_library_scratch_program_undo_and_raw_draft(tmp_path, qt_app):
         cell.code.insertPlainText("motor =")
         assert window.session.document.state.scratch == ("motor =",)
         window.undo_action.trigger()
-        assert window.session.document.state.scratch == ("motor = Motor(Port.A)\n",)
+        assert ast.dump(
+            ast.parse(window.session.document.state.scratch[0])
+        ) == ast.dump(ast.parse(motor_source))
         window.session.project.save()
         loaded = Session(window.session.project.path)
         assert loaded.document.state == window.session.document.state

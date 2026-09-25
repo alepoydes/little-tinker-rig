@@ -472,98 +472,59 @@ The user can always switch to generic Python editing, at which point the snippet
 
 ---
 
-## 15. Snippet definitions as ordinary Python functions
+## 15. Source-complete block definitions
 
-Snippet libraries should themselves be ordinary Python modules.
-
-The preferred authoring form is a restricted Python function used as a static template definition.
-
-For example:
+A Python definition is the sole source of block behavior and metadata. Modules
+are parsed statically; loading never executes decorators, imports, defaults or
+bodies. Each module defines a group, with its docstring providing the group title
+and description. A function docstring provides block help and search text.
 
 ```python
-def run_motor(motor, speed: "deg/s" = 500):
-    """Run the motor continuously at the selected speed."""
+@inline_block(level="beginner", icon="⚙", color="state", names=("motor",))
+def create_motor(port: "Port" = Port.A):
+    """Connect a motor to a hub port."""
+    from pybricks.parameters import Port
     from pybricks.pupdevices import Motor
 
-    motor.run(speed)
+    motor: "Motor" = Motor(port)
 ```
 
-The snippet loader should parse these modules as source/AST. Third-party snippet definitions should not need to be imported or executed merely to become available to the editor.
+`@inline_block` substitutes the body into the destination scope. A single return
+expression defines an expression block. Repeated fields repeat evaluation.
+`@block` generates an ordinary helper call: arguments are evaluated once and
+locals are confined to the function. Modes are explicit and never converted
+silently. Generated programs need no PyBlocks runtime or decorators.
 
-From the function definition the system derives:
+Both decorators accept literal `level`, `icon`, `color`, and optional `kind`.
+Inline blocks additionally accept `names` and `context="loop"`. Difficulty is one
+of beginner, intermediate, advanced, expert; all is only a filter. A color is a
+palette role or #RRGGBB. Defaults are intermediate, ▶, and the snippet palette.
 
-- function name -> snippet identity/name basis;
-- formal parameters -> editable placeholders;
-- defaults -> initial placeholder values;
-- annotations -> optional semantic/type/unit metadata;
-- docstring -> help text;
-- imports inside the function -> dependencies;
-- remaining body -> AST template.
+Signature parameters define expression fields. `names` publishes declarations
+for lexical renaming, including created variables and nested names such as
+`action.value`. Other methods, constants, operators and internal identifiers are
+fixed until explicit expansion/Python editing. Every structural entry point,
+including list controls and drops, uses the same permission rules. Public
+expression lists remain extensible; changed implementations lose recognition
+and their previous descriptions.
 
-This keeps snippet authoring close to ordinary Python and avoids verbose declarative schemas.
+Input contracts live in parameter annotations. Created variables have annotated
+assignments in the body; result annotations describe actual returned values.
+`kind="statement"` keeps return as an instruction. `context="loop"` unwraps one
+while body for break/continue; control context is not a result type.
 
-### 15.1 Statement snippets
+Undecorated functions in a format-2 module are shared helpers. Reachable helpers
+are emitted once, with stable implementation-derived private names. Definitions
+and dependencies are retained while referenced by ordinary code or Scratch and
+pruned after their final use. Existing implementations survive library reloads;
+undo restores code and dependencies atomically. Imports are similarly managed,
+while local imports inside generated functions retain normal Python scope.
 
-A function whose effective body contains statements expands to those statements.
-
-Example:
-
-```python
-def run_motor(motor, speed=500):
-    motor.run(speed)
-```
-
-may instantiate to:
-
-```python
-left_motor.run(700)
-```
-
-### 15.2 Expression snippets
-
-A function whose effective snippet body is a `return` can define an expression template.
-
-Example:
-
-```python
-def reflection_below(sensor, threshold: "%" = 30):
-    """True when reflected light is below the threshold."""
-    return sensor.reflection() < threshold
-```
-
-may instantiate to:
-
-```python
-sensor.reflection() < 30
-```
-
-### 15.3 Complex snippets
-
-A snippet may contain a substantial algorithm:
-
-```python
-def follow_edge(drive, sensor, target: "%" = 50, gain=2):
-    """Follow the edge of a line."""
-    while True:
-        error = sensor.reflection() - target
-        drive.drive(200, gain * error)
-```
-
-In the main source this remains ordinary expanded Python.
-
-In the visual editor it may be treated as one recognized compound block whose public editable parameters are `drive`, `sensor`, `target`, and `gain`.
-
-The internal AST does not need to be individually exposed until the user chooses to edit/expand the snippet as generic Python.
-
-### 15.4 Restrictions on snippet-definition functions
-
-Snippet-definition functions are templates, not general programs.
-
-Agreed restriction:
-
-- snippet definitions should be non-recursive.
-
-Other restrictions should be added only when implementation requires them; they have not yet been fully specified.
+Block signatures have fixed parameters. Inline templates reject recursion,
+classes and global/nonlocal declarations; ordinary helpers use normal Python
+signatures. Calls to decorated blocks inside helper code supply every field;
+block defaults are insertion expressions, not runtime function defaults.
+The module itself contains a docstring, imports and functions.
 
 ---
 
@@ -664,8 +625,10 @@ snippets/
         line.py
 ```
 
-Collections use `collection.toml` for identity, version, history and difficulty
-levels. Python modules define groups; functions define the blocks in each group.
+Collections use `collection.toml` for identity, version, format version and history.
+Format 2 uses decorators for blocks and ordinary functions for helpers. Block
+levels and appearance belong exclusively to the definition source. Legacy
+collections remain readable and have an explicit, validated migration command.
 
 A major design goal is that writing a new snippet should require mostly writing normal Python rather than authoring a large schema or UI definition.
 
@@ -688,8 +651,7 @@ starters. A program selection can become a draft, with explicit parameter choice
 
 The default user collection is `blocks/` beside the program, connected using a
 relative path in the program workspace. A group field chooses the module, so
-related blocks share one file and reference page. Difficulty lives only in the
-manifest. Invalid drafts live separately in `.drafts/*.py.json`; saving validates
+related blocks share one file and reference page. Level, icon and color controls edit decorator literals with normal text Undo. Invalid drafts live separately in `.drafts/*.py.json`; saving validates
 the collection before replacing active definitions and detects external changes.
 The library and help expose Open definition links.
 
@@ -822,35 +784,20 @@ Rules:
 
 ---
 
-## 23. Units and engineering metadata
+## 23. Types and units
 
-Engineering units are a general problem in robotics and scientific code. Pybricks APIs frequently use quantities such as degrees, degrees per second, milliseconds, millimeters, percentages, and similar units.
+String annotations use a type and optional numeric unit: "Motor", "int",
+"number[deg/s]", "int[ms]"; alternatives use |. Numeric types are int, float and
+number. Units are deg, deg/s, deg/s², mm, mm/s, ms, s, %, N and Hz. Generated
+values remain ordinary Python values; units are never converted automatically.
 
-The initial implementation should keep runtime Python simple: values on the hub remain ordinary numbers unless the underlying API itself requires otherwise.
-
-Units are primarily editor/static metadata.
-
-Snippet annotations are a natural place to express them, for example:
-
-```python
-def run_motor(motor, speed: "deg/s" = 500):
-    ...
-```
-
-or:
-
-```python
-def wait_ms(time: "ms" = 1000):
-    ...
-```
-
-This allows frontends to show compact unit hints beside editable values without changing the generated/runtime Python.
-
-The annotation model may later also support semantic object kinds such as `Motor`, `ColorSensor`, `DriveBase`, etc.
-
-The exact annotation syntax beyond simple useful cases is not yet fixed.
-
-A future static diagnostic may detect obvious incompatible-unit operations, but a full physical-units type system is not required for the first implementation.
+The shared static model supplies field hints, suggestions, drag compatibility,
+declaration/result inference and diagnostics. Compatibility has three outcomes:
+compatible, incompatible, unknown. Known contradictory types/units are errors;
+unknown dynamic values are allowed. A numeric literal adopts its field's unit.
+This is conservative analysis, not a complete Python type checker or general
+physical-units algebra. Existing unannotated assignments can match typed
+creation templates without rewriting the program.
 
 ---
 
@@ -1589,12 +1536,12 @@ The following questions remain intentionally open and should not be guessed duri
 
 1. Which canonical Python formatter to use.
 2. Exact TUI framework/library.
-3. Exact snippet collection package/manifest format.
+3. Distribution of external collections beyond the directory-based format.
 4. Exact persistence format for Scratch workspace.
 5. Exact project-level mechanism for selecting/pinning snippet collections.
 6. Exact historical-pattern storage format.
 7. Precise conflict-resolution rules when multiple snippet templates match the same region.
-8. Exact type/unit annotation syntax beyond simple cases.
+8. Extensions beyond the current string type/unit grammar.
 9. Exact comment-attachment policy when moving source blocks.
 10. Exact Pybricks host API calls and supported transports in the current library version.
 11. Exact hub-side helper API for virtual/physical controller state.
@@ -1616,11 +1563,11 @@ PyBlocks Studio should be built around a very small set of strong ideas:
 - Indentation plus semantic backgrounds can provide a Scratch-like visual hierarchy while showing real Python.
 - Main source remains syntactically valid; Scratch is the place for unfinished code.
 - Drag-and-drop is generalized as navigation through legal structural insertion targets.
-- Snippets are Python-function AST templates with parameters as placeholders, docstrings as help, imports as dependencies, and annotations as optional semantic/unit metadata.
+- Block definitions are statically parsed Python functions. Decorators specify inline substitution or a generated helper call, level, appearance and editable declarations. Signatures and annotations specify fields and type/unit contracts; docstrings and imports provide help and dependencies.
 - Snippets are recognized structurally in ordinary Python source.
 - Snippet versions are handled by collection versioning and historical AST matching, without adding per-snippet markers to source.
 - Compatible snippet upgrades are generated by extracting old bindings and instantiating the new template.
-- Auto-managed imports are clearly separated from user imports using ordinary comments.
+- Auto-managed imports and shared helpers have separate sections marked by ordinary comments; their lifecycle follows references in the program and Scratch.
 - Scope analysis provides lightweight completion and undefined-name checking.
 - Style semantics and interaction primitives live in the core; Qt, TUI, and CLI are thin independent frontends.
 - Qt and TUI are developed together to enforce this separation.
@@ -1633,7 +1580,7 @@ The project should feel like ordinary Python that has acquired structure, constr
 
 ## Desktop library and hub actions
 
-Every block has one manifest level: beginner, intermediate, advanced, or expert. All exists only
+Every block has one decorator level: beginner, intermediate, advanced, or expert. All exists only
 as a filter choice. Levels are cumulative and a fresh installation starts at
 Beginner: twenty blocks for motor/sensor and robot setup, bounded moves, waits,
 repetition, console feedback and complete line/remote activities. Intermediate
@@ -1659,8 +1606,8 @@ painting a region, preserving each descendant's hue and comment ownership.
 Prepared activities use short inline templates and native Pybricks operations.
 Their source is visible and can be expanded without changing its behavior.
 Expansion is a temporary editing view and is recalculated after source changes;
-separate use/unpack level metadata is not implemented. Shared helper lifecycle,
-general events, gait frameworks and host media blocks remain deferred.
+separate use/unpack level metadata is not implemented. Shared helper lifecycle is implemented. General events, gait frameworks and
+host media blocks remain deferred.
 Sensor/motion activities specify termination and brake in Python cleanup. Direct
 remote pairing and steering-stop calibration are hardware capabilities, not
 features of the virtual physics model.

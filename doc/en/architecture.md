@@ -20,6 +20,13 @@ Document publishes a revision only after formatting and compilation. Compilation
 checks context but does not execute code. History stores source and Scratch
 snapshots together. An invalid text draft stays outside the committed document.
 
+Block definitions use static decorators as their sole metadata source. The loader
+feeds the library, authoring preview, help and structural edit permissions.
+Signature, declaration and result annotations share a parsed type/unit model.
+Known mismatches are diagnosed; unknown dynamic values stay usable. At commit,
+reachable generated helpers and imports are reconciled with main and Scratch
+references before the new snapshot is published.
+
 Qt DocumentPage owns one Session, a structural view, a Python draft and its native
 text undo. The window owns document tabs, global workspaces, help, console and one
 hub connection. Changing tabs or language preserves document widgets and history.

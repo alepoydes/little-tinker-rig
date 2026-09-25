@@ -57,13 +57,19 @@ occurrences together, and commits atomically.
 ## Libraries and analysis
 
 `load_module` and `load_collection` parse without execution. `instantiate`
-returns `Expansion(source, imports)`, accepting expressions as strings or AST.
-`occupied` enables hygienic local renaming. `recognize` returns Match objects with
+returns `Expansion(source, imports, helpers)`, accepting expressions as strings or AST.
+Decorators supply insertion mode, level, appearance and editable declarations;
+`legacy=False` treats undecorated functions as helpers. `occupied` enables hygienic
+local renaming. `recognize` returns Match objects with
 bindings, local names and occurrences. `upgrade` checks version/signature
 compatibility. `manage_imports` only manages its marked section and retains
 references from ordinary code and Scratch.
 
-Analysis.available lists lexical names; diagnostics report unknown references.
+`Session.insert_snippet` installs imports and reachable helpers in the same undo
+transaction. Existing generated implementations survive collection reloads.
+`Analysis.type_info` returns a known type/unit pair or `None`; `compatibility`
+distinguishes compatible, incompatible and unknown values. `Analysis.available`
+lists lexical names; diagnostics report unknown references and known contract errors.
 `presentation.regions` exposes source spans, roles, depth, line extension and
 fold/move capability. `PALETTE` and `snippet_role` keep library and source colors
 consistent; renderers own geometry and animation.

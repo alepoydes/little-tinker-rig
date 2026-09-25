@@ -1,27 +1,32 @@
-"""Small hub actions; capabilities remain explicit in types and help."""
+"""Hub lights, sound and motion
 
+Small hub actions; capabilities remain explicit in types and help."""
 
+@inline_block(level="intermediate", icon="▣", color="state", names=("name",))
 def prime_hub(name=hub):
     """Connect to the SPIKE Prime or Robot Inventor hub."""
     from pybricks.hubs import PrimeHub
 
-    name = PrimeHub()
+    name: "PrimeHub" = PrimeHub()
 
 
+@inline_block(level="intermediate", icon="▣", color="state", names=("name",))
 def move_hub(name=hub):
     """Connect to the BOOST Move Hub."""
     from pybricks.hubs import MoveHub
 
-    name = MoveHub()
+    name: "MoveHub" = MoveHub()
 
 
+@inline_block(level="intermediate", icon="▣", color="state", names=("name",))
 def technic_hub(name=hub):
     """Connect to the Technic Hub."""
     from pybricks.hubs import TechnicHub
 
-    name = TechnicHub()
+    name: "TechnicHub" = TechnicHub()
 
 
+@inline_block(level="intermediate", icon="▶", color="action")
 def light(
     hub: "PrimeHub | InventorHub | MoveHub | TechnicHub" = hub,
     color: "Color" = Color.GREEN,
@@ -32,11 +37,13 @@ def light(
     hub.light.on(color)
 
 
+@inline_block(level="intermediate", icon="▶", color="action")
 def light_off(hub: "PrimeHub | InventorHub | MoveHub | TechnicHub" = hub):
     """Turn off the hub status light."""
     hub.light.off()
 
 
+@inline_block(level="intermediate", icon="▶", color="action")
 def icon(hub: "PrimeHub | InventorHub" = hub, icon: "Icon" = Icon.HEART):
     """Show an icon on the Prime or Inventor display."""
     from pybricks.parameters import Icon
@@ -44,10 +51,11 @@ def icon(hub: "PrimeHub | InventorHub" = hub, icon: "Icon" = Icon.HEART):
     hub.display.icon(icon)
 
 
+@inline_block(level="intermediate", icon="▶", color="action")
 def beep(
     hub: "PrimeHub | InventorHub" = hub,
-    frequency: "Hz" = 500,
-    duration: "ms" = 100,
+    frequency: "int[Hz]" = 500,
+    duration: "number[ms]" = 100,
 ):
     """Play a tone on the Prime or Inventor speaker.
 
@@ -56,11 +64,13 @@ def beep(
     hub.speaker.beep(frequency, duration)
 
 
+@inline_block(level="advanced", icon="▶", color="action")
 def display_number(hub: "PrimeHub | InventorHub" = hub, value: "number" = 0):
     """Show a number on the Prime or Inventor display."""
     hub.display.number(value)
 
 
+@inline_block(level="intermediate", icon="＝", color="value")
 def button_pressed(
     hub: "PrimeHub | InventorHub | MoveHub | TechnicHub" = hub,
     button: "Button" = Button.CENTER,
@@ -74,6 +84,7 @@ def button_pressed(
     return button in hub.buttons.pressed()
 
 
+@inline_block(level="intermediate", icon="＝", color="value")
 def tilted(
     hub: "PrimeHub | InventorHub | MoveHub | TechnicHub" = hub,
     side: "Side" = Side.LEFT,
@@ -84,13 +95,15 @@ def tilted(
     return hub.imu.up() == side
 
 
-def heading(hub: "PrimeHub | InventorHub | TechnicHub" = hub) -> "deg":
+@inline_block(level="advanced", icon="▶", color="action")
+def heading(hub: "PrimeHub | InventorHub | TechnicHub" = hub) -> "number[deg]":
     """Read the gyro heading in degrees.
 
     Positive angles turn clockwise. BOOST has tilt sensing, not a gyro heading."""
     return hub.imu.heading()
 
 
+@inline_block(level="advanced", icon="▶", color="action")
 def battery_voltage(
     hub: "PrimeHub | InventorHub | MoveHub | TechnicHub" = hub,
 ) -> "number":
@@ -98,6 +111,7 @@ def battery_voltage(
     return hub.battery.voltage()
 
 
+@inline_block(level="advanced", icon="▶", color="action")
 def display_pattern(
     hub: "PrimeHub | InventorHub" = hub,
     pixels: "list | tuple | Matrix" = [
@@ -115,6 +129,7 @@ def display_pattern(
     hub.display.icon(pixels)
 
 
+@inline_block(level="intermediate", icon="▶", color="action")
 def display_off(hub: "PrimeHub | InventorHub" = hub):
     """Clear the hub display."""
     hub.display.off()

@@ -32,8 +32,13 @@ Definition drafts are independent of both committed programs and their text
 drafts. Static validation must accept template placeholders without evaluating
 them. Collection reload invalidates recognition caches, including Scratch, while
 preserving source and undo histories. Test invalid-draft recovery, read-only
-built-ins, external-change detection, and a failed manifest write after a module
-write. Preview values must not leak into saved defaults or library cards.
+built-ins, external-change detection, and a failed manifest write during legacy
+migration. Preview values must not leak into saved defaults or library cards.
+Decorator controls must modify source with ordinary text undo. Block contracts
+cover lexical renaming, fixed implementation fields, type/unit diagnostics,
+helper deduplication, dependency cleanup, library reloads and Scratch retention.
+Migration checks preserve expanded algorithms and historical source and verify
+that validation failures or write errors leave collections recoverable.
 
 Motor tests check motion and stopping, not just encoding. Simulate a device failing
 after another motor has started: cleanup must brake the newly started motor too.

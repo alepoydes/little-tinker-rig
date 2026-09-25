@@ -24,7 +24,7 @@ from pyblocks.core import edit
 from pyblocks.core.analysis import identifiers
 from pyblocks.core.edit import target_position
 from pyblocks.core.parameters import default_bindings, has_choices, slots
-from pyblocks.core.presentation import PALETTE, regions
+from pyblocks.core.presentation import regions, role_color
 from pyblocks.core.snippets import instantiate
 from pyblocks.core.transfer import Transfer
 from pyblocks.i18n import language, tr
@@ -381,7 +381,7 @@ class SourceView(QTextEdit):
                 ),
                 default=0,
             )
-            color = saturated(PALETTE[region.role], amount)
+            color = saturated(role_color(region.role), amount)
             color.setAlphaF(self.intensity)
             painter.setBrush(color)
             for rect in self.region_rects(region, first_line, last_line):
@@ -1092,6 +1092,10 @@ class SourceView(QTextEdit):
             candidate = self.pointer_target(point)
         if candidate is not None and candidate not in self.drop_validity:
             try:
+                if not self.session.accepts_target(candidate):
+                    raise ValueError(
+                        "Expand the block to edit its fixed implementation"
+                    )
                 text = self.drop_preview(candidate)
                 transfer = self.drop_transfer
                 same = transfer is not None and transfer.origin == self.scratch_index
@@ -1112,15 +1116,24 @@ class SourceView(QTextEdit):
                 else:
                     edit.insert(syntax, candidate, text)
                 if isinstance(candidate, ast.expr) and slot:
-                    from pyblocks.core.analysis import value_type
+                    from pyblocks.core.types import (
+                        Compatibility,
+                        compatibility,
+                        known_type,
+                        numeric_literal,
+                    )
 
-                    expected = value_type(slot.parameter.annotation)
-                    actual = value_type(
+                    expected = slot.parameter.annotation
+                    actual = known_type(
                         self.drop_snippet.result_type
                         if self.drop_snippet
                         else self.drop_transfer.result_type
                     )
-                    if expected and actual and expected != actual:
+                    literal = numeric_literal(ast.parse(text.strip(), mode="eval").body)
+                    if (
+                        compatibility(expected, actual, literal=literal)
+                        is Compatibility.INCOMPATIBLE
+                    ):
                         raise ValueError("The expression does not fit this parameter")
                 self.drop_validity[candidate] = True
             except (SyntaxError, ValueError):

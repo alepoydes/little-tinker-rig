@@ -19,6 +19,7 @@ class Document:
         self, source: str = "", scratch: tuple[str, ...] = (), *, fragment=False
     ):
         self.fragment = fragment
+        self.prepare = None
         # Scratch is a parsed projection of its existing text, not a new edit.
         # Canonical formatting belongs to commits, not view construction.
         source = source if fragment else format_source(source)
@@ -45,12 +46,15 @@ class Document:
 
     def commit(self, source: str, scratch: tuple[str, ...] | None = None) -> bool:
         """Validate and format before publishing; return whether state changed."""
+        scratch = self.state.scratch if scratch is None else tuple(scratch)
+        if self.prepare is not None:
+            source = self.prepare(source, scratch)
         source = (
             format_source(source, fragment=self.fragment)
             if source != self.state.source
             else source
         )
-        state = State(source, self.state.scratch if scratch is None else tuple(scratch))
+        state = State(source, scratch)
         if state == self.state:
             return False
         syntax = (

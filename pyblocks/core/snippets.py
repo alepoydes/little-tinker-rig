@@ -2,16 +2,21 @@
 
 import ast
 import copy
+import keyword
 import tomllib
 from bisect import bisect_left
 from dataclasses import dataclass, replace
+from dataclasses import field as dataclass_field
 from functools import cached_property
 from pathlib import Path
 
-from .analysis import Analysis, Scopes, annotation_text, annotation_types, identifiers
-from .syntax import Span, Syntax
+from pyblocks.i18n import N_
 
-LEVELS = ("beginner", "intermediate", "advanced", "expert")
+from .analysis import Analysis, Scopes, annotation_text, identifiers
+from .block_metadata import LEVELS, decorator, metadata
+from .helpers import helper_functions, helper_section, referenced_helpers
+from .syntax import Span, Syntax
+from .types import Compatibility, canonical, compatibility, numeric_literal
 
 
 @dataclass(frozen=True)
@@ -34,6 +39,13 @@ class Snippet:
     result_type: str | None = None
     level: str = "intermediate"
     source_path: Path | None = None
+    mode: str = "legacy"
+    icon: str | None = None
+    color: str | None = None
+    names: dict[str, str] = dataclass_field(default_factory=dict)
+    helpers: tuple[ast.FunctionDef, ...] = ()
+    group_help: str = ""
+    context: str | None = None
 
     @property
     def expression(self) -> bool:
@@ -55,6 +67,7 @@ class Snippet:
 class Expansion:
     source: str
     imports: tuple[str, ...]
+    helpers: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -64,20 +77,58 @@ class Match:
     bindings: dict[str, ast.expr]
     locals: dict[str, str]
     occurrences: dict[str, tuple[ast.expr, ...]]
+    declarations: tuple[tuple[ast.Name, str], ...] = ()
+    named: dict[str, tuple[ast.AST, ...]] = dataclass_field(default_factory=dict)
 
 
 def load_module(
-    source: str, collection: str, version: str, *, historical: bool = False
+    source: str,
+    collection: str,
+    version: str,
+    *,
+    historical: bool = False,
+    legacy: bool | None = None,
 ) -> tuple[Snippet, ...]:
     """Read definitions without importing or evaluating any template code."""
-    result = []
-    for function in ast.parse(source).body:
-        if not isinstance(function, ast.FunctionDef):
-            continue
-        if function.decorator_list or function.args.vararg or function.args.kwarg:
+    tree = ast.parse(source)
+    functions = [node for node in tree.body if isinstance(node, ast.FunctionDef)]
+    if len({function.name for function in functions}) != len(functions):
+        raise ValueError("Duplicate function name in block module")
+    if legacy is None:
+        legacy = not any(decorator(function) for function in functions)
+    module_imports = tuple(
+        node for node in tree.body if isinstance(node, (ast.Import, ast.ImportFrom))
+    )
+    group_help = ast.get_docstring(tree) or ""
+    scopes = Scopes(tree)
+    if not legacy:
+        for node in tree.body:
+            if isinstance(node, (ast.FunctionDef, ast.Import, ast.ImportFrom)):
+                continue
+            if node is tree.body[0] and group_help:
+                continue
             raise ValueError(
-                f"{function.name}: decorators and variadic parameters are unsupported"
+                "Block modules contain only a docstring, imports and functions"
             )
+        for function in functions:
+            if function.decorator_list and metadata(function) is None:
+                raise ValueError(f"{function.name}: unsupported helper decorator")
+    result = []
+    for original in functions:
+        options = metadata(original)
+        if options is None and not legacy:
+            continue
+        copies = {}
+        function = copy.deepcopy(original, copies)
+        if (
+            (function.decorator_list and options is None)
+            or function.args.vararg
+            or function.args.kwarg
+        ):
+            raise ValueError(
+                f"{function.name}: unsupported decorator or variadic block parameters"
+            )
+        mode = options["mode"] if options else "legacy"
         args = function.args
         positional = [*args.posonlyargs, *args.args]
         defaults = [None] * (len(positional) - len(args.defaults)) + args.defaults
@@ -86,14 +137,9 @@ def load_module(
                 arg.arg,
                 ast.unparse(default) if default is not None else None,
                 (
-                    (
-                        arg.annotation.value
-                        if isinstance(arg.annotation, ast.Constant)
-                        and isinstance(arg.annotation.value, str)
-                        else ast.unparse(arg.annotation)
-                    )
-                    if arg.annotation
-                    else None
+                    canonical(annotation_text(arg.annotation))
+                    if options
+                    else annotation_text(arg.annotation)
                 ),
             )
             for arg, default in zip(
@@ -111,7 +157,20 @@ def load_module(
             body.pop(0)
         imports = tuple(n for n in body if isinstance(n, (ast.Import, ast.ImportFrom)))
         body = [n for n in body if n not in imports]
-        if annotation_text(function.returns) == "loop":
+        result_type = annotation_text(function.returns)
+        kind = (
+            options.get("kind")
+            if options
+            else ("statement" if result_type == "statement" else None)
+        )
+        context = (
+            options.get("context")
+            if options
+            else ("loop" if result_type == "loop" else None)
+        )
+        if options:
+            result_type = canonical(result_type)
+        if context == "loop":
             if len(body) != 1 or not isinstance(body[0], ast.While) or body[0].orelse:
                 raise ValueError(
                     f"{function.name}: a loop template needs one while wrapper"
@@ -120,28 +179,78 @@ def load_module(
         if not body:
             raise ValueError(f"{function.name}: empty template")
         for node in ast.walk(ast.Module(body=body, type_ignores=[])):
-            if (
+            if mode != "function" and (
                 isinstance(node, ast.Call)
                 and isinstance(node.func, ast.Name)
                 and node.func.id == function.name
             ):
                 raise ValueError(f"{function.name}: recursive template")
-            if isinstance(node, (ast.Global, ast.Nonlocal)):
+            if mode != "function" and isinstance(node, (ast.Global, ast.Nonlocal)):
                 raise ValueError(
                     f"{function.name}: global/nonlocal declarations cannot be hygienic"
                 )
-            if isinstance(node, ast.ClassDef):
+            if mode != "function" and isinstance(node, ast.ClassDef):
                 raise ValueError(
                     f"{function.name}: classes belong in an ordinary helper module, not a template"
                 )
-        local_names = _template_names(function, body, imports, parameters)
-        template = (
-            body[0].value
-            if len(body) == 1
-            and isinstance(body[0], ast.Return)
-            and annotation_text(function.returns) != "statement"
-            else tuple(body)
-        )
+            if options and isinstance(node, ast.AnnAssign):
+                canonical(annotation_text(node.annotation))
+        helpers = ()
+        if mode == "function":
+            helper_names, helpers = helper_functions(tree, (function.name,), collection)
+            call = ast.Call(
+                func=ast.Name(id=helper_names[function.name], ctx=ast.Load()),
+                args=[ast.Name(id=arg.arg, ctx=ast.Load()) for arg in positional],
+                keywords=[
+                    ast.keyword(arg=arg.arg, value=ast.Name(id=arg.arg, ctx=ast.Load()))
+                    for arg in args.kwonlyargs
+                ],
+            )
+            for node in [*call.args, *(keyword.value for keyword in call.keywords)]:
+                node.template_parameter = node.id
+            outer = scopes.defined_scopes[original]
+            has_result = any(
+                isinstance(node, ast.Return)
+                and node.value is not None
+                and not (
+                    isinstance(node.value, ast.Constant) and node.value.value is None
+                )
+                and scopes.scopes[node] is outer
+                for node in ast.walk(original)
+            )
+            expression = kind == "expression" or (kind is None and has_result)
+            template = call if expression else (ast.Expr(value=call),)
+            for node in (template,) if expression else template:
+                ast.fix_missing_locations(node)
+            local_names, names = {}, {}
+            imports = module_imports
+        else:
+            if options:
+                # Resolve helper references on the original tree, before copying
+                # and hygienically annotating the inline body.
+                references = referenced_helpers(scopes, original)
+                if references:
+                    helper_names, helpers = helper_functions(
+                        tree, {node.id for node in references}, collection
+                    )
+                    for node in references:
+                        copies[id(node)].id = helper_names[node.id]
+            local_names, names = _template_names(
+                function, body, imports, parameters, options["names"] if options else ()
+            )
+            template = (
+                body[0].value
+                if len(body) == 1
+                and isinstance(body[0], ast.Return)
+                and kind != "statement"
+                else tuple(body)
+            )
+            if kind == "expression" and not isinstance(template, ast.expr):
+                raise ValueError(
+                    f"{function.name}: an inline expression needs one return"
+                )
+            if options:
+                imports = (*module_imports, *imports)
         if template is None:
             template = ast.Constant(None)
         result.append(
@@ -154,7 +263,15 @@ def load_module(
                 help_text,
                 local_names,
                 historical,
-                annotation_text(function.returns),
+                result_type,
+                level=options["level"] if options else "intermediate",
+                mode=mode,
+                icon=options["icon"] if options else None,
+                color=options["color"] if options else None,
+                names=names,
+                helpers=helpers,
+                group_help=group_help,
+                context=context,
             )
         )
     return tuple(result)
@@ -163,8 +280,13 @@ def load_module(
 def function_snippets(syntax):
     """Calls to module-level user functions, rebuilt from the current document."""
     result = []
+    section = helper_section(syntax.source)
     for node in syntax.tree.body:
-        if not isinstance(node, ast.FunctionDef):
+        if (
+            not isinstance(node, ast.FunctionDef)
+            or section
+            and section.contains(syntax.spans[node].start)
+        ):
             continue
         args = node.args
         positional = (args.posonlyargs + args.args)[
@@ -203,12 +325,15 @@ def function_snippets(syntax):
                 ast.get_docstring(node) or node.name,
                 {},
                 level="intermediate",
+                icon="ƒ",
+                color="definition",
+                group_help=N_("My functions"),
             )
         )
     return tuple(result)
 
 
-def _template_names(function, body, imports, parameters) -> dict[str, str]:
+def _template_names(function, body, imports, parameters, editable=()):
     """Annotate owned AST nodes with lexical keys; never rename by spelling alone."""
     scopes = Scopes(ast.Module(body=[function], type_ignores=[]))
     outer = scopes.defined_scopes[function]
@@ -226,6 +351,17 @@ def _template_names(function, body, imports, parameters) -> dict[str, str]:
         id(scope): index for index, scope in enumerate(scopes.defined_scopes.values())
     }
     result = {}
+    declarations = {}
+
+    def path(owner, name):
+        parts = [name]
+        while owner is not outer:
+            if not isinstance(owner.node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                return None
+            parts.insert(0, owner.node.name)
+            owner = owner.parent
+        return ".".join(parts)
+
     definitions = {}
     for node in ast.walk(function):
         if (
@@ -270,6 +406,8 @@ def _template_names(function, body, imports, parameters) -> dict[str, str]:
         owner = scopes.resolve(node, name)
         if owner is outer and name in parameter_names and isinstance(node, ast.Name):
             node.template_parameter = name
+            if isinstance(node.ctx, ast.Store):
+                declarations[name] = name
         elif (
             owner is not None
             and owner is not scopes.root
@@ -278,7 +416,16 @@ def _template_names(function, body, imports, parameters) -> dict[str, str]:
             key = name if owner is outer else f"{numbers[id(owner)]}:{name}"
             node.template_names = {field: key}
             result[key] = name
-    return result
+            if not isinstance(node, ast.Name) or isinstance(node.ctx, ast.Store):
+                declaration = path(owner, name)
+                if declaration is not None:
+                    declarations[declaration] = key
+    unknown = set(editable) - declarations.keys()
+    if unknown:
+        raise ValueError(
+            f"{function.name}: unknown editable declarations: {', '.join(sorted(unknown))}"
+        )
+    return result, {name: declarations[name] for name in editable}
 
 
 def load_collection(
@@ -299,6 +446,13 @@ def load_collection(
 
     manifest = tomllib.loads(read(directory / "collection.toml"))
     identity, version = manifest["collection"]["id"], manifest["collection"]["version"]
+    format_version = manifest["collection"].get("format", 1)
+    if format_version not in (1, 2):
+        raise ValueError("Unsupported block collection format")
+    if format_version == 2 and manifest.get("levels"):
+        raise ValueError(
+            "Block difficulty belongs in source decorators, not collection.toml"
+        )
     histories = []
     for history in manifest.get("history", []):
         root = (directory / history["path"]).resolve()
@@ -321,7 +475,12 @@ def load_collection(
         module = path.relative_to(directory).with_suffix("").as_posix()
         result.extend(
             replace(s, source_path=path)
-            for s in load_module(read(path), f"{identity}/{module}", version)
+            for s in load_module(
+                read(path),
+                f"{identity}/{module}",
+                version,
+                legacy=False if format_version == 2 else None,
+            )
         )
     for root, historical_version in histories:
         for path in sorted(root.rglob("*.py")):
@@ -346,10 +505,15 @@ def load_collection(
     names = {s.identity.removeprefix(identity + "/") for s in result}
     if levels.keys() - names or any(level not in LEVELS for level in levels.values()):
         raise ValueError("Unknown block or difficulty level in collection.toml")
-    return tuple(
-        replace(
-            s, level=levels.get(s.identity.removeprefix(identity + "/"), "intermediate")
+    if any(
+        s.mode != "legacy" and s.identity.removeprefix(identity + "/") in levels
+        for s in result
+    ):
+        raise ValueError(
+            "Block difficulty belongs in source decorators, not collection.toml"
         )
+    return tuple(
+        replace(s, level=levels.get(s.identity.removeprefix(identity + "/"), s.level))
         for s in result
     )
 
@@ -373,7 +537,8 @@ def instantiate(
 ) -> Expansion:
     """Substitute expressions. Repeated parameters repeat evaluation, as in source."""
     values = {}
-    extra = bindings.keys() - {p.name for p in snippet.parameters}
+    parameter_names = {p.name for p in snippet.parameters}
+    extra = bindings.keys() - parameter_names - snippet.names.keys()
     if extra:
         raise ValueError(f"Unknown parameters: {', '.join(sorted(extra))}")
     used = set(occupied or ())
@@ -389,6 +554,40 @@ def instantiate(
         values[parameter.name] = expression
         used.update(identifiers(expression))
     renamed = dict(local_names or {})
+    reserved = set(used)
+    for name, key in snippet.names.items():
+        if name in parameter_names:
+            expression = values[name]
+            if not isinstance(expression, ast.Name):
+                raise ValueError(f"{name} must be a declared name")
+            if expression.id in (occupied or ()):
+                if name in bindings:
+                    raise ValueError(
+                        f"Declared name {expression.id!r} conflicts with an existing name"
+                    )
+                candidate, suffix = expression.id, 2
+                while candidate in used:
+                    candidate, suffix = f"{expression.id}_{suffix}", suffix + 1
+                values[name] = ast.Name(id=candidate, ctx=ast.Load())
+                used.add(candidate)
+                reserved.add(candidate)
+            continue
+        if name in bindings:
+            expression = bindings[name]
+            candidate = (
+                ast.unparse(expression)
+                if isinstance(expression, ast.AST)
+                else expression
+            )
+            if not candidate.isidentifier() or keyword.iskeyword(candidate):
+                raise ValueError(f"{name} must be a declared name")
+            if candidate in reserved:
+                raise ValueError(
+                    f"Declared name {candidate!r} conflicts with an existing name"
+                )
+            renamed[key] = candidate
+            reserved.add(candidate)
+    used.update(renamed.values())
     for key, name in sorted(snippet.locals.items()):
         if key not in renamed:
             candidate, suffix = name, 2
@@ -424,20 +623,33 @@ def instantiate(
     )
     tree = ast.fix_missing_locations(Substitute().visit(tree))
     return Expansion(
-        ast.unparse(tree), tuple(ast.unparse(node) for node in snippet.imports)
+        ast.unparse(tree),
+        tuple(ast.unparse(node) for node in snippet.imports),
+        tuple(ast.unparse(node) for node in snippet.helpers),
     )
 
 
-def _match(snippet: Snippet, candidate) -> tuple[dict, dict, dict] | None:
+def _match(snippet: Snippet, candidate):
     bindings, local_names = {}, {}
     occurrences = {}
+    declarations = []
+    named = {}
+    editable = set(snippet.names.values())
 
     def equal(pattern, value) -> bool:
         parameter = getattr(pattern, "template_parameter", None)
         if parameter is not None:
             if not isinstance(value, ast.expr):
                 return False
+            if parameter in snippet.names and not isinstance(value, ast.Name):
+                return False
             occurrences.setdefault(parameter, []).append(value)
+            if (
+                parameter in editable
+                and isinstance(value, ast.Name)
+                and isinstance(value.ctx, ast.Store)
+            ):
+                named.setdefault(parameter, []).append(value)
             previous = bindings.get(parameter)
             if previous is None:
                 bindings[parameter] = value
@@ -449,6 +661,18 @@ def _match(snippet: Snippet, candidate) -> tuple[dict, dict, dict] | None:
                     if hasattr(node, "ctx"):
                         node.ctx = ast.Load()
             return ast.dump(a) == ast.dump(b)
+        if isinstance(pattern, ast.AnnAssign) and isinstance(value, ast.Assign):
+            if (
+                len(value.targets) != 1
+                or not equal(pattern.target, value.targets[0])
+                or not equal(pattern.value, value.value)
+            ):
+                return False
+            if isinstance(value.targets[0], ast.Name):
+                declarations.append(
+                    (value.targets[0], annotation_text(pattern.annotation))
+                )
+            return True
         if type(pattern) is not type(value):
             return False
         if isinstance(pattern, ast.AST):
@@ -456,6 +680,11 @@ def _match(snippet: Snippet, candidate) -> tuple[dict, dict, dict] | None:
                 actual = getattr(value, field)
                 key = getattr(pattern, "template_names", {}).get(field)
                 if key is not None:
+                    if key in editable and (
+                        not isinstance(value, ast.Name)
+                        or isinstance(value.ctx, ast.Store)
+                    ):
+                        named.setdefault(key, []).append(value)
                     if isinstance(value, ast.alias) and actual is None:
                         actual = value.name
                     if key not in local_names:
@@ -470,6 +699,10 @@ def _match(snippet: Snippet, candidate) -> tuple[dict, dict, dict] | None:
                         return False
                 elif not equal(expected, actual):
                     return False
+            if isinstance(pattern, ast.AnnAssign) and isinstance(
+                value.target, ast.Name
+            ):
+                declarations.append((value.target, annotation_text(pattern.annotation)))
             return True
         if isinstance(pattern, (list, tuple)):
             return len(pattern) == len(value) and all(
@@ -483,6 +716,8 @@ def _match(snippet: Snippet, candidate) -> tuple[dict, dict, dict] | None:
         bindings,
         local_names,
         {name: tuple(nodes) for name, nodes in occurrences.items()},
+        tuple(declarations),
+        {key: tuple(nodes) for key, nodes in named.items()},
     )
 
 
@@ -491,9 +726,11 @@ def recognize(
 ) -> tuple[Match, ...]:
     """Recognize whole algorithms before fragments; current forms supersede history."""
     analysis = analysis or Analysis(syntax)
+    helper_span = helper_section(syntax.source)
 
     def keys(node):
-        yield type(node)
+        kind = ast.Assign if isinstance(node, ast.AnnAssign) else type(node)
+        yield kind
         value = (
             node.value
             if isinstance(node, (ast.Expr, ast.Assign, ast.AnnAssign))
@@ -504,17 +741,19 @@ def recognize(
             if isinstance(function, ast.Attribute) and not getattr(
                 function, "template_names", None
             ):
-                yield (type(node), "method", function.attr)
+                yield (kind, "method", function.attr)
             elif (
                 isinstance(function, ast.Name)
                 and not getattr(function, "template_parameter", None)
                 and not getattr(function, "template_names", None)
             ):
-                yield (type(node), "call", function.id)
+                yield (kind, "call", function.id)
 
     expressions, statements = {}, {}
     all_expressions = []
     for node, span in syntax.spans.items():
+        if helper_span and helper_span.contains(span.start):
+            continue
         if isinstance(node, ast.expr):
             item = (span, node)
             all_expressions.append(item)
@@ -522,9 +761,12 @@ def recognize(
                 expressions.setdefault(key, []).append(item)
     for suite in syntax.suites:
         for index, node in enumerate(suite.statements):
+            if helper_span and helper_span.contains(syntax.spans[node].start):
+                continue
             for key in keys(node):
                 statements.setdefault(key, []).append((suite, index))
     candidates = []
+    mismatches = {}
     for snippet in snippets:
         if snippet.expression:
             regions = (
@@ -549,15 +791,23 @@ def recognize(
             result = _match(snippet, candidate)
             if result is not None:
                 bindings = result[0]
-                compatible = all(
-                    (actual := analysis.type_of(bindings[p.name])) is None
-                    or p.annotation is None
-                    or actual in annotation_types(p.annotation)
+                errors = sum(
+                    compatibility(
+                        p.annotation,
+                        analysis.type_info(bindings[p.name]),
+                        literal=numeric_literal(bindings[p.name]),
+                    )
+                    is Compatibility.INCOMPATIBLE
                     for p in snippet.parameters
                     if p.name in bindings
+                    and p.name not in snippet.names
+                    and not isinstance(
+                        getattr(bindings[p.name], "ctx", None), ast.Store
+                    )
                 )
-                if compatible:
-                    candidates.append(Match(snippet, span, *result))
+                match = Match(snippet, span, *result)
+                candidates.append(match)
+                mismatches[id(match)] = errors
     current = {
         (m.snippet.identity, m.span) for m in candidates if not m.snippet.historical
     }
@@ -569,6 +819,7 @@ def recognize(
     candidates.sort(
         key=lambda m: (
             -(m.span.end - m.span.start),
+            mismatches[id(m)],
             -m.snippet.specificity,
             m.snippet.historical,
             m.snippet.identity,

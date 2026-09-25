@@ -9,6 +9,15 @@ from functools import cached_property
 from pyblocks.i18n import language, tr
 
 from .syntax import Span, Syntax
+from .types import (
+    NUMERIC,
+    Compatibility,
+    ValueType,
+    compatibility,
+    known_type,
+    numeric_literal,
+)
+from .types import annotation_types as parsed_types
 
 
 @dataclass
@@ -190,33 +199,20 @@ class Scopes:
         return None
 
 
-NUMBER_UNITS = {
-    "number",
-    "int",
-    "float",
-    "deg",
-    "deg/s",
-    "deg/s²",
-    "mm",
-    "mm/s",
-    "ms",
-    "s",
-    "%",
-    "N",
-}
-
-
 def value_type(annotation):
-    return "number" if annotation in NUMBER_UNITS else annotation
+    values = annotation_types(annotation)
+    return " | ".join(dict.fromkeys(values)) if values else None
 
 
 def annotation_types(annotation):
     """Accepted simple type alternatives in a template hint, without evaluation."""
-    return tuple(
-        value_type(part.strip())
-        for part in (annotation or "").split("|")
-        if part.strip()
-    )
+    try:
+        return tuple(
+            "number" if value.name in NUMERIC else value.name
+            for value in parsed_types(annotation)
+        )
+    except ValueError:
+        return ()
 
 
 def annotation_text(node):
@@ -238,6 +234,9 @@ class Analysis(Scopes):
         super().__init__(syntax.tree, syntax.spans)
         self.values = {}
         self.method_types = {}
+        self.expression_types = {}
+        self.contracts = []
+        self.imports = {}
         for node in ast.walk(syntax.tree):
             if isinstance(node, (ast.Assign, ast.AnnAssign)):
                 targets = (
@@ -264,6 +263,11 @@ class Analysis(Scopes):
                     self.values[(id(self.scopes[node]), name)] = [
                         (-1, None, "type" if alias.name[0].isupper() else "module")
                     ]
+                    self.imports[id(self.scopes[node]), name] = (
+                        f"{node.module}.{alias.name}"
+                        if isinstance(node, ast.ImportFrom)
+                        else alias.name if alias.asname else name
+                    )
             elif isinstance(
                 node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
             ):
@@ -302,16 +306,23 @@ class Analysis(Scopes):
         )
 
     def type_of(self, node, seen=frozenset()):
-        """Conservative hints, not a type checker or a restriction on user input."""
+        """Broad display category derived from the same detailed type model."""
+        value = self.type_info(node, seen)
+        return (
+            "number"
+            if value and value.name in NUMERIC
+            else value.name if value else None
+        )
+
+    def type_info(self, node, seen=frozenset()):
+        if node in self.expression_types:
+            return self.expression_types[node]
         if isinstance(node, ast.Constant):
+            name = "None" if node.value is None else type(node.value).__name__
             return (
-                "bool"
-                if isinstance(node.value, bool)
-                else (
-                    "number"
-                    if isinstance(node.value, (int, float, complex))
-                    else "str" if isinstance(node.value, str) else None
-                )
+                ValueType(name)
+                if name in {"None", "bool", "int", "float", "complex", "str", "bytes"}
+                else None
             )
         if isinstance(node, ast.Name):
             offset = self.syntax.spans.get(node, Span(len(self.syntax.source), 0)).start
@@ -319,44 +330,101 @@ class Analysis(Scopes):
                 self.resolve(node, node.id), node.id, offset, seen
             )
         if isinstance(node, ast.Call):
+            definition = self.call_definition(node)
+            if definition is not None:
+                return known_type(annotation_text(definition.returns))
             if isinstance(node.func, ast.Name):
                 name = node.func.id
-                if name in {"int", "float", "abs", "min", "max", "len", "sum", "round"}:
-                    return "number"
-                if name in {"bool", "str", "list", "tuple", "dict", "set"}:
-                    return name
-                if name[0].isupper():
-                    return name
+                owner = self.resolve(node.func, name)
+                if owner is None:
+                    if name in {
+                        "int",
+                        "float",
+                        "bool",
+                        "str",
+                        "list",
+                        "tuple",
+                        "dict",
+                        "set",
+                    }:
+                        return ValueType(name)
+                    if name == "len":
+                        return ValueType("int")
+                    if name in {"abs", "min", "max", "sum", "round"}:
+                        values = [self.type_info(arg, seen) for arg in node.args]
+                        first = values[0] if values else None
+                        return (
+                            first
+                            if first
+                            and first.name in NUMERIC
+                            and all(value == first for value in values)
+                            else None
+                        )
+                imported = self.imports.get((id(owner), name), "")
+                if (
+                    imported.startswith("pybricks.")
+                    and imported.rsplit(".", 1)[-1][0].isupper()
+                ):
+                    return ValueType(imported.rsplit(".", 1)[-1])
             elif isinstance(node.func, ast.Attribute):
                 receiver, path = attribute_path(node.func)
-                return self.method_types.get((self.type_of(receiver, seen), path))
+                return known_type(
+                    self.method_types.get((self.type_of(receiver, seen), path))
+                )
         if (
             isinstance(node, ast.Compare)
             or isinstance(node, ast.UnaryOp)
             and isinstance(node.op, ast.Not)
         ):
-            return "bool"
+            return ValueType("bool")
         if isinstance(node, ast.BoolOp):
+            values = [self.type_info(value, seen) for value in node.values]
+            return values[0] if all(value == values[0] for value in values) else None
+        if isinstance(node, ast.UnaryOp):
+            return self.type_info(node.operand, seen)
+        if isinstance(node, ast.BinOp):
+            left, right = self.type_info(node.left, seen), self.type_info(
+                node.right, seen
+            )
+            if not left or not right:
+                return None
+            if left.name in NUMERIC and right.name in NUMERIC:
+                name = (
+                    "float"
+                    if "float" in (left.name, right.name)
+                    or isinstance(node.op, ast.Div)
+                    else "int" if left.name == right.name == "int" else "number"
+                )
+                if isinstance(node.op, (ast.Add, ast.Sub, ast.Mod)):
+                    unit = left.unit if left.unit == right.unit else None
+                elif isinstance(node.op, ast.Mult):
+                    unit = (
+                        left.unit or right.unit
+                        if not (left.unit and right.unit)
+                        else None
+                    )
+                elif isinstance(node.op, (ast.Div, ast.FloorDiv)):
+                    unit = left.unit if not right.unit else None
+                else:
+                    unit = None
+                return ValueType(name, unit)
             return (
-                "bool"
-                if all(self.type_of(value, seen) == "bool" for value in node.values)
+                left
+                if left == right
+                and left.name in {"str", "list", "tuple"}
+                and isinstance(node.op, ast.Add)
                 else None
             )
-        if isinstance(node, ast.UnaryOp):
-            return self.type_of(node.operand, seen)
-        if isinstance(node, ast.BinOp):
-            left, right = self.type_of(node.left, seen), self.type_of(node.right, seen)
-            return left if left == right else None
         if isinstance(node, (ast.List, ast.ListComp)):
-            return "list"
+            return ValueType("list")
         if isinstance(node, (ast.Tuple, ast.Dict, ast.Set)):
-            return type(node).__name__.lower()
-        if (
-            isinstance(node, ast.Attribute)
-            and isinstance(node.value, ast.Name)
-            and node.value.id[0].isupper()
-        ):
-            return node.value.id
+            return ValueType(type(node).__name__.lower())
+        if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name):
+            imported = self.imports.get(
+                (id(self.resolve(node.value, node.value.id)), node.value.id), ""
+            )
+            if imported.startswith("pybricks.parameters."):
+                return ValueType(imported.rsplit(".", 1)[-1])
         return None
 
     def _binding_type(self, scope, name, offset, seen):
@@ -367,13 +435,20 @@ class Analysis(Scopes):
         if not entries:
             return None
         _, value, annotation = max(entries, key=lambda item: item[0])
-        return value_type(annotation) or self.type_of(value, seen | {key})
+        return known_type(annotation) or self.type_info(value, seen | {key})
 
     def name_type(self, name, offset):
         node = self.syntax.at(offset)
-        return self._binding_type(self.resolve(node, name), name, offset, frozenset())
+        value = self._binding_type(self.resolve(node, name), name, offset, frozenset())
+        return value_type(str(value)) if value else None
 
     def name_types(self, offset):
+        return {
+            name: value_type(str(value)) if value else None
+            for name, value in self.name_type_info(offset).items()
+        }
+
+    def name_type_info(self, offset):
         node = self.syntax.at(offset)
         return {
             name: self._binding_type(
@@ -382,6 +457,44 @@ class Analysis(Scopes):
             for name in self.available(offset)
             if name in self.used_names
         }
+
+    def apply_contracts(self, matches):
+        """Use recognized declarations and results without rewriting user source."""
+        expressions = {
+            span: node
+            for node, span in self.syntax.spans.items()
+            if isinstance(node, ast.expr)
+        }
+        for match in matches:
+            if match.snippet.expression and match.snippet.result_type:
+                node = expressions.get(match.span)
+                value = known_type(match.snippet.result_type)
+                if node is not None and value is not None:
+                    self.expression_types[node] = value
+            for parameter in match.snippet.parameters:
+                if parameter.name in match.snippet.names:
+                    continue
+                for node in match.occurrences.get(parameter.name, ()):
+                    if (
+                        not isinstance(getattr(node, "ctx", None), ast.Store)
+                        and parameter.annotation
+                    ):
+                        self.contracts.append((node, parameter.annotation))
+            for target, annotation in match.declarations:
+                key = (id(self.resolve(target, target.id)), target.id)
+                offset = self.syntax.spans[target].start
+                entries = self.values.get(key, ())
+                self.values[key] = [
+                    (
+                        start,
+                        value,
+                        declared or (annotation if start == offset else None),
+                    )
+                    for start, value, declared in entries
+                ]
+                value = self.syntax.parent[target].value
+                if value is not None:
+                    self.contracts.append((value, annotation))
 
     def available(self, offset: int) -> tuple[str, ...]:
         node = self.syntax.at(offset)
@@ -405,6 +518,7 @@ class Analysis(Scopes):
 
     def _diagnostics(self) -> tuple[Diagnostic, ...]:
         result = []
+        contracts = list(self.contracts)
         for node, scope in self.references:
             name = node.id
             origin = scope
@@ -433,6 +547,42 @@ class Analysis(Scopes):
                     Diagnostic(self.syntax.spans[node], f"Name {name!r} is not defined")
                 )
         for node in ast.walk(self.syntax.tree):
+            pairs = ()
+            if isinstance(node, ast.BinOp) and isinstance(
+                node.op, (ast.Add, ast.Sub, ast.Mod)
+            ):
+                pairs = ((node.left, node.right),)
+            elif isinstance(node, ast.Compare):
+                pairs = (
+                    (left, right)
+                    for left, right, operation in zip(
+                        [node.left, *node.comparators[:-1]],
+                        node.comparators,
+                        node.ops,
+                        strict=True,
+                    )
+                    if isinstance(
+                        operation, (ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE)
+                    )
+                )
+            for left_node, right_node in pairs:
+                left, right = self.type_info(left_node), self.type_info(right_node)
+                if (
+                    left
+                    and right
+                    and left.name in NUMERIC
+                    and right.name in NUMERIC
+                    and left.unit
+                    and right.unit
+                    and left.unit != right.unit
+                ):
+                    contracts.append((right_node, f"number[{left.unit}]"))
+            if isinstance(node, ast.AnnAssign) and node.value is not None:
+                contracts.append((node.value, annotation_text(node.annotation)))
+            if isinstance(node, ast.Return) and node.value is not None:
+                owner = self.scopes[node].node
+                if isinstance(owner, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    contracts.append((node.value, annotation_text(owner.returns)))
             if not isinstance(node, ast.Call):
                 continue
             if any(isinstance(arg, ast.Starred) for arg in node.args) or any(
@@ -443,10 +593,22 @@ class Analysis(Scopes):
             definition = self.call_definition(node)
             if definition is not None:
                 try:
-                    function_signature(definition).bind(
-                        *[None for arg in node.args],
-                        **dict.fromkeys(kw.arg for kw in node.keywords),
+                    bound = function_signature(definition).bind(
+                        *node.args,
+                        **{kw.arg: kw.value for kw in node.keywords},
                     )
+                    for arg in [
+                        *definition.args.posonlyargs,
+                        *definition.args.args,
+                        *definition.args.kwonlyargs,
+                    ]:
+                        if arg.arg in bound.arguments:
+                            contracts.append(
+                                (
+                                    bound.arguments[arg.arg],
+                                    annotation_text(arg.annotation),
+                                )
+                            )
                 except TypeError:
                     message = tr(
                         "Arguments do not match {signature}",
@@ -470,6 +632,28 @@ class Analysis(Scopes):
                     message = tr("range step cannot be zero")
             if message:
                 result.append(Diagnostic(self.syntax.spans[node], message, "error"))
+        seen = set()
+        for node, expected in contracts:
+            if not expected or (node, expected) in seen:
+                continue
+            seen.add((node, expected))
+            actual = self.type_info(node)
+            try:
+                status = compatibility(expected, actual, literal=numeric_literal(node))
+            except ValueError:
+                continue  # Ordinary Python may use annotations outside block grammar.
+            if status is Compatibility.INCOMPATIBLE:
+                result.append(
+                    Diagnostic(
+                        self.syntax.spans[node],
+                        tr(
+                            "Expected {expected}, got {actual}",
+                            expected=expected,
+                            actual=str(actual),
+                        ),
+                        "error",
+                    )
+                )
         return tuple(result)
 
 

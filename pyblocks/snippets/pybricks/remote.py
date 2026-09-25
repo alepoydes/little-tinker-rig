@@ -1,10 +1,15 @@
-"""LEGO Powered Up remote control; no host protocol or event framework."""
+"""Remote control
+
+LEGO Powered Up remote control; no host protocol or event framework."""
 
 # Steering calibration adapted from Pybricks Projects (MIT); see the upstream
 # copyright and permission notice in examples/pybricks/LICENSE.txt.
 
 
-def remote_drive(drive: "DriveBase" = drive, speed: "mm/s" = 150, turn: "deg/s" = 90):
+@inline_block(level="beginner", icon="▶", color="action")
+def remote_drive(
+    drive: "DriveBase" = drive, speed: "number[mm/s]" = 150, turn: "number[deg/s]" = 90
+):
     """Drive with a LEGO remote until its center button is pressed.
 
     Turn on the remote first. Left +/- controls forward/backward; right +/- turns.
@@ -15,7 +20,7 @@ def remote_drive(drive: "DriveBase" = drive, speed: "mm/s" = 150, turn: "deg/s" 
     from pybricks.tools import wait
 
     drive.brake()
-    controller = Remote()
+    controller: "Remote" = Remote()
     try:
         while True:
             pressed = controller.buttons.pressed()
@@ -33,13 +38,15 @@ def remote_drive(drive: "DriveBase" = drive, speed: "mm/s" = 150, turn: "deg/s" 
         controller.disconnect()
 
 
+@inline_block(level="advanced", icon="▣", color="state", names=("name",))
 def create_remote(name=remote):
     """Connect a LEGO Powered Up remote for your own control loop."""
     from pybricks.pupdevices import Remote
 
-    name = Remote()
+    name: "Remote" = Remote()
 
 
+@inline_block(level="advanced", icon="＝", color="value")
 def remote_pressed(
     remote: "Remote" = remote, button: "Button" = Button.LEFT_PLUS
 ) -> "bool":
@@ -49,6 +56,7 @@ def remote_pressed(
     return button in remote.buttons.pressed()
 
 
+@inline_block(level="advanced", icon="▶", color="action")
 def buttons(remote: "Remote" = remote) -> "set":
     """Read all pressed remote buttons once.
 
@@ -56,7 +64,8 @@ def buttons(remote: "Remote" = remote) -> "set":
     return remote.buttons.pressed()
 
 
-def center_steering(steering: "Motor" = steer, speed: "deg/s" = 200):
+@inline_block(level="intermediate", icon="▣", color="state")
+def center_steering(steering: "Motor" = steer, speed: "number[deg/s]" = 200):
     """Find both steering stops and start returning to the center.
 
     The midpoint is measured, not assumed. Returning to zero does not wait;

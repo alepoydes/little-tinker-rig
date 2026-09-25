@@ -13,20 +13,24 @@ from PySide6.QtWidgets import (
 )
 
 from pyblocks.core.parameters import change_parameter, choices
+from pyblocks.core.types import known_type
 from pyblocks.i18n import tr
 
 
 def unit_text(annotation):
+    value = known_type(annotation)
     return {
         "deg": "°",
         "deg/s": tr("°/s"),
+        "deg/s²": tr("°/s²"),
         "mm": tr("mm"),
         "mm/s": tr("mm/s"),
         "ms": tr("ms"),
         "s": tr("s"),
         "%": "%",
         "N": tr("N"),
-    }.get(annotation, "")
+        "Hz": tr("Hz"),
+    }.get(value.unit if value else None, "")
 
 
 class ParameterEditor(QWidget):

@@ -1,19 +1,23 @@
-"""Lists, strings and mappings as ordinary Python data."""
+"""Lists, text and dictionaries
 
+Lists, strings and mappings as ordinary Python data."""
 
+@inline_block(level="advanced", icon="▣", color="state", names=("name",))
 def make_list(name=values, items=(10, 20, 30)):
     """Create a list of values.
 
     Edit the comma-separated items in Python or replace the items expression.
     Use append to grow the list one value at a time."""
-    name = list(items)
+    name: "list" = list(items)
 
 
+@inline_block(level="advanced", icon="▶", color="action")
 def append(items: "list" = values, value=0):
     """Append a value to a list."""
     items.append(value)
 
 
+@inline_block(level="advanced", icon="＝", color="value")
 def item(items=values, index: "number" = 0):
     """Read an item by index or key.
 
@@ -22,6 +26,7 @@ def item(items=values, index: "number" = 0):
     return items[index]
 
 
+@inline_block(level="advanced", icon="▣", color="state")
 def set_item(items=values, index=0, value=0):
     """Replace an item by index or key.
 
@@ -29,16 +34,19 @@ def set_item(items=values, index=0, value=0):
     items[index] = value
 
 
+@inline_block(level="advanced", icon="▶", color="action")
 def length(items=values) -> "number":
     """Count the items in a collection or text."""
     return len(items)
 
 
+@inline_block(level="intermediate", icon="▶", color="action")
 def text(value=0) -> "str":
     """Convert a value to text."""
     return str(value)
 
 
+@inline_block(level="advanced", icon="▣", color="state", names=("name",))
 def make_dictionary(name=lookup, key="name", value="robot"):
     """Create a dictionary with a key and value.
 
@@ -46,6 +54,7 @@ def make_dictionary(name=lookup, key="name", value="robot"):
     name = {key: value}
 
 
+@inline_block(level="advanced", icon="＝", color="value")
 def slice_items(items=values, start: "number" = 0, stop: "number" = 2):
     """Take a slice of a sequence.
 
@@ -53,6 +62,7 @@ def slice_items(items=values, start: "number" = 0, stop: "number" = 2):
     return items[start:stop]
 
 
+@inline_block(level="advanced", icon="＝", color="value")
 def contains(value=0, items=values) -> "bool":
     """Check whether a collection contains a value.
 
@@ -60,6 +70,7 @@ def contains(value=0, items=values) -> "bool":
     return value in items
 
 
+@inline_block(level="advanced", icon="＝", color="value")
 def map_values(function=abs, items=(-1, 0, 1)) -> "list":
     """Build a list by applying a function to every item.
 

@@ -11,6 +11,8 @@ from babel.messages.catalog import Catalog
 from babel.messages.mofile import write_mo
 from babel.messages.pofile import read_po, write_po
 
+from pyblocks.core.block_metadata import decorator
+
 ROOT = Path(__file__).resolve().parents[1]
 LOCALES = ROOT / "pyblocks/locale"
 
@@ -39,8 +41,18 @@ def messages():
                     node.value, locations=[(str(path.relative_to(ROOT)), node.lineno)]
                 )
     for path in sorted((ROOT / "pyblocks/snippets").rglob("*.py")):
-        for node in ast.parse(path.read_text(encoding="utf-8")).body:
-            if isinstance(node, ast.FunctionDef) and (text := ast.get_docstring(node)):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        functions = [
+            node
+            for node in tree.body
+            if isinstance(node, ast.FunctionDef) and decorator(node)
+        ]
+        if not functions:
+            continue
+        if text := ast.get_docstring(tree):
+            catalog.add(text, locations=[(str(path.relative_to(ROOT)), 1)])
+        for node in functions:
+            if text := ast.get_docstring(node):
                 catalog.add(
                     text, locations=[(str(path.relative_to(ROOT)), node.lineno)]
                 )

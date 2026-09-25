@@ -1,7 +1,9 @@
-"""Control flow beyond counted loops and simple decisions."""
+"""Iteration and exceptions
 
+Control flow beyond counted loops and simple decisions."""
 
-def break_loop() -> "loop":
+@inline_block(level="intermediate", icon="◇", color="control", context="loop")
+def break_loop():
     """Leave the nearest loop.
 
     Insert inside a for or while loop, often inside an if condition."""
@@ -9,6 +11,7 @@ def break_loop() -> "loop":
         break
 
 
+@inline_block(level="advanced", icon="⟳", color="loop", names=("name",))
 def for_each(name=item, items=values):
     """Repeat actions for each item in a collection.
 
@@ -17,12 +20,14 @@ def for_each(name=item, items=values):
         pass
 
 
-def continue_loop() -> "loop":
+@inline_block(level="advanced", icon="◇", color="control", context="loop")
+def continue_loop():
     """Skip to the next iteration of the nearest loop."""
     while True:
         continue
 
 
+@inline_block(level="advanced", icon="＝", color="value")
 def choose_value(test: "bool" = True, yes=1, no=0):
     """Choose a value using a condition.
 
@@ -30,6 +35,7 @@ def choose_value(test: "bool" = True, yes=1, no=0):
     return yes if test else no
 
 
+@inline_block(level="expert", icon="◇", color="control")
 def handle_error(error_type=ValueError):
     """Handle a specific Python exception.
 
@@ -41,6 +47,7 @@ def handle_error(error_type=ValueError):
         pass
 
 
+@inline_block(level="expert", icon="◇", color="control")
 def cleanup():
     """Run cleanup even if an operation fails.
 
@@ -52,11 +59,13 @@ def cleanup():
         pass
 
 
+@inline_block(level="expert", icon="◇", color="control")
 def raise_error(message="Invalid value"):
     """Raise a ValueError with an explanation."""
     raise ValueError(message)
 
 
+@inline_block(level="expert", icon="◇", color="control")
 def check(test: "bool" = True, message="Check failed"):
     """Assert a condition while debugging.
 

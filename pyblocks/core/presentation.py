@@ -18,6 +18,16 @@ PALETTE = {
     "warning": "#f9d6c8",
 }
 
+ICONS = {
+    "loop": "⟳",
+    "control": "◇",
+    "action": "▶",
+    "state": "▣",
+    "definition": "ƒ",
+    "value": "＝",
+    "placeholder": "…",
+}
+
 
 def role(node: ast.AST) -> str:
     if isinstance(node, (ast.For, ast.AsyncFor, ast.While)):
@@ -41,7 +51,27 @@ def role(node: ast.AST) -> str:
 
 def snippet_role(snippet) -> str:
     """A template keeps the same semantic color in the library and the document."""
-    return role(snippet.body if snippet.expression else snippet.body[0])
+    return snippet.color or role(
+        snippet.body if snippet.expression else snippet.body[0]
+    )
+
+
+def role_color(role: str) -> str:
+    return PALETTE.get(role, role)
+
+
+def block_icon(snippet):
+    if snippet.icon is not None:
+        return snippet.icon
+    # Only legacy definitions need inferred appearance; migration makes it explicit.
+    identity = snippet.identity
+    if "/motors/" in identity:
+        return "⚙" if "/create_" in identity else "↻"
+    if "/sensors/" in identity:
+        return "⏱" if identity.endswith("/wait_ms") else "◉"
+    if "/drive/" in identity:
+        return "⏱" if "clock" in identity or "elapsed" in identity else "➜"
+    return ICONS.get(snippet_role(snippet), "▶")
 
 
 @dataclass(frozen=True)
