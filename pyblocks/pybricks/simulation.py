@@ -34,6 +34,8 @@ class World:
         self.ports = {}
         self.active = set()
         self.age = 0
+        self.hub_inputs = {"buttons": (), "up": "TOP", "heading": 0}
+        self.feedback = {}
         defaults = {port: DEFAULT_PORTS[port] for port in self.available_ports}
         if model == "boost":
             defaults.update(C="motor", D="color_distance")

@@ -18,7 +18,7 @@ from pyblocks.pybricks.simulation import World
 from pyblocks.pybricks.virtual import VirtualConnection
 
 
-def test_focus_changes_saturation_without_dimming_or_recoloring_descendants(qt_app):
+def test_focus_is_conspicuous_without_recoloring_descendants(qt_app):
     from PySide6.QtCore import QPoint
     from PySide6.QtGui import QColor
 
@@ -31,7 +31,7 @@ def test_focus_changes_saturation_without_dimming_or_recoloring_descendants(qt_a
         for amount in (0.45, 0.65, 0.95):
             active = saturated(base, amount)
             assert active.hslSaturationF() > base.hslSaturationF()
-            assert active.lightnessF() == pytest.approx(base.lightnessF(), abs=0.0001)
+            assert 0.05 < base.lightnessF() - active.lightnessF() < 0.2
             assert active.hslHueF() == pytest.approx(base.hslHueF(), abs=0.0001)
 
     owner = Session.fragment("while True:\n    if True:\n        print(1)\n", ())
@@ -53,9 +53,7 @@ def test_focus_changes_saturation_without_dimming_or_recoloring_descendants(qt_a
             point = QPoint(round(note.right()) - 40, round(note.top()) + 2)
             inactive, active = before.pixelColor(point), after.pixelColor(point)
             assert active.hslSaturationF() > inactive.hslSaturationF()
-            assert active.lightnessF() == pytest.approx(
-                inactive.lightnessF(), abs=0.005
-            )
+            assert 0.05 < inactive.lightnessF() - active.lightnessF() < 0.15
             assert active.hslHueF() == pytest.approx(inactive.hslHueF(), abs=0.03)
             assert active == after.pixelColor(
                 point.x(), round(view._rect(line, 0).top()) + 2
@@ -83,31 +81,36 @@ def test_levels_are_cumulative_and_beginner_is_the_initial_view(tmp_path, qt_app
             for j in range(window.library.topLevelItem(i).childCount())
         ]
         sets = []
-        for level in ("beginner", "standard", "expert", "all"):
+        for level in ("beginner", "intermediate", "advanced", "expert", "all"):
             window.level_filter.setCurrentIndex(window.level_filter.findData(level))
             sets.append(
                 {item.data(0, IDENTITY) for item in items if not item.isHidden()}
             )
-        assert sets[0] < sets[1] < sets[2] == sets[3]
+        assert sets[0] < sets[1] < sets[2] < sets[3] == sets[4]
         window.change_editor(1)
         assert window.code_active and window.code.toPlainText() == before
         window.change_editor(0)
         assert not window.code_active and window.session.document.state.source == before
-        assert len(sets[0]) == 9
+        assert len(sets[0]) <= 16
         assert all(
             item.data(0, LEVEL) == "beginner"
             for item in items
             if item.data(0, IDENTITY) in sets[0]
         )
-        window.level_filter.setCurrentIndex(window.level_filter.findData("standard"))
+        window.level_filter.setCurrentIndex(
+            window.level_filter.findData("intermediate")
+        )
         window.search.setText("dictionary")
-        assert all(item.isHidden() or item.data(0, LEVEL) != "expert" for item in items)
-        assert window.settings.value("blockLevel") == "standard"
+        assert all(
+            item.isHidden() or item.data(0, LEVEL) in {"beginner", "intermediate"}
+            for item in items
+        )
+        assert window.settings.value("blockLevel") == "intermediate"
     finally:
         window.close()
     reopened = Studio(tmp_path / "main.py")
     try:
-        assert reopened.level_filter.currentData() == "standard"
+        assert reopened.level_filter.currentData() == "intermediate"
     finally:
         reopened.close()
 

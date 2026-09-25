@@ -117,7 +117,7 @@ def test_help_groups_links_back_search_and_language(qt_app):
         page.back()
         assert page.current.endswith("#motor_speed")
         page.search.setText("run_target")
-        assert not groups.child(1).isHidden()
+        assert not page.tree.currentItem().isHidden()
         assert (
             sum(not groups.child(i).isHidden() for i in range(groups.childCount())) == 1
         )

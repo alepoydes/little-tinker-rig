@@ -104,8 +104,13 @@ class Studio(QMainWindow):
         for level in LEVELS:
             self.level_filter.addItem(LEVEL_TITLES[level], level)
         saved_level = self.settings.value("blockLevel", "beginner")
+        if saved_level == "standard":
+            saved_level = "intermediate"
+            self.settings.setValue("blockLevel", saved_level)
         self.level_filter.setCurrentIndex(
-            max(0, self.level_filter.findData(saved_level))
+            self.level_filter.findData(
+                saved_level if saved_level in (*LEVELS, "all") else "beginner"
+            )
         )
         self.level_filter.currentIndexChanged.connect(self.filter_level)
         library = QWidget()

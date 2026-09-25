@@ -1,88 +1,123 @@
 # From first actions to Python
 
-The library opens at **Beginner** on a fresh installation. Levels accumulate:
-**Standard** adds to Beginner, **Expert** adds to Standard. **All** shows every
-level too; it is a browsing option, not a fourth difficulty. Your choice is saved.
-Levels filter the library, never restrict the program or hide existing code.
-Help groups include all their blocks and label the level at which each is introduced.
+The library starts at **Beginner** and grows through **Intermediate**, **Advanced**,
+and **Expert**. **All** is a filter, not another level. Levels accumulate and your
+choice is saved. Existing `Standard` settings and collection metadata migrate to
+`Intermediate`. A level filters new choices; it never restricts existing source.
 
-![The nine-block starter library](images/learning.png)
+Beginner contains 16 blocks. At other levels, groups start collapsed so children
+can explore one topic at a time. Searching opens matching groups; clearing the
+search restores their previous expansion. Each help group describes its blocks
+together, with their introduction levels and complete Python source.
+
+![The beginner library and a complete robot activity](images/learning.png)
 
 ## Beginner: connect, act, wait
 
-Nine blocks introduce a sequence of visible actions:
-
-| Group | Blocks |
+| Group | Available actions |
 |---|---|
-| Motors | Connect a motor; run for a set time; turn through an angle |
-| Sensors and timing | Connect a SPIKE color sensor; connect a BOOST color/distance sensor; wait for a color; wait for a time |
-| Python basics | Display a value; repeat a given number of times |
+| Python basics | Console output; repeat a number of times |
+| Motors | Connect a motor; turn through an angle; run for a set time |
+| Sensors and timing | Connect a SPIKE or BOOST color sensor; wait for color or time |
+| Drive bases and clocks | Set up a two-wheel robot; drive a distance; turn; brake |
+| Robot activities | Stop at a dark line; follow a line for a set time |
+| Remote control | Drive using a LEGO Powered Up remote |
 
-Start with **Connect a motor** and **Turn a motor through an angle**. Choose the
-same motor name in both blocks. Change the angle from `90` to `-90` to reverse it.
-Timed and angled moves finish before the next action begins. Use **Stop / F6** to
-stop a running program.
+Start with one motor and a finite movement. Change an angle from `90` to `-90`,
+put two movements in sequence, and repeat them. Next add a sensor wait. Try
+`examples/sequence.py` on Inventor/Prime or Technic, or `examples/boost_sequence.py`
+on BOOST. The virtual sensor reports white at reflection 50 or above and black
+below 50; physical sensors distinguish more colors.
 
-Next connect a color sensor, wait for white, turn, pause, and turn back.
-Open `examples/sequence.py` for Inventor/Prime or Technic (motor A, SPIKE color
-sensor C); use `examples/boost_sequence.py` for BOOST (built-in motor A, combined
-sensor D). Connect the matching **Virtual hub** and run. In Control, set the
-sensor's reflection below 50: the sequence waits. Set it to 50 or above: the
-virtual sensor reports white and the sequence starts. This simulator models
-black/white from reflection; physical sensors distinguish more colors.
+Then use **Set up a two-wheel robot in one block**. Select different left/right
+ports and the wheel diameter and axle track in millimeters. The default reverses
+the left motor for a mirrored chassis. Add a distance move and a turn. Expanding
+the setup reveals ordinary motor constructors and `DriveBase`, so directions
+and individual motors can be edited later.
 
-Try changing the angle and pause, then put the actions inside a repeat block.
-There is no need to introduce variables, Boolean algebra or functions yet.
-This stage takes inspiration from the motor-and-sensor activities of
-[LEGO BOOST](https://www.lego.com/en-au/product/boost-creative-toolbox-17101).
+The prepared line follower exposes time, speed, target reflection and correction
+gain. It brakes when its time expires, leaving the next action reachable. Change
+the sign of gain to follow the other edge. `examples/line_mission.py` demonstrates
+this with motors A/B and a SPIKE color sensor C. For BOOST, replace the sensor
+setup with a `ColorDistanceSensor` on D. The simpler stop-at-line activity stays
+still when its condition is already satisfied. **Stop / F6** interrupts a program
+waiting for a line that never arrives.
 
-## Standard: sense, decide, control
+For the remote activity, turn on a physical LEGO Powered Up remote. Left +/-
+drives forward/backward, right +/- turns, releasing buttons brakes, and the
+center button finishes the block. This uses a direct hub-to-remote connection,
+not Studio's screen joystick. Bluetooth pairing is not modeled by the simulator.
 
-Add open-ended motor motion, braking, target angles, direction, angle/speed
-readings, ultrasonic and force sensors, reflection, distance, conditions and
-sensor waits. A drive base adds distance moves and turns; a stopwatch measures
-time. Python blocks add variables, arithmetic, comparisons, Boolean expressions,
-loops, loop exit, lists, text conversion and reusable functions.
+These activities follow the progression from parameter changes and sequences to
+sensor-guided behavior in [BOOST](https://www.lego.com/en-au/product/boost-creative-toolbox-17101)
+and [SPIKE line activities](https://education.lego.com/en-us/lessons/prime-competition-ready/training-camp-3-react-to-lines/).
+A complete behavior can be useful before its loop and arithmetic are taught.
 
-Suggested progression:
+## Intermediate: sense, decide, name
 
-1. Run a motor, wait for a sensor condition, then brake. Read measurements in the
-   console before choosing a threshold. Ultrasonic distance is in millimeters;
-   BOOST distance is a relative percentage, not millimeters.
-2. Use `if / else` to choose an action. Add a short wait to continuous sensor loops.
-3. Connect two motors and a drive base. Move a measured distance and turn in place.
-   On a physical chassis, set motor directions and measure wheel diameter and
-   axle track; the default dimensions are examples.
-4. Open `examples/robot_route.py`. It stores three distances in a list, calls your
-   own `drive_leg` function in a counted loop, and prints measured distance and
-   angle (approximately `90 270`). It runs on every virtual hub profile.
-5. Add a stopwatch limit, compare sensor values, or choose a random route.
-   The random-number block uses `urandom`, available on Inventor/Prime and Technic,
-   but absent from BOOST firmware. The virtual profiles preserve that distinction.
+Read motor and sensor values, start continuous movement, wait for a condition,
+and choose a response with `if`/`else`. Add variables, arithmetic, Boolean
+expressions, range loops, functions and calls. Create a stopwatch to measure an
+activity. Use ultrasonic or force sensors when available. Ultrasonic distance is
+in millimeters; BOOST distance is a relative percentage.
 
-These topics follow the learning progression of
-[MINDSTORMS flow, sensor and data blocks](https://ev3-help-online.api.education.lego.com/Retail/en-us/index.html).
-PyBlocks targets Pybricks hubs; this is not an EV3 hardware compatibility layer.
-See the [drive-base API](https://docs.pybricks.com/en/stable/robotics.html) and
-[random-number API](https://docs.pybricks.com/en/stable/micropython/urandom.html)
-for the underlying Python operations.
+Choose the matching hub setup before using the status light, button, or tilt
+blocks. Only Prime/Inventor has a built-in display and speaker. The center hub
+button normally stops the program; Prime/Inventor's side buttons can be used for
+interactions while keeping that stop behavior.
 
-## Expert: express the algorithm
+Suggested exercises: build a color alarm; choose one of two motor actions; count
+repetitions; define a named action and call it twice. Unpack a prepared behavior
+to inspect its conditions and measurements. Expansion changes editing structure,
+not the Python algorithm or saved source. The expanded/collapsed view is temporary;
+after a source edit the editor recognizes the current templates again.
 
-Expert adds iteration over collections, `continue`, dictionaries, membership,
-slices, list comprehensions, conditional expressions, specific exception handlers,
-`try / finally`, raising errors and debugging assertions. Proportional line
-following is a worked robotics algorithm to inspect and adapt.
+Random integers use `urandom`, available on Inventor/Prime and Technic, but not
+BOOST. Both real and virtual profiles retain this firmware distinction.
 
-Open `examples/data_pipeline.py`: a function validates and transforms values,
-a loop collects successful results, and a dictionary records their count. It
-prints `[0, 8] 3` on a computer or any virtual hub. Change its transformation,
-then add another report field. Use **My functions** to insert calls; edit their
-argument lists and use the inline diagnostics to correct signature mistakes.
+## Advanced: combine data and control
 
-The goal is fluency with Python, not a card for every language feature. Open
-**Python** to add imports, classes, complex signatures, comprehensions or APIs
-that are clearer as source. You can edit a single fragment with F2 and return to
-**Blocks** whenever useful. Unrecognized valid Python remains visible and editable;
-levels never translate it into a separate language. A physical hub runs MicroPython
-and only its available modules; ordinary desktop Python is broader.
+Advanced adds lists, dictionaries, indexing, collection iteration, slices,
+comprehensions, numeric helpers and conditional expressions. It also exposes
+drive speed/acceleration settings, arcs, resetting odometry, gyro heading, and
+individual remote-controller operations. The original open-ended proportional
+line follower is available for algorithm experiments.
+
+`examples/robot_route.py` combines a list of distances with a named function and
+prints approximately `90 270` on every virtual profile. Vary the route and add
+more actions to the function. Keep polling loops responsive with a short wait.
+
+The `Car` blocks use Pybricks' steering calibration and propulsion API. They
+require a real mechanism with steering end stops. Calibration is not simulated.
+`Car` and `DriveBase` are different mechanical models, not interchangeable names
+for the same object. See the [Pybricks robotics reference](https://docs.pybricks.com/en/stable/robotics.html).
+
+## Expert: handle failure and extend Python
+
+Expert adds explicit exception handling, guaranteed Python cleanup, raising
+errors, assertions, and raw motor duty control. `examples/data_pipeline.py`
+validates and transforms values, collects successful results, and reports their
+count. It prints `[0, 8] 3` on desktop Python and all virtual hub profiles.
+
+Use Python view for APIs and constructs that are clearer as source. Valid code
+remains editable even without a library card. A physical hub runs MicroPython
+with its available modules, not unrestricted desktop Python.
+
+## Simulation and intentionally deferred features
+
+Motor/sensor activities, timed following, drive arcs/settings and odometry are
+tested using virtual devices. The model uses constant speeds rather than tire,
+acceleration, steering-stop, or collision physics. Feedback blocks report light,
+icon/number, and tone commands in the console; they do not play physical audio.
+Hub button/tilt/heading inputs remain at their default state in the interactive
+simulator; tests can provide scripted states.
+
+Physical LEGO remote pairing and `Car` calibration require hardware. Control-loop
+tests script remote button states while using virtual motors, including release,
+center-button exit and connection failure. They do not verify Bluetooth hardware.
+
+General event scheduling, gait libraries, cloud/media services, and automatically
+managed shared helper definitions are deferred. The new behaviors use short
+ordinary Python templates and the existing automatic imports, with no new runtime
+dependency. The research catalog in `AI/LEGO_CURRICULUM_AND_BLOCK_CATALOG.md`
+describes the broader proposal, not only shipped capabilities.

@@ -1603,21 +1603,37 @@ The project should feel like ordinary Python that has acquired structure, constr
 
 ## Desktop library and hub actions
 
-Every block has one manifest level: beginner, standard, or expert. All exists only
+Every block has one manifest level: beginner, intermediate, advanced, or expert. All exists only
 as a filter choice. Levels are cumulative and a fresh installation starts at
-Beginner: nine blocks for motor/sensor setup, bounded moves, waits, repetition
-and console feedback. Standard adds robot control, decisions, readings, variables,
-lists, arithmetic and reusable functions. Expert adds collection iteration,
-dictionary operations, comprehensions and exception handling. Python view is the
+Beginner: sixteen blocks for motor/sensor and robot setup, bounded moves, waits,
+repetition, console feedback and complete line/remote activities. Intermediate
+adds decisions, readings, hub feedback, variables, arithmetic and reusable
+functions. Advanced adds collections, numeric helpers, curves, steering cars and
+individual remote operations. Expert adds exception handling and raw motor duty.
+Legacy standard settings and manifests migrate to intermediate. Above Beginner,
+groups start collapsed; search expands matching groups and restores their prior
+expansion when cleared. Python view is the
 path to broader language/API features; levels never restrict editable source.
 Search, groups and the persisted level filter combine; help
 uses the same metadata. Generated comments place the action symbol before text,
 use the owning block's color, and preserve enclosing indentation bands.
 
-Hover and selection increase HSL saturation at fixed hue, lightness and opacity.
+Hover and selection increase HSL saturation and moderately reduce lightness at
+fixed hue and opacity. Saturation alone cannot distinguish already-pale saturated
+colors sufficiently; verify the final composited contrast, not only HSL values.
 Each pixel retains its most specific block's color, including under an active
 ancestor; comments and code use the same region pass. Never stack dark selection
-overlays on the base colors.
+overlays on the base colors. The shared transform resolves both changes before
+painting a region, preserving each descendant's hue and comment ownership.
+
+Prepared activities use short inline templates and native Pybricks operations.
+Their source is visible and can be expanded without changing its behavior.
+Expansion is a temporary editing view and is recalculated after source changes;
+separate use/unpack level metadata is not implemented. Shared helper lifecycle,
+general events, gait frameworks and host media blocks remain deferred.
+Sensor/motion activities specify termination and brake in Python cleanup. Direct
+remote pairing and steering-stop calibration are hardware capabilities, not
+features of the virtual physics model.
 
 The toolbar omits Parameters, To Scratch and Python fragment; menus and shortcuts
 retain these actions. Upload saves and sends the active program without running.
@@ -1647,7 +1663,7 @@ Definition renames follow resolved lexical bindings, including known keyword
 calls. Signature changes retain existing call sites. Proven argument mismatches
 have a red frame and a generated error-comment row; unknown dynamic signatures
 are not treated as errors. Syntax validation and one-step Undo apply to all edits.
-The Beginner range block fixes `range` and exposes the counter/count; the Standard
+The Beginner range block fixes `range` and exposes the counter/count; the Intermediate
 variant exposes start, exclusive stop and step as well.
 
 Generated comments begin with `#` at their containing statement's indentation;

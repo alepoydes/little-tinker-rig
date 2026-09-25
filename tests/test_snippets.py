@@ -189,7 +189,9 @@ def test_difficulty_metadata_rejects_all_and_unknown_blocks(tmp_path):
     manifest = tmp_path / "collection.toml"
     base = '[collection]\nid = "robot"\nversion = "1.0.0"\n'
     manifest.write_text(base)
-    assert load_collection(tmp_path)[0].level == "standard"
+    assert load_collection(tmp_path)[0].level == "intermediate"
+    manifest.write_text(base + '[levels]\n"motions/go" = "standard"\n')
+    assert load_collection(tmp_path)[0].level == "intermediate"
     manifest.write_text(base + '[levels]\n"motions/go" = "beginner"\n')
     assert load_collection(tmp_path)[0].level == "beginner"
     for field in ('"motions/go" = "all"', '"motions/typo" = "expert"'):

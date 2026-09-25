@@ -232,7 +232,7 @@ def test_level_filter_combines_search_and_groups_and_persists(tmp_path, qt_app):
 
     window = Studio(tmp_path / "main.py")
     try:
-        window.level_filter.setCurrentIndex(window.level_filter.findData("expert"))
+        window.level_filter.setCurrentIndex(window.level_filter.findData("advanced"))
         window.search.setText("follow")
         items = [
             window.library.topLevelItem(i).child(j)
@@ -240,8 +240,8 @@ def test_level_filter_combines_search_and_groups_and_persists(tmp_path, qt_app):
             for j in range(window.library.topLevelItem(i).childCount())
         ]
         visible = [item for item in items if not item.isHidden()]
-        assert visible and all(item.data(0, LEVEL) == "expert" for item in visible)
-        assert window.settings.value("blockLevel") == "expert"
+        assert {item.data(0, LEVEL) for item in visible} == {"beginner", "advanced"}
+        assert window.settings.value("blockLevel") == "advanced"
         window.search.setText("no such block")
         assert all(
             window.library.topLevelItem(i).isHidden()
@@ -343,6 +343,7 @@ def test_escape_from_library_does_not_restart_until_a_new_press(qt_app):
     from pyblocks.qt.library import Library
 
     library = Library(builtin_snippets())
+    library.topLevelItem(0).setExpanded(True)
     library.resize(450, 600)
     library.show()
     qt_app.processEvents()

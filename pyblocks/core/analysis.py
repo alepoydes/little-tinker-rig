@@ -27,6 +27,15 @@ class Diagnostic:
     severity: str = "warning"
 
 
+def attribute_path(node):
+    """Separate a receiver from a dotted member path, without evaluating it."""
+    path = []
+    while isinstance(node, ast.Attribute):
+        path.append(node.attr)
+        node = node.value
+    return node, ".".join(reversed(path))
+
+
 def identifiers(tree: ast.AST) -> set[str]:
     """All explicit names, including bindings not represented by ast.Name."""
     result = set()
@@ -318,9 +327,8 @@ class Analysis(Scopes):
                 if name[0].isupper():
                     return name
             elif isinstance(node.func, ast.Attribute):
-                return self.method_types.get(
-                    (self.type_of(node.func.value, seen), node.func.attr)
-                )
+                receiver, path = attribute_path(node.func)
+                return self.method_types.get((self.type_of(receiver, seen), path))
         if (
             isinstance(node, ast.Compare)
             or isinstance(node, ast.UnaryOp)

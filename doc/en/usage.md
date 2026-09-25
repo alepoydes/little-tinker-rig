@@ -70,8 +70,9 @@ a moved program still has the intended meaning.
 ## Library, Scratch and help
 
 Search the library by name, category or description. The level filter combines
-with search: **Beginner**, **Standard**, **Expert**, or **All**. Each block has one
-introduction level; Standard includes Beginner and Expert includes both. All is
+with search: **Beginner**, **Intermediate**, **Advanced**, **Expert**, or **All**.
+Each level includes the preceding levels. Groups start collapsed above Beginner
+and search opens matching groups. All is
 only a filter choice. A fresh installation starts with Beginner; the selected
 level is remembered. See the [learning paths](learning.md). Cards use the same semantic
 color as inserted blocks. Hover shows the full preview. F1 opens the selected
@@ -164,7 +165,7 @@ A known incompatible call receives a red border and an error comment; uncertain
 dynamic calls are not reported as signature errors. The program remains editable.
 Use **Return a value** inside a function.
 
-The Beginner repeat block exposes its counter and repeat count. The Standard
+The Beginner repeat block exposes its counter and repeat count. The Intermediate
 range block exposes the counter, start, exclusive stop and step. Expand a template
 to edit its fixed Python parts. A zero range step is reported as an error.
 

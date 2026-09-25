@@ -21,7 +21,8 @@ LEVEL = int(IDENTITY) + 5
 
 LEVEL_TITLES = {
     "beginner": N_("Beginner"),
-    "standard": N_("Standard"),
+    "intermediate": N_("Intermediate"),
+    "advanced": N_("Advanced"),
     "expert": N_("Expert"),
 }
 
@@ -36,6 +37,9 @@ GROUP_TITLES = {
     "pybricks/sensors": N_("Sensors and timing"),
     "pybricks/drive": N_("Drive bases and clocks"),
     "pybricks/randomness": N_("Random choices"),
+    "pybricks/hubs": N_("Hub lights, sound and motion"),
+    "pybricks/lessons": N_("Robot activities"),
+    "pybricks/remote": N_("Remote control"),
 }
 
 
@@ -114,6 +118,10 @@ class Library(QTreeWidget):
         self.load(snippets)
 
     def load(self, snippets):
+        expanded = {
+            self.topLevelItem(i).toolTip(0): self.topLevelItem(i).isExpanded()
+            for i in range(self.topLevelItemCount())
+        }
         self.function_key = tuple(
             (s.identity, s.parameters, s.help)
             for s in snippets
@@ -124,6 +132,7 @@ class Library(QTreeWidget):
             heading = QTreeWidgetItem(self, [group_title(group)])
             heading.setToolTip(0, group)
             heading.setFlags(heading.flags() & ~Qt.ItemFlag.ItemIsDragEnabled)
+            heading.setExpanded(expanded.get(group, self.level == "beginner"))
             for snippet in members:
                 name = snippet.identity.rsplit("/", 1)[1]
                 expansion = instantiate(
@@ -138,7 +147,6 @@ class Library(QTreeWidget):
                 item.setData(0, COLOR, PALETTE[snippet_role(snippet)])
                 item.setData(0, DESCRIPTION, snippet_title(snippet))
                 item.setToolTip(0, expansion.source + "\n\n" + tr(snippet.help))
-        self.expandAll()
 
     def update_functions(self, snippets):
         key = tuple(
@@ -153,10 +161,21 @@ class Library(QTreeWidget):
         return False
 
     def filter(self, search, level=None):
-        self.search = search
-        words = search.casefold().split()
+        previous_search = getattr(self, "search", "")
+        changed_level = level is not None and level != self.level
         if level is not None:
             self.level = level
+        if search and (not previous_search or changed_level):
+            self.expanded_before_search = {
+                self.topLevelItem(i).toolTip(0): (
+                    self.level == "beginner"
+                    if changed_level
+                    else self.topLevelItem(i).isExpanded()
+                )
+                for i in range(self.topLevelItemCount())
+            }
+        self.search = search
+        words = search.casefold().split()
         for index in range(self.topLevelItemCount()):
             group = self.topLevelItem(index)
             visible = False
@@ -177,6 +196,12 @@ class Library(QTreeWidget):
                 item.setHidden(not match)
                 visible |= match
             group.setHidden(not visible)
+            if search or changed_level:
+                group.setExpanded(bool(search) or self.level == "beginner")
+            elif previous_search:
+                group.setExpanded(
+                    self.expanded_before_search.get(group.toolTip(0), False)
+                )
 
     def mimeData(self, items):
         data = QMimeData()

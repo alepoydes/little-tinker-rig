@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PyBlocks Studio 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-24 23:48+0300\n"
+"POT-Creation-Date: 2026-09-25 06:04+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -46,6 +46,10 @@ msgstr "Добавить элемент"
 msgid "Add two values."
 msgstr "Сложить два значения."
 
+#: pyblocks/qt/library.py:25
+msgid "Advanced"
+msgstr "Продвинутый"
+
 #: pyblocks/qt/app.py:103
 msgid "All"
 msgstr "Все"
@@ -54,7 +58,7 @@ msgstr "Все"
 msgid "Append a value to a list."
 msgstr "Добавить значение в конец списка."
 
-#: pyblocks/core/analysis.py:439
+#: pyblocks/core/analysis.py:451
 #, python-brace-format
 msgid "Arguments do not match {signature}"
 msgstr "Аргументы не соответствуют {signature}"
@@ -99,7 +103,7 @@ msgstr "Расстояние BOOST, %"
 msgid "Beginner"
 msgstr "Начинающий"
 
-#: pyblocks/qt/app.py:471
+#: pyblocks/qt/app.py:476
 msgid "Block color"
 msgstr "Цвет блоков"
 
@@ -111,7 +115,7 @@ msgstr "Уровень блоков"
 msgid "Block library"
 msgstr "Библиотека блоков"
 
-#: pyblocks/qt/app.py:367 pyblocks/qt/document.py:60 pyblocks/qt/scratch.py:74
+#: pyblocks/qt/app.py:372 pyblocks/qt/document.py:60 pyblocks/qt/scratch.py:74
 msgid "Blocks"
 msgstr "Блоки"
 
@@ -129,11 +133,11 @@ msgstr ""
 msgid "Bluetooth name"
 msgstr "Имя Bluetooth"
 
-#: pyblocks/qt/app.py:1018
+#: pyblocks/qt/app.py:1023
 msgid "Bluetooth, USB or virtual hub"
 msgstr "Bluetooth, USB или виртуальный хаб"
 
-#: pyblocks/snippets/pybricks/drive.py:22
+#: pyblocks/snippets/pybricks/drive.py:43
 msgid "Brake both robot wheels."
 msgstr "Затормозить оба колеса робота."
 
@@ -159,7 +163,7 @@ msgstr ""
 "\n"
 "Выберите функцию, добавьте или удалите её аргументы."
 
-#: pyblocks/qt/app.py:346
+#: pyblocks/qt/app.py:351
 msgid "Cancel move"
 msgstr "Отменить перенос"
 
@@ -178,6 +182,14 @@ msgstr "Центр, °"
 #: pyblocks/qt/annotations.py:31
 msgid "Change a value"
 msgstr "Изменить значение"
+
+#: pyblocks/snippets/pybricks/hubs.py:25
+msgid "Change the hub status light."
+msgstr "Изменить цвет индикатора хаба."
+
+#: pyblocks/snippets/pybricks/remote.py:40
+msgid "Check a LEGO remote button in your own control loop."
+msgstr "Проверить кнопку пульта LEGO в своём цикле управления."
 
 #: pyblocks/qt/annotations.py:22
 msgid "Check a condition"
@@ -201,6 +213,18 @@ msgstr ""
 "\n"
 "В словаре проверяются ключи, в тексте — подстроки."
 
+#: pyblocks/snippets/pybricks/hubs.py:64
+msgid ""
+"Check whether a hub button is pressed.\n"
+"\n"
+"Available buttons depend on the hub. The center button normally stops the\n"
+"program; use left/right on Prime or Inventor without changing that behavior."
+msgstr ""
+"Проверить, нажата ли кнопка хаба.\n"
+"\n"
+"Доступные кнопки зависят от хаба. Центральная кнопка обычно останавливает\n"
+"программу; на Prime и Inventor используйте левую или правую, сохраняя остановку."
+
 #: pyblocks/snippets/pybricks/sensors.py:19
 msgid "Check whether a surface is darker than a reflection threshold."
 msgstr "Проверить, что поверхность темнее заданного порога отражения."
@@ -209,7 +233,7 @@ msgstr "Проверить, что поверхность темнее зада�
 msgid "Check whether a value is below a threshold."
 msgstr "Проверить, что значение меньше порога."
 
-#: pyblocks/snippets/pybricks/sensors.py:84
+#: pyblocks/snippets/pybricks/sensors.py:89
 msgid "Check whether the force sensor button is pressed."
 msgstr "Проверить, нажата ли кнопка датчика силы."
 
@@ -217,7 +241,11 @@ msgstr "Проверить, нажата ли кнопка датчика сил
 msgid "Check whether two values are equal."
 msgstr "Проверить, равны ли два значения."
 
-#: pyblocks/qt/app.py:321
+#: pyblocks/snippets/pybricks/hubs.py:77
+msgid "Check which side of the hub faces upward."
+msgstr "Проверить, какая сторона хаба направлена вверх."
+
+#: pyblocks/qt/app.py:326
 msgid "Child"
 msgstr "Потомок"
 
@@ -251,15 +279,15 @@ msgstr ""
 msgid "Choose between two actions using a condition."
 msgstr "Выбрать одно из двух действий по условию."
 
-#: pyblocks/snippets/python/numbers.py:26
+#: pyblocks/snippets/python/numbers.py:27
 msgid "Choose the larger value."
 msgstr "Выбрать большее значение."
 
-#: pyblocks/snippets/python/numbers.py:21
+#: pyblocks/snippets/python/numbers.py:22
 msgid "Choose the smaller value."
 msgstr "Выбрать меньшее значение."
 
-#: pyblocks/qt/app.py:196
+#: pyblocks/qt/app.py:201
 msgid "Clear"
 msgstr "Очистить"
 
@@ -267,7 +295,7 @@ msgstr "Очистить"
 msgid "Clear expression"
 msgstr "Очистить выражение"
 
-#: pyblocks/qt/app.py:617
+#: pyblocks/qt/app.py:622
 msgid "Clear recent files"
 msgstr "Очистить список"
 
@@ -275,7 +303,7 @@ msgstr "Очистить список"
 msgid "Close"
 msgstr "Закрыть"
 
-#: pyblocks/qt/app.py:272
+#: pyblocks/qt/app.py:277
 msgid "Close document"
 msgstr "Закрыть документ"
 
@@ -287,15 +315,19 @@ msgstr "Датчик цвета"
 msgid "Connect"
 msgstr "Подключить"
 
-#: pyblocks/snippets/pybricks/sensors.py:56
+#: pyblocks/snippets/pybricks/sensors.py:61
 msgid "Connect a BOOST color and distance sensor."
 msgstr "Подключить комбинированный датчик цвета и расстояния BOOST."
+
+#: pyblocks/snippets/pybricks/remote.py:33
+msgid "Connect a LEGO Powered Up remote for your own control loop."
+msgstr "Подключить пульт LEGO Powered Up для своего цикла управления."
 
 #: pyblocks/snippets/pybricks/sensors.py:11
 msgid "Connect a color sensor to a hub port."
 msgstr "Подключить датчик цвета к порту хаба."
 
-#: pyblocks/snippets/pybricks/sensors.py:48
+#: pyblocks/snippets/pybricks/sensors.py:53
 msgid "Connect a force sensor to measure presses."
 msgstr "Подключить датчик силы для измерения нажатий."
 
@@ -328,7 +360,7 @@ msgstr ""
 msgid "Connect a virtual or physical hub at the top right."
 msgstr "Подключите виртуальный или настоящий хаб в правом верхнем углу."
 
-#: pyblocks/snippets/pybricks/sensors.py:40
+#: pyblocks/snippets/pybricks/sensors.py:45
 msgid "Connect an ultrasonic distance sensor."
 msgstr "Подключить ультразвуковой датчик расстояния."
 
@@ -340,20 +372,32 @@ msgstr "Подключите ровно один хаб нужной модел�
 msgid "Connect hub"
 msgstr "Подключить хаб"
 
+#: pyblocks/snippets/pybricks/hubs.py:11
+msgid "Connect to the BOOST Move Hub."
+msgstr "Подключиться к хабу BOOST Move Hub."
+
+#: pyblocks/snippets/pybricks/hubs.py:4
+msgid "Connect to the SPIKE Prime or Robot Inventor hub."
+msgstr "Подключиться к хабу SPIKE Prime или Robot Inventor."
+
+#: pyblocks/snippets/pybricks/hubs.py:18
+msgid "Connect to the Technic Hub."
+msgstr "Подключиться к хабу Technic."
+
 #: pyblocks/qt/device.py:70
 msgid "Connection"
 msgstr "Подключение"
 
-#: pyblocks/qt/app.py:429
+#: pyblocks/qt/app.py:434
 msgid "Connect…"
 msgstr "Подключить…"
 
-#: pyblocks/qt/app.py:202 pyblocks/qt/app.py:460 pyblocks/qt/app.py:559
-#: pyblocks/qt/app.py:793
+#: pyblocks/qt/app.py:207 pyblocks/qt/app.py:465 pyblocks/qt/app.py:564
+#: pyblocks/qt/app.py:798
 msgid "Console"
 msgstr "Консоль"
 
-#: pyblocks/qt/app.py:559 pyblocks/qt/app.py:788
+#: pyblocks/qt/app.py:564 pyblocks/qt/app.py:793
 #, python-brace-format
 msgid "Console · {p0}"
 msgstr "Консоль · {p0}"
@@ -392,11 +436,11 @@ msgstr ""
 "Измените элементы через запятую в Python или замените выражение items.\n"
 "Добавляйте значения по одному блоком append."
 
-#: pyblocks/snippets/pybricks/drive.py:53
+#: pyblocks/snippets/pybricks/drive.py:74
 msgid "Create a stopwatch to measure time."
 msgstr "Создать секундомер для измерения времени."
 
-#: pyblocks/snippets/pybricks/drive.py:4
+#: pyblocks/snippets/pybricks/drive.py:25
 msgid "Create a two-wheel robot from the left and right motors."
 msgstr "Создать двухколёсного робота из левого и правого моторов."
 
@@ -427,7 +471,7 @@ msgstr "Устройство"
 msgid "Device ID {p0}"
 msgstr "Устройство ID {p0}"
 
-#: pyblocks/qt/app.py:430
+#: pyblocks/qt/app.py:435
 msgid "Disconnect"
 msgstr "Отключить"
 
@@ -488,7 +532,7 @@ msgstr "Перетаскивайте стик; отпустите для воз�
 msgid "Drag the whole fragment into the program or another cell"
 msgstr "Перетащите весь фрагмент в программу или другую ячейку"
 
-#: pyblocks/snippets/pybricks/drive.py:27
+#: pyblocks/snippets/pybricks/drive.py:48
 msgid ""
 "Drive a distance, then stop.\n"
 "\n"
@@ -500,19 +544,70 @@ msgstr ""
 "Расстояние задаётся в миллиметрах. Отрицательное значение — движение назад.\n"
 "Следующее действие ждёт завершения движения."
 
-#: pyblocks/snippets/pybricks/drive.py:17
+#: pyblocks/snippets/pybricks/drive.py:105
+msgid ""
+"Drive along an arc, then stop.\n"
+"\n"
+"Positive radius curves right; negative radius curves left.\n"
+"Negative angle drives backward. Radius must not be zero."
+msgstr ""
+"Проехать по дуге и остановиться.\n"
+"\n"
+"Положительный радиус задаёт дугу вправо, отрицательный — влево.\n"
+"Отрицательный угол означает движение назад. Радиус не должен быть нулевым."
+
+#: pyblocks/snippets/pybricks/drive.py:38
 msgid "Drive at the chosen speed and turn rate."
 msgstr "Ехать с заданной скоростью и поворотом."
 
-#: pyblocks/qt/library.py:37
+#: pyblocks/qt/library.py:38
 msgid "Drive bases and clocks"
 msgstr "Движение и секундомеры"
 
-#: pyblocks/qt/app.py:277
+#: pyblocks/snippets/pybricks/lessons.py:4
+msgid ""
+"Drive until a dark line, then brake.\n"
+"\n"
+"Works with SPIKE and BOOST reflection sensors. If already on the line,\n"
+"the robot stays still. Stop cancels a wait for a line that never arrives."
+msgstr ""
+"Доехать до тёмной линии и затормозить.\n"
+"\n"
+"Подходит для датчиков отражения SPIKE и BOOST. Если линия уже под датчиком,\n"
+"робот не движется. Действие «Стоп» отменяет ожидание линии."
+
+#: pyblocks/snippets/pybricks/lessons.py:24
+msgid ""
+"Drive until an ultrasonic obstacle, then brake.\n"
+"\n"
+"Distance is in millimeters. Use a relative threshold with the BOOST sensor\n"
+"instead; its distance reading is not measured in millimeters."
+msgstr ""
+"Доехать до препятствия по ультразвуковому датчику и затормозить.\n"
+"\n"
+"Расстояние задаётся в миллиметрах. Для датчика BOOST нужен относительный\n"
+"порог: его показания расстояния не измеряются в миллиметрах."
+
+#: pyblocks/snippets/pybricks/remote.py:4
+msgid ""
+"Drive with a LEGO remote until its center button is pressed.\n"
+"\n"
+"Turn on the remote first. Left +/- controls forward/backward; right +/- turns.\n"
+"Releasing buttons brakes. The center button ends this block so the next\n"
+"action can run. A connection error also brakes before propagating."
+msgstr ""
+"Управлять роботом с пульта LEGO до нажатия центральной кнопки.\n"
+"\n"
+"Сначала включите пульт. Левые +/- управляют движением вперёд и назад,\n"
+"правые +/- — поворотом. Отпускание кнопок тормозит. Центральная кнопка\n"
+"завершает блок и позволяет выполнить следующее действие. При ошибке связи\n"
+"робот тормозит перед передачей ошибки."
+
+#: pyblocks/qt/app.py:282
 msgid "Edit"
 msgstr "Правка"
 
-#: pyblocks/qt/app.py:840
+#: pyblocks/qt/app.py:845
 msgid "Edit Python fragment"
 msgstr "Редактировать фрагмент Python"
 
@@ -537,19 +632,19 @@ msgstr "Передавать команды моторам"
 msgid "Error: {detail}"
 msgstr "Ошибка: {detail}"
 
-#: pyblocks/qt/app.py:325
+#: pyblocks/qt/app.py:330
 msgid "Expand block"
 msgstr "Раскрыть блок"
 
-#: pyblocks/qt/library.py:25
+#: pyblocks/qt/library.py:26
 msgid "Expert"
 msgstr "Эксперт"
 
-#: pyblocks/qt/app.py:242
+#: pyblocks/qt/app.py:247
 msgid "File"
 msgstr "Файл"
 
-#: pyblocks/qt/app.py:363
+#: pyblocks/qt/app.py:368
 msgid "Find"
 msgstr "Найти"
 
@@ -571,7 +666,7 @@ msgstr ""
 "\n"
 "Условие value % 2 == 0 проверяет чётность целого числа. Делитель не может быть нулём."
 
-#: pyblocks/qt/app.py:341
+#: pyblocks/qt/app.py:346
 msgid "Finish move"
 msgstr "Завершить перенос"
 
@@ -615,15 +710,27 @@ msgstr ""
 msgid "Firmware package is too large"
 msgstr "Пакет прошивки слишком велик"
 
-#: pyblocks/qt/app.py:437
+#: pyblocks/qt/app.py:442
 msgid "Firmware…"
 msgstr "Прошивка…"
 
-#: pyblocks/qt/app.py:356
+#: pyblocks/qt/app.py:361
 msgid "Fold region"
 msgstr "Свернуть область"
 
-#: pyblocks/snippets/pybricks/sensors.py:24
+#: pyblocks/snippets/pybricks/lessons.py:44
+msgid ""
+"Follow a line edge for a set time, then brake.\n"
+"\n"
+"Target is the reflection at the edge. Reverse gain to follow the other edge.\n"
+"Expand the block to inspect the timer, repeated measurement and correction."
+msgstr ""
+"Следовать краю линии заданное время и затормозить.\n"
+"\n"
+"Target — отражение на краю линии. Смена знака gain меняет сторону следования.\n"
+"Раскройте блок, чтобы изучить таймер, повторные измерения и коррекцию."
+
+#: pyblocks/snippets/pybricks/sensors.py:26
 msgid ""
 "Follow a line edge using proportional control.\n"
 "\n"
@@ -646,11 +753,11 @@ msgstr "Датчик силы"
 msgid "Force: {p0:g} N"
 msgstr "Сила: {p0:g} Н"
 
-#: pyblocks/qt/app.py:362
+#: pyblocks/qt/app.py:367
 msgid "Format Python"
 msgstr "Форматировать Python"
 
-#: pyblocks/qt/app.py:397
+#: pyblocks/qt/app.py:402
 msgid "Full screen"
 msgstr "Полный экран"
 
@@ -670,15 +777,15 @@ msgstr ""
 "Поместите операцию в try, восстановление после ошибки — в except.\n"
 "Выберите ожидаемое исключение, чтобы не скрывать все ошибки."
 
-#: pyblocks/qt/app.py:401 pyblocks/qt/navigation.py:19
+#: pyblocks/qt/app.py:406 pyblocks/qt/navigation.py:19
 msgid "Help"
 msgstr "Помощь"
 
-#: pyblocks/qt/app.py:404
+#: pyblocks/qt/app.py:409
 msgid "Hub"
 msgstr "Хаб"
 
-#: pyblocks/qt/app.py:224
+#: pyblocks/qt/app.py:229
 msgid "Hub and devices"
 msgstr "Хаб и устройства"
 
@@ -686,9 +793,13 @@ msgstr "Хаб и устройства"
 msgid "Hub firmware"
 msgstr "Прошивка хаба"
 
-#: pyblocks/qt/app.py:1016
+#: pyblocks/qt/app.py:1021
 msgid "Hub information and port readings"
 msgstr "Информация о хабе и показания портов"
+
+#: pyblocks/qt/library.py:40
+msgid "Hub lights, sound and motion"
+msgstr "Свет, звук и движение хаба"
 
 #: pyblocks/qt/firmware.py:73
 msgid "Hub model"
@@ -706,7 +817,7 @@ msgstr "Ожидание"
 msgid "Increase a variable value."
 msgstr "Увеличить значение переменной."
 
-#: pyblocks/qt/app.py:336
+#: pyblocks/qt/app.py:341
 msgid "Indent"
 msgstr "Внутрь"
 
@@ -718,7 +829,7 @@ msgstr "Орган управления"
 msgid "Insert before selected item"
 msgstr "Вставить перед выбранным элементом"
 
-#: pyblocks/qt/editor.py:536 pyblocks/qt/scratch.py:337
+#: pyblocks/qt/editor.py:537 pyblocks/qt/scratch.py:337
 msgid "Insert here"
 msgstr "Вставить здесь"
 
@@ -730,6 +841,10 @@ msgstr "Установить Pybricks"
 msgid "Install firmware"
 msgstr "Установить прошивку"
 
+#: pyblocks/qt/library.py:24
+msgid "Intermediate"
+msgstr "Средний"
+
 #: pyblocks/pybricks/firmware.py:139
 msgid "Invalid firmware file size"
 msgstr "Недопустимый размер файла прошивки"
@@ -738,7 +853,7 @@ msgstr "Недопустимый размер файла прошивки"
 msgid "Invalid firmware image size"
 msgstr "Недопустимый размер образа прошивки"
 
-#: pyblocks/qt/library.py:33
+#: pyblocks/qt/library.py:34
 msgid "Iteration and exceptions"
 msgstr "Перебор и исключения"
 
@@ -750,7 +865,7 @@ msgstr "Прошивка LEGO является проприетарной. Ис�
 msgid "LEGO recovery packages must declare firmware-type as lego"
 msgstr "В пакете восстановления LEGO поле firmware-type должно иметь значение lego"
 
-#: pyblocks/qt/app.py:379
+#: pyblocks/qt/app.py:384
 msgid "Language"
 msgstr "Язык"
 
@@ -784,15 +899,15 @@ msgstr "Левый Y"
 msgid "Left stick · WASD"
 msgstr "Левый стик · WASD"
 
-#: pyblocks/qt/app.py:113
+#: pyblocks/qt/app.py:118
 msgid "Library · drag a block into the program"
 msgstr "Библиотека · перетащите блок в программу"
 
-#: pyblocks/qt/library.py:32
+#: pyblocks/qt/library.py:33
 msgid "Lists, text and dictionaries"
 msgstr "Списки, текст и словари"
 
-#: pyblocks/qt/app.py:431 pyblocks/qt/controls.py:316
+#: pyblocks/qt/app.py:436 pyblocks/qt/controls.py:316
 msgid "Manual control"
 msgstr "Ручное управление"
 
@@ -804,19 +919,19 @@ msgstr "Ручной режим остановит текущую програм
 msgid "Maximize"
 msgstr "Развернуть"
 
-#: pyblocks/snippets/pybricks/sensors.py:69
+#: pyblocks/snippets/pybricks/sensors.py:74
 msgid "Measure obstacle distance in millimeters."
 msgstr "Измерить расстояние до препятствия в миллиметрах."
 
-#: pyblocks/snippets/pybricks/sensors.py:79
+#: pyblocks/snippets/pybricks/sensors.py:84
 msgid "Measure pressing force in newtons."
 msgstr "Измерить силу нажатия в ньютонах."
 
-#: pyblocks/snippets/pybricks/sensors.py:74
+#: pyblocks/snippets/pybricks/sensors.py:79
 msgid "Measure relative distance with a BOOST sensor."
 msgstr "Измерить относительное расстояние датчиком BOOST."
 
-#: pyblocks/snippets/pybricks/sensors.py:64
+#: pyblocks/snippets/pybricks/sensors.py:69
 msgid "Measure surface reflection from 0 to 100%."
 msgstr "Измерить отражение поверхности: от 0 до 100%."
 
@@ -832,7 +947,7 @@ msgstr "Режим"
 msgid "Motor"
 msgstr "Мотор"
 
-#: pyblocks/qt/library.py:35
+#: pyblocks/qt/library.py:36
 msgid "Motors"
 msgstr "Моторы"
 
@@ -848,7 +963,7 @@ msgstr "Переместить элемент вправо"
 msgid "Multiply two values."
 msgstr "Перемножить два значения."
 
-#: pyblocks/qt/library.py:30
+#: pyblocks/qt/library.py:31
 msgid "My functions"
 msgstr "Мои функции"
 
@@ -860,7 +975,7 @@ msgstr "Н"
 msgid "Name"
 msgstr "Имя"
 
-#: pyblocks/qt/app.py:402
+#: pyblocks/qt/app.py:407
 msgid "Name diagnostics"
 msgstr "Диагностика имён"
 
@@ -868,7 +983,7 @@ msgstr "Диагностика имён"
 msgid "Negate a condition."
 msgstr "Изменить условие на противоположное."
 
-#: pyblocks/qt/app.py:245
+#: pyblocks/qt/app.py:250
 msgid "New"
 msgstr "Новый"
 
@@ -876,7 +991,7 @@ msgstr "Новый"
 msgid "Next iteration"
 msgstr "Следующее повторение"
 
-#: pyblocks/qt/app.py:323
+#: pyblocks/qt/app.py:328
 msgid "Next node / target"
 msgstr "Следующий узел / цель"
 
@@ -892,23 +1007,23 @@ msgstr "Хаб не подключён"
 msgid "No matching hub found in Bluetooth bootloader mode"
 msgstr "Подходящий хаб в режиме загрузчика Bluetooth не найден"
 
-#: pyblocks/qt/app.py:602
+#: pyblocks/qt/app.py:607
 msgid "No recent files"
 msgstr "Нет недавних файлов"
 
-#: pyblocks/qt/app.py:875
+#: pyblocks/qt/app.py:880
 msgid "No unknown names found.\n"
 msgstr "Неизвестных имён не найдено.\n"
 
-#: pyblocks/qt/library.py:34
+#: pyblocks/qt/library.py:35
 msgid "Numbers"
 msgstr "Числа"
 
-#: pyblocks/qt/app.py:253
+#: pyblocks/qt/app.py:258
 msgid "Open"
 msgstr "Открыть"
 
-#: pyblocks/qt/app.py:936
+#: pyblocks/qt/app.py:941
 msgid "Open Python"
 msgstr "Открыть Python"
 
@@ -924,7 +1039,7 @@ msgstr "Открыть файл прошивки…"
 msgid "Open port monitor"
 msgstr "Открыть монитор портов"
 
-#: pyblocks/qt/app.py:259
+#: pyblocks/qt/app.py:264
 msgid "Open recent"
 msgstr "Открыть недавние"
 
@@ -933,7 +1048,7 @@ msgstr "Открыть недавние"
 msgid "Operands: {operator}"
 msgstr "Операнды: {operator}"
 
-#: pyblocks/qt/app.py:331
+#: pyblocks/qt/app.py:336
 msgid "Outdent"
 msgstr "Наружу"
 
@@ -941,7 +1056,7 @@ msgstr "Наружу"
 msgid "Parameter (name, optionally = default)"
 msgstr "Параметр (имя, при необходимости = значение)"
 
-#: pyblocks/qt/app.py:298 pyblocks/qt/help.py:61
+#: pyblocks/qt/app.py:303 pyblocks/qt/help.py:61
 msgid "Parameters"
 msgstr "Параметры"
 
@@ -950,7 +1065,7 @@ msgstr "Параметры"
 msgid "Parameters: {name}"
 msgstr "Параметры: {name}"
 
-#: pyblocks/qt/app.py:320
+#: pyblocks/qt/app.py:325
 msgid "Parent"
 msgstr "Родитель"
 
@@ -966,7 +1081,19 @@ msgstr "Физический Xbox / SDL-контроллер"
 msgid "Place actions here"
 msgstr "Место для действий"
 
-#: pyblocks/qt/app.py:995 pyblocks/qt/app.py:1004
+#: pyblocks/snippets/pybricks/hubs.py:47
+msgid ""
+"Play a tone on the Prime or Inventor speaker.\n"
+"\n"
+"Frequency is 64–24000 Hz. A finite duration waits for the tone to finish.\n"
+"Recorded sounds and speech require a computer and are not hub tones."
+msgstr ""
+"Воспроизвести тон динамиком Prime или Inventor.\n"
+"\n"
+"Частота — 64–24000 Гц. При конечной длительности блок ждёт окончания звука.\n"
+"Записанные звуки и речь требуют компьютера и не являются тонами хаба."
+
+#: pyblocks/qt/app.py:1000 pyblocks/qt/app.py:1009
 msgid "Please wait…"
 msgstr "Подождите…"
 
@@ -982,19 +1109,19 @@ msgstr "Монитор портов"
 msgid "Prepare download"
 msgstr "Загрузить и проверить"
 
-#: pyblocks/qt/app.py:322
+#: pyblocks/qt/app.py:327
 msgid "Previous node / target"
 msgstr "Предыдущий узел / цель"
 
-#: pyblocks/qt/editor.py:551 pyblocks/qt/scratch.py:141
+#: pyblocks/qt/editor.py:552 pyblocks/qt/scratch.py:141
 msgid "Previous position"
 msgstr "Прежнее положение"
 
-#: pyblocks/qt/app.py:237 pyblocks/qt/navigation.py:19
+#: pyblocks/qt/app.py:242 pyblocks/qt/navigation.py:19
 msgid "Program"
 msgstr "Программа"
 
-#: pyblocks/qt/app.py:194
+#: pyblocks/qt/app.py:199
 msgid "Program output and messages"
 msgstr "Вывод программы и сообщения"
 
@@ -1002,7 +1129,7 @@ msgstr "Вывод программы и сообщения"
 msgid "Program running"
 msgstr "Программа работает"
 
-#: pyblocks/qt/library.py:31
+#: pyblocks/qt/library.py:32
 msgid "Python basics"
 msgstr "Основы Python"
 
@@ -1014,7 +1141,7 @@ msgstr "Выражение Python"
 msgid "Python expression or named argument"
 msgstr "Выражение Python или именованный аргумент"
 
-#: pyblocks/qt/app.py:304
+#: pyblocks/qt/app.py:309
 msgid "Python fragment"
 msgstr "Фрагмент Python"
 
@@ -1026,7 +1153,7 @@ msgstr "Python · Ctrl+Space — дополнение · Ctrl+Alt+L — форм
 msgid "Raise a ValueError with an explanation."
 msgstr "Вызвать ошибку ValueError с объяснением."
 
-#: pyblocks/qt/library.py:38
+#: pyblocks/qt/library.py:39
 msgid "Random choices"
 msgstr "Случайный выбор"
 
@@ -1042,9 +1169,13 @@ msgstr ""
 "Индексы списка начинаются с нуля; -1 — последний элемент.\n"
 "В словаре вместо числового индекса используется ключ."
 
-#: pyblocks/snippets/pybricks/drive.py:60
+#: pyblocks/snippets/pybricks/drive.py:81
 msgid "Read elapsed milliseconds from the stopwatch."
 msgstr "Узнать, сколько миллисекунд прошло на секундомере."
+
+#: pyblocks/snippets/pybricks/hubs.py:94
+msgid "Read the battery voltage in millivolts."
+msgstr "Узнать напряжение батареи в милливольтах."
 
 #: pyblocks/snippets/pybricks/motors.py:60
 msgid "Read the current motor angle."
@@ -1054,19 +1185,30 @@ msgstr "Узнать текущий угол мотора."
 msgid "Read the current motor speed."
 msgstr "Узнать текущую скорость мотора."
 
-#: pyblocks/snippets/pybricks/drive.py:43
+#: pyblocks/snippets/pybricks/drive.py:64
 msgid "Read the distance traveled by the robot."
 msgstr "Узнать пройденное роботом расстояние."
 
-#: pyblocks/snippets/pybricks/drive.py:48
+#: pyblocks/snippets/pybricks/hubs.py:87
+msgid ""
+"Read the gyro heading in degrees.\n"
+"\n"
+"Positive angles turn clockwise. BOOST has tilt sensing, not a gyro heading."
+msgstr ""
+"Узнать курс по гироскопу в градусах.\n"
+"\n"
+"Положительные углы соответствуют повороту по часовой стрелке.\n"
+"BOOST определяет наклон, но не курс по гироскопу."
+
+#: pyblocks/snippets/pybricks/drive.py:69
 msgid "Read the robot's turn angle."
 msgstr "Узнать угол поворота робота."
 
-#: pyblocks/snippets/pybricks/sensors.py:89
+#: pyblocks/snippets/pybricks/sensors.py:94
 msgid "Read the surface color under the sensor."
 msgstr "Узнать цвет поверхности под датчиком."
 
-#: pyblocks/qt/app.py:288
+#: pyblocks/qt/app.py:293
 msgid "Redo"
 msgstr "Повторить"
 
@@ -1090,6 +1232,10 @@ msgstr ""
 "\n"
 "Имя пишется без кавычек: например, speed или distance.\n"
 "Позже это имя можно использовать в других блоках."
+
+#: pyblocks/qt/library.py:42
+msgid "Remote control"
+msgstr "Управление пультом"
 
 #: pyblocks/qt/structure.py:36
 msgid "Remove item"
@@ -1163,7 +1309,7 @@ msgstr ""
 msgid "Replaces the running program with the port monitor. Motors remain stopped."
 msgstr "Запустит монитор вместо текущей программы. Моторы останутся остановленными."
 
-#: pyblocks/snippets/pybricks/drive.py:65
+#: pyblocks/snippets/pybricks/drive.py:86
 msgid "Restart the stopwatch."
 msgstr "Начать отсчёт времени заново."
 
@@ -1199,6 +1345,10 @@ msgstr "Правый Y"
 msgid "Right stick · arrows"
 msgstr "Правый стик · стрелки"
 
+#: pyblocks/qt/library.py:41
+msgid "Robot activities"
+msgstr "Задания для робота"
+
 #: pyblocks/qt/controls.py:290
 msgid "Rotation, °/s"
 msgstr "Вращение, °/с"
@@ -1207,7 +1357,7 @@ msgstr "Вращение, °/с"
 msgid "Round a number to the nearest integer."
 msgstr "Округлить число до ближайшего целого."
 
-#: pyblocks/qt/app.py:415
+#: pyblocks/qt/app.py:420
 msgid "Run"
 msgstr "Запустить"
 
@@ -1243,7 +1393,7 @@ msgstr ""
 "Поместите операции в try, а завершение, например остановку мотора, — в finally.\n"
 "Принудительное завершение программы может прервать эти действия."
 
-#: pyblocks/qt/app.py:433
+#: pyblocks/qt/app.py:438
 msgid "Run stored program"
 msgstr "Запустить сохранённую программу"
 
@@ -1255,19 +1405,19 @@ msgstr "Вращать мотор заданное время, затем ост
 msgid "Run with error handling"
 msgstr "Выполнить с обработкой ошибок"
 
-#: pyblocks/qt/app.py:263
+#: pyblocks/qt/app.py:268
 msgid "Save"
 msgstr "Сохранить"
 
-#: pyblocks/qt/app.py:949
+#: pyblocks/qt/app.py:954
 msgid "Save Python"
 msgstr "Сохранить Python"
 
-#: pyblocks/qt/app.py:269
+#: pyblocks/qt/app.py:274
 msgid "Save as…"
 msgstr "Сохранить как…"
 
-#: pyblocks/qt/app.py:661
+#: pyblocks/qt/app.py:666
 #, python-brace-format
 msgid "Save {p0} before closing?"
 msgstr "Сохранить {p0} перед закрытием?"
@@ -1276,7 +1426,7 @@ msgstr "Сохранить {p0} перед закрытием?"
 msgid "Scale"
 msgstr "Масштаб"
 
-#: pyblocks/qt/app.py:210 pyblocks/qt/app.py:466
+#: pyblocks/qt/app.py:215 pyblocks/qt/app.py:471
 msgid "Scratch"
 msgstr "Черновики"
 
@@ -1288,7 +1438,7 @@ msgstr "Поиск в руководстве и блоках…"
 msgid "Searching for a matching hub in Bluetooth bootloader mode…"
 msgstr "Поиск подходящего хаба в режиме загрузчика Bluetooth…"
 
-#: pyblocks/qt/app.py:731
+#: pyblocks/qt/app.py:736
 msgid "Select a block"
 msgstr "Выберите блок"
 
@@ -1305,7 +1455,7 @@ msgstr ""
 msgid "Send controller input to my program"
 msgstr "Передавать контроллер в мою программу"
 
-#: pyblocks/qt/library.py:36
+#: pyblocks/qt/library.py:37
 msgid "Sensors and timing"
 msgstr "Датчики и ожидание"
 
@@ -1313,23 +1463,94 @@ msgstr "Датчики и ожидание"
 msgid "Servo, °"
 msgstr "Серво, °"
 
+#: pyblocks/snippets/pybricks/drive.py:134
+msgid ""
+"Set car propulsion power; zero lets the car coast.\n"
+"\n"
+"Positive power drives forward and negative power drives backward.\n"
+"This is motor power, not a measured vehicle speed."
+msgstr ""
+"Задать мощность машины; ноль оставляет движение по инерции.\n"
+"\n"
+"Положительная мощность задаёт движение вперёд, отрицательная — назад.\n"
+"Это мощность мотора, а не измеренная скорость машины."
+
+#: pyblocks/snippets/pybricks/drive.py:129
+msgid "Set car steering between -100 and 100 percent."
+msgstr "Задать положение руля от -100 до 100 процентов."
+
+#: pyblocks/snippets/pybricks/motors.py:70
+msgid ""
+"Set raw motor power from -100% to 100%.\n"
+"\n"
+"Power is a duty cycle, not regulated speed. Load changes the actual speed."
+msgstr ""
+"Задать мощность мотора напрямую от -100% до 100%.\n"
+"\n"
+"Это скважность управляющего сигнала, а не регулируемая скорость.\n"
+"Фактическая скорость зависит от нагрузки."
+
 #: pyblocks/snippets/pybricks/motors.py:55
 msgid "Set the angle reading at the current motor position."
 msgstr "Назначить текущему положению мотора выбранный угол."
+
+#: pyblocks/snippets/pybricks/drive.py:91
+msgid ""
+"Set the speed and acceleration of finite robot moves.\n"
+"\n"
+"Straight acceleration is in mm/s²; turn acceleration is in deg/s².\n"
+"Continuous drive commands use their own speed and turn rate."
+msgstr ""
+"Задать скорость и ускорение конечных перемещений робота.\n"
+"\n"
+"Линейное ускорение измеряется в мм/с², угловое — в градусах/с².\n"
+"Непрерывное движение использует собственные скорость и темп поворота."
+
+#: pyblocks/snippets/pybricks/drive.py:118
+msgid ""
+"Set up a car with a steering motor.\n"
+"\n"
+"Pybricks finds the steering endpoints automatically: use a mechanism with\n"
+"physical steering stops. Propulsion can also be a tuple of drive motors.\n"
+"Steering calibration is not modeled by the virtual hub."
+msgstr ""
+"Настроить машину с рулевым мотором.\n"
+"\n"
+"Pybricks автоматически находит крайние положения руля: у механизма должны\n"
+"быть физические упоры. Для движения можно также задать кортеж моторов.\n"
+"Виртуальный хаб не моделирует калибровку рулевого механизма."
+
+#: pyblocks/snippets/pybricks/drive.py:4
+msgid ""
+"Set up a two-wheel robot in one block.\n"
+"\n"
+"Choose different motor ports and measure the wheel diameter and axle track.\n"
+"The left motor is reversed for a mirrored two-wheel chassis.\n"
+"Expand the block to change motor directions or reuse its individual motors."
+msgstr ""
+"Настроить двухколёсного робота одним блоком.\n"
+"\n"
+"Выберите разные порты моторов, измерьте диаметр колеса и колею.\n"
+"Левый мотор развёрнут для шасси с зеркально установленными моторами.\n"
+"Раскройте блок, чтобы изменить направления или использовать моторы отдельно."
+
+#: pyblocks/snippets/pybricks/hubs.py:59
+msgid "Show a number on the Prime or Inventor display."
+msgstr "Показать число на дисплее Prime или Inventor."
+
+#: pyblocks/snippets/pybricks/hubs.py:40
+msgid "Show an icon on the Prime or Inventor display."
+msgstr "Показать значок на дисплее Prime или Inventor."
 
 #: pyblocks/snippets/python/flow.py:20
 msgid "Skip to the next iteration of the nearest loop."
 msgstr "Перейти к следующему повторению ближайшего цикла."
 
-#: pyblocks/qt/library.py:24
-msgid "Standard"
-msgstr "Стандартный"
-
 #: pyblocks/qt/controls.py:248
 msgid "Start manual control"
 msgstr "Включить ручной режим"
 
-#: pyblocks/qt/app.py:329
+#: pyblocks/qt/app.py:334
 msgid "Start move"
 msgstr "Начать перенос"
 
@@ -1337,13 +1558,17 @@ msgstr "Начать перенос"
 msgid "Start with a virtual hub or connect your robot."
 msgstr "Начните с виртуального хаба или подключите свой робот."
 
-#: pyblocks/qt/app.py:423
+#: pyblocks/qt/app.py:428
 msgid "Stop"
 msgstr "Стоп"
 
 #: pyblocks/snippets/pybricks/motors.py:35
 msgid "Stop a motor with braking."
 msgstr "Остановить мотор с торможением."
+
+#: pyblocks/snippets/pybricks/drive.py:113
+msgid "Stop and reset the robot's distance and angle readings."
+msgstr "Остановить робота и обнулить показания пути и угла."
 
 #: pyblocks/qt/device.py:173
 msgid "Stop program and inspect ports"
@@ -1385,11 +1610,11 @@ msgstr ""
 "Образ восстановления устанавливает прошивку LEGO 1.3. Приложение LEGO может "
 "предложить более новую версию."
 
-#: pyblocks/qt/editor.py:882
+#: pyblocks/qt/editor.py:883
 msgid "This block has no editable parameters"
 msgstr "У этого блока нет изменяемых параметров"
 
-#: pyblocks/qt/app.py:963
+#: pyblocks/qt/app.py:968
 msgid "This file is already open in another tab"
 msgstr "Этот файл уже открыт в другой вкладке"
 
@@ -1397,7 +1622,7 @@ msgstr "Этот файл уже открыт в другой вкладке"
 msgid "This is not a Pybricks firmware package"
 msgstr "Это не пакет прошивки Pybricks"
 
-#: pyblocks/qt/app.py:310
+#: pyblocks/qt/app.py:315
 msgid "To Scratch"
 msgstr "В черновики"
 
@@ -1405,11 +1630,15 @@ msgstr "В черновики"
 msgid "Turn a motor through an angle and wait until it finishes."
 msgstr "Повернуть мотор на заданный угол и дождаться завершения."
 
+#: pyblocks/snippets/pybricks/hubs.py:35
+msgid "Turn off the hub status light."
+msgstr "Выключить индикатор хаба."
+
 #: pyblocks/snippets/pybricks/motors.py:45
 msgid "Turn the motor to a target position and wait until it finishes."
 msgstr "Повернуть мотор в заданное положение и дождаться завершения."
 
-#: pyblocks/snippets/pybricks/drive.py:35
+#: pyblocks/snippets/pybricks/drive.py:56
 msgid ""
 "Turn the robot in place, then stop.\n"
 "\n"
@@ -1437,7 +1666,7 @@ msgstr ""
 msgid "Unassigned"
 msgstr "Не назначен"
 
-#: pyblocks/qt/app.py:280
+#: pyblocks/qt/app.py:285
 msgid "Undo"
 msgstr "Отменить"
 
@@ -1445,7 +1674,7 @@ msgstr "Отменить"
 msgid "Unit / type"
 msgstr "Единица / тип"
 
-#: pyblocks/qt/app.py:660
+#: pyblocks/qt/app.py:665
 msgid "Unsaved changes"
 msgstr "Несохранённые изменения"
 
@@ -1457,11 +1686,11 @@ msgstr "Неподдерживаемый адрес загрузки проши�
 msgid "Unsupported firmware target"
 msgstr "Неподдерживаемая модель или тип прошивки"
 
-#: pyblocks/qt/app.py:351
+#: pyblocks/qt/app.py:356
 msgid "Upgrade block"
 msgstr "Обновить блок"
 
-#: pyblocks/qt/app.py:407
+#: pyblocks/qt/app.py:412
 msgid "Upload"
 msgstr "Отправить на хаб"
 
@@ -1469,11 +1698,11 @@ msgstr "Отправить на хаб"
 msgid "Version"
 msgstr "Версия"
 
-#: pyblocks/qt/app.py:364
+#: pyblocks/qt/app.py:369
 msgid "View"
 msgstr "Вид"
 
-#: pyblocks/qt/app.py:1009 pyblocks/qt/device.py:154
+#: pyblocks/qt/app.py:1014 pyblocks/qt/device.py:154
 msgid "Virtual hub"
 msgstr "Виртуальный хаб"
 
@@ -1493,7 +1722,7 @@ msgstr "Подождать указанное число миллисекунд.
 msgid "Wait for the hub operation to finish"
 msgstr "Дождитесь завершения операции с хабом"
 
-#: pyblocks/snippets/pybricks/sensors.py:106
+#: pyblocks/snippets/pybricks/sensors.py:113
 msgid ""
 "Wait until a sensor condition becomes true.\n"
 "\n"
@@ -1505,7 +1734,7 @@ msgstr ""
 "Замените False показанием или сравнением, например distance.distance() < 100.\n"
 "Условие проверяется заново каждые 20 миллисекунд."
 
-#: pyblocks/snippets/pybricks/sensors.py:94
+#: pyblocks/snippets/pybricks/sensors.py:99
 msgid ""
 "Wait until the sensor sees a chosen color.\n"
 "\n"
@@ -1537,11 +1766,11 @@ msgstr "мм/с"
 msgid "ms"
 msgstr "мс"
 
-#: pyblocks/core/analysis.py:451
+#: pyblocks/core/analysis.py:463
 msgid "range expects one to three positional arguments"
 msgstr "range принимает от одного до трёх позиционных аргументов"
 
-#: pyblocks/core/analysis.py:457
+#: pyblocks/core/analysis.py:469
 msgid "range step cannot be zero"
 msgstr "Шаг range не может быть нулевым"
 
@@ -1554,7 +1783,7 @@ msgstr "с"
 msgid "{p0:g}°    {p1:g} °/s"
 msgstr "{p0:g}°    {p1:g} °/с"
 
-#: pyblocks/qt/app.py:735
+#: pyblocks/qt/app.py:740
 #, python-brace-format
 msgid "{p0} · warnings: {p1}"
 msgstr "{p0} · предупреждений: {p1}"
@@ -1567,14 +1796,20 @@ msgstr "°/с"
 msgid "← Back"
 msgstr "← Назад"
 
-#: pyblocks/qt/app.py:117
+#: pyblocks/qt/app.py:122
 msgid "＋ Add selected block"
 msgstr "＋ Добавить выбранный блок"
 
-#: pyblocks/qt/app.py:1012
+#: pyblocks/qt/app.py:1017
 msgid "＋ Connect hub"
 msgstr "＋ Подключить хаб"
 
 #~ msgid "Connect a force sensor or emergency button."
 #~ msgstr "Подключить датчик силы или аварийную кнопку."
+
+#~ msgid "Set car steering from -100% left to 100% right."
+#~ msgstr "Задать положение руля от -100% влево до 100% вправо."
+
+#~ msgid "Standard"
+#~ msgstr "Стандартный"
 

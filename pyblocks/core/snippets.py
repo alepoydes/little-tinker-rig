@@ -11,7 +11,7 @@ from pathlib import Path
 from .analysis import Analysis, Scopes, annotation_text, annotation_types, identifiers
 from .syntax import Span, Syntax
 
-LEVELS = ("beginner", "standard", "expert")
+LEVELS = ("beginner", "intermediate", "advanced", "expert")
 
 
 @dataclass(frozen=True)
@@ -32,7 +32,7 @@ class Snippet:
     locals: dict[str, str]
     historical: bool = False
     result_type: str | None = None
-    level: str = "standard"
+    level: str = "intermediate"
 
     @property
     def expression(self) -> bool:
@@ -201,7 +201,7 @@ def function_snippets(syntax):
                 (),
                 ast.get_docstring(node) or node.name,
                 {},
-                level="standard",
+                level="intermediate",
             )
         )
     return tuple(result)
@@ -321,13 +321,17 @@ def load_collection(directory: Path) -> tuple[Snippet, ...]:
     identities = [(snippet.identity, snippet.version) for snippet in result]
     if len(identities) != len(set(identities)):
         raise ValueError("Duplicate snippet identity and version")
-    levels = manifest.get("levels", {})
+    # Older third-party collections keep loading after the level rename.
+    levels = {
+        name: "intermediate" if level == "standard" else level
+        for name, level in manifest.get("levels", {}).items()
+    }
     names = {s.identity.removeprefix(identity + "/") for s in result}
     if levels.keys() - names or any(level not in LEVELS for level in levels.values()):
         raise ValueError("Unknown block or difficulty level in collection.toml")
     return tuple(
         replace(
-            s, level=levels.get(s.identity.removeprefix(identity + "/"), "standard")
+            s, level=levels.get(s.identity.removeprefix(identity + "/"), "intermediate")
         )
         for s in result
     )

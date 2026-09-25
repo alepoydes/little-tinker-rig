@@ -199,16 +199,22 @@ drawing the frame can repaint the marker with an unrelated dark fill. Test pixel
 contrast, owner hit testing and hover on both notes and code, including nesting.
 
 Selection previously darkened already-painted regions with a second Multiply
-overlay. Activity now changes saturation before the one-owner region paint, at
-fixed HSL lightness and hue. Verify both the color transform and rendered nested
+overlay. Saturation alone also left very pale colors too similar. Activity now
+increases saturation and reduces lightness before the one-owner region paint,
+retaining the hue. Verify both the color transform and rendered nested
 notes/code; descendants retain their own hues under an active ancestor.
 
 Library levels describe introduction order and accumulate. Keep the initial
-nine-block motor/sensor path runnable without advanced cards. Verify generated
+sixteen-block motor/sensor/robot path usable without advanced cards. Verify generated
 expansions, contextual insertion and complete learning examples on all three
 virtual profiles. Host-installed MicroPython shims must not enable unsupported
 firmware modules (in particular `urandom` on BOOST). Virtual drive-base moves
 model wheel geometry and final positions with constant motor speed; they do not
 model acceleration, tire slip, gyro corrections or different braking dynamics.
+Arc wheels use a common completion time, not equal angular speeds. Hub feedback
+is recorded and printed; hub inputs can be scripted in tests. Remote algorithms
+use scripted remote inputs with virtual motors; pairing and Car calibration
+require hardware. Nested API reporters such as `hub.imu.heading()` derive their
+type and completion suggestions from the same receiver/member-path analysis.
 Movement completion compares unrounded positions: rounding a displayed motor
 angle before the tolerance check can stop outside the promised tolerance.

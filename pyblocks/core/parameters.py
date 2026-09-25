@@ -5,10 +5,38 @@ from bisect import bisect_right
 from dataclasses import dataclass
 
 from . import edit
-from .analysis import annotation_types, identifiers, value_type
+from .analysis import annotation_types, attribute_path, identifiers, value_type
 from .snippets import Match, Parameter, instantiate
 from .structure import OPERATORS, change_operator, name_span, operator_spans, rename
 from .syntax import Span, Syntax
+
+ENUM_VALUES = {
+    "Direction": ("CLOCKWISE", "COUNTERCLOCKWISE"),
+    "Stop": ("COAST", "BRAKE", "HOLD"),
+    "Color": ("BLACK", "WHITE", "RED", "GREEN", "BLUE", "YELLOW", "NONE"),
+    "Button": (
+        "CENTER",
+        "LEFT",
+        "RIGHT",
+        "BLUETOOTH",
+        "LEFT_PLUS",
+        "LEFT_MINUS",
+        "RIGHT_PLUS",
+        "RIGHT_MINUS",
+    ),
+    "Side": ("TOP", "BOTTOM", "LEFT", "RIGHT", "FRONT", "BACK"),
+    "Icon": (
+        "HEART",
+        "HAPPY",
+        "SAD",
+        "CIRCLE",
+        "SQUARE",
+        "UP",
+        "DOWN",
+        "LEFT",
+        "RIGHT",
+    ),
+}
 
 
 @dataclass(frozen=True)
@@ -102,7 +130,7 @@ def slots(session):
         if isinstance(node, (ast.Name, ast.Constant)) or (
             isinstance(node, ast.Attribute)
             and isinstance(node.value, ast.Name)
-            and node.value.id in {"Port", "Direction", "Stop", "Color"}
+            and node.value.id in {"Port", *ENUM_VALUES}
         ):
             add(
                 node,
@@ -260,22 +288,11 @@ def _choices(session, parameter, offset):
         return
     if kind is None and parameter.name in {"test", "condition"}:
         kind = "bool"
-    enums = {
-        "Port": tuple(f"Port.{port}" for port in getattr(session, "ports", "ABCDEF")),
-        "Direction": ("Direction.CLOCKWISE", "Direction.COUNTERCLOCKWISE"),
-        "Stop": ("Stop.COAST", "Stop.BRAKE", "Stop.HOLD"),
-        "Color": (
-            "Color.BLACK",
-            "Color.WHITE",
-            "Color.RED",
-            "Color.GREEN",
-            "Color.BLUE",
-            "Color.YELLOW",
-            "Color.NONE",
-        ),
-    }
-    if kind in enums:
-        yield from enums[kind]
+    if kind == "Port":
+        yield from (f"Port.{port}" for port in getattr(session, "ports", "ABCDEF"))
+        return
+    if kind in ENUM_VALUES:
+        yield from (f"{kind}.{member}" for member in ENUM_VALUES[kind])
         return
     if parameter.default is not None and kind in {None, "number", "bool", "str"}:
         yield parameter.default
@@ -306,7 +323,8 @@ def _choices(session, parameter, offset):
             and isinstance(body.func, ast.Attribute)
         ):
             continue
-        receiver = getattr(body.func.value, "template_parameter", None)
+        root, _ = attribute_path(body.func)
+        receiver = getattr(root, "template_parameter", None)
         device = next((p for p in snippet.parameters if p.name == receiver), None)
         if device is not None:
             for name, actual in names.items():
@@ -338,6 +356,12 @@ def default_bindings(session, snippet, offset=None):
             "UltrasonicSensor",
             "ForceSensor",
             "StopWatch",
+            "Car",
+            "Remote",
+            "PrimeHub",
+            "InventorHub",
+            "MoveHub",
+            "TechnicHub",
         } and (suggested := choices(session, parameter, offset)):
             value = (
                 value

@@ -65,3 +65,10 @@ def motor_angle(motor: "Motor" = motor) -> "deg":
 def motor_speed(motor: "Motor" = motor) -> "deg/s":
     """Read the current motor speed."""
     return motor.speed()
+
+
+def motor_power(motor: "Motor" = motor, power: "%" = 0):
+    """Set raw motor power from -100% to 100%.
+
+    Power is a duty cycle, not regulated speed. Load changes the actual speed."""
+    motor.dc(power)

@@ -89,7 +89,8 @@ translations. F1 opens the selected block's stable section within its group.
 ## Difficulty levels
 
 The collection manifest assigns each block one level. Unlisted blocks default
-to `standard`; allowed levels are `beginner`, `standard`, and `expert`. Unknown
+to `intermediate`; allowed levels are `beginner`, `intermediate`, `advanced`, and
+`expert`. Legacy `standard` entries are read as `intermediate`. Unknown
 block identities and levels are rejected. `all` is only a library filter value.
 Library cards and generated help use this same metadata. This is the level at
 which a block is introduced: the filters are cumulative. Keep Beginner small;

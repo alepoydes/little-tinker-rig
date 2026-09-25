@@ -17,6 +17,8 @@ from pathlib import Path
 from threading import Lock, Thread
 from types import ModuleType, SimpleNamespace
 
+from pyblocks.core.parameters import ENUM_VALUES
+
 from .devices import PREFIX
 from .simulation import World
 
@@ -33,6 +35,9 @@ def install_modules(world, incoming):
 
     class Color(Enum):
         RED, GREEN, BLUE, WHITE, BLACK, YELLOW, NONE = range(7)
+
+    Button = Enum("Button", {name: name for name in ENUM_VALUES["Button"]})
+    Side = Enum("Side", {name: name for name in ENUM_VALUES["Side"]})
 
     class Motor:
         def __init__(
@@ -164,24 +169,33 @@ def install_modules(world, incoming):
         def __init__(self, left_motor, right_motor, wheel_diameter, axle_track):
             if wheel_diameter <= 0 or axle_track <= 0:
                 raise ValueError("Robot dimensions must be positive")
+            if left_motor.port == right_motor.port:
+                raise ValueError("A drive base needs two different motor ports")
             self.left, self.right = left_motor, right_motor
             self.wheel, self.track = wheel_diameter, axle_track
             self.origins = (self.left.angle(), self.right.angle())
+            self.offsets = (0, 0)
+            self._settings = (200, 400, 90, 180)
 
         def distance(self):
             left = self.left.angle() - self.origins[0]
             right = self.right.angle() - self.origins[1]
-            return (left + right) * math.pi * self.wheel / 720
+            return (left + right) * math.pi * self.wheel / 720 + self.offsets[0]
 
         def angle(self):
             left = self.left.angle() - self.origins[0]
             right = self.right.angle() - self.origins[1]
-            return (left - right) * self.wheel / (2 * self.track)
+            return (left - right) * self.wheel / (2 * self.track) + self.offsets[1]
 
-        def _move(self, left, right, then, wait):
+        def _move(self, left, right, then, wait, duration):
             targets = (self.left.angle() + left, self.right.angle() + right)
-            for motor, target in zip((self.left, self.right), targets, strict=True):
-                motor.run_target(360, target, then, wait=False)
+            for motor, target, delta in zip(
+                (self.left, self.right), targets, (left, right), strict=True
+            ):
+                if delta:
+                    motor.run_target(abs(delta) / duration, target, then, wait=False)
+                else:
+                    motor.stop()
             if wait:
                 while any(
                     abs(motor._position() - target) > 1
@@ -194,13 +208,64 @@ def install_modules(world, incoming):
 
         def straight(self, distance, then=Stop.HOLD, wait=True):
             rotation = distance * 360 / (math.pi * self.wheel)
-            self._move(rotation, rotation, then, wait)
+            self._move(
+                rotation, rotation, then, wait, abs(distance) / self._settings[0]
+            )
 
         def turn(self, angle, then=Stop.HOLD, wait=True, absolute=False):
-            rotation = (
-                (angle - self.angle() if absolute else angle) * self.track / self.wheel
+            delta = angle - self.angle() if absolute else angle
+            rotation = delta * self.track / self.wheel
+            self._move(rotation, -rotation, then, wait, abs(delta) / self._settings[2])
+
+        def arc(self, radius, angle=None, distance=None, then=Stop.HOLD, wait=True):
+            if not radius or (angle is None) == (distance is None):
+                raise ValueError(
+                    "An arc needs a nonzero radius and either angle or distance"
+                )
+            distance = (
+                math.radians(angle) * abs(radius) if angle is not None else distance
             )
-            self._move(rotation, -rotation, then, wait)
+            turn = distance / radius
+            factor = 360 / (math.pi * self.wheel)
+            self._move(
+                (distance + turn * self.track / 2) * factor,
+                (distance - turn * self.track / 2) * factor,
+                then,
+                wait,
+                abs(distance) / self._settings[0],
+            )
+
+        def settings(
+            self,
+            straight_speed=None,
+            straight_acceleration=None,
+            turn_rate=None,
+            turn_acceleration=None,
+        ):
+            values = (
+                straight_speed,
+                straight_acceleration,
+                turn_rate,
+                turn_acceleration,
+            )
+            if all(value is None for value in values):
+                return self._settings
+            if any(
+                value is not None and (not math.isfinite(value) or value == 0)
+                for value in values
+            ):
+                raise ValueError(
+                    "Virtual drive settings must be finite nonzero numbers"
+                )
+            self._settings = tuple(
+                previous if value is None else abs(value)
+                for previous, value in zip(self._settings, values, strict=True)
+            )
+
+        def reset(self, distance=0, angle=0):
+            self.stop()
+            self.origins = (self.left.angle(), self.right.angle())
+            self.offsets = (distance, angle)
 
         def drive(self, speed, turn_rate):
             differential = math.radians(turn_rate) * self.track / 2
@@ -217,6 +282,34 @@ def install_modules(world, incoming):
         def __init__(self):
             self.battery = SimpleNamespace(voltage=lambda: 8000, current=lambda: 100)
             self.system = SimpleNamespace(name=lambda: "Virtual hub")
+            self.light = SimpleNamespace(
+                on=lambda color: self._feedback("light", color.name),
+                off=lambda: self._feedback("light", None),
+            )
+            self.buttons = SimpleNamespace(
+                pressed=lambda: {Button[name] for name in world.hub_inputs["buttons"]}
+            )
+            self.imu = SimpleNamespace(up=lambda: Side[world.hub_inputs["up"]])
+            if world.model != "boost":
+                self.imu.heading = lambda: world.hub_inputs["heading"]
+            if world.model == "inventor":
+                self.display = SimpleNamespace(
+                    icon=lambda icon: self._feedback("display", icon.name),
+                    number=lambda number: self._feedback("display", number),
+                )
+                self.speaker = SimpleNamespace(beep=self._beep)
+
+        def _feedback(self, channel, value):
+            world.feedback[channel] = value
+            print(f"[Virtual hub {channel}] {value}", flush=True)
+
+        def _beep(self, frequency=500, duration=100):
+            if not 64 <= frequency <= 24000:
+                raise ValueError("Tone frequency must be 64–24000 Hz")
+            self._feedback("tone", frequency)
+            if duration >= 0:
+                time.sleep(duration / 1000)
+                world.feedback["tone"] = None
 
     class PUPDevice:
         def __init__(self, port):
@@ -242,7 +335,14 @@ def install_modules(world, incoming):
             return None
 
     modules = {
-        "parameters": dict(Port=Port, Direction=Direction, Stop=Stop, Color=Color),
+        "parameters": dict(
+            Port=Port,
+            Direction=Direction,
+            Stop=Stop,
+            Color=Color,
+            Button=Button,
+            Side=Side,
+        ),
         "pupdevices": dict(
             Motor=Motor,
             ColorSensor=ColorSensor,
@@ -265,6 +365,11 @@ def install_modules(world, incoming):
             }[world.model]
         },
     }
+    if world.model == "inventor":
+        # Only named icons used by the library are modeled, not matrix arithmetic.
+        modules["parameters"]["Icon"] = Enum(
+            "Icon", {name: name for name in ENUM_VALUES["Icon"]}
+        )
     if world.model != "boost":
         modules["iodevices"] = dict(PUPDevice=PUPDevice)
         generator = random.Random()
