@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PyBlocks Studio 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-25 06:04+0300\n"
+"POT-Creation-Date: 2026-09-25 14:35+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -58,7 +58,7 @@ msgstr "Все"
 msgid "Append a value to a list."
 msgstr "Добавить значение в конец списка."
 
-#: pyblocks/core/analysis.py:451
+#: pyblocks/core/analysis.py:452
 #, python-brace-format
 msgid "Arguments do not match {signature}"
 msgstr "Аргументы не соответствуют {signature}"
@@ -187,7 +187,7 @@ msgstr "Изменить значение"
 msgid "Change the hub status light."
 msgstr "Изменить цвет индикатора хаба."
 
-#: pyblocks/snippets/pybricks/remote.py:40
+#: pyblocks/snippets/pybricks/remote.py:43
 msgid "Check a LEGO remote button in your own control loop."
 msgstr "Проверить кнопку пульта LEGO в своём цикле управления."
 
@@ -299,9 +299,25 @@ msgstr "Очистить выражение"
 msgid "Clear recent files"
 msgstr "Очистить список"
 
+#: pyblocks/snippets/pybricks/hubs.py:118
+msgid "Clear the hub display."
+msgstr "Очистить экран хаба."
+
 #: pyblocks/qt/firmware.py:102 pyblocks/qt/window.py:39
 msgid "Close"
 msgstr "Закрыть"
+
+#: pyblocks/snippets/pybricks/lessons.py:115
+msgid ""
+"Close a gripper while pressed; open to its stop when released.\n"
+"\n"
+"Repeats until the program is stopped. Opening waits for a mechanical stall,\n"
+"so a new press is handled after opening finishes. Requires physical stops."
+msgstr ""
+"Закрывать захват при нажатии, открывать до упора при отпускании.\n"
+"\n"
+"Повторяется до остановки программы. Открывание ждёт остановки об упор,\n"
+"поэтому новое нажатие проверяется после его завершения. Нужны физические упоры."
 
 #: pyblocks/qt/app.py:277
 msgid "Close document"
@@ -319,7 +335,7 @@ msgstr "Подключить"
 msgid "Connect a BOOST color and distance sensor."
 msgstr "Подключить комбинированный датчик цвета и расстояния BOOST."
 
-#: pyblocks/snippets/pybricks/remote.py:33
+#: pyblocks/snippets/pybricks/remote.py:36
 msgid "Connect a LEGO Powered Up remote for your own control loop."
 msgstr "Подключить пульт LEGO Powered Up для своего цикла управления."
 
@@ -340,11 +356,11 @@ msgstr "Подключение — в правом верхнем углу ок�
 msgid "Connect a hub first"
 msgstr "Сначала подключите хаб"
 
-#: pyblocks/snippets/pybricks/motors.py:15
+#: pyblocks/snippets/pybricks/motors.py:18
 msgid "Connect a motor and choose its positive direction."
 msgstr "Подключить мотор и выбрать положительное направление вращения."
 
-#: pyblocks/snippets/pybricks/motors.py:4
+#: pyblocks/snippets/pybricks/motors.py:7
 msgid ""
 "Connect a motor to a hub port.\n"
 "\n"
@@ -355,6 +371,18 @@ msgstr ""
 "\n"
 "Выберите порт и задайте имя мотора без кавычек, например left_motor.\n"
 "Доступные порты зависят от модели хаба."
+
+#: pyblocks/snippets/pybricks/motors.py:80
+msgid ""
+"Connect a motor with a position tolerance profile.\n"
+"\n"
+"A larger tolerance trades precision for smoother motion. Virtual hubs do\n"
+"not model this controller profile."
+msgstr ""
+"Подключить мотор с профилем допустимой погрешности положения.\n"
+"\n"
+"Больший допуск уменьшает точность, но делает движение плавнее.\n"
+"Виртуальный хаб не моделирует этот профиль регулятора."
 
 #: pyblocks/qt/controls.py:246 pyblocks/qt/controls.py:386
 msgid "Connect a virtual or physical hub at the top right."
@@ -479,6 +507,18 @@ msgstr "Отключить"
 msgid "Disconnect hub"
 msgstr "Отключить хаб"
 
+#: pyblocks/snippets/pybricks/hubs.py:101
+msgid ""
+"Display a custom five-by-five brightness pattern.\n"
+"\n"
+"Each row contains five brightness values from 0 to 100. Named icons use\n"
+"the simpler icon block."
+msgstr ""
+"Показать собственный рисунок яркости пять на пять.\n"
+"\n"
+"В каждой строке пять значений яркости от 0 до 100. Для готовых значков\n"
+"используйте более простой блок значка."
+
 #: pyblocks/snippets/python/basics.py:4
 msgid ""
 "Display a value in the console.\n"
@@ -532,6 +572,18 @@ msgstr "Перетаскивайте стик; отпустите для воз�
 msgid "Drag the whole fragment into the program or another cell"
 msgstr "Перетащите весь фрагмент в программу или другую ячейку"
 
+#: pyblocks/snippets/pybricks/lessons.py:92
+msgid ""
+"Draw a rectangle with two motor axes and return to the start.\n"
+"\n"
+"Width and height are motor degrees, not millimeters. Motor gearing and the\n"
+"drawing mechanism determine the physical size."
+msgstr ""
+"Нарисовать прямоугольник двумя моторами и вернуться в начало.\n"
+"\n"
+"Ширина и высота заданы в градусах мотора, а не миллиметрах. Размер рисунка\n"
+"зависит от передачи и устройства рисующего механизма."
+
 #: pyblocks/snippets/pybricks/drive.py:48
 msgid ""
 "Drive a distance, then stop.\n"
@@ -564,7 +616,7 @@ msgstr "Ехать с заданной скоростью и поворотом.
 msgid "Drive bases and clocks"
 msgstr "Движение и секундомеры"
 
-#: pyblocks/snippets/pybricks/lessons.py:4
+#: pyblocks/snippets/pybricks/lessons.py:7
 msgid ""
 "Drive until a dark line, then brake.\n"
 "\n"
@@ -576,7 +628,7 @@ msgstr ""
 "Подходит для датчиков отражения SPIKE и BOOST. Если линия уже под датчиком,\n"
 "робот не движется. Действие «Стоп» отменяет ожидание линии."
 
-#: pyblocks/snippets/pybricks/lessons.py:24
+#: pyblocks/snippets/pybricks/lessons.py:27
 msgid ""
 "Drive until an ultrasonic obstacle, then brake.\n"
 "\n"
@@ -588,7 +640,7 @@ msgstr ""
 "Расстояние задаётся в миллиметрах. Для датчика BOOST нужен относительный\n"
 "порог: его показания расстояния не измеряются в миллиметрах."
 
-#: pyblocks/snippets/pybricks/remote.py:4
+#: pyblocks/snippets/pybricks/remote.py:7
 msgid ""
 "Drive with a LEGO remote until its center button is pressed.\n"
 "\n"
@@ -651,6 +703,30 @@ msgstr "Найти"
 #: pyblocks/qt/app.py:99
 msgid "Find a block…"
 msgstr "Найти блок…"
+
+#: pyblocks/snippets/pybricks/motors.py:145
+msgid ""
+"Find a mechanical stop with limited power and set zero there.\n"
+"\n"
+"Used by the BOOST arm and conveyor. Choose a speed direction toward the\n"
+"stop. Calibration requires a physical stop, not an arbitrary software zero."
+msgstr ""
+"Найти упор с ограниченной мощностью и установить там ноль.\n"
+"\n"
+"Используется рукой и конвейером BOOST. Знак скорости задаёт движение к упору.\n"
+"Калибровке нужен физический упор, а не произвольный программный ноль."
+
+#: pyblocks/snippets/pybricks/remote.py:59
+msgid ""
+"Find both steering stops and start returning to the center.\n"
+"\n"
+"The midpoint is measured, not assumed. Returning to zero does not wait;\n"
+"subsequent remote commands can immediately replace that target."
+msgstr ""
+"Найти оба упора руля и начать возвращение в центр.\n"
+"\n"
+"Середина измеряется по упорам. Возвращение к нулю не ждёт завершения:\n"
+"следующие команды пульта могут сразу заменить цель."
 
 #: pyblocks/qt/document.py:51
 msgid "Find in program · Enter — next match"
@@ -718,7 +794,7 @@ msgstr "Прошивка…"
 msgid "Fold region"
 msgstr "Свернуть область"
 
-#: pyblocks/snippets/pybricks/lessons.py:44
+#: pyblocks/snippets/pybricks/lessons.py:47
 msgid ""
 "Follow a line edge for a set time, then brake.\n"
 "\n"
@@ -959,6 +1035,10 @@ msgstr "Переместить элемент влево"
 msgid "Move item right"
 msgstr "Переместить элемент вправо"
 
+#: pyblocks/snippets/pybricks/motors.py:116
+msgid "Move to a target, then release the motor."
+msgstr "Дойти до заданного угла и отпустить мотор."
+
 #: pyblocks/snippets/python/basics.py:126
 msgid "Multiply two values."
 msgstr "Перемножить два значения."
@@ -1077,6 +1157,18 @@ msgstr "Выполнить действие"
 msgid "Physical Xbox / SDL controller"
 msgstr "Физический Xbox / SDL-контроллер"
 
+#: pyblocks/snippets/pybricks/lessons.py:71
+msgid ""
+"Pick up a conveyor part and place it at the assembly position.\n"
+"\n"
+"For the homed BOOST Auto Builder: belt positions are motor degrees.\n"
+"Expand to tune the 55-degree lift, speeds, and two-second arm strokes."
+msgstr ""
+"Взять деталь с конвейера и поставить в место сборки.\n"
+"\n"
+"Для откалиброванного BOOST Auto Builder: положения конвейера заданы в градусах\n"
+"мотора. Раскройте блок, чтобы изменить подъём на 55 градусов, скорости и время руки."
+
 #: pyblocks/qt/annotations.py:33
 msgid "Place actions here"
 msgstr "Место для действий"
@@ -1157,6 +1249,16 @@ msgstr "Вызвать ошибку ValueError с объяснением."
 msgid "Random choices"
 msgstr "Случайный выбор"
 
+#: pyblocks/snippets/pybricks/remote.py:52
+msgid ""
+"Read all pressed remote buttons once.\n"
+"\n"
+"Save the result to make several decisions using the same input sample."
+msgstr ""
+"Однократно прочитать все нажатые кнопки пульта.\n"
+"\n"
+"Сохраните результат, чтобы принять несколько решений по одному снимку ввода."
+
 #: pyblocks/snippets/python/data.py:17
 msgid ""
 "Read an item by index or key.\n"
@@ -1177,11 +1279,11 @@ msgstr "Узнать, сколько миллисекунд прошло на с
 msgid "Read the battery voltage in millivolts."
 msgstr "Узнать напряжение батареи в милливольтах."
 
-#: pyblocks/snippets/pybricks/motors.py:60
+#: pyblocks/snippets/pybricks/motors.py:63
 msgid "Read the current motor angle."
 msgstr "Узнать текущий угол мотора."
 
-#: pyblocks/snippets/pybricks/motors.py:65
+#: pyblocks/snippets/pybricks/motors.py:68
 msgid "Read the current motor speed."
 msgstr "Узнать текущую скорость мотора."
 
@@ -1220,6 +1322,10 @@ msgstr "Отражение: {p0:g} %"
 #: pyblocks/qt/firmware.py:78
 msgid "Refresh versions"
 msgstr "Обновить список версий"
+
+#: pyblocks/snippets/pybricks/motors.py:103
+msgid "Release a motor and let it coast."
+msgstr "Отпустить мотор для остановки накатом."
 
 #: pyblocks/snippets/python/basics.py:12
 msgid ""
@@ -1361,7 +1467,7 @@ msgstr "Округлить число до ближайшего целого."
 msgid "Run"
 msgstr "Запустить"
 
-#: pyblocks/snippets/pybricks/motors.py:27
+#: pyblocks/snippets/pybricks/motors.py:30
 msgid ""
 "Run a motor at a chosen speed.\n"
 "\n"
@@ -1397,9 +1503,29 @@ msgstr ""
 msgid "Run stored program"
 msgstr "Запустить сохранённую программу"
 
-#: pyblocks/snippets/pybricks/motors.py:50
+#: pyblocks/snippets/pybricks/motors.py:53
 msgid "Run the motor for a set time, then stop."
 msgstr "Вращать мотор заданное время, затем остановить."
+
+#: pyblocks/snippets/pybricks/motors.py:138
+msgid "Run to a mechanical stop with limited power and read the angle."
+msgstr "Дойти до упора с ограниченной мощностью и прочитать угол."
+
+#: pyblocks/snippets/pybricks/motors.py:131
+msgid "Run to a mechanical stop, hold, and read the angle."
+msgstr "Дойти до упора, удерживать положение и прочитать угол."
+
+#: pyblocks/snippets/pybricks/motors.py:123
+msgid ""
+"Run until the motor stalls and read its final angle.\n"
+"\n"
+"Requires a mechanism with a physical stop. The normal motor power limit\n"
+"applies; use limited homing when the mechanism needs reduced power."
+msgstr ""
+"Вращать мотор до упора и прочитать конечный угол.\n"
+"\n"
+"Нужен механизм с физическим упором. Действует обычное ограничение мощности\n"
+"мотора; для более бережного движения используйте калибровку с ограничением мощности."
 
 #: pyblocks/qt/annotations.py:25
 msgid "Run with error handling"
@@ -1479,7 +1605,7 @@ msgstr ""
 msgid "Set car steering between -100 and 100 percent."
 msgstr "Задать положение руля от -100 до 100 процентов."
 
-#: pyblocks/snippets/pybricks/motors.py:70
+#: pyblocks/snippets/pybricks/motors.py:73
 msgid ""
 "Set raw motor power from -100% to 100%.\n"
 "\n"
@@ -1490,9 +1616,19 @@ msgstr ""
 "Это скважность управляющего сигнала, а не регулируемая скорость.\n"
 "Фактическая скорость зависит от нагрузки."
 
-#: pyblocks/snippets/pybricks/motors.py:55
+#: pyblocks/snippets/pybricks/motors.py:58
 msgid "Set the angle reading at the current motor position."
 msgstr "Назначить текущему положению мотора выбранный угол."
+
+#: pyblocks/snippets/pybricks/motors.py:96
+msgid ""
+"Set the motor acceleration limit.\n"
+"\n"
+"This changes how quickly regulated motion starts and stops on a real motor."
+msgstr ""
+"Задать ограничение ускорения мотора.\n"
+"\n"
+"Определяет, насколько быстро реальный мотор разгоняется и останавливается."
 
 #: pyblocks/snippets/pybricks/drive.py:91
 msgid ""
@@ -1505,6 +1641,10 @@ msgstr ""
 "\n"
 "Линейное ускорение измеряется в мм/с², угловое — в градусах/с².\n"
 "Непрерывное движение использует собственные скорость и темп поворота."
+
+#: pyblocks/snippets/pybricks/sensors.py:124
+msgid "Set the ultrasonic sensor eye brightness."
+msgstr "Задать яркость глаз ультразвукового датчика."
 
 #: pyblocks/snippets/pybricks/drive.py:118
 msgid ""
@@ -1554,6 +1694,18 @@ msgstr "Включить ручной режим"
 msgid "Start move"
 msgstr "Начать перенос"
 
+#: pyblocks/snippets/pybricks/motors.py:108
+msgid ""
+"Start moving to a target without waiting.\n"
+"\n"
+"The following actions run while the motor moves. A new command replaces\n"
+"the previous target."
+msgstr ""
+"Начать движение к заданному углу без ожидания.\n"
+"\n"
+"Следующие действия выполняются во время движения мотора. Новая команда\n"
+"заменяет предыдущую цель."
+
 #: pyblocks/qt/device.py:41
 msgid "Start with a virtual hub or connect your robot."
 msgstr "Начните с виртуального хаба или подключите свой робот."
@@ -1562,7 +1714,7 @@ msgstr "Начните с виртуального хаба или подклю�
 msgid "Stop"
 msgstr "Стоп"
 
-#: pyblocks/snippets/pybricks/motors.py:35
+#: pyblocks/snippets/pybricks/motors.py:38
 msgid "Stop a motor with braking."
 msgstr "Остановить мотор с торможением."
 
@@ -1626,7 +1778,7 @@ msgstr "Это не пакет прошивки Pybricks"
 msgid "To Scratch"
 msgstr "В черновики"
 
-#: pyblocks/snippets/pybricks/motors.py:40
+#: pyblocks/snippets/pybricks/motors.py:43
 msgid "Turn a motor through an angle and wait until it finishes."
 msgstr "Повернуть мотор на заданный угол и дождаться завершения."
 
@@ -1634,7 +1786,15 @@ msgstr "Повернуть мотор на заданный угол и дожд
 msgid "Turn off the hub status light."
 msgstr "Выключить индикатор хаба."
 
-#: pyblocks/snippets/pybricks/motors.py:45
+#: pyblocks/snippets/pybricks/sensors.py:129
+msgid "Turn off the ultrasonic sensor eyes."
+msgstr "Выключить глаза ультразвукового датчика."
+
+#: pyblocks/snippets/pybricks/lessons.py:109
+msgid "Turn one way and back, like Tricky's dance."
+msgstr "Повернуться в одну сторону и обратно, как в танце Tricky."
+
+#: pyblocks/snippets/pybricks/motors.py:48
 msgid "Turn the motor to a target position and wait until it finishes."
 msgstr "Повернуть мотор в заданное положение и дождаться завершения."
 
@@ -1766,11 +1926,11 @@ msgstr "мм/с"
 msgid "ms"
 msgstr "мс"
 
-#: pyblocks/core/analysis.py:463
+#: pyblocks/core/analysis.py:464
 msgid "range expects one to three positional arguments"
 msgstr "range принимает от одного до трёх позиционных аргументов"
 
-#: pyblocks/core/analysis.py:469
+#: pyblocks/core/analysis.py:470
 msgid "range step cannot be zero"
 msgstr "Шаг range не может быть нулевым"
 

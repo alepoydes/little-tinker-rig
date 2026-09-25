@@ -91,7 +91,7 @@ def test_levels_are_cumulative_and_beginner_is_the_initial_view(tmp_path, qt_app
         assert window.code_active and window.code.toPlainText() == before
         window.change_editor(0)
         assert not window.code_active and window.session.document.state.source == before
-        assert len(sets[0]) <= 16
+        assert len(sets[0]) <= 20
         assert all(
             item.data(0, LEVEL) == "beginner"
             for item in items

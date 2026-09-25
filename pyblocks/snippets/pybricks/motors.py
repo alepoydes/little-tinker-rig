@@ -1,5 +1,8 @@
 """Motor actions and values for Pybricks hubs; parsed as static templates."""
 
+# Homing adapted from Pybricks Projects (MIT); see the upstream copyright and
+# permission notice in examples/pybricks/LICENSE.txt.
+
 
 def create_motor(name=motor, port: "Port" = Port.A):
     """Connect a motor to a hub port.
@@ -72,3 +75,77 @@ def motor_power(motor: "Motor" = motor, power: "%" = 0):
 
     Power is a duty cycle, not regulated speed. Load changes the actual speed."""
     motor.dc(power)
+
+
+def create_profiled_motor(
+    name=motor,
+    port: "Port" = Port.A,
+    direction: "Direction" = Direction.COUNTERCLOCKWISE,
+    tolerance: "deg" = 360,
+):
+    """Connect a motor with a position tolerance profile.
+
+    A larger tolerance trades precision for smoother motion. Virtual hubs do
+    not model this controller profile."""
+    from pybricks.parameters import Direction, Port
+    from pybricks.pupdevices import Motor
+
+    name = Motor(port, direction, profile=tolerance)
+
+
+def acceleration(motor: "Motor" = motor, acceleration: "deg/s²" = 1000):
+    """Set the motor acceleration limit.
+
+    This changes how quickly regulated motion starts and stops on a real motor."""
+    motor.control.limits(acceleration=acceleration)
+
+
+def coast_motor(motor: "Motor" = motor):
+    """Release a motor and let it coast."""
+    motor.stop()
+
+
+def target_background(motor: "Motor" = motor, angle: "deg" = 0, speed: "deg/s" = 300):
+    """Start moving to a target without waiting.
+
+    The following actions run while the motor moves. A new command replaces
+    the previous target."""
+    motor.run_target(speed, angle, wait=False)
+
+
+def target_coast(motor: "Motor" = motor, angle: "deg" = 0, speed: "deg/s" = 300):
+    """Move to a target, then release the motor."""
+    from pybricks.parameters import Stop
+
+    motor.run_target(speed, angle, then=Stop.COAST)
+
+
+def until_stalled(motor: "Motor" = motor, speed: "deg/s" = 100) -> "deg":
+    """Run until the motor stalls and read its final angle.
+
+    Requires a mechanism with a physical stop. The normal motor power limit
+    applies; use limited homing when the mechanism needs reduced power."""
+    return motor.run_until_stalled(speed)
+
+
+def stall_hold(motor: "Motor" = motor, speed: "deg/s" = 100) -> "deg":
+    """Run to a mechanical stop, hold, and read the angle."""
+    from pybricks.parameters import Stop
+
+    return motor.run_until_stalled(speed, then=Stop.HOLD)
+
+
+def stall_limited(
+    motor: "Motor" = motor, speed: "deg/s" = -100, power: "%" = 30
+) -> "deg":
+    """Run to a mechanical stop with limited power and read the angle."""
+    return motor.run_until_stalled(speed, duty_limit=power)
+
+
+def home_motor(motor: "Motor" = motor, speed: "deg/s" = -100, power: "%" = 30):
+    """Find a mechanical stop with limited power and set zero there.
+
+    Used by the BOOST arm and conveyor. Choose a speed direction toward the
+    stop. Calibration requires a physical stop, not an arbitrary software zero."""
+    motor.run_until_stalled(speed, duty_limit=power)
+    motor.reset_angle(0)

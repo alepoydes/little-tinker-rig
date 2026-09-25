@@ -1605,7 +1605,7 @@ The project should feel like ordinary Python that has acquired structure, constr
 
 Every block has one manifest level: beginner, intermediate, advanced, or expert. All exists only
 as a filter choice. Levels are cumulative and a fresh installation starts at
-Beginner: sixteen blocks for motor/sensor and robot setup, bounded moves, waits,
+Beginner: twenty blocks for motor/sensor and robot setup, bounded moves, waits,
 repetition, console feedback and complete line/remote activities. Intermediate
 adds decisions, readings, hub feedback, variables, arithmetic and reusable
 functions. Advanced adds collections, numeric helpers, curves, steering cars and
@@ -1634,6 +1634,16 @@ general events, gait frameworks and host media blocks remain deferred.
 Sensor/motion activities specify termination and brake in Python cleanup. Direct
 remote pairing and steering-stop calibration are hardware capabilities, not
 features of the virtual physics model.
+
+Set-specific examples in `examples/pybricks` preserve upstream command semantics
+while using bundled blocks for every device operation. Shared sequences become
+ordinary activity templates, not hidden per-example dependencies. The first eight
+imports cover Auto Builder, Tricky, SPIKE CNC/grabber/Kiki and Technic 42124/42099.
+Four prepared activities join Beginner; homing and steering centering start at
+Intermediate, with controller settings and background targets at Advanced.
+Check coverage without generic catch-all assignments, rebuild library fragments,
+and compare command traces with scripted virtual inputs. Keep upstream revision,
+attribution, API migrations and hardware limitations beside the examples.
 
 The toolbar omits Parameters, To Scratch and Python fragment; menus and shortcuts
 retain these actions. Upload saves and sends the active program without running.

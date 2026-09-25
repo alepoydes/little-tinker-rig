@@ -196,6 +196,7 @@ NUMBER_UNITS = {
     "float",
     "deg",
     "deg/s",
+    "deg/s²",
     "mm",
     "mm/s",
     "ms",

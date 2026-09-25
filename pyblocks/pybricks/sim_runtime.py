@@ -26,6 +26,27 @@ from .simulation import World
 def install_modules(world, incoming):
     Port = Enum("Port", {port: port for port in world.available_ports})
 
+    def wait_ms(milliseconds):
+        time.sleep(max(0, milliseconds) / 1000)
+
+    def feedback(channel, value):
+        world.feedback[channel] = value
+        print(f"[Virtual hub {channel}] {value}", flush=True)
+
+    def display_icon(icon):
+        if isinstance(icon, Enum):
+            value = icon.name
+        else:
+            value = tuple(tuple(row) for row in icon)
+            if len(value) != 5 or any(
+                len(row) != 5 or any(not 0 <= pixel <= 100 for pixel in row)
+                for row in value
+            ):
+                raise ValueError(
+                    "A display pattern needs five rows of five brightness values"
+                )
+        feedback("display", value)
+
     class Direction(Enum):
         CLOCKWISE = 1
         COUNTERCLOCKWISE = -1
@@ -103,10 +124,10 @@ def install_modules(world, incoming):
                 wait,
             )
 
-        def run_time(self, speed, duration, then=Stop.HOLD, wait=True):
+        def run_time(self, speed, time, then=Stop.HOLD, wait=True):
             def motion():
                 self.run(speed)
-                time.sleep(max(0, duration) / 1000)
+                wait_ms(time)
                 self.stop()
 
             if wait:
@@ -129,6 +150,10 @@ def install_modules(world, incoming):
         def __init__(self, port):
             self.port = port.value
             world.device(self.port, "ultrasonic")
+            self.lights = SimpleNamespace(
+                on=lambda brightness=100: feedback(f"eyes {self.port}", brightness),
+                off=lambda: feedback(f"eyes {self.port}", 0),
+            )
 
         def distance(self):
             return world.device(self.port, "ultrasonic")["distance"]
@@ -283,8 +308,8 @@ def install_modules(world, incoming):
             self.battery = SimpleNamespace(voltage=lambda: 8000, current=lambda: 100)
             self.system = SimpleNamespace(name=lambda: "Virtual hub")
             self.light = SimpleNamespace(
-                on=lambda color: self._feedback("light", color.name),
-                off=lambda: self._feedback("light", None),
+                on=lambda color: feedback("light", color.name),
+                off=lambda: feedback("light", None),
             )
             self.buttons = SimpleNamespace(
                 pressed=lambda: {Button[name] for name in world.hub_inputs["buttons"]}
@@ -294,19 +319,16 @@ def install_modules(world, incoming):
                 self.imu.heading = lambda: world.hub_inputs["heading"]
             if world.model == "inventor":
                 self.display = SimpleNamespace(
-                    icon=lambda icon: self._feedback("display", icon.name),
-                    number=lambda number: self._feedback("display", number),
+                    icon=display_icon,
+                    number=lambda number: feedback("display", number),
+                    off=lambda: feedback("display", None),
                 )
                 self.speaker = SimpleNamespace(beep=self._beep)
-
-        def _feedback(self, channel, value):
-            world.feedback[channel] = value
-            print(f"[Virtual hub {channel}] {value}", flush=True)
 
         def _beep(self, frequency=500, duration=100):
             if not 64 <= frequency <= 24000:
                 raise ValueError("Tone frequency must be 64–24000 Hz")
-            self._feedback("tone", frequency)
+            feedback("tone", frequency)
             if duration >= 0:
                 time.sleep(duration / 1000)
                 world.feedback["tone"] = None
@@ -351,7 +373,7 @@ def install_modules(world, incoming):
             ForceSensor=ForceSensor,
         ),
         "tools": dict(
-            wait=lambda milliseconds: time.sleep(max(0, milliseconds) / 1000),
+            wait=wait_ms,
             StopWatch=StopWatch,
             read_input_byte=read_input_byte,
         ),

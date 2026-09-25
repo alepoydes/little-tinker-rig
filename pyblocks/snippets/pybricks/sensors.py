@@ -119,3 +119,13 @@ def wait_until(test: "bool" = False):
 
     while not test:
         wait(20)
+
+
+def distance_lights(sensor: "UltrasonicSensor" = distance, brightness: "%" = 100):
+    """Set the ultrasonic sensor eye brightness."""
+    sensor.lights.on(brightness)
+
+
+def distance_lights_off(sensor: "UltrasonicSensor" = distance):
+    """Turn off the ultrasonic sensor eyes."""
+    sensor.lights.off()

@@ -135,6 +135,19 @@ imports can break expanded programs. Run behavioral tests after linting and
 formatting. Pointer indentation, rather than the text cursor's column zero, selects
 the nesting of a drop onto an empty line.
 
+## Imported set programs
+
+Imported programs in `examples/pybricks` must remain composable from the standard
+palette. A generic assignment or function-call placeholder must not count as
+coverage for an unknown device API. Test each actual call against the bundled
+operations, rebuild recognized fragments and compare ordered device commands and
+final virtual state. At import time, compare against the pinned upstream revision
+as well. Preserve argument evaluation order, wait flags, stop modes, repeated
+sensor reads and termination; migration to a current API name must keep the data.
+Script mechanical end stops and remote inputs explicitly in tests. Do not turn
+unsupported physical behavior into a silent success in the interactive simulator.
+The simulator's public keyword names must match Pybricks, including `run_time(time=...)`.
+
 ## Interactive latency
 
 Measure complete insertions, including analysis, Qt layout, and repaint:
@@ -205,7 +218,7 @@ retaining the hue. Verify both the color transform and rendered nested
 notes/code; descendants retain their own hues under an active ancestor.
 
 Library levels describe introduction order and accumulate. Keep the initial
-sixteen-block motor/sensor/robot path usable without advanced cards. Verify generated
+twenty-block motor/sensor/robot path usable without advanced cards. Verify generated
 expansions, contextual insertion and complete learning examples on all three
 virtual profiles. Host-installed MicroPython shims must not enable unsupported
 firmware modules (in particular `urandom` on BOOST). Virtual drive-base moves

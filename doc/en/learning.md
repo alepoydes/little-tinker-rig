@@ -5,7 +5,7 @@ and **Expert**. **All** is a filter, not another level. Levels accumulate and yo
 choice is saved. Existing `Standard` settings and collection metadata migrate to
 `Intermediate`. A level filters new choices; it never restricts existing source.
 
-Beginner contains 16 blocks. At other levels, groups start collapsed so children
+Beginner contains 20 blocks. At other levels, groups start collapsed so children
 can explore one topic at a time. Searching opens matching groups; clearing the
 search restores their previous expansion. Each help group describes its blocks
 together, with their introduction levels and complete Python source.
@@ -20,7 +20,7 @@ together, with their introduction levels and complete Python source.
 | Motors | Connect a motor; turn through an angle; run for a set time |
 | Sensors and timing | Connect a SPIKE or BOOST color sensor; wait for color or time |
 | Drive bases and clocks | Set up a two-wheel robot; drive a distance; turn; brake |
-| Robot activities | Stop at a dark line; follow a line for a set time |
+| Robot activities | Stop at a dark line; follow a line for a set time; transfer a conveyor part; draw a rectangle; dance; operate a gripper |
 | Remote control | Drive using a LEGO Powered Up remote |
 
 Start with one motor and a finite movement. Change an angle from `90` to `-90`,
@@ -52,6 +52,8 @@ These activities follow the progression from parameter changes and sequences to
 sensor-guided behavior in [BOOST](https://www.lego.com/en-au/product/boost-creative-toolbox-17101)
 and [SPIKE line activities](https://education.lego.com/en-us/lessons/prime-competition-ready/training-camp-3-react-to-lines/).
 A complete behavior can be useful before its loop and arithmetic are taught.
+The [LEGO set examples](examples.md) show these actions inside complete programs
+adapted from Pybricks, with their original hardware behavior preserved.
 
 ## Intermediate: sense, decide, name
 

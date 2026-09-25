@@ -96,3 +96,25 @@ def battery_voltage(
 ) -> "number":
     """Read the battery voltage in millivolts."""
     return hub.battery.voltage()
+
+
+def display_pattern(
+    hub: "PrimeHub | InventorHub" = hub,
+    pixels: "list | tuple | Matrix" = [
+        [0, 0, 0, 0, 0],
+        [0, 100, 0, 100, 0],
+        [0, 0, 0, 0, 0],
+        [0, 100, 100, 100, 0],
+        [0, 0, 0, 0, 0],
+    ],
+):
+    """Display a custom five-by-five brightness pattern.
+
+    Each row contains five brightness values from 0 to 100. Named icons use
+    the simpler icon block."""
+    hub.display.icon(pixels)
+
+
+def display_off(hub: "PrimeHub | InventorHub" = hub):
+    """Clear the hub display."""
+    hub.display.off()

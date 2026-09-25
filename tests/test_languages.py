@@ -118,9 +118,17 @@ def test_help_groups_links_back_search_and_language(qt_app):
         assert page.current.endswith("#motor_speed")
         page.search.setText("run_target")
         assert not page.tree.currentItem().isHidden()
-        assert (
-            sum(not groups.child(i).isHidden() for i in range(groups.childCount())) == 1
-        )
+        visible = {
+            groups.child(i).data(0, Qt.ItemDataRole.UserRole)
+            for i in range(groups.childCount())
+            if not groups.child(i).isHidden()
+        }
+        assert {
+            "library/pybricks/motors",
+            "library/pybricks/lessons",
+            "library/pybricks/remote",
+        } <= visible
+        assert "library/python/basics" not in visible
         set_language("ru")
         page.retranslate()
         qt_app.processEvents()
@@ -129,9 +137,11 @@ def test_help_groups_links_back_search_and_language(qt_app):
         assert "Моторы" in page.tree.currentItem().text(0)
         assert not page.tree.currentItem().isHidden()
         groups = page.tree.topLevelItem(1)
-        assert (
-            sum(not groups.child(i).isHidden() for i in range(groups.childCount())) == 1
-        )
+        assert {
+            groups.child(i).data(0, Qt.ItemDataRole.UserRole)
+            for i in range(groups.childCount())
+            if not groups.child(i).isHidden()
+        } == visible
         assert (
             0
             <= block_position(page.browser, "Узнать текущую скорость мотора.")

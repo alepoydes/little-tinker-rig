@@ -13,9 +13,11 @@ editing, and a visible Scratch ribbon with drag-and-drop. English is the default
 language; **View → Language → Русский** switches both the interface and its offline
 guide to Russian. Existing language preferences are preserved. Block reference
 pages collect all templates in a group, with direct links from the editor. Library
-levels grow from 16 Beginner blocks through Intermediate, Advanced and Expert.
+levels grow from 20 Beginner blocks through Intermediate, Advanced and Expert.
 Groups above Beginner start collapsed; All includes the full catalog. Prepared
 activities cover line following and LEGO remote control. See the [learning paths](doc/en/learning.md).
+Eight [adapted Pybricks programs](examples/pybricks/README.md) cover BOOST,
+Robot Inventor, SPIKE Prime and Technic, with reusable activities in the library.
 Focus and hover increase saturation and moderately darken colors. Drags keep a four-line
 colored preview, an origin marker and an insertion row; Escape cancels the gesture.
 Expressions expose their operands and operators. Function parameters, call arguments

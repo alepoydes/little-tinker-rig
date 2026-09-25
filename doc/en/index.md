@@ -12,6 +12,7 @@ on a virtual Inventor / SPIKE Prime hub.
 ## Learn and build
 
 - [Learning paths: Beginner, Intermediate, Advanced, Expert](learning.md)
+- [LEGO set programs as blocks](examples.md)
 - [Editing, documents, Scratch, and CLI](usage.md)
 - [Hubs, sensors, motors, and controllers](robotics.md)
 - [Create your own block library](snippets.md)

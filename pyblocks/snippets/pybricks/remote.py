@@ -1,5 +1,8 @@
 """LEGO Powered Up remote control; no host protocol or event framework."""
 
+# Steering calibration adapted from Pybricks Projects (MIT); see the upstream
+# copyright and permission notice in examples/pybricks/LICENSE.txt.
+
 
 def remote_drive(drive: "DriveBase" = drive, speed: "mm/s" = 150, turn: "deg/s" = 90):
     """Drive with a LEGO remote until its center button is pressed.
@@ -44,3 +47,23 @@ def remote_pressed(
     from pybricks.parameters import Button
 
     return button in remote.buttons.pressed()
+
+
+def buttons(remote: "Remote" = remote) -> "set":
+    """Read all pressed remote buttons once.
+
+    Save the result to make several decisions using the same input sample."""
+    return remote.buttons.pressed()
+
+
+def center_steering(steering: "Motor" = steer, speed: "deg/s" = 200):
+    """Find both steering stops and start returning to the center.
+
+    The midpoint is measured, not assumed. Returning to zero does not wait;
+    subsequent remote commands can immediately replace that target."""
+    from pybricks.parameters import Stop
+
+    left_end = steering.run_until_stalled(-speed, then=Stop.HOLD)
+    right_end = steering.run_until_stalled(speed, then=Stop.HOLD)
+    steering.reset_angle((right_end - left_end) / 2)
+    steering.run_target(speed, 0, wait=False)
