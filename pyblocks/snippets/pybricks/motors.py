@@ -41,7 +41,7 @@ def run_motor(motor: "Motor" = motor, speed: "number[deg/s]" = 500):
 
 
 @inline_block(level="intermediate", icon="↻", color="action")
-def stop_motor(motor: "Motor" = motor):
+def stop_motor(motor: "Motor | DCMotor" = motor):
     """Stop a motor with braking."""
     motor.brake()
 
@@ -89,7 +89,7 @@ def motor_speed(motor: "Motor" = motor) -> "number[deg/s]":
 
 
 @inline_block(level="expert", icon="↻", color="action")
-def motor_power(motor: "Motor" = motor, power: "number[%]" = 0):
+def motor_power(motor: "Motor | DCMotor" = motor, power: "number[%]" = 0):
     """Set raw motor power from -100% to 100%.
 
     Power is a duty cycle, not regulated speed. Load changes the actual speed."""
@@ -114,7 +114,7 @@ def create_profiled_motor(
 
 
 @inline_block(level="advanced", icon="↻", color="action")
-def acceleration(motor: "Motor" = motor, acceleration: "number[deg/s²]" = 1000):
+def acceleration(motor: "Motor" = motor, acceleration: "number[deg/s²] | tuple" = 1000):
     """Set the motor acceleration limit.
 
     This changes how quickly regulated motion starts and stops on a real motor."""
@@ -122,7 +122,7 @@ def acceleration(motor: "Motor" = motor, acceleration: "number[deg/s²]" = 1000)
 
 
 @inline_block(level="intermediate", icon="↻", color="action")
-def coast_motor(motor: "Motor" = motor):
+def coast_motor(motor: "Motor | DCMotor" = motor):
     """Release a motor and let it coast."""
     motor.stop()
 

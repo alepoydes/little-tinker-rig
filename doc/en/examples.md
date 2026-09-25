@@ -1,6 +1,6 @@
 # LEGO set programs as blocks
 
-The repository includes eight adapted programs from the official
+The repository includes all 37 Python files for the supported hub families from the official
 [Pybricks Projects repository](https://github.com/pybricks/pybricks-projects).
 Open a file from `examples/pybricks/` using **File → Open**. Select **All** in the
 library to find every component used by a program. The level filter limits new
@@ -8,14 +8,14 @@ choices, never the blocks already in the document.
 
 | File | Robot and connections | What it does |
 |---|---|---|
-| `boost_auto_builder.py` | BOOST Auto Builder: conveyor B, arm D | Homes both mechanisms, stacks five components and ejects the result |
-| `inventor_tricky.py` | Robot Inventor Tricky: wheels A/B, ultrasonic D | Lights its eyes and turns both ways when an object is within 100 mm |
-| `spike_cnc.py` | SPIKE Prime CNC: horizontal A, vertical C | Draws a rectangle and returns both axes to their starting position |
-| `spike_grabber.py` | SPIKE Prime grabber: motor A, force sensor E | Closes while pressed; opens to the mechanical stop when released |
-| `spike_kiki.py` | SPIKE Prime Kiki: color sensor B | Shows sky, house or grass for blue, yellow or green objects |
-| `technic_buggy.py` | Technic 42124: drive A, steering B, LEGO remote | Centers the steering and drives with the remote |
-| `technic_off_roader.py` | Technic 42099: front A, rear B, steering C | Calibrates steering and follows a timed route |
-| `technic_off_roader_remote.py` | Same 42099 connections, LEGO remote | Controls both drive axles and steering from the remote |
+| `boost_17101_auto_builder.py` | BOOST Auto Builder: conveyor B, arm D | Homes both mechanisms, stacks five components and ejects the result |
+| `inventor_51515_tricky.py` | Robot Inventor Tricky: wheels A/B, ultrasonic D | Lights its eyes and turns both ways when an object is within 100 mm |
+| `spike_45678_cnc.py` | SPIKE Prime CNC: horizontal A, vertical C | Draws a rectangle and returns both axes to their starting position |
+| `spike_45678_grabber.py` | SPIKE Prime grabber: motor A, force sensor E | Closes while pressed; opens to the mechanical stop when released |
+| `spike_45678_kiki.py` | SPIKE Prime Kiki: color sensor B | Shows sky, house or grass for blue, yellow or green objects |
+| `technic_42124_buggy.py` | Technic 42124: drive A, steering B, LEGO remote | Centers the steering and drives with the remote |
+| `technic_42099_off_roader.py` | Technic 42099: front A, rear B, steering C | Calibrates steering and follows a timed route |
+| `technic_42099_off_roader_remote.py` | Same 42099 connections, LEGO remote | Controls both drive axles and steering from the remote |
 
 Motor directions, dimensions and tuning belong to these specific LEGO builds.
 Changing only ports does not adapt them to a different mechanism.
@@ -50,7 +50,7 @@ with braking; the grabber finishes opening before checking the next press.
 Remote programs keep running until **Stop** and do not gain a center-button exit.
 Kiki uses the current `display.icon()` name for the same original pixel patterns.
 
-For a fully virtual starting example, open `spike_cnc.py`, connect an Inventor/Prime
+For a fully virtual starting example, open `spike_45678_cnc.py`, connect an Inventor/Prime
 virtual hub, and configure A and C as motors. Tricky also works virtually with A/B
 motors and an ultrasonic sensor on D; change its distance below 100 mm to trigger
 the dance. Eye brightness and display output are printed in the console.
@@ -62,7 +62,25 @@ virtual color sensor currently reports only black or white. The tests use virtua
 motor motion and explicit scripted hardware inputs to compare complete command
 sequences, rather than pretending to validate physical construction.
 
-This collection covers the eight programs listed above. Large class-based walkers,
-balancers and host keyboard bridges from the upstream catalog are not included.
-The source revision, individual links and MIT attribution are recorded in
-`examples/pybricks/README.md` and `examples/pybricks/LICENSE.txt`.
+The table above lists the eight introductory activities. The [complete catalog](../../examples/pybricks/README.md)
+also includes BOOST R2-D2 (75253), Inventor Blast/MVP/Gelo, the exploration rover,
+balancer, block flipper, mini-loader, Steerbot, the API reference and all Technic
+keyboard/remote/Xbox programs at the pinned revision. EV3 is excluded.
+
+Keep the Gelo modules together so Upload/Run can include their local dependency.
+The REPL file is interactive; the API reference should be studied in sections.
+Filenames include set numbers. The catalog records dependencies, extra equipment,
+upstream sources and the exact extent of validation for each file.
+
+Advanced adds keyboard input, Xbox control, colors and gears. Expert exposes
+controller tuning, display options, hub measurements, classes, contexts and
+generators. Ordinary function calls can edit their callable and argument list;
+this also applies to custom robot methods. These additions do not increase the
+Beginner palette.
+
+All 37 files compile for both MPY ABIs and rebuild without changing their executable
+structure. Full interactive simulations of walking, balancing and tipping are not
+implemented. Xbox tests preserve the two upstream programs' different sampling
+rates. The compatibility helpers preserve keyboard nonblocking reads and old curve
+signs. Gelo's missing const import and Audi's missing hub initialization are fixed.
+Upstream attribution is retained in `examples/pybricks/LICENSE.txt`.

@@ -11,3 +11,13 @@ def random_integer(low: "number" = 1, high: "number" = 6) -> "number":
     from urandom import randint
 
     return randint(low, high)
+
+
+@inline_block(level="intermediate", icon="▶", color="value")
+def random_item(items=("left", "right")):
+    """Choose a random item from a nonempty sequence.
+
+    Available on Inventor, SPIKE Prime and Technic hubs; not on BOOST."""
+    from urandom import choice
+
+    return choice(items)

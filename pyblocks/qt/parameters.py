@@ -40,6 +40,7 @@ class ParameterEditor(QWidget):
         super().__init__(view.viewport())
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.session, self.slot = view.session, slot
+        self.view = view
         self.error = ""
         options = (
             choices(self.session, slot.parameter, slot.span.start)
@@ -65,7 +66,7 @@ class ParameterEditor(QWidget):
             self.arrow.clicked.connect(self.show_choices)
         self.field.setFont(view.font())
         self.setFocusProxy(self.line_edit)
-        self.setToolTip(slot.parameter.name)
+        self.setToolTip(view.parameter_tip(slot))
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
@@ -139,3 +140,4 @@ class ParameterEditor(QWidget):
         if self.completer:
             self.completer.popup().hide()
         super().closeEvent(event)
+        self.view.viewport().update()

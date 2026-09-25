@@ -147,7 +147,8 @@ when a library changes; applying definitions does not rewrite open programs.
 
 Block modules contain a docstring, imports and function definitions. Block
 signatures have fixed parameters; inline bodies cannot use recursive templates,
-classes, or `global`/`nonlocal`. These restrictions keep substitution explicit.
+nonempty classes, or `global`/`nonlocal`. An isolated empty class skeleton is allowed;
+its published name can be edited and its body filled with ordinary Python blocks. These restrictions keep substitution explicit.
 Ordinary helper functions retain ordinary Python signatures and local scopes.
 Calling a decorated block from helper code requires all its fields explicitly:
 block defaults fill the editor's insertion fields, not a runtime function signature.

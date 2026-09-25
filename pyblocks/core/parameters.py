@@ -63,7 +63,9 @@ def slots(session):
     declarations = sorted(
         (span.start, node)
         for node, span in syntax.spans.items()
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.arg))
+        if isinstance(
+            node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.arg)
+        )
         or isinstance(node, ast.Name)
         and isinstance(node.ctx, ast.Store)
     )
@@ -227,7 +229,9 @@ def slots(session):
                 owner = match if published else None
                 if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
                     add(node, published or "name", "identifier", owner, field="id")
-                elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                elif isinstance(
+                    node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+                ):
                     add(
                         node,
                         published or "function name",
@@ -254,7 +258,7 @@ def slots(session):
         if isinstance(node, ast.expr):
             expression(node)
             return
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
             add(node, "function name", "identifier", field="name")
         elif isinstance(node, ast.arg):
             add(node, "parameter", "identifier", field="arg")

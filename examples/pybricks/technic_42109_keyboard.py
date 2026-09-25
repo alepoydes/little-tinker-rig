@@ -1,0 +1,57 @@
+# Adapted from Pybricks Projects (MIT); see LICENSE.txt and catalog.json.
+from pybricks.hubs import TechnicHub
+from pybricks.pupdevices import Motor
+from pybricks.parameters import Port, Stop
+from pybricks.tools import wait
+
+
+# --- automatically managed helpers ---
+def _pyblocks_pybricks_keyboard_read_key_code_e35adf93f3c8() -> "int | None":
+    """Read one keyboard character code, or None when no key is available.
+
+    Keep the hub connected and give its console keyboard focus. This is the
+    nonblocking equivalent of the old experimental getchar API."""
+    from uselect import poll
+    from usys import stdin
+
+    keyboard = poll()
+    keyboard.register(stdin)
+    if keyboard.poll(0):
+        return ord(stdin.read(1))
+    return None
+
+
+# --- user program ---
+
+hub = TechnicHub()
+
+drive = Motor(Port.D)
+steer = Motor(Port.B)
+
+SPEED_DRIVE = 100
+TIME_DRIVE = 30
+STEP_STEER = 15
+SPEED_STEER = 720
+MAX_STEER = 75
+
+steer.reset_angle()
+steer.run_target(SPEED_STEER, 0, then=Stop.BRAKE)
+
+while True:
+    c = _pyblocks_pybricks_keyboard_read_key_code_e35adf93f3c8()
+    if c == ord("q"):
+        drive.dc(SPEED_DRIVE)
+        wait(TIME_DRIVE)
+    elif c == ord("a"):
+        drive.dc(-SPEED_DRIVE)
+        wait(TIME_DRIVE)
+    elif c == ord("o"):
+        if steer.angle() > -MAX_STEER:
+            steer.run_angle(SPEED_STEER, -STEP_STEER, then=Stop.BRAKE)
+    elif c == ord("p"):
+        if steer.angle() < MAX_STEER:
+            steer.run_angle(SPEED_STEER, STEP_STEER, then=Stop.BRAKE)
+    elif c == ord("r") or c == ord("0"):
+        steer.run_target(SPEED_STEER, 0, then=Stop.BRAKE)
+    else:
+        drive.stop()

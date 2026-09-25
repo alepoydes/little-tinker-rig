@@ -12,7 +12,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from pyblocks.core import edit
 from pyblocks.core.structure import sequence
+from pyblocks.core.transfer import Transfer
 from pyblocks.i18n import tr
 
 
@@ -169,10 +171,103 @@ class StructureBar(QWidget):
             QMessageBox.warning(self.view, tr("Cannot change this list"), str(error))
 
 
-def expression_menu(view, point):
-    syntax = view.session.document.syntax
+def block_menu(view, point):
+    session = view.session
+    syntax = session.document.syntax
     node = view.node_at(point)
+    match = session.enclosing_match(node)
+    session.editor.selection = (
+        syntax.at(match.span.start)
+        if match
+        else next((n for n in syntax.ancestors(node) if isinstance(n, ast.stmt)), node)
+    )
+    view.setFocus()
+    view.selected.emit()
     menu = QMenu(view)
+
+    def perform(action, *, transfer=False):
+        try:
+            if syntax is not session.document.syntax:
+                raise ValueError(tr("Document changed; choose the block again"))
+            action()
+            view.refresh_source()
+            (view.transferred if transfer else view.changed).emit()
+        except (ValueError, SyntaxError, OSError) as error:
+            view.failed.emit(str(error))
+
+    definition = match or next(
+        (m for m in session.matches if m.span.contains(syntax.spans[node].start)), None
+    )
+    if definition:
+        menu.addAction(
+            tr("Open definition"),
+            lambda: view.definition_requested.emit(definition.snippet),
+        )
+        menu.addAction(
+            tr("Help"), lambda: view.help_requested.emit(definition.snippet.identity)
+        )
+        menu.addAction(
+            (
+                tr("Collapse block")
+                if definition.span in session.expanded_spans
+                else tr("Expand block")
+            ),
+            lambda: perform(session.toggle_expansion),
+        )
+        menu.addSeparator()
+    if session.editor.selection is not syntax.tree:
+        expression = (
+            match.snippet.expression
+            if match
+            else isinstance(session.editor.selection, ast.expr)
+        )
+        owner = view.scratch_owner or session
+        if expression:
+            menu.addAction(
+                tr("Duplicate to Scratch"),
+                lambda: perform(
+                    lambda: owner.set_scratch(None, session.selected_text()),
+                    transfer=True,
+                ),
+            )
+        else:
+            menu.addAction(
+                tr("Duplicate"),
+                lambda: perform(
+                    lambda: session.editor.commit(
+                        edit.insert(
+                            syntax, session.destination(), session.selected_text()
+                        )
+                    )
+                ),
+            )
+
+        def move():
+            transfer = Transfer.capture(
+                owner,
+                index=view.scratch_index,
+                fragment=session if view.scratch_owner else None,
+            )
+            transfer.to_scratch(len(owner.document.state.scratch))
+
+        menu.addAction(tr("Move to Scratch"), lambda: perform(move, transfer=True))
+        menu.addAction(
+            tr("Delete"),
+            lambda: perform(
+                lambda: session.editor.commit(session.extract_selection()[1])
+            ),
+        )
+        menu.addSeparator()
+    expression_menu(view, point, menu=menu)
+    return menu
+
+
+def expression_menu(view, point, *, menu=None):
+    syntax = view.session.document.syntax
+    slot = view.parameter_at(point)
+    node = (slot.node or syntax.at(slot.span.start)) if slot else view.node_at(point)
+    standalone = menu is None
+    menu = QMenu(view) if standalone else menu
 
     def replace(owner, text):
         try:
@@ -223,4 +318,5 @@ def expression_menu(view, point):
             )
     if menu.isEmpty():
         return
-    menu.exec(view.viewport().mapToGlobal(point))
+    if standalone:
+        menu.exec(view.viewport().mapToGlobal(point))

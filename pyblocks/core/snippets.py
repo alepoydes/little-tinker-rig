@@ -189,7 +189,18 @@ def load_module(
                 raise ValueError(
                     f"{function.name}: global/nonlocal declarations cannot be hygienic"
                 )
-            if mode != "function" and isinstance(node, ast.ClassDef):
+            if (
+                mode != "function"
+                and isinstance(node, ast.ClassDef)
+                and not (
+                    len(body) == 1
+                    and node is body[0]
+                    and not node.decorator_list
+                    and not node.keywords
+                    and len(node.body) == 1
+                    and isinstance(node.body[0], ast.Pass)
+                )
+            ):
                 raise ValueError(
                     f"{function.name}: classes belong in an ordinary helper module, not a template"
                 )
@@ -751,8 +762,19 @@ def recognize(
 
     expressions, statements = {}, {}
     all_expressions = []
+    # Type annotations are Python syntax, but are not executable expressions.
+    annotations = {
+        child
+        for node in syntax.spans
+        for annotation in (
+            getattr(node, "annotation", None),
+            getattr(node, "returns", None),
+        )
+        if annotation is not None
+        for child in ast.walk(annotation)
+    }
     for node, span in syntax.spans.items():
-        if helper_span and helper_span.contains(span.start):
+        if node in annotations or helper_span and helper_span.contains(span.start):
             continue
         if isinstance(node, ast.expr):
             item = (span, node)

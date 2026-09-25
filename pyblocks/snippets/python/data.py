@@ -18,7 +18,7 @@ def append(items: "list" = values, value=0):
 
 
 @inline_block(level="advanced", icon="＝", color="value")
-def item(items=values, index: "number" = 0):
+def item(items=values, index=0):
     """Read an item by index or key.
 
     List indices start at zero; -1 is the last item.

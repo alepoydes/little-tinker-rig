@@ -177,3 +177,19 @@ by the enlarged block symbol and description, without additional line spacing.
 They share the block's background, hover and selection, including ancestor bands.
 
 ![Function parameters, logical operands and a known call error](images/functions.png)
+
+## Block context menu
+
+Right-click a block or its generated comment to act on that block, independently
+of the previous selection. **Open definition** switches to the definition editor
+and focuses the exact function. Built-ins and historical versions are read-only;
+current user definitions are editable. The menu also provides Help, Expand/Collapse,
+Duplicate, Move to Scratch and Delete. Expressions duplicate to Scratch. Compound
+statements move or delete as a whole; Undo restores program and Scratch together.
+Right-clicking a parameter keeps its expression-editing submenu.
+
+Hovering or editing a repeated parameter highlights its occurrences in the same
+block and shows a tooltip such as `speed · 3 uses`. Editing any occurrence changes
+the whole group in one Undo step. Identical text in a different parameter or block
+is independent. Escape discards an unfinished edit. Explicit Python edits can
+break the pattern and leave ordinary Python.

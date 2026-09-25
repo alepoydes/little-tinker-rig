@@ -33,7 +33,7 @@ from .annotations import block_notes
 from .colors import saturated
 from .drag import BlockMime, cancel_drag, drag_block
 from .parameters import ParameterEditor, unit_text
-from .structure import StructureBar, expression_menu
+from .structure import StructureBar, block_menu
 
 
 @lru_cache(maxsize=8)
@@ -71,6 +71,8 @@ class SourceView(QTextEdit):
     layout_changed = Signal()
     failed = Signal(str)
     snippet_dropped = Signal(str, object)
+    definition_requested = Signal(object)
+    help_requested = Signal(str)
 
     def __init__(self, session):
         super().__init__()
@@ -95,6 +97,7 @@ class SourceView(QTextEdit):
         self.folded = set()
         self.press_position = None
         self.hover = None
+        self.hover_parameter = None
         self.intensity = 0.65
         self.fade_lines = set()
         self.fade_in = False
@@ -169,6 +172,7 @@ class SourceView(QTextEdit):
             )
             if revision != self.parameter_revision:
                 self.parameter_revision = revision
+                self.hover_parameter = None
                 if self.parameter_editor:
                     self.parameter_editor.close()
                     self.parameter_editor = None
@@ -468,6 +472,12 @@ class SourceView(QTextEdit):
                             painter.drawRect(area.adjusted(1, 1, -1, -1))
                     painter.restore()
         painter.setFont(self.font())
+        active = (
+            self.parameter_editor.slot
+            if self.parameter_editor and self.parameter_editor.isVisible()
+            else self.hover_parameter
+        )
+        linked = set(self.linked_parameter_spans(active))
         for slot in self.parameter_slots[
             bisect_left(self.parameter_lines, first_line) : bisect_right(
                 self.parameter_lines, last_line
@@ -476,8 +486,14 @@ class SourceView(QTextEdit):
             rect = self.parameter_rect(slot)
             if rect is None or not rect.intersects(QRectF(event.rect())):
                 continue
-            painter.setPen(QPen(QColor("#9ca7b2"), 1))
-            painter.setBrush(QColor("#f8fafb"))
+            related = any(
+                span.start <= slot.span.start and slot.span.end <= span.end
+                for span in linked
+            )
+            painter.setPen(
+                QPen(QColor("#246c9a" if related else "#9ca7b2"), 2 if related else 1)
+            )
+            painter.setBrush(QColor("#cbe6fa" if related else "#f8fafb"))
             painter.drawRoundedRect(rect.adjusted(-1, 1, -1, -1), 3, 3)
             arrow = 13 if self.parameter_choices[slot.span] else 4
             painter.setPen(QColor("#243442"))
@@ -845,6 +861,22 @@ class SourceView(QTextEdit):
             None,
         )
 
+    def linked_parameter_spans(self, slot):
+        if slot is None or slot.syntax is not self.session.document.syntax:
+            return ()
+        if slot.match is None:
+            return (slot.span,)
+        nodes = slot.match.occurrences.get(slot.parameter.name, ())
+        return tuple(slot.syntax.spans[node] for node in nodes) or (slot.span,)
+
+    def parameter_tip(self, slot):
+        name = slot.parameter.name
+        count = len(self.linked_parameter_spans(slot))
+        if count > 1:
+            name = tr("{name} · {count} uses", name=name, count=count)
+        unit = unit_text(slot.parameter.annotation)
+        return name + (" · " + unit if unit else "")
+
     def show_parameter(self, slot):
         if self.parameter_editor:
             self.parameter_editor.close()
@@ -864,6 +896,7 @@ class SourceView(QTextEdit):
         )
         field.setGeometry(rect.toRect().adjusted(-1, 0, 2, 0))
         field.begin()
+        self.viewport().update()
 
     def edit_parameters(self):
         syntax = self.session.document.syntax
@@ -902,7 +935,10 @@ class SourceView(QTextEdit):
             self.structure_bar.activate(point)
 
     def contextMenuEvent(self, event):
-        expression_menu(self, event.pos())
+        menu = block_menu(self, event.pos())
+        if not menu.isEmpty():
+            menu.exec(event.globalPos())
+        menu.deleteLater()
 
     def mouseMoveEvent(self, event):
         point = event.position().toPoint()
@@ -958,13 +994,9 @@ class SourceView(QTextEdit):
                 None,
             )
             parameter = self.parameter_at(point)
+            self.hover_parameter = parameter
             self.setToolTip(
-                parameter.parameter.name
-                + (
-                    " · " + unit_text(parameter.parameter.annotation)
-                    if unit_text(parameter.parameter.annotation)
-                    else ""
-                )
+                self.parameter_tip(parameter)
                 if parameter
                 else (
                     tr(match.snippet.help).splitlines()[0]
@@ -1285,6 +1317,7 @@ class SourceView(QTextEdit):
 
     def leaveEvent(self, event):
         self.hover = None
+        self.hover_parameter = None
         self.viewport().update()
         super().leaveEvent(event)
 

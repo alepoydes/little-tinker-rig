@@ -243,3 +243,22 @@ require hardware. Nested API reporters such as `hub.imu.heading()` derive their
 type and completion suggestions from the same receiver/member-path analysis.
 Movement completion compares unrounded positions: rounding a displayed motor
 angle before the tolerance check can stop outside the promised tolerance.
+
+## Definition and example invariants
+
+A block default is evaluated at the insertion site. Helper dependency discovery
+must inspect a decorated block's body, not capture its insertion defaults as
+module helper references. Python annotations are type syntax, not runtime value
+blocks. Dictionary keys are arbitrary expressions, not necessarily numeric indices.
+
+Context actions use the pointer's current block. In an expanded recipe, editing
+acts on the pointed child; navigation can still open the recipe definition.
+Historical navigation retains the matched source path and version, independent
+of the installed current definition. Linked-field highlighting uses logical field
+identity and match identity, not equal source text.
+
+Keep an inventory of every upstream file in supported hub families at the pinned
+revision. Test executable AST rebuilding and MicroPython compilation separately
+from virtual command traces. Exclude generic assignment/call placeholders when
+checking device-operation coverage. Record scripted boundaries and hardware-only
+behavior explicitly. A successful compiler check is not a physical robot test.

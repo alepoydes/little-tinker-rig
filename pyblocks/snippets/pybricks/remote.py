@@ -76,3 +76,11 @@ def center_steering(steering: "Motor" = steer, speed: "number[deg/s]" = 200):
     right_end = steering.run_until_stalled(speed, then=Stop.HOLD)
     steering.reset_angle((right_end - left_end) / 2)
     steering.run_target(speed, 0, wait=False)
+
+
+@inline_block(level="advanced", icon="▶", color="action")
+def remote_light(remote: "Remote" = remote, color: "Color" = Color.GREEN):
+    """Set the remote light to show the selected driving mode."""
+    from pybricks.parameters import Color
+
+    remote.light.on(color)

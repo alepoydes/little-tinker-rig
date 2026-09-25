@@ -137,7 +137,9 @@ def reset_drive(drive: "DriveBase" = drive):
 
 
 @inline_block(level="advanced", icon="➜", color="state", names=("name",))
-def create_car(name=car, steering: "Motor" = steering, propulsion: "Motor" = motor):
+def create_car(
+    name=car, steering: "Motor" = steering, propulsion: "Motor | list | tuple" = motor
+):
     """Set up a car with a steering motor.
 
     Pybricks finds the steering endpoints automatically: use a mechanism with
@@ -161,3 +163,18 @@ def power_car(car: "Car" = car, power: "number[%]" = 0):
     Positive power drives forward and negative power drives backward.
     This is motor power, not a measured vehicle speed."""
     car.drive_power(power)
+
+
+@block(level="advanced", icon="➜", color="action")
+def legacy_curve(
+    drive: "DriveBase" = drive, radius: "number[mm]" = 200, angle: "number[deg]" = 90
+):
+    """Drive a curve using the Pybricks 3.x sign convention.
+
+    Radius selects forward/backward travel; angle selects right/left turning.
+    The helper translates these signs to the current arc API and evaluates each
+    input once. Use this when adapting an older curve(radius, angle) program."""
+    drive.arc(
+        abs(radius) if radius * angle >= 0 else -abs(radius),
+        abs(angle) if radius >= 0 else -abs(angle),
+    )

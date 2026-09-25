@@ -139,13 +139,14 @@ def wait_until(test: "bool" = False):
 
 @inline_block(level="intermediate", icon="◉", color="action")
 def distance_lights(
-    sensor: "UltrasonicSensor" = distance, brightness: "number[%]" = 100
+    sensor: "UltrasonicSensor | ColorSensor" = distance,
+    brightness: "number[%] | list | tuple" = 100,
 ):
     """Set the ultrasonic sensor eye brightness."""
     sensor.lights.on(brightness)
 
 
 @inline_block(level="intermediate", icon="◉", color="action")
-def distance_lights_off(sensor: "UltrasonicSensor" = distance):
+def distance_lights_off(sensor: "UltrasonicSensor | ColorSensor" = distance):
     """Turn off the ultrasonic sensor eyes."""
     sensor.lights.off()

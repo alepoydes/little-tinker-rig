@@ -129,7 +129,12 @@ def function_dependencies(tree):
     scopes = Scopes(tree)
     dependencies = {}
     for name, function in functions.items():
-        nodes = set(ast.walk(function))
+        # Block defaults belong to the insertion site, not the helper module.
+        nodes = (
+            set(ast.walk(ast.Module(body=function.body, type_ignores=[])))
+            if metadata(function)
+            else set(ast.walk(function))
+        )
         dependencies[name] = {
             node.id
             for node, _ in scopes.references

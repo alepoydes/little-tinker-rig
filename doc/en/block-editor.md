@@ -73,3 +73,8 @@ drafts, or changes their undo history. Recognition uses the new definitions;
 old source that no longer matches remains ordinary Python. Program changes and
 version upgrades are separate, explicit actions. Hub upload/run is unavailable
 while editing definitions.
+
+Right-click an inserted block and choose **Open definition** to navigate directly
+here. A recognized historical block opens its original file and version read-only,
+not the current implementation with the same identity. Copy it to a user collection
+to make an editable variant.

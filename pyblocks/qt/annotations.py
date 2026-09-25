@@ -15,6 +15,8 @@ LABELS = {
     ast.While: N_("Repeat while the condition is true"),
     ast.Try: N_("Run with error handling"),
     ast.FunctionDef: N_("Define an action"),
+    ast.ClassDef: N_("Define a class"),
+    ast.With: N_("Use a context with cleanup"),
     ast.Return: N_("Return a result"),
     ast.Break: N_("Leave the loop"),
     ast.Continue: N_("Next iteration"),

@@ -1614,8 +1614,9 @@ features of the virtual physics model.
 
 Set-specific examples in `examples/pybricks` preserve upstream command semantics
 while using bundled blocks for every device operation. Shared sequences become
-ordinary activity templates, not hidden per-example dependencies. The first eight
-imports cover Auto Builder, Tricky, SPIKE CNC/grabber/Kiki and Technic 42124/42099.
+ordinary activity templates, not hidden per-example dependencies. All 37 Python files from the supported upstream families are cataloged at a pinned
+revision, with set-number filenames, dependencies and validation status. EV3 is
+excluded. Gelo remains a visible shared module; REPL/reference files retain their roles.
 Four prepared activities join Beginner; homing and steering centering start at
 Intermediate, with controller settings and background targets at Advanced.
 Check coverage without generic catch-all assignments, rebuild library fragments,
@@ -1660,3 +1661,19 @@ and ownership hit testing with code. Origin and destination markers use explicit
 contrasting colors; the origin starts at the moved block's former indentation.
 Library search matches all query words across the complete localized help, source,
 name and group.
+
+
+### Block context navigation and repeated fields
+
+The program and Scratch context menus target the block under the pointer, including
+its generated comment. Open definition carries the recognized Snippet object so a
+historical match opens the exact source path/version read-only. Built-ins are
+read-only; current user definitions remain editable. Help, expansion, duplication,
+Scratch transfer and deletion share the normal editor operations and undo history.
+Expression-editing submenus remain available over parameter fields.
+
+Repeated field occurrences are indexed by (matched block, parameter name), never
+by source text. Hover and active editing highlight the group and show its use count.
+Editing any occurrence commits all occurrences once; Escape changes nothing.
+Inline expressions still evaluate at every use, while function-block arguments
+evaluate once. UI synchronization does not change Python evaluation semantics.

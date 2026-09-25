@@ -1,0 +1,108 @@
+"""Hub measurements and settings
+
+Explicit device operations for studying complete robot programs."""
+
+@inline_block(level="expert", icon="▶", color="action")
+def hub_imu_acceleration(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "tuple":
+    """Read the accelerometer vector."""
+    return hub.imu.acceleration()
+
+
+@inline_block(level="expert", icon="▶", color="action")
+def primehub() -> "PrimeHub":
+    """Create the Prime hub in its mounted orientation."""
+    from pybricks.hubs import PrimeHub
+
+    return PrimeHub()
+
+
+@inline_block(level="expert", icon="▶", color="action")
+def hub_imu_angular_velocity_axis(
+    hub: "PrimeHub | TechnicHub | MoveHub" = hub, axis=Axis.Z
+) -> "number[deg/s]":
+    """Read gyroscope rotation rate. Options: axis."""
+    from pybricks.parameters import Axis
+
+    return hub.imu.angular_velocity(axis)
+
+
+@inline_block(level="expert", icon="▶", color="action")
+def primehub_front_side(front_side=Axis.X) -> "PrimeHub":
+    """Create the Prime hub in its mounted orientation. Options: front_side."""
+    from pybricks.hubs import PrimeHub
+    from pybricks.parameters import Axis
+
+    return PrimeHub(front_side=front_side)
+
+
+@inline_block(level="expert", icon="▶", color="action")
+def primehub_top_side_front_side(top_side=Axis.Z, front_side=Axis.X) -> "PrimeHub":
+    """Create the Prime hub in its mounted orientation. Options: top_side, front_side."""
+    from pybricks.hubs import PrimeHub
+    from pybricks.parameters import Axis
+
+    return PrimeHub(top_side=top_side, front_side=front_side)
+
+
+@inline_block(level="expert", icon="▶", color="action")
+def hub_imu_up(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "Side":
+    """Read which side of the hub faces up."""
+    return hub.imu.up()
+
+
+@inline_block(level="expert", icon="▶", color="action")
+def hub_imu_tilt(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "tuple":
+    """Read the pitch and roll angles."""
+    return hub.imu.tilt()
+
+
+@inline_block(level="expert", icon="▶", color="action")
+def hub_imu_angular_velocity(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "tuple":
+    """Read gyroscope rotation rate."""
+    return hub.imu.angular_velocity()
+
+
+@inline_block(level="expert", icon="▶", color="action")
+def hub_battery_current(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "int":
+    """Read the battery current in milliamps."""
+    return hub.battery.current()
+
+
+@inline_block(level="expert", icon="▶", color="action")
+def hub_charger_connected(hub: "PrimeHub" = hub) -> "bool":
+    """Check whether a USB charger is connected."""
+    return hub.charger.connected()
+
+
+@inline_block(level="expert", icon="▶", color="action")
+def hub_charger_current(hub: "PrimeHub" = hub) -> "int":
+    """Read the charging current in milliamps."""
+    return hub.charger.current()
+
+
+@inline_block(level="expert", icon="▶", color="action")
+def hub_charger_status(hub: "PrimeHub" = hub) -> "int":
+    """Read charger status: 0 idle, 1 charging, 2 full, 3 fault."""
+    return hub.charger.status()
+
+
+@inline_block(level="expert", icon="▶", color="action")
+def hub_system_set_stop_button_buttons(
+    hub: "PrimeHub | TechnicHub | MoveHub" = hub, buttons=Button.CENTER
+):
+    """Set the button combination that stops the program. Options: buttons."""
+    from pybricks.parameters import Button
+
+    hub.system.set_stop_button(buttons)
+
+
+@inline_block(level="expert", icon="▶", color="action")
+def hub_system_name(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "str":
+    """Read the hub Bluetooth name."""
+    return hub.system.name()
+
+
+@inline_block(level="expert", icon="▶", color="action")
+def hub_system_shutdown(hub: "PrimeHub | TechnicHub | MoveHub" = hub):
+    """Stop the program and turn the hub off."""
+    hub.system.shutdown()

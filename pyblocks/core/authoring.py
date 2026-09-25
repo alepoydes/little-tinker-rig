@@ -95,7 +95,6 @@ class DefinitionDraft:
         self.path = path.resolve()
         self.root = collection_root(self.path)
         self.relative = self.path.relative_to(self.root).as_posix()
-        self.module = self.path.relative_to(self.root).with_suffix("").as_posix()
         self.read_only = self.path.is_relative_to(BUILTINS)
         self.saved_source = (
             self.path.read_text(encoding="utf-8") if self.path.exists() else None
@@ -104,8 +103,20 @@ class DefinitionDraft:
             (self.root / "collection.toml").read_text(encoding="utf-8")
         )
         self.collection = manifest["collection"]
+        history = next(
+            (
+                item
+                for item in manifest.get("history", ())
+                if self.path.is_relative_to((self.root / item["path"]).resolve())
+            ),
+            None,
+        )
+        self.historical = history is not None
+        self.read_only |= self.historical
+        module_root = self.root / history["path"] if history else self.root
+        self.module = self.path.relative_to(module_root).with_suffix("").as_posix()
         self.identity = self.collection["id"] + "/" + self.module
-        self.version = self.collection["version"]
+        self.version = history["version"] if history else self.collection["version"]
         self.saved_levels = module_levels(manifest, self.module)
         self.legacy_levels = self.saved_levels.copy()
         self.source = self.saved_source or ""
@@ -192,7 +203,12 @@ class DefinitionDraft:
                 self.source,
                 self.identity,
                 self.version,
-                legacy=False if self.collection.get("format", 1) == 2 else None,
+                historical=self.historical,
+                legacy=(
+                    False
+                    if self.collection.get("format", 1) == 2 and not self.historical
+                    else None
+                ),
             )
         except ValueError as error:
             node = functions.get(str(error).split(":", 1)[0], tree)
@@ -269,7 +285,7 @@ class DefinitionDraft:
 
     def save(self, validate=None):
         if self.read_only:
-            raise ValueError("Built-in definitions are read-only; copy the block first")
+            raise ValueError("This definition is read-only; copy the block first")
         current = self.path.read_text(encoding="utf-8") if self.path.exists() else None
         manifest_path = self.root / "collection.toml"
         manifest = manifest_path.read_text(encoding="utf-8")

@@ -225,6 +225,8 @@ class Studio(QMainWindow):
         self.scratch = ScratchPane()
         self.scratch.changed.connect(self.refresh_views)
         self.scratch.failed.connect(self.error)
+        self.scratch.definition_requested.connect(self.open_definition)
+        self.scratch.help_requested.connect(self.open_block_help)
         self.scratch_dock = self.dock(
             N_("Scratch"), self.scratch, Qt.DockWidgetArea.RightDockWidgetArea
         )
@@ -614,6 +616,8 @@ class Studio(QMainWindow):
         page.changed.connect(self.refresh_views)
         page.failed.connect(self.error)
         page.snippet_dropped.connect(self.insert_snippet)
+        page.definition_requested.connect(self.open_definition)
+        page.help_requested.connect(self.open_block_help)
         page.mode_changed.connect(self.document_mode_changed)
         page.find_bar.returnPressed.connect(self.find_next)
         index = self.documents.addTab(page, path.name)
@@ -918,6 +922,10 @@ class Studio(QMainWindow):
         )
         self.set_mode(2)
 
+    def open_block_help(self, identity):
+        self.help_page.show_page(identity)
+        self.set_mode(2)
+
     def show_diagnostics(self):
         self.commit_code()
         diagnostics = self.session.analysis.diagnostics()
@@ -1194,16 +1202,21 @@ class Studio(QMainWindow):
         self.document_changed()
 
     def open_definition(self, identity):
-        snippet = next(
-            (
-                s
-                for s in self.session.available_snippets
-                if s.identity == identity and not s.historical
-            ),
-            None,
+        snippet = (
+            identity
+            if not isinstance(identity, str)
+            else next(
+                (
+                    s
+                    for s in self.session.available_snippets
+                    if s.identity == identity and not s.historical
+                ),
+                None,
+            )
         )
         if snippet is None:
             return
+        identity = snippet.identity
         if snippet.source_path:
             self.set_mode(3)
             self.block_editor.open_definition(snippet)

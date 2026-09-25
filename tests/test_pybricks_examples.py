@@ -2,6 +2,7 @@
 
 import ast
 import inspect
+import json
 import sys
 from contextlib import contextmanager
 from enum import Enum
@@ -19,7 +20,21 @@ from pyblocks.pybricks.sim_runtime import install_modules
 from pyblocks.pybricks.simulation import World
 
 EXAMPLES = Path(__file__).parents[1] / "examples/pybricks"
+CATALOG = json.loads((EXAMPLES / "catalog.json").read_text())
 PROGRAMS = sorted(EXAMPLES.glob("*.py"))
+TRACE_PROGRAMS = [
+    EXAMPLES / name
+    for name in (
+        "boost_17101_auto_builder.py",
+        "inventor_51515_tricky.py",
+        "spike_45678_cnc.py",
+        "spike_45678_grabber.py",
+        "spike_45678_kiki.py",
+        "technic_42099_off_roader.py",
+        "technic_42099_off_roader_remote.py",
+        "technic_42124_buggy.py",
+    )
+]
 
 
 class EndInputs(Exception):
@@ -53,12 +68,15 @@ def virtual_activity(name):
     world = World(model=model)
     for port in world.available_ports:
         world.configure(port, "motor")
-    if name == "inventor_tricky":
+    if name == "inventor_51515_tricky":
         world.configure("D", "ultrasonic")
-    if name == "spike_grabber":
+    if name == "spike_45678_grabber":
         world.configure("E", "force")
-    if name == "spike_kiki":
+    if name == "spike_45678_kiki":
         world.configure("B", "color")
+    if name == "inventor_51515_blast":
+        world.configure("E", "color")
+        world.configure("F", "ultrasonic")
     trace, elapsed = [], [0.0]
 
     def advance(seconds):
@@ -138,6 +156,19 @@ def virtual_activity(name):
                 return self.angle()
 
         pupdevices.Motor = Motor
+        if name == "inventor_51515_blast":
+            hub_class = hubs.PrimeHub
+
+            def prime_hub():
+                hub = hub_class()
+                hub.display.orientation = lambda up: trace.append(
+                    ("orientation", up.name)
+                )
+                spy(hub.display, "icon", "display.icon")
+                hub.display.image = lambda image: hub.display.icon(image)
+                return hub
+
+            hubs.PrimeHub = hubs.InventorHub = prime_hub
         base_drive = robotics.DriveBase
 
         def drive_base(left_motor, right_motor, wheel_diameter, axle_track):
@@ -152,7 +183,7 @@ def virtual_activity(name):
             return drive
 
         robotics.DriveBase = drive_base
-        if name == "inventor_tricky":
+        if name == "inventor_51515_tricky":
             sensor = pupdevices.UltrasonicSensor
 
             def distance_sensor(port):
@@ -163,7 +194,7 @@ def virtual_activity(name):
                 return result
 
             pupdevices.UltrasonicSensor = distance_sensor
-        if name == "spike_grabber":
+        if name == "spike_45678_grabber":
             sensor = pupdevices.ForceSensor
 
             def force_sensor(port):
@@ -172,7 +203,7 @@ def virtual_activity(name):
                 return result
 
             pupdevices.ForceSensor = force_sensor
-        if name == "spike_kiki":
+        if name == "spike_45678_kiki":
             sensor, hub = pupdevices.ColorSensor, hubs.PrimeHub
 
             def color_sensor(port):
@@ -203,7 +234,7 @@ def virtual_activity(name):
                 return result
 
             pupdevices.ColorSensor, hubs.PrimeHub = color_sensor, prime_hub
-        if "remote" in name or name == "technic_buggy":
+        if "remote" in name or name == "technic_42124_buggy":
             inputs = (
                 (),
                 (Button.LEFT_PLUS,),
@@ -229,70 +260,65 @@ def execute(source, name):
         try:
             exec(compile(source, name, "exec"), {})
         except EndInputs:
-            assert name not in {"boost_auto_builder", "spike_cnc", "technic_off_roader"}
+            assert name not in {
+                "boost_17101_auto_builder",
+                "spike_45678_cnc",
+                "technic_42099_off_roader",
+            }
         return trace, world.snapshot(), world.feedback.copy()
 
 
-@pytest.mark.parametrize("path", PROGRAMS, ids=lambda p: p.stem)
+@pytest.mark.parametrize(
+    "path",
+    TRACE_PROGRAMS
+    + [EXAMPLES / "inventor_51515_mvp.py", EXAMPLES / "inventor_51515_blast.py"],
+    ids=lambda p: p.stem,
+)
 def test_examples_rebuild_from_standard_palette_and_keep_commands(path):
     snippets = builtin_snippets()
     source = path.read_text()
     session = Session.fragment(source, snippets)
     assert not session.analysis.diagnostics()
-    # A broad assignment/call placeholder must not conceal an unsupported API.
-    operations = tuple(
-        s
-        for s in session.available_snippets
-        if s.expression
-        or not (
-            len(s.body) == 1
-            and (
-                isinstance(s.body[0], ast.Assign)
-                and hasattr(s.body[0].value, "template_parameter")
-                or isinstance(s.body[0], ast.Expr)
-                and isinstance(s.body[0].value, ast.Call)
-                and hasattr(s.body[0].value.func, "template_parameter")
-            )
-        )
-    )
-    matches = recognize(session.document.syntax, operations, session.analysis)
-    for node in ast.walk(session.document.syntax.tree):
-        if isinstance(node, ast.Call):
-            span = session.document.syntax.spans[node]
-            assert any(
-                m.span.start <= span.start and span.end <= m.span.end for m in matches
-            ), ast.unparse(node)
     rebuilt = rebuild(source, snippets)
     before = execute(source, path.stem)
     assert execute(rebuilt, path.stem) == before
     trace, ports, _ = before
-    if path.stem == "boost_auto_builder":
+    if path.stem == "boost_17101_auto_builder":
         assert [
             dict(args)["target_angle"]
             for label, args in trace
             if label == "B.run_target"
         ][1:] == [0, 697, 365, 697, 244, 697, 521, 697, 128, 697, 0]
-    if path.stem == "spike_cnc":
+    if path.stem == "spike_45678_cnc":
         assert ports["A"]["angle"] == ports["C"]["angle"] == 0
         assert [
             dict(args)["rotation_angle"]
             for label, args in trace
             if label.endswith(".run_angle")
         ] == [400, 100, -400, -100]
-    if path.stem == "spike_grabber":
+    if path.stem == "spike_45678_grabber":
         assert [
             label for label, _ in trace if label in {"A.run", "A.run_until_stalled"}
         ] == ["A.run", "A.run_until_stalled", "A.run"]
-    if path.stem == "inventor_tricky":
+    if path.stem == "inventor_51515_tricky":
         assert [
             dict(args)["angle"] for label, args in trace if label == "drive.turn"
         ] == [360, -360]
-    if path.stem == "spike_kiki":
+    if path.stem == "spike_45678_kiki":
         displays = [
             dict(args)["icon"] for label, args in trace if label == "display.icon"
         ]
         assert len(displays) == 3 and displays[1] == "Icon.UP"
         assert any(label == "display.off" for label, _ in trace)
+    if path.stem == "inventor_51515_mvp":
+        assert ports["A"]["angle"] == pytest.approx(50, abs=1)
+        assert ports["B"]["angle"] == pytest.approx(-16 * 360, abs=1)
+    if path.stem == "inventor_51515_blast":
+        assert [
+            dict(args)["rotation_angle"]
+            for label, args in trace
+            if label == "D.run_angle"
+        ] == [-850, 800, -800]
     if path.stem.startswith("technic"):
         assert ports["A"]["speed"] == 0
         speeds = [dict(args)["speed"] for label, args in trace if label == "A.run"]
@@ -300,7 +326,7 @@ def test_examples_rebuild_from_standard_palette_and_keep_commands(path):
 
 
 def test_pattern_and_named_icon_keep_distinct_fields_and_shared_feedback():
-    with virtual_activity("spike_cnc") as (world, _):
+    with virtual_activity("spike_45678_cnc") as (world, _):
         from pybricks.hubs import PrimeHub
 
         hub = PrimeHub()
@@ -348,3 +374,195 @@ def test_imported_programs_open_with_their_blocks_available_in_the_panel(
             assert window.session.document.state.source == loaded
         finally:
             window.close()
+
+
+@pytest.mark.parametrize("path", PROGRAMS, ids=lambda p: p.stem)
+async def test_entire_catalog_compiles_and_rebuilds_without_changing_algorithms(path):
+    from pybricksdev.compile import compile_multi_file
+
+    source = path.read_text()
+    session = Session.fragment(source, builtin_snippets())
+    assert not session.analysis.diagnostics()
+    rebuilt = rebuild(source, session.snippets)
+
+    class RuntimeTree(ast.NodeTransformer):
+        def visit_AnnAssign(self, node):
+            if node.value is None:
+                return node
+            return ast.Assign(targets=[node.target], value=self.visit(node.value))
+
+    # Recognition may add string type hints to declarations. All executable
+    # expressions, calls, branches, timing and loop bodies must stay identical.
+    assert ast.dump(RuntimeTree().visit(ast.parse(rebuilt))) == ast.dump(
+        RuntimeTree().visit(ast.parse(source))
+    )
+    for abi in (5, 6):
+        compiled = await compile_multi_file(str(path.resolve()), abi)
+        assert compiled
+    item = next(item for item in CATALOG["examples"] if item["file"] == path.name)
+    for dependency in item["dependencies"]:
+        assert dependency.removesuffix(".py").encode() in compiled
+
+
+def test_catalog_has_unique_set_names_and_local_dependencies():
+    files = {item["file"] for item in CATALOG["examples"]}
+    sources = {item["source"] for item in CATALOG["examples"]}
+    assert len(files) == len(sources) == len(CATALOG["examples"])
+    assert files == {p.name for p in PROGRAMS}
+    for item in CATALOG["examples"]:
+        assert f"_{item['set']}_" in item["file"]
+        assert set(item["dependencies"]) <= files
+        assert item["source"].split("/")[1] in CATALOG["families"]
+
+
+@pytest.mark.parametrize("variant", ["blocks", "python"])
+def test_xbox_examples_preserve_input_sampling_and_commands(variant):
+    path = EXAMPLES / f"technic_42160_audi_xbox_{variant}.py"
+
+    def run(source):
+        with virtual_activity(path.stem) as (_, trace):
+            from pybricks import iodevices, robotics
+
+            def triggers():
+                count[0] += 1
+                if count[0] > 4:
+                    raise EndInputs
+                trace.append(("triggers", count[0]))
+                return (count[0] * 2, count[0] * 10)
+
+            class Car:
+                def __init__(self, steering, motors):
+                    trace.append(
+                        ("car", (steering.port, tuple(m.port for m in motors)))
+                    )
+
+                def drive_power(self, power):
+                    trace.append(("power", power))
+
+                def steer(self, angle):
+                    trace.append(("steer", angle))
+
+            count = [0]
+            robotics.Car = Car
+            iodevices.XboxController = lambda: SimpleNamespace(
+                triggers=triggers, joystick_left=lambda: (25, 0)
+            )
+            with pytest.raises(EndInputs):
+                exec(source, {})
+            return trace
+
+    source = path.read_text()
+    trace = run(source)
+    assert run(rebuild(source, builtin_snippets())) == trace
+    assert [value for label, value in trace if label == "power"] == (
+        [6, 22] if variant == "blocks" else [8, 16, 24, 32]
+    )
+
+
+def test_keyboard_block_is_nonblocking_and_reads_one_character():
+    snippet = next(
+        s for s in builtin_snippets() if s.identity == "pybricks/keyboard/read_key_code"
+    )
+    expansion = instantiate(snippet, {})
+    from types import ModuleType
+
+    stdin = SimpleNamespace(read=lambda count: calls.append(("read", count)) or "q")
+    calls = []
+    ready = [False]
+
+    class Poll:
+        def register(self, stream):
+            assert stream is stdin
+
+        def poll(self, timeout):
+            calls.append(("poll", timeout))
+            return [1] if ready[0] else []
+
+    sys_module, select_module = ModuleType("usys"), ModuleType("uselect")
+    sys_module.stdin, select_module.poll = stdin, Poll
+    with patch.dict(sys.modules, usys=sys_module, uselect=select_module):
+        scope = {}
+        exec("\n".join(expansion.helpers), scope)
+        assert eval(expansion.source, scope) is None
+        assert calls == [("poll", 0)]
+        ready[0] = True
+        assert eval(expansion.source, scope) == ord("q")
+        assert calls[-2:] == [("poll", 0), ("read", 1)]
+
+
+@pytest.mark.parametrize(
+    "radius,angle", [(200, 90), (200, -90), (-200, 90), (-200, -90)]
+)
+def test_old_curve_adapter_preserves_distance_and_heading_signs(radius, angle):
+    snippet = next(
+        s for s in builtin_snippets() if s.identity == "pybricks/drive/legacy_curve"
+    )
+    expansion = instantiate(snippet, {"radius": str(radius), "angle": str(angle)})
+    calls = []
+    scope = {"drive": SimpleNamespace(arc=lambda r, a: calls.append((r, a)))}
+    exec("\n".join(expansion.helpers), scope)
+    exec(expansion.source, scope)
+    r, a = calls[0]
+    assert abs(r) == abs(radius) and abs(a) == abs(angle)
+    assert (a > 0) == (radius > 0)
+    assert (r * a > 0) == (angle > 0)
+
+
+def test_hardware_operations_have_specific_palette_blocks():
+    # Inspect device calls independently of broad assignment/function placeholders.
+    snippets = tuple(
+        s
+        for s in builtin_snippets()
+        if s.identity != "python/basics/assign"
+        and s.identity
+        not in {"python/basics/call_function", "python/basics/call_value"}
+    )
+    for path in PROGRAMS:
+        source = path.read_text()
+        session = Session.fragment(source, snippets)
+        tree, syntax = session.document.syntax.tree, session.document.syntax
+        device_names = {
+            a.asname or a.name
+            for n in tree.body
+            if isinstance(n, ast.ImportFrom)
+            and (n.module or "").startswith("pybricks.")
+            for a in n.names
+        }
+        item = next(item for item in CATALOG["examples"] if item["file"] == path.name)
+        trees = [
+            tree,
+            *(
+                ast.parse((EXAMPLES / dependency).read_text())
+                for dependency in item["dependencies"]
+            ),
+        ]
+        local_methods = {
+            n.name
+            for module in trees
+            for c in ast.walk(module)
+            if isinstance(c, ast.ClassDef)
+            for n in c.body
+            if isinstance(n, ast.FunctionDef)
+        }
+        matches = recognize(syntax, snippets, session.analysis)
+        from pyblocks.core.helpers import helper_section
+
+        managed = helper_section(source)
+        for node in ast.walk(tree):
+            if (
+                not isinstance(node, ast.Call)
+                or managed
+                and managed.contains(syntax.spans[node].start)
+            ):
+                continue
+            device = isinstance(node.func, ast.Name) and node.func.id in device_names
+            device |= (
+                isinstance(node.func, ast.Attribute)
+                and node.func.attr not in local_methods
+            )
+            if not device:
+                continue
+            span = syntax.spans[node]
+            assert any(
+                m.span.start <= span.start and span.end <= m.span.end for m in matches
+            ), (path.name, ast.unparse(node))

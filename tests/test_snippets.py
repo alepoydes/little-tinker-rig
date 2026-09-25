@@ -129,7 +129,11 @@ def test_bundled_libraries_can_load_without_robot_dependencies():
         if (
             snippet.context == "loop"
             or not snippet.expression
-            and any(isinstance(node, ast.Return) for node in snippet.body)
+            and any(
+                isinstance(node, (ast.Return, ast.Yield, ast.YieldFrom))
+                for root in snippet.body
+                for node in ast.walk(root)
+            )
         ):
             from textwrap import indent
 

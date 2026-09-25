@@ -1,0 +1,707 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "families": [
+    "boost",
+    "mindstorms-robot-inventor",
+    "spike-prime",
+    "technic"
+  ],
+  "examples": [
+    {
+      "file": "boost_17101_auto_builder.py",
+      "set": 17101,
+      "source": "sets/boost/creative-toolbox/auto-builder/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "417e8fcaa15fcaf52ce3b8e9a040cb533ceb023ef892bb876bbfff85eac0f7a5",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "beginner activity / advanced details",
+      "notes": []
+    },
+    {
+      "file": "boost_75253_r2_d2.py",
+      "set": 75253,
+      "source": "sets/boost/droid-commander/r2-d2/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "7caa9b221b0414f414ad2bc25ce31c629627167d07b63398d48dabd991c15ea4",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_exploration_rover.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/fan-inventions/exploration-rover/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "09c2099f7ada810078d8c9ff54bf9f98c5c1728a9ca3a9147f2ce922d208ba5f",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_blast.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/blast/blast-basic.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "886acacbf9e1cab3889bec9a9fbbb3e940fb217bdae367bb70121285d9695371",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_gelo.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/gelo/gelo.py",
+      "role": "library",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "a4755f7f296f296a8c39fdfe60a8471d981ab3dcbff3348326b7657debf9703a",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": [
+        "Shared Gelo classes, contexts and generators; imported by the other Gelo programs.",
+        "Added missing micropython.const import."
+      ]
+    },
+    {
+      "file": "inventor_51515_gelo_basic.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/gelo/gelo_basic.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "310cf35715a9d3d622c0a60dcfe610f7b7a4398351639cdef72154b9d4cba23e",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_gelo_remote.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/gelo/gelo_remote.py",
+      "role": "program",
+      "dependencies": [
+        "inventor_51515_gelo.py"
+      ],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "f8e86f0cdbf1101e44acfd53834bc137fa9f9d83c5b36dc63b90800492964773",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_gelo_repl.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/gelo/gelo_repl.py",
+      "role": "interactive",
+      "dependencies": [
+        "inventor_51515_gelo.py"
+      ],
+      "extra_hardware": [],
+      "sha256": "0fbfd282538ad90e9a5919666fdba27230814414421db42c76ca0cbf835de729",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": [
+        "Manual REPL session; initialization intentionally stays active."
+      ]
+    },
+    {
+      "file": "inventor_51515_gelo_roam.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/gelo/gelo_roam.py",
+      "role": "program",
+      "dependencies": [
+        "inventor_51515_gelo.py"
+      ],
+      "extra_hardware": [],
+      "sha256": "de98cdc765d05ad16770dfa1d6b396de4353a02ae91ae31608c687f30e41f48e",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_gelo_template.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/gelo/gelo_template.py",
+      "role": "program",
+      "dependencies": [
+        "inventor_51515_gelo.py"
+      ],
+      "extra_hardware": [],
+      "sha256": "3217bf5429a03986e662c5ce6187c2c97da15cab3381a50ae0666dacce939923",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_gelo_tricks.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/gelo/gelo_tricks.py",
+      "role": "program",
+      "dependencies": [
+        "inventor_51515_gelo.py"
+      ],
+      "extra_hardware": [],
+      "sha256": "bf75c0adc1e14abfde0e6ebc2673b3e95ef57347f9c401acb48594a07bf71218",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_mvp.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/mvp/mvp-basic.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "56956e0b851f7ca41128c1b7e0309a50f71b8bbcccd9bc4cccaa2942e9986556",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_tricky.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/tricky/tricky-basic.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "b34fffd9290fc298927c8146b736a1be4b781460ad50aecd52597073a3ac772c",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "beginner activity / advanced details",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_tricky_soccer.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/tricky/tricky-playing-soccer.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "b9a7bb16bd004a6075e897ded987575d0ed2d8275b63f98456c044cc01b41056",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_balancer.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/other-models/balancer/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "upright robot; physical balance calibration"
+      ],
+      "sha256": "7f70abf9671d599536e66434fb7cbf1e07c11028b8b437797ebe4df7b4ab0c71",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_block_flipper.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/other-models/block-flipper/block-flipper.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "662742c1055fd211a41eec87b65196642c6c38b397cd5919f706d92163629871",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_mini_loader.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/other-models/mini-loader/miniLoader_RC.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "a0f2c259cc7118dcfde544fdbd72ee70558efda927e8764f5f6fbafbe9ca7710",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_quick_reference.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/other-models/quick-reference/Quick_Ref.py",
+      "role": "reference",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "3b8546c0bf705e2ac1d6afd8756503f2a01b057b66859bfcfd9ed651053c61b3",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": [
+        "API tour: study sections individually; not a single robot task.",
+        "The managed curve helper preserves the Pybricks 3.x distance/turn sign convention."
+      ]
+    },
+    {
+      "file": "inventor_51515_steerbot.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/other-models/steerbot/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "947207fcdcf2bb019ab151fdb4afc33795505ba7c78fd25992e19dbfcff0277b",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "spike_45678_cnc.py",
+      "set": 45678,
+      "source": "sets/spike-prime/core-set/cnc_machine/basic_cnc_machine.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "affb49b2844a55062a36ff9e102f7f2562560994d03598d5a223df52e84e3948",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "beginner activity / advanced details",
+      "notes": []
+    },
+    {
+      "file": "spike_45678_grabber.py",
+      "set": 45678,
+      "source": "sets/spike-prime/core-set/hand-controlled-grabber/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "0b8ea5c5f41c770351749c622d7fa86a610b2be7ab2ab673cd59507d0663608a",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "beginner activity / advanced details",
+      "notes": []
+    },
+    {
+      "file": "spike_45678_kiki.py",
+      "set": 45678,
+      "source": "sets/spike-prime/core-set/kiki_dog/kiki_seeing_colors.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "a0a2bf629b43cbc21a47bcbc57b88af236ef3bbd2fce0f624b60896fd91d80ea",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "beginner activity / advanced details",
+      "notes": []
+    },
+    {
+      "file": "technic_42099_off_roader.py",
+      "set": 42099,
+      "source": "sets/technic/42099-off-roader/driving/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "a90d99de782578ddadc1eb80d25d18b29e4250aead22ecf4128b9e1c73ca3722",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "beginner activity / advanced details",
+      "notes": []
+    },
+    {
+      "file": "technic_42099_keyboard.py",
+      "set": 42099,
+      "source": "sets/technic/42099-off-roader/keyboard-remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "connected computer keyboard"
+      ],
+      "sha256": "31afbea8302aa608e715754663d145c1813d0aa1d2930e3f11259c7823f850fe",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "technic_42099_keyboard_monitor.py",
+      "set": 42099,
+      "source": "sets/technic/42099-off-roader/keyboard-remote/remote.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "connected computer keyboard"
+      ],
+      "sha256": "3ee041a449d03ad68c78524048a74c8819d54c22a0e2089910c7a04078b80b58",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "technic_42099_obstacle_avoidance.py",
+      "set": 42099,
+      "source": "sets/technic/42099-off-roader/obstacle-avoidance/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "a100590ba5b4f3a17801292e905afb817929ac848aa5def7be53733f44a71afc",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "technic_42099_off_roader_remote.py",
+      "set": 42099,
+      "source": "sets/technic/42099-off-roader/powered-up-remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "882342ec95ee036b2e5fb0098df49ca8e6f2313a18eb8a44d741227d2aa24aca",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "beginner activity / advanced details",
+      "notes": []
+    },
+    {
+      "file": "technic_42109_keyboard.py",
+      "set": 42109,
+      "source": "sets/technic/42109_top_gear_rally_car/keyboard_remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "connected computer keyboard"
+      ],
+      "sha256": "62ddf8e1065bea55b5c21ef07755aceab6b08fd89c01ad072980a14ace2280a2",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": [
+        "Replaced experimental.getchar with the managed nonblocking keyboard helper."
+      ]
+    },
+    {
+      "file": "technic_42114_hauler.py",
+      "set": 42114,
+      "source": "sets/technic/42114-volvo-articulated-hauler/powered-up-remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "eaf9a42ac5f99eb0dbf7a10c4249f22c9061eb51e2ef8d72f3af0e6ea76e8501",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "technic_42124_buggy.py",
+      "set": 42124,
+      "source": "sets/technic/42124-off-road-buggy/powered-up-remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "9653440debe4299b9171837bfe92bd0e8425789870014db0084edf0660a25f47",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "beginner activity / advanced details",
+      "notes": []
+    },
+    {
+      "file": "technic_42129_zetros.py",
+      "set": 42129,
+      "source": "sets/technic/42129-mercedes-benz-zetros/powered-up-remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "d8f36c639f7e409ba7681c0091bd4f6d3f504ccb2e4b32c7852a041d3b5dfc6f",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "technic_42131_bulldozer.py",
+      "set": 42131,
+      "source": "sets/technic/42131-cat-bulldozer/powered-up-remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "c15fbd7261ce53166eb82c16e8e08abf694a9fdd42798d3c02f8bba506a0e010",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "technic_42140_transformation.py",
+      "set": 42140,
+      "source": "sets/technic/42140-app-controlled-transformation-vehicle/powered-up-remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "4bf161b675af31f2943d3a258693bf3ebf3cbf5f28ef7098cafd9695a8148e82",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "technic_42140_transformation_flipped.py",
+      "set": 42140,
+      "source": "sets/technic/42140-app-controlled-transformation-vehicle/powered-up-remote/main2.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "045e826c3374a1c8724a5b7d4b574efadce28393e2deaef4ee2746f61053ee1b",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "technic_42160_audi_remote.py",
+      "set": 42160,
+      "source": "sets/technic/42160-audi-rs-q-e-tron/powered-up-remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "7e912212df2f961d829bce33e5cef8bcd51b1795276ba9fab281a669168b6966",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": [
+        "Created the missing TechnicHub instance used by inactivity shutdown."
+      ]
+    },
+    {
+      "file": "technic_42160_audi_xbox_blocks.py",
+      "set": 42160,
+      "source": "sets/technic/42160-audi-rs-q-e-tron/xbox-controller/audi_blocks.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Bluetooth Xbox controller; Pybricks 3.5+"
+      ],
+      "sha256": "3ad7127da55175f825c603f635f30eed7b2418b7ff558e71300d178117fc50b0",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-controller"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "technic_42160_audi_xbox_python.py",
+      "set": 42160,
+      "source": "sets/technic/42160-audi-rs-q-e-tron/xbox-controller/audi_python.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Bluetooth Xbox controller; Pybricks 3.5+"
+      ],
+      "sha256": "2a704547abfb8ffe1626596f3939751a55c133c3dbafba5023efe45467fe66c3",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-controller"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    }
+  ]
+}

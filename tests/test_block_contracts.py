@@ -648,7 +648,8 @@ def test_builtin_definitions_are_source_complete_and_migration_is_idempotent():
         new = load_module(migrated, collection, old[0].version, legacy=False)
         assert len(new) == len(old)
         for before, after in zip(old, new, strict=True):
-            assert before.mode == after.mode == "inline"
+            assert before.mode == after.mode
+            assert before.mode in {"inline", "function"}
             assert before.identity == after.identity
             assert (after.level, after.icon, after.color) == (
                 before.level,
@@ -665,4 +666,61 @@ def test_builtin_definitions_are_source_complete_and_migration_is_idempotent():
                 ast.parse(expanded_after.source)
             )
             assert expanded_before.imports == expanded_after.imports
+            assert expanded_before.helpers == expanded_after.helpers
         assert migrate_module(migrated, collection, old[0].version, levels) == migrated
+
+
+def test_function_defaults_are_caller_fields_not_helper_dependencies():
+    snippets = load_module(
+        """
+@inline_block
+def drive():
+    pass
+
+@block
+def motion(drive=drive):
+    drive.stop()
+""",
+        "test",
+        "1",
+        legacy=False,
+    )
+    expansion = instantiate(snippets[1], {})
+    assert len(expansion.helpers) == 1
+    calls = []
+    from types import SimpleNamespace
+
+    scope = {"drive": SimpleNamespace(stop=lambda: calls.append("stop"))}
+    exec("\n".join(expansion.helpers), scope)
+    exec(expansion.source, scope)
+    assert calls == ["stop"]
+
+
+def test_class_skeleton_can_be_named_and_filled_without_exposing_class_locals():
+    from pyblocks.core import edit
+    from pyblocks.core.parameters import slots
+    from pyblocks.core.session import Session
+    from pyblocks.core.snippets import builtin_snippets
+
+    snippets = builtin_snippets()
+    skeleton = next(s for s in snippets if s.identity == "python/objects/define_class")
+    session = Session.fragment(instantiate(skeleton, {}).source, snippets)
+    slot = next(s for s in slots(session) if s.field == "name")
+    from pyblocks.core.parameters import change_parameter
+
+    change_parameter(session, slot, "Rover")
+    syntax = session.document.syntax
+    target = edit.Target(
+        next(s for s in syntax.suites if isinstance(s.owner, ast.ClassDef)), 0
+    )
+    assert session.accepts_target(target)
+    session.editor.commit(edit.insert(syntax, target, "def move(self):\n    return 1"))
+    scope = {}
+    exec(session.document.state.source, scope)
+    assert scope["Rover"]().move() == 1
+    with pytest.raises(ValueError, match="classes belong"):
+        load_module(
+            "@inline_block\ndef bad():\n    class Robot:\n        state=1\n",
+            "test",
+            "1",
+        )

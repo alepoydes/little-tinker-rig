@@ -3,7 +3,7 @@ include build_support.py
 recursive-include doc *.md
 recursive-include doc *.png *.svg
 recursive-include examples *.py
-recursive-include examples *.md *.txt
+recursive-include examples *.md *.txt *.json
 recursive-include tests *.py
 recursive-include tools *.py
 recursive-include devs *.md

@@ -153,3 +153,12 @@ def product(left=1, right=1):
 def quotient(left=1, right=1):
     """Divide one value by another."""
     return left / right
+
+
+@inline_block(level="advanced", icon="ƒ", color="value")
+def call_value(function=action):
+    """Call a function or class and use its result.
+
+    Choose the callable and edit its argument list. This also creates an instance
+    of a custom robot class or calls a method that returns a value."""
+    return function()
