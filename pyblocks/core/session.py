@@ -373,18 +373,21 @@ class Session:
         self._refresh()
         return frozenset(self._expanded)
 
-    def selected_text(self) -> str:
+    def selected_nodes(self):
         match = self.selected_match()
-        span = (
-            match.span if match else self.document.syntax.spans[self.editor.selection]
+        if not match:
+            return self.editor.selection
+        if not match.snippet.expression:
+            return self._match_nodes(match)
+        syntax = self.document.syntax
+        return next(
+            node
+            for node in syntax.ancestors(syntax.at(match.span.start))
+            if isinstance(node, ast.expr) and syntax.spans[node] == match.span
         )
-        if match and not match.snippet.expression:
-            _, span, _ = edit.statement_group(
-                self.document.syntax, self._match_nodes(match)
-            )
-        elif isinstance(self.editor.selection, ast.stmt):
-            span = self.document.syntax.block_span(self.editor.selection)
-        return self.document.state.source[span.start : span.end]
+
+    def selected_text(self) -> str:
+        return edit.block_text(self.document.syntax, self.selected_nodes())
 
     def destination(self) -> edit.Target:
         """Default insertion is after the containing statement, or end of module."""
@@ -458,7 +461,7 @@ class Session:
     def _replace_match(self, match: Match, source: str) -> str:
         syntax = self.document.syntax
         if match.snippet.expression:
-            return edit.patches(syntax.source, [(match.span, f"({source})")])
+            return edit.replace_expressions(syntax, [(match.span, source)])
         nodes = self._match_nodes(match)
         suite, span, _ = edit.statement_group(syntax, nodes)
         indent = syntax.position(match.span.start)[1]
@@ -538,12 +541,7 @@ class Session:
 
     def extract_selection(self):
         """Return detached text and the valid remainder, without changing state."""
-        match = self.selected_match()
-        source = (
-            self._replace_match(match, "None" if match.snippet.expression else "")
-            if match
-            else edit.delete(self.document.syntax, self.editor.selection)
-        )
+        source = edit.delete(self.document.syntax, self.selected_nodes())
         return edit.reindent(self.selected_text(), 0), source
 
     def to_scratch(self, position=None) -> None:

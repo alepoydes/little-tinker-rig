@@ -15,7 +15,11 @@ dependencies = ["ruff>=0.14,<1"]
 
 [project.optional-dependencies]
 tui = ["textual>=8,<9"]
-qt = ["PySide6>=6.8,<7"]
+qt = [
+    "jedi>=0.20,<0.21",
+    "pybricks>=4,<5",
+    "PySide6>=6.8,<7",
+]
 pybricks = ["pybricksdev>=2.3,<3"]
 gamepad = ["pygame-ce>=2.5,<3"]
 

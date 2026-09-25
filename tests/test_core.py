@@ -88,6 +88,35 @@ def test_expression_replacement_preserves_precedence():
     assert ast.literal_eval(tree.body[0].value.right.left) == 4
 
 
+@pytest.mark.parametrize(
+    "source, expected",
+    [
+        ("(1 + 2)\n", ""),
+        ("print(0)\n# owned comment\n(1 + 2)\nprint(3)\n", "print(0)\nprint(3)\n"),
+        ("if True:\n    (1 + 2)\n", "if True:\n    pass\n"),
+        ("value = 1 + 2\n", "value = None\n"),
+    ],
+)
+def test_expression_removal_respects_statement_ownership(source, expected):
+    syntax = Syntax(source)
+    expression = next(n for n in ast.walk(syntax.tree) if isinstance(n, ast.BinOp))
+    assert edit.delete(syntax, expression) == expected
+    before = syntax.source
+    destination = Syntax(source + "result = 2 * None\n")
+    expression = next(
+        n
+        for n in ast.walk(destination.tree)
+        if isinstance(n, ast.BinOp) and isinstance(n.op, ast.Add)
+    )
+    target = destination.tree.body[-1].value.right
+    moved = edit.move(destination, expression, target)
+    assert ast.dump(ast.parse(moved)) == ast.dump(
+        ast.parse(expected + "result = 2 * (1 + 2)\n")
+    )
+    assert moved.count("# owned comment") == source.count("# owned comment")
+    assert syntax.source == before
+
+
 def test_decorators_move_with_definition():
     syntax = Syntax("@decorator\ndef f():\n    pass\nx = 1\n")
     result = edit.move(syntax, syntax.tree.body[0], edit.Target(syntax.suites[0], 2))

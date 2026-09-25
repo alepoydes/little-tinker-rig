@@ -43,7 +43,7 @@ class DocumentPage(QWidget):
         self.source.snippet_dropped.connect(self.snippet_dropped)
         self.source.definition_requested.connect(self.definition_requested)
         self.source.help_requested.connect(self.help_requested)
-        self.code = CodeEdit()
+        self.code = CodeEdit(path)
         self.code.setAcceptDrops(False)
         self.code.textChanged.connect(self.changed)
         self.editor_stack = QStackedWidget()
@@ -150,7 +150,9 @@ class DocumentPage(QWidget):
     def update_mode(self):
         self.mode_actions[int(self.code_active)].setChecked(True)
         self.message.setText(
-            tr("Python · Ctrl+Space — complete · Ctrl+Alt+L — format")
+            tr(
+                "Python · Ctrl+Space — complete · Ctrl+Shift+Space — hint · Ctrl+Alt+L — format"
+            )
             if self.code_active
             else tr("Drag blocks. Click a parameter to edit it.")
         )

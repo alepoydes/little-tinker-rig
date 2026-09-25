@@ -4,11 +4,13 @@ import pytest
 
 
 @pytest.fixture(scope="session")
-def qt_app():
+def qt_app(tmp_path_factory):
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     pytest.importorskip("PySide6")
+    import jedi
     from PySide6.QtWidgets import QApplication
 
+    jedi.settings.cache_directory = str(tmp_path_factory.mktemp("jedi-cache"))
     return QApplication.instance() or QApplication([])
 
 

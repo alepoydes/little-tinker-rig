@@ -27,6 +27,17 @@ Each document retains its own draft, selection, scrolling and undo. Window actio
 operate on the active tab. Changing language must not translate user text or clear
 histories. Drops preview the committed destination and insert without dialogs.
 Parameter edits preserve expression grouping and reject stale revisions.
+Deleting or detaching a standalone expression removes its owning statement;
+only nested expressions leave a `None` placeholder. Empty suites retain `pass`.
+Deletion and transfer share this rule; replacement adds parentheses only when
+needed to preserve the AST.
+
+Python text assistance uses the public Jedi Script API and the official `pybricks`
+API package in the Qt extra. One background queue serializes Jedi's shared parser
+cache and coalesces pending requests per editor. Only plain suggestion data crosses
+threads. Text/cursor changes, Escape, focus loss and path changes invalidate results;
+no suggestion may modify a different source revision. Test static local imports
+without execution, incomplete calls, Unicode insertion and native text undo.
 
 Text persistence and structural validity are separate contracts. Saving unfinished
 Python preserves the visible text; Run/Upload/Blocks still require syntax validation.

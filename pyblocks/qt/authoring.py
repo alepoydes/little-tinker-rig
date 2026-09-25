@@ -54,7 +54,7 @@ class DefinitionCode(CodeEdit):
         self.semantic = []
         self.problem = None
         self.references = []
-        super().__init__()
+        super().__init__(draft.path)
         self.draft = draft
         self.tree = None
         self.snippets = ()

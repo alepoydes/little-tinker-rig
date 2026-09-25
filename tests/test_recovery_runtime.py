@@ -153,7 +153,7 @@ def test_examples_follow_directory_changes_and_reuse_existing_tabs(
     tmp_path, qt_app, monkeypatch
 ):
     from PySide6.QtCore import QCoreApplication, QEvent
-    from PySide6.QtWidgets import QMenu
+    from PySide6.QtWidgets import QMenu, QMenuBar
 
     from pyblocks.qt.app import Studio
 
@@ -168,6 +168,10 @@ def test_examples_follow_directory_changes_and_reuse_existing_tabs(
     monkeypatch.setattr("pyblocks.qt.app.examples_directory", lambda: root)
     window = Studio(tmp_path / "work.py")
     try:
+        bar = window.menuWidget().findChild(QMenuBar)
+        file_menu = next(a.menu() for a in bar.actions() if a.text() == "File")
+        assert window.examples_menu.menuAction() in file_menu.actions()
+        assert window.examples_menu.menuAction() not in bar.actions()
         window.refresh_examples()
         actions = window.examples_menu.actions()
         assert [a.text() for a in actions] == ["robot", "one.py"]

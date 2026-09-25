@@ -35,7 +35,9 @@ retain the previous selection. Click a parameter in the program preview to jump
 to its declaration and highlight its uses; click the description to reach the
 docstring. Public declaration fields jump to their declarations too. Decorator,
 signature, parameter and annotation highlighting and context hints
-explain the definition's structure. **Ctrl+Space** completes names from the module.
+explain the definition's structure. Python completion follows scope, imports and
+object methods. **Ctrl+Space** requests suggestions; **Ctrl+Shift+Space** shows
+the current call signature or documentation. The same editor serves program files.
 
 **Test values** substitutes Python expressions only in the program preview.
 It does not change definition defaults or execute these expressions. The library

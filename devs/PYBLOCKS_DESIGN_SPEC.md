@@ -1291,6 +1291,17 @@ Structural edits must be atomic.
 
 A failed edit should leave the previous source unchanged.
 
+Removing or detaching a standalone expression removes its owning statement.
+Only an expression used inside another construct leaves `None`; an emptied suite
+retains `pass`. Deletion and transfer must use the same removal semantics.
+Expression replacement introduces parentheses only to preserve the intended AST.
+
+Python text editors share static Jedi completion and signature/documentation hints,
+including installed Pybricks API descriptions. Analysis uses one background queue,
+coalesces pending requests and never executes user source. Suggestions belong to
+one source/cursor/path revision; editing, navigation and cancellation invalidate
+old results. The core and terminal editor do not depend on Jedi.
+
 Full-document Python editing may contain unfinished text. Save writes that text to
 the ordinary `.py` file, which reopens in Python view. Run, Upload and switching to
 Blocks require valid syntax. Local structural edit dialogs still reject invalid
@@ -1310,7 +1321,7 @@ frames prefer the calling user block. If source has changed, show the executed
 snapshot read-only instead of attaching an old line number to the new source.
 Keep complete tracebacks and unknown messages; user stop interrupts are not errors.
 
-The desktop Examples menu mirrors `examples/` recursively, sorting directories
+The desktop File → Examples submenu mirrors `examples/` recursively, sorting directories
 and Python filenames and refreshing when opened. Opening uses normal document-tab
 semantics. Bundle examples with installed distributions; no lesson manifest or
 second examples registry is required.

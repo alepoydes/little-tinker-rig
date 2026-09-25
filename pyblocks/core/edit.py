@@ -194,7 +194,15 @@ def statement_group(
     return suite, span, len(nodes)
 
 
-def _removal(syntax: Syntax, node: ast.stmt | tuple[ast.stmt, ...]) -> tuple[Span, str]:
+def _removal(syntax: Syntax, node: ast.AST | tuple[ast.stmt, ...]) -> tuple[Span, str]:
+    if isinstance(node, ast.expr):
+        parent = syntax.parent.get(node)
+        if isinstance(parent, ast.Expr):
+            node = parent
+        else:
+            return syntax.spans[node], "None"
+    if not isinstance(node, (ast.stmt, tuple)):
+        raise ValueError("Select a statement or expression")
     suite, span, count = statement_group(syntax, node)
     first = node if isinstance(node, ast.stmt) else node[0]
     indent = syntax.position(syntax.spans[first].start)[1]
@@ -204,25 +212,42 @@ def _removal(syntax: Syntax, node: ast.stmt | tuple[ast.stmt, ...]) -> tuple[Spa
     return span, replacement
 
 
-def delete(syntax: Syntax, node: ast.AST) -> str:
-    if isinstance(node, ast.stmt):
-        result = patches(syntax.source, [_removal(syntax, node)])
-    elif isinstance(node, ast.expr):
-        result = patches(syntax.source, [(syntax.spans[node], "None")])
-    else:
-        raise ValueError("Select a statement or expression")
+def block_text(syntax: Syntax, node: ast.AST | tuple[ast.stmt, ...]) -> str:
+    """A standalone expression owns the same comments as its statement."""
+    if isinstance(node, ast.expr) and isinstance(syntax.parent.get(node), ast.Expr):
+        node = syntax.parent[node]
+    span = (
+        statement_group(syntax, node)[1]
+        if isinstance(node, (ast.stmt, tuple))
+        else syntax.spans[node]
+    )
+    return syntax.source[span.start : span.end]
+
+
+def delete(syntax: Syntax, node: ast.AST | tuple[ast.stmt, ...]) -> str:
+    result = patches(syntax.source, [_removal(syntax, node)])
     syntax.validate(result)
     return result
 
 
-def replace_expressions(syntax: Syntax, changes: list[tuple[Span, str]]) -> str:
+def replace_expressions(
+    syntax: Syntax, changes: list[tuple[Span, str]], *, removals=()
+) -> str:
     """Keep grouping only when the unparenthesized text changes the Python AST."""
     changes = [(span, text.strip()) for span, text in changes]
-    for _, text in changes:
+    grouped = []
+    for span, text in changes:
         ast.parse(text, mode="eval")
-    protected = patches(syntax.source, [(span, f"({text})") for span, text in changes])
+        wrapped = f"({text})"
+        try:
+            ast.parse(wrapped, mode="eval")
+        except SyntaxError:
+            # A trailing Python comment must not swallow the closing parenthesis.
+            wrapped = f"({text}\n)"
+        grouped.append((span, wrapped))
+    protected = patches(syntax.source, [*removals, *grouped])
     expected = syntax.validate(protected)
-    plain = patches(syntax.source, changes)
+    plain = patches(syntax.source, [*removals, *changes])
     try:
         actual = syntax.validate(plain)
     except SyntaxError:
@@ -250,18 +275,20 @@ def move(
     syntax: Syntax, node: ast.AST | tuple[ast.stmt, ...], target: Target | ast.expr
 ) -> str:
     if isinstance(node, ast.expr):
-        span = syntax.spans[node]
+        removed = _removal(syntax, node)
+        text = block_text(syntax, node)
+        span = removed[0]
         if isinstance(target, ast.expr):
             destination = syntax.spans[target]
             if span.start < destination.end and destination.start < span.end:
                 raise ValueError("Cannot move an expression into itself")
             return replace_expressions(
-                syntax, [(span, "None"), (destination, syntax.text(node))]
+                syntax, [(destination, text)], removals=[removed]
             )
-        insertion = _insertion(syntax, target, syntax.text(node))
+        insertion = _insertion(syntax, target, text)
         if span.start <= insertion[0].start <= span.end:
             raise ValueError("Cannot move an expression into itself")
-        result = patches(syntax.source, [(span, "None"), insertion])
+        result = patches(syntax.source, [removed, insertion])
         syntax.validate(result)
         return result
     if not isinstance(target, Target):

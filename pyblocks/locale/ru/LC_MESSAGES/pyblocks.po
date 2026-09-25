@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PyBlocks Studio 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-25 21:01+0300\n"
+"POT-Creation-Date: 2026-09-25 22:29+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -208,7 +208,7 @@ msgstr ""
 msgid "Bluetooth name"
 msgstr "Имя Bluetooth"
 
-#: pyblocks/qt/app.py:1145
+#: pyblocks/qt/app.py:1146
 msgid "Bluetooth, USB or virtual hub"
 msgstr "Bluetooth, USB или виртуальный хаб"
 
@@ -920,7 +920,7 @@ msgstr ""
 "Перетащите сюда блок, чтобы отложить его.\n"
 "Верните его в программу, когда он понадобится."
 
-#: pyblocks/qt/document.py:155
+#: pyblocks/qt/document.py:157
 msgid "Drag blocks. Click a parameter to edit it."
 msgstr "Перетаскивайте блоки. Нажмите на параметр, чтобы изменить его."
 
@@ -1333,7 +1333,7 @@ msgstr "Хаб и устройства"
 msgid "Hub firmware"
 msgstr "Прошивка хаба"
 
-#: pyblocks/qt/app.py:1143
+#: pyblocks/qt/app.py:1144
 msgid "Hub information and port readings"
 msgstr "Информация о хабе и показания портов"
 
@@ -1692,6 +1692,10 @@ msgstr "Следующее повторение"
 msgid "Next node / target"
 msgstr "Следующий узел / цель"
 
+#: pyblocks/qt/completion.py:209
+msgid "No Python suggestions here"
+msgstr "Здесь нет подсказок Python"
+
 #: pyblocks/qt/device.py:205
 msgid "No device"
 msgstr "Нет устройства"
@@ -1836,7 +1840,7 @@ msgstr "Воспроизвести тон на динамике хаба. Пар
 msgid "Play musical notes at a chosen tempo. Options: notes, tempo."
 msgstr "Воспроизвести ноты в заданном темпе. Параметры: notes, tempo."
 
-#: pyblocks/qt/app.py:1122 pyblocks/qt/app.py:1131
+#: pyblocks/qt/app.py:1123 pyblocks/qt/app.py:1132
 msgid "Please wait…"
 msgstr "Подождите…"
 
@@ -1880,6 +1884,11 @@ msgstr "Вывод программы и сообщения"
 msgid "Program running"
 msgstr "Программа работает"
 
+#: pyblocks/qt/completion.py:206
+#, python-brace-format
+msgid "Python assistance failed: {error}"
+msgstr "Не удалось получить подсказки Python: {error}"
+
 #: pyblocks/snippets/python/basics.py:1
 msgid ""
 "Python basics\n"
@@ -1902,9 +1911,11 @@ msgstr "Выражение Python или именованный аргумент
 msgid "Python fragment"
 msgstr "Фрагмент Python"
 
-#: pyblocks/qt/document.py:153
-msgid "Python · Ctrl+Space — complete · Ctrl+Alt+L — format"
-msgstr "Python · Ctrl+Space — дополнение · Ctrl+Alt+L — форматировать"
+#: pyblocks/qt/document.py:154
+msgid "Python · Ctrl+Space — complete · Ctrl+Shift+Space — hint · Ctrl+Alt+L — format"
+msgstr ""
+"Python · Ctrl+Space — дополнение · Ctrl+Shift+Space — подсказка · Ctrl+Alt+L — "
+"форматировать"
 
 #: pyblocks/snippets/python/flow.py:63
 msgid "Raise a ValueError with an explanation."
@@ -2466,7 +2477,7 @@ msgstr "Поиск в руководстве и блоках…"
 msgid "Searching for a matching hub in Bluetooth bootloader mode…"
 msgstr "Поиск подходящего хаба в режиме загрузчика Bluetooth…"
 
-#: pyblocks/qt/app.py:1294
+#: pyblocks/qt/app.py:1295
 msgid "Select Python source to create a block."
 msgstr "Выделите исходник Python для создания блока."
 
@@ -2720,7 +2731,7 @@ msgstr ""
 "Образ восстановления устанавливает прошивку LEGO 1.3. Приложение LEGO может "
 "предложить более новую версию."
 
-#: pyblocks/qt/editor.py:923
+#: pyblocks/qt/editor.py:926
 msgid "This block has no editable parameters"
 msgstr "У этого блока нет изменяемых параметров"
 
@@ -2878,7 +2889,7 @@ msgstr "Версия"
 msgid "View"
 msgstr "Вид"
 
-#: pyblocks/qt/app.py:1136 pyblocks/qt/device.py:154
+#: pyblocks/qt/app.py:1137 pyblocks/qt/device.py:154
 msgid "Virtual hub"
 msgstr "Виртуальный хаб"
 
@@ -2968,7 +2979,7 @@ msgstr "Шаг range не может быть нулевым"
 msgid "s"
 msgstr "с"
 
-#: pyblocks/qt/editor.py:883
+#: pyblocks/qt/editor.py:886
 #, python-brace-format
 msgid "{name} · {count} uses"
 msgstr "{name} · вхождений: {count}"
@@ -3004,7 +3015,7 @@ msgstr "← Назад"
 msgid "＋ Add selected block"
 msgstr "＋ Добавить выбранный блок"
 
-#: pyblocks/qt/app.py:1139
+#: pyblocks/qt/app.py:1140
 msgid "＋ Connect hub"
 msgstr "＋ Подключить хаб"
 
@@ -3043,6 +3054,9 @@ msgstr "＋ Подключить хаб"
 
 #~ msgid "Python basics"
 #~ msgstr "Основы Python"
+
+#~ msgid "Python · Ctrl+Space — complete · Ctrl+Alt+L — format"
+#~ msgstr "Python · Ctrl+Space — дополнение · Ctrl+Alt+L — форматировать"
 
 #~ msgid "Random choices"
 #~ msgstr "Случайный выбор"

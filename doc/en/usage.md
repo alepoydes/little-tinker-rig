@@ -10,7 +10,14 @@ Global workspaces use narrow rotated labels and neutral active indicators.
 the source; see [its guide](block-editor.md).
 
 The Python editor has syntax highlighting, line numbers, indentation with
-Tab/Shift+Tab, word completion with Ctrl+Space, and search with Ctrl+F. Ruff
+Tab/Shift+Tab, and search with Ctrl+F. Completion appears while typing names or
+after a dot; **Ctrl+Space** requests it explicitly. Choose with arrows and accept
+with Enter or Tab; Escape dismisses. Suggestions follow local scope, imports,
+object methods and the installed Pybricks API descriptions. Call hints show the
+signature and current parameter; **Ctrl+Shift+Space** requests a hint or documentation
+for the name under the cursor. Jedi analyzes unfinished source in the background
+without running it. Dynamic Python objects may have incomplete suggestions;
+API descriptions do not verify support on a connected hub. Ruff
 formats valid committed edits. **Ctrl+S** also saves unfinished Python exactly as
 shown. Such files reopen in Python view; Run, Upload and switching to Blocks
 require valid syntax. A failed structural edit still leaves the block document
@@ -188,6 +195,8 @@ and focuses the exact function. Built-ins and historical versions are read-only;
 current user definitions are editable. The menu also provides Help, Expand/Collapse,
 Duplicate, Move to Scratch and Delete. Expressions duplicate to Scratch. Compound
 statements move or delete as a whole; Undo restores program and Scratch together.
+Deleting an expression on its own line removes the statement. Inside another
+expression it leaves an empty `None` field; an emptied suite retains `pass`.
 Right-clicking a parameter keeps its expression-editing submenu.
 
 Hovering or editing a repeated parameter highlights its occurrences in the same
@@ -208,7 +217,7 @@ source files, and later saves retain external-change checks. If another restored
 version would replace unsaved work in an open tab, it opens as a separate
 `*_recovered_N.py` document. Recovery does not retain undo history.
 
-**Examples** mirrors the bundled `examples/` directory: subdirectories are submenus,
+**File → Examples** mirrors the bundled `examples/` directory: subdirectories are submenus,
 and `.py` filenames are actions. The menu refreshes when opened. Selecting a file
 opens it normally, or selects its existing tab without losing edits. These are the
 actual example files; use **Save as** to keep a separate variation. Examples are

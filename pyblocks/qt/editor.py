@@ -593,7 +593,10 @@ class SourceView(QTextEdit):
         if nodes is None:
             return syntax.spans[syntax.tree], False
         if isinstance(nodes, ast.expr):
-            return syntax.spans[nodes], True
+            parent = syntax.parent.get(nodes)
+            if not isinstance(parent, ast.Expr):
+                return syntax.spans[nodes], True
+            nodes = parent
         return edit.statement_group(syntax, nodes)[1], False
 
     def drag_pixmap(self, transfer):

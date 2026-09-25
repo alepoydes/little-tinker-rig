@@ -24,7 +24,7 @@ Expressions expose their operands and operators. Function parameters, call argum
 and logical operands support variable-length lists; user functions appear in the
 library, and known call errors are marked in place.
 
-**Examples** opens programs directly from the bundled directory tree. Unfinished
+**File → Examples** opens programs directly from the bundled directory tree. Unfinished
 Python can be saved and reopened; crash recovery restores open documents and
 Scratch. Runtime errors explain common failures and locate their blocks using
 the executed source snapshot, with a read-only view when the file has changed.

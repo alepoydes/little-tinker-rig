@@ -214,3 +214,27 @@ def test_scratch_context_deletion_uses_owner_undo(tmp_path, qt_app):
         assert owner.document.state is original
     finally:
         pane.close()
+
+
+def test_expression_block_deletion_removes_statement_and_restores_on_undo(qt_app):
+    snippets = load_module(
+        "@inline_block\ndef total(left=1, right=2):\n    return left + right\n",
+        "test",
+        "1",
+    )
+    session = Session.fragment("1 + 2\n", snippets)
+    view = SourceView(session)
+    view.show()
+    qt_app.processEvents()
+    try:
+        original = session.document.state
+        menu = block_menu(view, view.note_rect(1, 0).center().toPoint())
+        action(menu, "Delete").trigger()
+        assert session.document.state.source == ""
+        session.editor.undo()
+        assert session.document.state is original
+        session.editor.selection = session.document.syntax.tree.body[0].value
+        session.edit_python("3 + 4")
+        assert session.document.state.source == "3 + 4\n"
+    finally:
+        view.close()

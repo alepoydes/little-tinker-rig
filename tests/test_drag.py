@@ -224,6 +224,50 @@ def test_expression_and_same_fragment_moves_are_one_atomic_edit(tmp_path):
         transfer.to_program(target)
 
 
+def test_standalone_expression_transfers_the_whole_match_with_comments(tmp_path):
+    from pyblocks.core.snippets import load_module
+
+    snippets = load_module(
+        "@inline_block\ndef total(left=1, right=2):\n    return left + right\n",
+        "test",
+        "1",
+    )
+    owner = Session(tmp_path / "main.py")
+    owner.set_snippets(snippets)
+    owner.editor.commit("print(0)\n# addition\n1 + 2  # details\nresult = 3 * None\n")
+    original = owner.document.state
+    syntax = owner.document.syntax
+    # A click at the start of a matched expression can select its first operand.
+    owner.editor.selection = syntax.tree.body[1].value.left
+    transfer = Transfer.capture(owner)
+    assert isinstance(transfer.nodes, ast.BinOp)
+    assert "1 + 2" in transfer.text and "# addition" in transfer.text
+    transfer.to_scratch(0)
+    assert owner.document.state.source == "print(0)\nresult = 3 * None\n"
+    assert owner.document.state.scratch == ("# addition\n1 + 2  # details\n",)
+    owner.editor.undo()
+    assert owner.document.state is original
+    syntax = owner.document.syntax
+    owner.editor.selection = syntax.tree.body[1].value.left
+    transfer = Transfer.capture(owner)
+    transfer.to_program(syntax.tree.body[-1].value.right)
+    assert ast.dump(owner.document.syntax.tree) == ast.dump(
+        ast.parse("print(0)\nresult = 3 * (1 + 2)\n")
+    )
+    assert "# addition" in owner.document.state.source
+    assert "# details" in owner.document.state.source
+    owner.editor.undo()
+    assert owner.document.state is original
+
+
+def test_old_parenthesized_none_can_be_deleted(tmp_path):
+    owner = Session(tmp_path / "main.py")
+    owner.editor.commit("(None)\n")
+    owner.editor.selection = owner.document.syntax.tree.body[0].value
+    owner.editor.commit(owner.extract_selection()[1])
+    assert owner.document.state.source == ""
+
+
 def test_level_filter_combines_search_and_groups_and_persists(tmp_path, qt_app):
     from PySide6.QtWidgets import QMessageBox
 

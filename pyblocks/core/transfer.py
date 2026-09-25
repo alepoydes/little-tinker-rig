@@ -29,17 +29,12 @@ class Transfer:
         else:
             session = owner if index is None else fragment
             if node is not None:
-                text = edit.reindent(session.document.syntax.text(node), 0)
+                text = edit.reindent(edit.block_text(session.document.syntax, node), 0)
                 remainder = edit.delete(session.document.syntax, node)
                 nodes = node
             else:
                 text, remainder = session.extract_selection()
-                match = session.selected_match()
-                nodes = (
-                    session._match_nodes(match)
-                    if match and not match.snippet.expression
-                    else session.editor.selection
-                )
+                nodes = session.selected_nodes()
         return cls(
             owner,
             owner.document.state,

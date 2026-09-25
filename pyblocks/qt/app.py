@@ -288,7 +288,7 @@ class Studio(QMainWindow):
         )
         self.recent_menu = file.addMenu(N_("Open recent"))
         self.recent_menu.aboutToShow.connect(self.refresh_recent_files)
-        self.examples_menu = self.menuBar().addMenu(N_("Examples"))
+        self.examples_menu = file.addMenu(N_("Examples"))
         self.examples_menu.aboutToShow.connect(self.refresh_examples)
         self._action(
             file,
@@ -1091,6 +1091,7 @@ class Studio(QMainWindow):
             project.pins = self.session.project.pins
             project.save()
             self.session.project = project
+            self.document_page.code.path = destination
             self.remember_file(destination)
             self.recovery.flush()
 

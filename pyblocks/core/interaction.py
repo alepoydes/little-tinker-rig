@@ -81,12 +81,7 @@ class Editor:
     def to_scratch(self) -> None:
         syntax = self.document.syntax
         node = self.selection
-        span = (
-            syntax.block_span(node)
-            if isinstance(node, ast.stmt)
-            else syntax.spans[node]
-        )
-        text = syntax.source[span.start : span.end]
+        text = edit.block_text(syntax, node)
         self.commit(edit.delete(syntax, node), self.document.state.scratch + (text,))
 
     def from_scratch(self, index: int, target: edit.Target) -> None:

@@ -12,8 +12,9 @@ from PySide6.QtGui import (
     QTextCharFormat,
     QTextCursor,
 )
-from PySide6.QtWidgets import QCompleter, QPlainTextEdit, QWidget
+from PySide6.QtWidgets import QPlainTextEdit, QWidget
 
+from .completion import PythonAssist
 from .editor import qt_offset, source_offset
 
 
@@ -96,8 +97,9 @@ class LineNumbers(QWidget):
 
 
 class CodeEdit(QPlainTextEdit):
-    def __init__(self):
+    def __init__(self, path=None):
         super().__init__()
+        self.path = path
         self.runtime_problem = None
         font = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
         font.setPointSize(11)
@@ -113,9 +115,7 @@ class CodeEdit(QPlainTextEdit):
         self.updateRequest.connect(lambda rect, dy: self.gutter.update())
         self.cursorPositionChanged.connect(self.highlight_line)
         self.textChanged.connect(self.highlight_line)
-        self.completer = QCompleter(self)
-        self.completer.setWidget(self)
-        self.completer.activated.connect(self.complete)
+        self.assist = PythonAssist(self)
         self.update_gutter()
 
     def gutter_width(self):
@@ -157,15 +157,10 @@ class CodeEdit(QPlainTextEdit):
                 selections.append(error)
         self.setExtraSelections(selections)
 
-    def complete(self, word):
-        cursor = self.textCursor()
-        cursor.select(QTextCursor.SelectionType.WordUnderCursor)
-        cursor.insertText(word)
-
     def keyPressEvent(self, event):
         if self.isReadOnly():
             return super().keyPressEvent(event)
-        if self.completer.popup().isVisible() and event.key() in (
+        if self.assist.completer.popup().isVisible() and event.key() in (
             Qt.Key.Key_Enter,
             Qt.Key.Key_Return,
             Qt.Key.Key_Tab,
@@ -177,16 +172,11 @@ class CodeEdit(QPlainTextEdit):
             event.key() == Qt.Key.Key_Space
             and event.modifiers() & Qt.KeyboardModifier.ControlModifier
         ):
-            from PySide6.QtCore import QStringListModel
-
-            cursor = self.textCursor()
-            cursor.select(QTextCursor.SelectionType.WordUnderCursor)
-            words = set(re.findall(r"\b[A-Za-z_]\w*\b", self.toPlainText())) | set(
-                keyword.kwlist
+            self.assist.ask(
+                "help"
+                if event.modifiers() & Qt.KeyboardModifier.ShiftModifier
+                else "complete"
             )
-            self.completer.setModel(QStringListModel(sorted(words), self.completer))
-            self.completer.setCompletionPrefix(cursor.selectedText())
-            self.completer.complete(self.cursorRect())
             return
         if event.key() in (Qt.Key.Key_Tab, Qt.Key.Key_Backtab):
             cursor = self.textCursor()
@@ -208,6 +198,11 @@ class CodeEdit(QPlainTextEdit):
             cursor.insertText("\n" + " " * indent)
             return
         super().keyPressEvent(event)
+        if event.text().isprintable() or event.key() in (
+            Qt.Key.Key_Backspace,
+            Qt.Key.Key_Delete,
+        ):
+            self.assist.timer.start()
 
     def indent(self, direction):
         cursor = self.textCursor()
