@@ -200,6 +200,15 @@ def value_type(annotation):
     return "number" if annotation in NUMBER_UNITS else annotation
 
 
+def annotation_types(annotation):
+    """Accepted simple type alternatives in a template hint, without evaluation."""
+    return tuple(
+        value_type(part.strip())
+        for part in (annotation or "").split("|")
+        if part.strip()
+    )
+
+
 def annotation_text(node):
     if node is None:
         return None

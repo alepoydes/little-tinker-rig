@@ -7,6 +7,7 @@ import argparse
 import json
 import math
 import queue
+import random
 import runpy
 import sys
 import time
@@ -53,10 +54,11 @@ def install_modules(world, incoming):
                 else 0
             )
 
+        def _position(self):
+            return world.device(self.port, "motor")["angle"] * self.sign - self.zero
+
         def angle(self):
-            return round(
-                world.device(self.port, "motor")["angle"] * self.sign - self.zero
-            )
+            return round(self._position())
 
         def speed(self):
             return round(world.device(self.port, "motor")["speed"] * self.sign)
@@ -84,7 +86,7 @@ def install_modules(world, incoming):
                 self.port, target=(target_angle + self.zero) * self.sign, limit=speed
             )
             if wait:
-                while abs(self.angle() - target_angle) > 1:
+                while abs(self._position() - target_angle) > 1:
                     time.sleep(0.01)
                 self.stop()
 
@@ -164,6 +166,41 @@ def install_modules(world, incoming):
                 raise ValueError("Robot dimensions must be positive")
             self.left, self.right = left_motor, right_motor
             self.wheel, self.track = wheel_diameter, axle_track
+            self.origins = (self.left.angle(), self.right.angle())
+
+        def distance(self):
+            left = self.left.angle() - self.origins[0]
+            right = self.right.angle() - self.origins[1]
+            return (left + right) * math.pi * self.wheel / 720
+
+        def angle(self):
+            left = self.left.angle() - self.origins[0]
+            right = self.right.angle() - self.origins[1]
+            return (left - right) * self.wheel / (2 * self.track)
+
+        def _move(self, left, right, then, wait):
+            targets = (self.left.angle() + left, self.right.angle() + right)
+            for motor, target in zip((self.left, self.right), targets, strict=True):
+                motor.run_target(360, target, then, wait=False)
+            if wait:
+                while any(
+                    abs(motor._position() - target) > 1
+                    for motor, target in zip(
+                        (self.left, self.right), targets, strict=True
+                    )
+                ):
+                    time.sleep(0.01)
+                self.stop()
+
+        def straight(self, distance, then=Stop.HOLD, wait=True):
+            rotation = distance * 360 / (math.pi * self.wheel)
+            self._move(rotation, rotation, then, wait)
+
+        def turn(self, angle, then=Stop.HOLD, wait=True, absolute=False):
+            rotation = (
+                (angle - self.angle() if absolute else angle) * self.track / self.wheel
+            )
+            self._move(rotation, -rotation, then, wait)
 
         def drive(self, speed, turn_rate):
             differential = math.radians(turn_rate) * self.track / 2
@@ -230,6 +267,22 @@ def install_modules(world, incoming):
     }
     if world.model != "boost":
         modules["iodevices"] = dict(PUPDevice=PUPDevice)
+        generator = random.Random()
+        module = ModuleType("urandom")
+        for name in (
+            "randint",
+            "random",
+            "getrandbits",
+            "randrange",
+            "uniform",
+            "choice",
+            "seed",
+        ):
+            setattr(module, name, getattr(generator, name))
+        sys.modules["urandom"] = module
+    else:
+        # Do not accidentally expose a host-installed compatibility package.
+        sys.modules["urandom"] = None
     package = ModuleType("pybricks")
     package.__path__ = []
     sys.modules["pybricks"] = package

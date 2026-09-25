@@ -71,7 +71,9 @@ a moved program still has the intended meaning.
 
 Search the library by name, category or description. The level filter combines
 with search: **Beginner**, **Standard**, **Expert**, or **All**. Each block has one
-level; All is only a filter choice. The selected level is remembered. Cards use the same semantic
+introduction level; Standard includes Beginner and Expert includes both. All is
+only a filter choice. A fresh installation starts with Beginner; the selected
+level is remembered. See the [learning paths](learning.md). Cards use the same semantic
 color as inserted blocks. Hover shows the full preview. F1 opens the selected
 block's section on its group page or the guide. Help includes offline Markdown and snippet
 parameters/source, with search, internal links and Back.

@@ -16,13 +16,18 @@ def create_color_sensor(name=sensor, port: "Port" = Port.C):
     name = ColorSensor(port)
 
 
-def reflection_below(sensor: "ColorSensor" = sensor, threshold: "%" = 30) -> "bool":
+def reflection_below(
+    sensor: "ColorSensor | ColorDistanceSensor" = sensor, threshold: "%" = 30
+) -> "bool":
     """Check whether a surface is darker than a reflection threshold."""
     return sensor.reflection() < threshold
 
 
 def follow_edge(
-    drive: "DriveBase" = drive, sensor: "ColorSensor" = sensor, target: "%" = 50, gain=2
+    drive: "DriveBase" = drive,
+    sensor: "ColorSensor | ColorDistanceSensor" = sensor,
+    target: "%" = 50,
+    gain=2,
 ):
     """Follow a line edge using proportional control.
 
@@ -46,7 +51,7 @@ def create_ultrasonic_sensor(name=distance, port: "Port" = Port.D):
 
 
 def create_force_sensor(name=button, port: "Port" = Port.E):
-    """Connect a force sensor or emergency button."""
+    """Connect a force sensor to measure presses."""
     from pybricks.parameters import Port
     from pybricks.pupdevices import ForceSensor
 
@@ -61,7 +66,7 @@ def create_color_distance_sensor(name=sensor, port: "Port" = Port.D):
     name = ColorDistanceSensor(port)
 
 
-def reflection(sensor: "ColorSensor" = sensor) -> "%":
+def reflection(sensor: "ColorSensor | ColorDistanceSensor" = sensor) -> "%":
     """Measure surface reflection from 0 to 100%."""
     return sensor.reflection()
 
@@ -86,6 +91,31 @@ def pressed(sensor: "ForceSensor" = button) -> "bool":
     return sensor.pressed()
 
 
-def color(sensor: "ColorSensor" = sensor) -> "Color":
+def color(sensor: "ColorSensor | ColorDistanceSensor" = sensor) -> "Color":
     """Read the surface color under the sensor."""
     return sensor.color()
+
+
+def wait_color(
+    sensor: "ColorSensor | ColorDistanceSensor" = sensor, color: "Color" = Color.WHITE
+):
+    """Wait until the sensor sees a chosen color.
+
+    Connect a color sensor first. This works with SPIKE and BOOST color sensors.
+    The next action starts when the color matches; Stop cancels the program."""
+    from pybricks.parameters import Color
+    from pybricks.tools import wait
+
+    while sensor.color() != color:
+        wait(20)
+
+
+def wait_until(test: "bool" = False):
+    """Wait until a sensor condition becomes true.
+
+    Replace False with a reading or comparison, such as distance.distance() < 100.
+    The condition is checked repeatedly, every 20 milliseconds."""
+    from pybricks.tools import wait
+
+    while not test:
+        wait(20)

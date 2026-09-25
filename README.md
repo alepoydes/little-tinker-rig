@@ -13,7 +13,9 @@ editing, and a visible Scratch ribbon with drag-and-drop. English is the default
 language; **View → Language → Русский** switches both the interface and its offline
 guide to Russian. Existing language preferences are preserved. Block reference
 pages collect all templates in a group, with direct links from the editor. Library
-levels (Beginner, Standard, Expert, All) combine with search. Drags keep a four-line
+levels accumulate from nine Beginner blocks through Standard robotics to Expert
+Python; All shows the complete library. See the [learning paths](doc/en/learning.md).
+Focus and hover increase color saturation without dimming blocks. Drags keep a four-line
 colored preview, an origin marker and an insertion row; Escape cancels the gesture.
 Expressions expose their operands and operators. Function parameters, call arguments
 and logical operands support variable-length lists; user functions appear in the

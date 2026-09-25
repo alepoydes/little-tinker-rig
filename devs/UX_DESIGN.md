@@ -127,6 +127,10 @@ compatible expressions. One accepted gesture creates one Undo operation.
 
 Cards and help show beginner, standard or expert from collection metadata. The
 persisted All/Beginner/Standard/Expert filter combines with search and groups.
+The first launch selects Beginner's nine motor/sensor sequencing blocks. Standard
+and Expert accumulate earlier levels. The Python view remains available at every
+level. Selection and hover increase saturation at fixed hue and lightness in both
+library cards and source; nested blocks retain their own semantic colors.
 
 The toolbar keeps file, history and hub actions. Structural commands remain in
 menus and shortcuts. Upload sends without execution; Run uploads and executes;

@@ -8,7 +8,7 @@ from dataclasses import dataclass, replace
 from functools import cached_property
 from pathlib import Path
 
-from .analysis import Analysis, Scopes, annotation_text, identifiers, value_type
+from .analysis import Analysis, Scopes, annotation_text, annotation_types, identifiers
 from .syntax import Span, Syntax
 
 LEVELS = ("beginner", "standard", "expert")
@@ -110,6 +110,12 @@ def load_module(
             body.pop(0)
         imports = tuple(n for n in body if isinstance(n, (ast.Import, ast.ImportFrom)))
         body = [n for n in body if n not in imports]
+        if annotation_text(function.returns) == "loop":
+            if len(body) != 1 or not isinstance(body[0], ast.While) or body[0].orelse:
+                raise ValueError(
+                    f"{function.name}: a loop template needs one while wrapper"
+                )
+            body = body[0].body
         if not body:
             raise ValueError(f"{function.name}: empty template")
         for node in ast.walk(ast.Module(body=body, type_ignores=[])):
@@ -195,7 +201,7 @@ def function_snippets(syntax):
                 (),
                 ast.get_docstring(node) or node.name,
                 {},
-                level="beginner",
+                level="standard",
             )
         )
     return tuple(result)
@@ -525,7 +531,7 @@ def recognize(
                 compatible = all(
                     (actual := analysis.type_of(bindings[p.name])) is None
                     or p.annotation is None
-                    or actual == value_type(p.annotation)
+                    or actual in annotation_types(p.annotation)
                     for p in snippet.parameters
                     if p.name in bindings
                 )
@@ -575,6 +581,8 @@ def snippet_groups(snippets):
         if not snippet.historical:
             group = snippet.identity.rsplit("/", 1)[0]
             groups.setdefault(group, []).append(snippet)
+    for members in groups.values():
+        members.sort(key=lambda snippet: LEVELS.index(snippet.level))
     return groups
 
 

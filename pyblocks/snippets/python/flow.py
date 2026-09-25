@@ -1,0 +1,64 @@
+"""Control flow beyond counted loops and simple decisions."""
+
+
+def break_loop() -> "loop":
+    """Leave the nearest loop.
+
+    Insert inside a for or while loop, often inside an if condition."""
+    while True:
+        break
+
+
+def for_each(name=item, items=values):
+    """Repeat actions for each item in a collection.
+
+    The name takes each value in order. Replace pass with the actions to perform."""
+    for name in items:
+        pass
+
+
+def continue_loop() -> "loop":
+    """Skip to the next iteration of the nearest loop."""
+    while True:
+        continue
+
+
+def choose_value(test: "bool" = True, yes=1, no=0):
+    """Choose a value using a condition.
+
+    Only the chosen expression is evaluated."""
+    return yes if test else no
+
+
+def handle_error(error_type=ValueError):
+    """Handle a specific Python exception.
+
+    Put the operation in try and recovery actions in except.
+    Choose the exception you expect instead of hiding every error."""
+    try:
+        pass
+    except error_type:
+        pass
+
+
+def cleanup():
+    """Run cleanup even if an operation fails.
+
+    Put actions in try and cleanup, such as stopping a motor, in finally.
+    Forced program termination may prevent cleanup from running."""
+    try:
+        pass
+    finally:
+        pass
+
+
+def raise_error(message="Invalid value"):
+    """Raise a ValueError with an explanation."""
+    raise ValueError(message)
+
+
+def check(test: "bool" = True, message="Check failed"):
+    """Assert a condition while debugging.
+
+    Use for program assumptions, not hardware protection or required validation."""
+    assert test, message

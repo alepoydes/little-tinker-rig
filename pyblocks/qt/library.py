@@ -5,10 +5,11 @@ from PySide6.QtGui import QColor, QFontDatabase, QFontMetrics, QPainter, QPen
 from PySide6.QtWidgets import QStyle, QStyledItemDelegate, QTreeWidget, QTreeWidgetItem
 
 from pyblocks.core.presentation import PALETTE, snippet_role
-from pyblocks.core.snippets import instantiate, snippet_groups
+from pyblocks.core.snippets import LEVELS, instantiate, snippet_groups
 from pyblocks.i18n import N_, tr
 
 from .annotations import block_icon
+from .colors import saturated
 from .drag import Drag
 
 IDENTITY = Qt.ItemDataRole.UserRole
@@ -28,9 +29,13 @@ LEVEL_TITLES = {
 GROUP_TITLES = {
     "document/functions": N_("My functions"),
     "python/basics": N_("Python basics"),
+    "python/data": N_("Lists, text and dictionaries"),
+    "python/flow": N_("Iteration and exceptions"),
+    "python/numbers": N_("Numbers"),
     "pybricks/motors": N_("Motors"),
     "pybricks/sensors": N_("Sensors and timing"),
     "pybricks/drive": N_("Drive bases and clocks"),
+    "pybricks/randomness": N_("Random choices"),
 }
 
 
@@ -55,7 +60,8 @@ class CardDelegate(QStyledItemDelegate):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         selected = bool(option.state & QStyle.StateFlag.State_Selected)
         color = QColor(index.data(COLOR))
-        painter.setBrush(color.darker(112) if selected else color)
+        hovered = bool(option.state & QStyle.StateFlag.State_MouseOver)
+        painter.setBrush(saturated(color, 0.8 if selected else 0.45 if hovered else 0))
         painter.setPen(QPen(QColor("#c5d1da"), 1))
         painter.drawRoundedRect(rect, 6, 6)
         painter.setClipRect(rect)
@@ -100,6 +106,7 @@ class Library(QTreeWidget):
         super().__init__()
         self.setHeaderHidden(True)
         self.setDragEnabled(True)
+        self.setMouseTracking(True)
         self.setIndentation(12)
         self.setItemDelegate(CardDelegate(self))
         self.setMinimumWidth(270)
@@ -155,7 +162,10 @@ class Library(QTreeWidget):
             visible = False
             for child in range(group.childCount()):
                 item = group.child(child)
-                match = (self.level == "all" or item.data(0, LEVEL) == self.level) and (
+                match = (
+                    self.level == "all"
+                    or LEVELS.index(item.data(0, LEVEL)) <= LEVELS.index(self.level)
+                ) and (
                     all(
                         word
                         in (

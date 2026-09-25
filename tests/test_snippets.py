@@ -126,10 +126,13 @@ def test_bundled_libraries_can_load_without_robot_dependencies():
     for snippet in snippets:
         bindings = {p.name: "device" for p in snippet.parameters if p.default is None}
         expansion = instantiate(snippet, bindings)
-        if snippet.result_type == "statement":
+        if snippet.result_type in {"statement", "loop"}:
             from textwrap import indent
 
-            Syntax("def example():\n" + indent(expansion.source + "\n", "    "))
+            wrapper = (
+                "while True:\n" if snippet.result_type == "loop" else "def example():\n"
+            )
+            Syntax(wrapper + indent(expansion.source + "\n", "    "))
         else:
             Syntax(expansion.source + "\n")
 

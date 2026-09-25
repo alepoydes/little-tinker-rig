@@ -197,3 +197,18 @@ containing statement's indentation; the symbol may align with an inner expressio
 Drag markers explicitly set their brush and pen: inheriting a previous brush when
 drawing the frame can repaint the marker with an unrelated dark fill. Test pixel
 contrast, owner hit testing and hover on both notes and code, including nesting.
+
+Selection previously darkened already-painted regions with a second Multiply
+overlay. Activity now changes saturation before the one-owner region paint, at
+fixed HSL lightness and hue. Verify both the color transform and rendered nested
+notes/code; descendants retain their own hues under an active ancestor.
+
+Library levels describe introduction order and accumulate. Keep the initial
+nine-block motor/sensor path runnable without advanced cards. Verify generated
+expansions, contextual insertion and complete learning examples on all three
+virtual profiles. Host-installed MicroPython shims must not enable unsupported
+firmware modules (in particular `urandom` on BOOST). Virtual drive-base moves
+model wheel geometry and final positions with constant motor speed; they do not
+model acceleration, tire slip, gyro corrections or different braking dynamics.
+Movement completion compares unrounded positions: rounding a displayed motor
+angle before the tolerance check can stop outside the promised tolerance.

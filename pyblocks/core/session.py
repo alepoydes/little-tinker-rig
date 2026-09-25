@@ -6,7 +6,7 @@ import tokenize
 from pathlib import Path
 
 from . import edit
-from .analysis import Analysis, Scopes, identifiers, value_type
+from .analysis import Analysis, Scopes, annotation_types, identifiers, value_type
 from .document import Document
 from .imports import manage_imports
 from .interaction import Editor
@@ -103,9 +103,10 @@ class Session:
                         (p for p in snippet.parameters if p.name == receiver), None
                     )
                     if parameter and parameter.annotation:
-                        self._analysis.method_types[
-                            parameter.annotation, body.func.attr
-                        ] = value_type(snippet.result_type)
+                        for kind in annotation_types(parameter.annotation):
+                            self._analysis.method_types[kind, body.func.attr] = (
+                                value_type(snippet.result_type)
+                            )
             self._matches = recognize(
                 self.document.syntax, self.snippets, self._analysis
             )

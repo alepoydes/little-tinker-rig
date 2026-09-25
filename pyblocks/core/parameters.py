@@ -5,7 +5,7 @@ from bisect import bisect_right
 from dataclasses import dataclass
 
 from . import edit
-from .analysis import identifiers, value_type
+from .analysis import annotation_types, identifiers, value_type
 from .snippets import Match, Parameter, instantiate
 from .structure import OPERATORS, change_operator, name_span, operator_spans, rename
 from .syntax import Span, Syntax
@@ -286,7 +286,7 @@ def _choices(session, parameter, offset):
         position = context.document.syntax.spans[context.editor.selection].start
         names = context.analysis.name_types(position) | names
     yield from (
-        name for name, actual in names.items() if actual == kind and kind is not None
+        name for name, actual in names.items() if actual in annotation_types(kind)
     )
     if parameter.default is not None and names.get(parameter.default) == kind:
         yield parameter.default
@@ -310,7 +310,7 @@ def _choices(session, parameter, offset):
         device = next((p for p in snippet.parameters if p.name == receiver), None)
         if device is not None:
             for name, actual in names.items():
-                if actual == device.annotation:
+                if actual in annotation_types(device.annotation):
                     yield instantiate(snippet, {device.name: name}).source
 
 
@@ -330,7 +330,7 @@ def default_bindings(session, snippet, offset=None):
     }
     for parameter in snippet.parameters:
         value = parameter.default or parameter.name
-        if parameter.annotation in {
+        if set(annotation_types(parameter.annotation)) & {
             "Motor",
             "ColorSensor",
             "ColorDistanceSensor",

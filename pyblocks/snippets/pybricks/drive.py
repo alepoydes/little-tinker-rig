@@ -24,6 +24,32 @@ def brake(drive: "DriveBase" = drive):
     drive.brake()
 
 
+def straight(drive: "DriveBase" = drive, distance: "mm" = 200):
+    """Drive a distance, then stop.
+
+    Distance is in millimeters. Negative values drive backward.
+    The next action waits for the movement to finish."""
+    drive.straight(distance)
+
+
+def turn(drive: "DriveBase" = drive, angle: "deg" = 90):
+    """Turn the robot in place, then stop.
+
+    Positive angles turn right; negative angles turn left.
+    The next action waits for the movement to finish."""
+    drive.turn(angle)
+
+
+def drive_distance(drive: "DriveBase" = drive) -> "mm":
+    """Read the distance traveled by the robot."""
+    return drive.distance()
+
+
+def drive_angle(drive: "DriveBase" = drive) -> "deg":
+    """Read the robot's turn angle."""
+    return drive.angle()
+
+
 def create_clock(name=clock):
     """Create a stopwatch to measure time."""
     from pybricks.tools import StopWatch

@@ -30,6 +30,7 @@ from pyblocks.core.transfer import Transfer
 from pyblocks.i18n import language, tr
 
 from .annotations import block_notes
+from .colors import saturated
 from .drag import BlockMime, cancel_drag, drag_block
 from .parameters import ParameterEditor, unit_text
 from .structure import StructureBar, expression_menu
@@ -360,8 +361,27 @@ class SourceView(QTextEdit):
             for r in self.presentation
             if r.line <= last_line and r.end_line >= first_line
         )
+        syntax = self.session.document.syntax
+        match = self.session.selected_match()
+        selected = match.span if match else syntax.spans[self.session.editor.selection]
+        if self.session.editor.selection is syntax.tree:
+            selected = None
+        pulse = float(self.pulse.currentValue() or 0)
         for region in reversed(visible_regions):
-            color = QColor(PALETTE[region.role])
+            amount = max(
+                (
+                    amount
+                    for span, amount in (
+                        (self.hover, 0.45),
+                        (selected, 0.65 + pulse * 0.3),
+                    )
+                    if span is not None
+                    and span.start <= region.span.start
+                    and region.span.end <= span.end
+                ),
+                default=0,
+            )
+            color = saturated(PALETTE[region.role], amount)
             color.setAlphaF(self.intensity)
             painter.setBrush(color)
             for rect in self.region_rects(region, first_line, last_line):
@@ -371,24 +391,6 @@ class SourceView(QTextEdit):
                     painter.drawRect(rect)
                     covered |= area
         painter.setClipping(False)
-        syntax = self.session.document.syntax
-        match = self.session.selected_match()
-        selected = match.span if match else syntax.spans[self.session.editor.selection]
-        # Selection covers the entire structural region, including the tail of
-        # each statement line. A slow saturation change keeps text readable.
-        pulse = float(self.pulse.currentValue() or 0)
-        painter.setPen(Qt.PenStyle.NoPen)
-        for span, amount in ((self.hover, 0.10), (selected, 0.18 + pulse * 0.14)):
-            if span is None:
-                continue
-            region = next((r for r in visible_regions if r.span == span), None)
-            if region is None:
-                continue
-            color = QColor(PALETTE[region.role]).darker(145)
-            color.setAlphaF(amount)
-            painter.setBrush(color)
-            for rect in self.region_rects(region, first_line, last_line):
-                painter.drawRect(rect)
         painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceOver)
         note_font = self.font()
         note_font.setPointSize(9)

@@ -103,7 +103,7 @@ class Studio(QMainWindow):
         self.level_filter.addItem(N_("All"), "all")
         for level in LEVELS:
             self.level_filter.addItem(LEVEL_TITLES[level], level)
-        saved_level = self.settings.value("blockLevel", "all")
+        saved_level = self.settings.value("blockLevel", "beginner")
         self.level_filter.setCurrentIndex(
             max(0, self.level_filter.findData(saved_level))
         )

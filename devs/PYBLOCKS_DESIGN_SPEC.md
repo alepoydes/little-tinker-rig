@@ -1604,9 +1604,20 @@ The project should feel like ordinary Python that has acquired structure, constr
 ## Desktop library and hub actions
 
 Every block has one manifest level: beginner, standard, or expert. All exists only
-as a filter choice. Search, groups and the persisted level filter combine; help
+as a filter choice. Levels are cumulative and a fresh installation starts at
+Beginner: nine blocks for motor/sensor setup, bounded moves, waits, repetition
+and console feedback. Standard adds robot control, decisions, readings, variables,
+lists, arithmetic and reusable functions. Expert adds collection iteration,
+dictionary operations, comprehensions and exception handling. Python view is the
+path to broader language/API features; levels never restrict editable source.
+Search, groups and the persisted level filter combine; help
 uses the same metadata. Generated comments place the action symbol before text,
 use the owning block's color, and preserve enclosing indentation bands.
+
+Hover and selection increase HSL saturation at fixed hue, lightness and opacity.
+Each pixel retains its most specific block's color, including under an active
+ancestor; comments and code use the same region pass. Never stack dark selection
+overlays on the base colors.
 
 The toolbar omits Parameters, To Scratch and Python fragment; menus and shortcuts
 retain these actions. Upload saves and sends the active program without running.

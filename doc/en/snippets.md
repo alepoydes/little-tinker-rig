@@ -91,7 +91,9 @@ translations. F1 opens the selected block's stable section within its group.
 The collection manifest assigns each block one level. Unlisted blocks default
 to `standard`; allowed levels are `beginner`, `standard`, and `expert`. Unknown
 block identities and levels are rejected. `all` is only a library filter value.
-Library cards and generated help use this same metadata.
+Library cards and generated help use this same metadata. This is the level at
+which a block is introduced: the filters are cumulative. Keep Beginner small;
+follow the [learning paths](learning.md) when classifying new blocks.
 
 ```toml
 [levels]
@@ -100,7 +102,16 @@ Library cards and generated help use this same metadata.
 
 A template annotated `-> "statement"` keeps its `return` as a statement instead of
 turning it into an expression template. This supports the return block, which is
-valid in a function body or as a detached Scratch fragment. Other return
+valid in a function body or as a detached Scratch fragment. A `-> "loop"` template
+contains one `while` wrapper: only its body is inserted. This lets `break` and
+`continue` templates remain compilable Python while insertion validates the
+destination's loop context. Other return
 annotations keep their existing expression/type meaning. Variable-length editing
 comes from the expanded Python call, definition or Boolean expression; template
 functions themselves still declare a fixed set of placeholders.
+
+Parameter hints can list simple alternatives, such as
+`"ColorSensor | ColorDistanceSensor"`. Recognition, name suggestions and method
+result hints use the same alternatives without executing annotations. Use this
+for operations shared by devices; keep distinct units separate (BOOST distance
+is a percentage, ultrasonic distance is in millimeters).
