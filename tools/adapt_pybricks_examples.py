@@ -2,7 +2,7 @@
 
 Usage: python tools/adapt_pybricks_examples.py UPSTREAM_DIRECTORY [--write]
 The catalog hashes guard the input; this tool performs only explicit API and
-call-spelling migrations. Existing eight adaptations have separate trace tests.
+call-spelling migrations. Manual adaptations have separate behavior tests.
 """
 
 import argparse
@@ -36,7 +36,7 @@ POSITIONAL = {
     "on": ("color",),
     "beep": ("frequency", "duration"),
 }
-TRACE_TESTED = {
+MANUAL_ADAPTATIONS = {
     "boost_17101_auto_builder.py",
     "inventor_51515_tricky.py",
     "spike_45678_cnc.py",
@@ -44,6 +44,7 @@ TRACE_TESTED = {
     "spike_45678_kiki.py",
     "technic_42099_off_roader.py",
     "technic_42099_off_roader_remote.py",
+    "technic_42109_xbox.py",
     "technic_42124_buggy.py",
 }
 
@@ -178,7 +179,7 @@ def main():
     for item in catalog["examples"]:
         raw = (args.upstream / item["source"]).read_bytes()
         assert hashlib.sha256(raw).hexdigest() == item["sha256"], item["source"]
-        if item["file"] in TRACE_TESTED:
+        if item["file"] in MANUAL_ADAPTATIONS:
             continue
         adapted = adapt(raw.decode(), item["file"])
         path = EXAMPLES / item["file"]
@@ -189,7 +190,9 @@ def main():
                 ast.parse(path.read_text())
             ), path
     print(
-        f"Verified {len(found)} pinned upstream files; 29 structural adaptations, 8 trace-tested adaptations."
+        f"Verified {len(found)} pinned upstream files; "
+        f"{len(catalog['examples']) - len(MANUAL_ADAPTATIONS)} structural adaptations, "
+        f"{len(MANUAL_ADAPTATIONS)} manual adaptations covered by behavior tests."
     )
 
 

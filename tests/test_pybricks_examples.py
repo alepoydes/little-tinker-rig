@@ -406,18 +406,29 @@ async def test_entire_catalog_compiles_and_rebuilds_without_changing_algorithms(
 
 def test_catalog_has_unique_set_names_and_local_dependencies():
     files = {item["file"] for item in CATALOG["examples"]}
-    sources = {item["source"] for item in CATALOG["examples"]}
-    assert len(files) == len(sources) == len(CATALOG["examples"])
+    assert len(files) == len(CATALOG["examples"])
     assert files == {p.name for p in PROGRAMS}
+    hashes = {}
     for item in CATALOG["examples"]:
         assert f"_{item['set']}_" in item["file"]
         assert set(item["dependencies"]) <= files
         assert item["source"].split("/")[1] in CATALOG["families"]
+        # One upstream program can be adapted for more than one LEGO build.
+        assert hashes.setdefault(item["source"], item["sha256"]) == item["sha256"]
 
 
-@pytest.mark.parametrize("variant", ["blocks", "python"])
-def test_xbox_examples_preserve_input_sampling_and_commands(variant):
-    path = EXAMPLES / f"technic_42160_audi_xbox_{variant}.py"
+@pytest.mark.parametrize(
+    "filename,ports,powers,waits",
+    [
+        ("technic_42160_audi_xbox_blocks.py", ("D", ("A", "B")), [6, 22], []),
+        ("technic_42160_audi_xbox_python.py", ("D", ("A", "B")), [8, 16, 24, 32], []),
+        ("technic_42109_xbox.py", ("B", ("D",)), [6, 22], [50, 50]),
+    ],
+)
+def test_xbox_examples_preserve_input_sampling_and_commands(
+    filename, ports, powers, waits
+):
+    path = EXAMPLES / filename
 
     def run(source):
         with virtual_activity(path.stem) as (_, trace):
@@ -432,6 +443,8 @@ def test_xbox_examples_preserve_input_sampling_and_commands(variant):
 
             class Car:
                 def __init__(self, steering, motors):
+                    if not isinstance(motors, (list, tuple)):
+                        motors = (motors,)
                     trace.append(
                         ("car", (steering.port, tuple(m.port for m in motors)))
                     )
@@ -454,9 +467,12 @@ def test_xbox_examples_preserve_input_sampling_and_commands(variant):
     source = path.read_text()
     trace = run(source)
     assert run(rebuild(source, builtin_snippets())) == trace
-    assert [value for label, value in trace if label == "power"] == (
-        [6, 22] if variant == "blocks" else [8, 16, 24, 32]
-    )
+    assert [value for label, value in trace if label == "car"] == [ports]
+    assert [value for label, value in trace if label == "power"] == powers
+    assert {value for label, value in trace if label == "steer"} == {25}
+    assert [
+        dict(value)["milliseconds"] for label, value in trace if label == "wait"
+    ] == waits
 
 
 def test_keyboard_block_is_nonblocking_and_reads_one_character():

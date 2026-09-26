@@ -528,6 +528,30 @@
       ]
     },
     {
+      "file": "technic_42109_xbox.py",
+      "set": 42109,
+      "source": "sets/technic/42160-audi-rs-q-e-tron/xbox-controller/audi_blocks.py",
+      "reference": "https://pybricks.com/project/technic-42109-xbox/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Bluetooth Xbox controller; Pybricks 3.5+"
+      ],
+      "sha256": "3ad7127da55175f825c603f635f30eed7b2418b7ff558e71300d178117fc50b0",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-controller"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": [
+        "Retargeted the MIT Audi Xbox example to the official 42109 configuration: steering B, one drive motor D, both clockwise.",
+        "Matches the 42109 control loop: steer first, read triggers twice, set power, wait 50 ms."
+      ]
+    },
+    {
       "file": "technic_42114_hauler.py",
       "set": 42114,
       "source": "sets/technic/42114-volvo-articulated-hauler/powered-up-remote/main.py",

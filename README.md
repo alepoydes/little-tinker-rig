@@ -16,7 +16,7 @@ pages collect all templates in a group, with direct links from the editor. Libra
 levels grow from 20 Beginner blocks through Intermediate, Advanced and Expert.
 Groups above Beginner start collapsed; All includes the full catalog. Prepared
 activities cover line following and LEGO remote control. See the [learning paths](doc/en/learning.md).
-Thirty-seven [adapted Pybricks source files](examples/pybricks/README.md) cover BOOST,
+The [adapted Pybricks examples](examples/pybricks/README.md) cover BOOST,
 Robot Inventor, SPIKE Prime and Technic, with reusable activities in the library.
 Focus and hover increase saturation and moderately darken colors. Drags keep a four-line
 colored preview, an origin marker and an insertion row; Escape cancels the gesture.

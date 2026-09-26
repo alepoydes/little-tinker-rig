@@ -2,6 +2,7 @@
 
 The repository includes all 37 Python files for the supported hub families from the official
 [Pybricks Projects repository](https://github.com/pybricks/pybricks-projects).
+An additional Xbox adaptation for Technic 42109 brings the catalog to 38 files.
 Open a file using **File → Examples → pybricks** or **File → Open**. Select **All** in the
 library to find every component used by a program. The level filter limits new
 choices, never the blocks already in the document.
@@ -19,6 +20,22 @@ choices, never the blocks already in the document.
 
 Motor directions, dimensions and tuning belong to these specific LEGO builds.
 Changing only ports does not adapt them to a different mechanism.
+
+## Technic 42109 with Xbox
+
+Open [technic_42109_xbox.py](../../examples/pybricks/technic_42109_xbox.py) through
+**File → Examples → pybricks**. It uses standard Advanced blocks: steering motor B,
+drive motor D, automatic steering calibration, left-stick steering and trigger
+power control. The right trigger drives forward; the left drives backward.
+The loop waits 50 ms between updates. Calibration requires the assembled car's
+mechanical stops; controller pairing is not implemented by the virtual hub.
+
+Use Pybricks 3.5+ and a compatible Bluetooth Xbox controller. On first use, switch
+on the controller and hold its pairing button until the light flashes rapidly,
+then run the program. Later runs only need the controller switched on.
+The Technic hub disconnects from the computer to connect to Xbox. **Press the
+green hub button to stop**, then reconnect Studio to edit the program.
+See the [official Pybricks guide](https://pybricks.com/project/technic-42109-xbox/).
 
 ## Useful actions at each level
 
@@ -78,9 +95,9 @@ generators. Ordinary function calls can edit their callable and argument list;
 this also applies to custom robot methods. These additions do not increase the
 Beginner palette.
 
-All 37 files compile for both MPY ABIs and rebuild without changing their executable
+All catalog files compile for both MPY ABIs and rebuild without changing their executable
 structure. Full interactive simulations of walking, balancing and tipping are not
-implemented. Xbox tests preserve the two upstream programs' different sampling
-rates. The compatibility helpers preserve keyboard nonblocking reads and old curve
+implemented. Xbox tests preserve input sampling, motor ports and loop timing.
+The compatibility helpers preserve keyboard nonblocking reads and old curve
 signs. Gelo's missing const import and Audi's missing hub initialization are fixed.
 Upstream attribution is retained in `examples/pybricks/LICENSE.txt`.
