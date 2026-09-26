@@ -282,13 +282,24 @@ class FirmwareDialog(QDialog):
         self.progress.setRange(0, 100)
         success = code == 0 and status == QProcess.ExitStatus.NormalExit
         self.progress.setValue(100 if success else 0)
-        self.log.append(
-            tr("Firmware installation completed. Restart the hub before reconnecting.")
-            if success
-            else tr(
+        if success:
+            message = tr("Firmware installation completed.")
+            if self.package.kind == "pybricks":
+                message += "\n\n" + tr(
+                    "A blinking blue light means the hub is ready to connect. No manual restart is needed. If the hub is off, press its main button briefly to turn it on. Close this window and choose Connect hub."
+                )
+                message += "\n\n" + tr(
+                    "To restart if needed, hold the hub's main button for about 3 seconds until it switches off. Release the button, then press it briefly to turn the hub on again."
+                )
+            else:
+                message += "\n\n" + tr(
+                    "Turn the hub on if it is off, then connect using the LEGO app."
+                )
+        else:
+            message = tr(
                 "Firmware installation failed. Check the log, return the hub to bootloader mode and try again."
             )
-        )
+        self.log.append(message)
         self.consent.setChecked(False)
         self.update_buttons()
 

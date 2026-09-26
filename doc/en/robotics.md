@@ -124,6 +124,14 @@ SHA-256 and license, accept replacement, then press **Install firmware**. The
 editor disconnects its existing hub connection before flashing. Progress and
 errors appear in the dialog; it cannot close while flashing.
 
+After installing Pybricks, a blinking blue light means the hub is ready to connect.
+Close the firmware dialog and choose **Connect hub**; no manual restart is needed.
+If it is off, briefly press its main button. To restart a BOOST or Technic hub
+if needed, hold the green button for about 2–3 seconds until its light goes out,
+release it, then briefly press it to turn the hub on again. Inventor / SPIKE Prime
+uses the center button. See the [Pybricks status-light and button guide](https://pybricks.com/learn/getting-started/pybricks-environment/#using-hubs-with-one-button).
+After restoring LEGO firmware, connect using the LEGO app.
+
 Inventor / SPIKE Prime uses USB DFU. Turn it off, unplug USB, hold Bluetooth while
 reconnecting USB, then release at the red/green/blue light. BOOST and Technic use
 the Bluetooth bootloader: hold the green button until purple flashes. Leave only

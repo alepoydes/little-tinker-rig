@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PyBlocks Studio 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-26 08:30+0300\n"
+"POT-Creation-Date: 2026-09-26 10:37+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -37,6 +37,16 @@ msgstr " · отпустите для возврата к нулю"
 #, python-brace-format
 msgid " · {p0:.2f} V"
 msgstr " · {p0:.2f} В"
+
+#: pyblocks/qt/firmware.py:289
+msgid ""
+"A blinking blue light means the hub is ready to connect. No manual restart is needed."
+" If the hub is off, press its main button briefly to turn it on. Close this window "
+"and choose Connect hub."
+msgstr ""
+"Синее мигание означает, что хаб готов к подключению. Вручную перезагружать его не "
+"нужно. Если хаб выключен, коротко нажмите основную кнопку для включения. Закройте это"
+" окно и нажмите «Подключить хаб»."
 
 #: pyblocks/core/runtime_errors.py:61
 msgid "A device was not found. Check its cable and the port selected in this block."
@@ -1330,10 +1340,10 @@ msgid "Firmware file changed after review; prepare it again"
 msgstr "Файл прошивки изменился после проверки; подготовьте его заново"
 
 #: pyblocks/qt/firmware.py:286
-msgid "Firmware installation completed. Restart the hub before reconnecting."
-msgstr "Прошивка установлена. Перезапустите хаб перед подключением."
+msgid "Firmware installation completed."
+msgstr "Установка прошивки завершена."
 
-#: pyblocks/qt/firmware.py:289
+#: pyblocks/qt/firmware.py:300
 msgid ""
 "Firmware installation failed. Check the log, return the hub to bootloader mode and "
 "try again."
@@ -2984,6 +2994,14 @@ msgstr "Время"
 msgid "To Scratch"
 msgstr "В черновики"
 
+#: pyblocks/qt/firmware.py:292
+msgid ""
+"To restart if needed, hold the hub's main button for about 3 seconds until it "
+"switches off. Release the button, then press it briefly to turn the hub on again."
+msgstr ""
+"Чтобы при необходимости перезапустить хаб, удерживайте его основную кнопку примерно 3"
+" секунды до выключения. Отпустите кнопку, затем коротко нажмите для включения."
+
 #: pyblocks/core/expressions.py:66
 msgid "Tuple: (…,)"
 msgstr "Кортеж: (…,)"
@@ -3027,6 +3045,10 @@ msgstr "Выключить глаза ультразвукового датчи�
 #: pyblocks/snippets/pybricks/lessons.py:126
 msgid "Turn one way and back, like Tricky's dance."
 msgstr "Повернуться в одну сторону и обратно, как в танце Tricky."
+
+#: pyblocks/qt/firmware.py:296
+msgid "Turn the hub on if it is off, then connect using the LEGO app."
+msgstr "Включите хаб, если он выключен, затем подключитесь через приложение LEGO."
 
 #: pyblocks/snippets/pybricks/motors.py:58
 msgid "Turn the motor to a target position and wait until it finishes."
@@ -3307,6 +3329,9 @@ msgstr "＋ Подключить хаб"
 
 #~ msgid "Drive bases and clocks"
 #~ msgstr "Движение и секундомеры"
+
+#~ msgid "Firmware installation completed. Restart the hub before reconnecting."
+#~ msgstr "Прошивка установлена. Перезапустите хаб перед подключением."
 
 #~ msgid ""
 #~ "Follow a line edge for a set time, then brake.\n"
