@@ -94,47 +94,17 @@ class Display:
                 if mode == "auto"
                 else mode
             )
+            if snippet.mode == "function":
+                mode = effective = "source"
             text = self.source[span.start : span.end]
             preview = None
             if effective == "definition":
-                if snippet.mode == "function":
-                    call = snippet.body if snippet.expression else snippet.body[0].value
-                    name = call.func.id
-                    function = next(
-                        (
-                            n
-                            for n in syntax.tree.body
-                            if isinstance(n, ast.FunctionDef) and n.name == name
-                        ),
-                        None,
-                    )
-                    if function is not None:
-                        definition = syntax.source[
-                            syntax.block_span(function)
-                            .start : syntax.block_span(function)
-                            .end
-                        ].strip()
-                    else:
-                        function = next(n for n in snippet.helpers if n.name == name)
-                        definition = getattr(
-                            function, "source_text", None
-                        ) or ast.unparse(function)
-                    # The call and its bindings stay visible; the body is a read-only definition.
-                    label = snippet.identity.rsplit("/", 1)[-1]
-                    text = instantiate(snippet, match.bindings).source.replace(
-                        name, label, 1
-                    )
-                    if not snippet.expression:
-                        text += "\n" + definition.replace(name, label, 1)
-                    else:
-                        preview = definition.replace(name, label, 1)
-                else:
-                    text = instantiate(
-                        snippet,
-                        match.bindings,
-                        local_names=match.locals,
-                        formatted=True,
-                    ).source
+                text = instantiate(
+                    snippet,
+                    match.bindings,
+                    local_names=match.locals,
+                    formatted=True,
+                ).source
                 column = syntax.position(match.span.start)[1]
                 if snippet.expression:
                     text = text.strip()

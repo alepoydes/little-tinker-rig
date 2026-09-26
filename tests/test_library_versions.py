@@ -42,7 +42,7 @@ def test_personal_library_is_lazy_global_and_not_a_project_path(tmp_path):
     assert not first.project.workspace_path.exists()
 
 
-def test_snapshots_and_helper_upgrades_preserve_other_calls_and_undo(tmp_path):
+def test_snapshots_and_shared_function_upgrades_preserve_calls_and_undo(tmp_path):
     root = user_collection(tmp_path)
     path = root / "custom.py"
     path.write_text(SOURCE)
@@ -80,7 +80,9 @@ def test_snapshots_and_helper_upgrades_preserve_other_calls_and_undo(tmp_path):
     assert "# Keep this comment" in candidate
     output = []
     exec(candidate, {"print": output.append})
-    assert output == [4, 5]
+    assert output == [5, 5]
+    assert candidate.count("def show(") == 1
+    assert candidate.count("show(3)") == 2
     session.upgrade_selected()
     assert session.document.state.source == candidate
     session.editor.undo()

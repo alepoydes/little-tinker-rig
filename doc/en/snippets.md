@@ -46,8 +46,10 @@ is never loaded as an active module.
 Historical templates support explicit upgrades with preserved bindings, declaration
 names and comments. Changes to parameter types/units, result/declaration contracts
 or major versions require manual editing. Semantic compatibility is the author's
-responsibility; equal signatures alone do not prove equivalent behavior. Changed
-helper implementations have distinct generated names and can coexist in a program.
+responsibility; equal signatures alone do not prove equivalent behavior. Functions
+keep their authored names and one saved implementation. An explicit function
+upgrade changes that shared implementation for every call; changed call signatures
+require manual editing. Reloading a library alone never upgrades saved code.
 
 ## Two insertion modes
 
@@ -162,7 +164,9 @@ are gathered into the managed import header; user imports remain untouched.
 Function-local imports in generated helpers retain their normal Python scope.
 
 Undecorated functions in the same module can be shared by several blocks. The
-editor includes their reachable dependencies once in the managed helper section.
+editor includes their reachable dependencies once in the managed helper section
+after imports, retaining the original function names. Different definitions with
+the same name require an explicit rename; they are never silently substituted.
 Removing the last use removes unused helpers and imports. References in ordinary
 code and Scratch count too, including unfinished Scratch text. Undo restores the
 source and dependencies together. Existing generated implementations are retained

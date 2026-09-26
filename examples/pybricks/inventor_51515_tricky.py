@@ -15,7 +15,7 @@ from pybricks.tools import wait
 
 
 # --- automatically managed helpers ---
-def _pyblocks_pybricks_lessons_dance_turns_414954eb5e4d(
+def dance_turns(
     drive: "DriveBase", angle: "number[deg]"
 ):
     """Turn one way and back, like Tricky's dance."""
@@ -43,5 +43,5 @@ distance_sensor.lights.on(100)
 # something closer than 10 cm (100 mm).
 while True:
     if distance_sensor.distance() < 100:
-        _pyblocks_pybricks_lessons_dance_turns_414954eb5e4d(drive_base, 360)
+        dance_turns(drive_base, 360)
     wait(10)

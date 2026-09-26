@@ -45,21 +45,24 @@ Block titles and action symbols explain their purpose without adding comments to
 the Python file. Titles and source comments use the editor's normal font size.
 Indentation colors continue through blank lines.
 
-Each recognized block has an **A / S / D** button in its upper-right corner:
+Each recognized inline block has an **A / S / D** button in its upper-right corner:
 
 - **Auto** (default): use the definition's comments and layout until the program
   contains a comment belonging to this block. Blank lines do not affect the choice.
 - **Source**: show the program's own comments and layout.
 - **Definition**: show the definition's comments and layout, with the current
-  parameter values. Function blocks show the call and a read-only function definition.
+  parameter values.
 
 The choice is independent for each block and survives parameter edits in the open
 view. Switching never changes saved Python, execution or Undo. Comments inserted
 in Python view belong to the program; definition comments are edited in Block
 Editor. Inserting an inline block does not copy explanatory comments into the
-program. A function block keeps its implementation, including comments, in the
-managed helper section. Blocks view shows that implementation at the call site;
-Python view exposes the complete saved file.
+program. A function block shows only its actual Python call and the program's
+comments. Use **Open definition** to inspect its body. The function retains its
+authored name and is stored once, with its comments, in the managed helper section
+after imports. Multiple calls share that definition; unused functions disappear
+after the last reference in the program or Scratch is removed. Python view exposes
+the complete saved file.
 
 Standalone comments attach to the next statement in the same scope, including
 across blank lines. End-of-line comments attach to that statement; docstrings and

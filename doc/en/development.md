@@ -17,12 +17,12 @@ those tests correctly. No test requires a physical robot.
 
 ## Invariants
 
-Block display has a per-instance Auto/Source/Definition choice. Auto considers
+Inline block display has a per-instance Auto/Source/Definition choice. Auto considers
 owned comments, never blank lines. Definition text is a source-mapped projection;
 changing its mode must not commit, save, format or execute any code. All pointer,
 parameter, selection, fold and drag coordinates must map back to the authoritative
 source. A compound block's hover span is the entire recognized match, including
-its header and definition preview; expanded children use their own spans. Verify
+its header and projected comments; expanded children use their own spans. Verify
 actual pointer events and rendered colors for multi-statement blocks, not only AST
 selection or single-statement examples. Titles precede all owned source comments.
 
@@ -32,6 +32,14 @@ once and isolate local variables. Generated helper definitions retain comments;
 inline insertion does not copy explanatory comments. Test source preservation,
 comment ownership (including docstrings and trailing suite comments), mode changes,
 parameter edits, Undo, and runtime traces after converting activities to functions.
+
+Function blocks show their actual calls, never a substituted label or a body
+appended at each call site. Their names must agree in the library, saved calls,
+managed definitions and all previews. Keep one reachable definition per name after
+imports, with shared dependencies and Scratch retention. Reject conflicting code
+or global bindings explicitly; unrelated user functions must not acquire a block's
+description merely by sharing its name. Test multiple calls, call-site comments,
+editable arguments, definition navigation, final-use cleanup and atomic failure.
 
 Source is authoritative; AST and presentation are derived. Committed documents
 parse and compile without executing (Scratch projections only require parsing). Failed operations preserve source, Scratch
@@ -314,9 +322,11 @@ MAJOR.MINOR.PATCH` or use the equivalent authoring action. A saved snapshot incl
 current modules and its manifest, without recursively archiving existing history.
 Validate the staged collection and compare live sources before registration. A
 failed manifest replacement removes the new snapshot; an unregistered history
-folder is never treated as current source. Existing helper fingerprints already
-separate implementations: test two versions executing in one program and Undo of
-an explicit upgrade. Exact-version pins retain their strict existing semantics.
+folder is never treated as current source. Match saved helper implementations and
+their imports against history; reloading a library must not rewrite them. An
+explicit function upgrade replaces the shared definition for all calls, with one
+diff and Undo. Changed call signatures require manual editing. Exact-version pins
+retain their strict existing semantics.
 
 Contours use logical block ownership and shared fill/comment geometry. Opaque
 cosmetic strokes share edge pixels; they do not change layout. Test same-color

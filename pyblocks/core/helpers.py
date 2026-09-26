@@ -2,15 +2,13 @@
 
 import ast
 import copy
-import hashlib
 import io
-import re
 import tokenize
 
 from .analysis import Scopes, function_signature
 from .block_metadata import metadata
 from .edit import patches
-from .imports import managed_section
+from .imports import import_entries, managed_section
 from .source_text import function_source
 from .syntax import Span, Syntax
 
@@ -34,11 +32,20 @@ def dependencies(tree):
     }
 
 
-def manage_helpers(source, available, *, retain=()):
+def helper_signature(function, imports):
+    """Runtime code and the global imports it resolves, independent of layout."""
+    used = dependencies(ast.Module(body=[function], type_ignores=[]))
+    return ast.dump(function), tuple(
+        sorted({(name, text) for name, text in import_entries(imports) if name in used})
+    )
+
+
+def manage_helpers(source, available, *, retain=(), required=()):
     """Keep reachable helpers, preserving existing implementations and user text.
 
-    `available` maps generated names to definitions. Existing definitions take
+    `available` maps authored names to definitions. Existing definitions take
     precedence, including when their library was edited or disconnected.
+    Explicit insertion requires matching implementations for existing names.
     """
     syntax = Syntax(source)
     section = helper_section(source)
@@ -54,6 +61,12 @@ def manage_helpers(source, available, *, retain=()):
             existing[node.name] = node
         else:
             user.append(node)
+    for name in required:
+        if name in existing and ast.dump(existing[name]) != ast.dump(available[name]):
+            raise ValueError(
+                f"Helper {name!r} already has a different definition; "
+                "upgrade it explicitly or rename the block"
+            )
     candidates = dict(available, **existing)
     tree = ast.Module(body=user, type_ignores=[])
     referenced = dependencies(tree)
@@ -74,7 +87,11 @@ def manage_helpers(source, available, *, retain=()):
         if name in visited or name not in candidates:
             return
         if name in occupied:
-            raise ValueError(f"Helper name {name!r} conflicts with an existing binding")
+            if name in existing or name in required:
+                raise ValueError(
+                    f"Helper name {name!r} conflicts with an existing binding"
+                )
+            return
         visited.add(name)
         function = candidates[name]
         for dependency in sorted(
@@ -148,8 +165,8 @@ def function_dependencies(tree):
     return functions, dependencies
 
 
-def helper_functions(tree, roots, collection, *, source=""):
-    """Private names fingerprint implementations, preserving existing program calls."""
+def helper_functions(tree, roots, *, source=""):
+    """Emit reachable functions once, retaining their authored Python names."""
     functions, dependencies = function_dependencies(tree)
 
     def reachable(names):
@@ -209,33 +226,7 @@ def helper_functions(tree, roots, collection, *, source=""):
                     f"{name}: calls to block {node.func.id!r} must supply every field; "
                     "block defaults are insertion expressions"
                 ) from error
-    names = {}
-    imports = [
-        node for node in tree.body if isinstance(node, (ast.Import, ast.ImportFrom))
-    ]
-    for name in included:
-        implementation = ast.Module(
-            body=[*imports, *(implementations[n] for n in sorted(reachable([name])))],
-            type_ignores=[],
-        )
-        digest = hashlib.blake2s(
-            ast.dump(implementation).encode(), digest_size=6
-        ).hexdigest()
-        prefix = re.sub(r"\W", "_", collection + "_" + name)
-        names[name] = f"_pyblocks_{prefix}_{digest}"
-    renamed = copy.deepcopy(tree)
-    copied_scopes = Scopes(renamed)
-    for node in ast.walk(renamed):
-        if (
-            isinstance(node, ast.Name)
-            and node.id in names
-            and copied_scopes.resolve(node, node.id) is copied_scopes.root
-        ):
-            node.id = names[node.id]
     result, visited = [], set()
-    copied = {
-        node.name: node for node in renamed.body if isinstance(node, ast.FunctionDef)
-    }
 
     def emit(name):
         if name in visited:
@@ -243,24 +234,14 @@ def helper_functions(tree, roots, collection, *, source=""):
         visited.add(name)
         for dependency in sorted(dependencies[name]):
             emit(dependency)
-        function = copied[name]
-        options = metadata(function)
-        if options and options["mode"] == "inline":
-            raise ValueError(
-                f"{name}: inline templates cannot be called as helper functions"
-            )
-        function.name = names[name]
-        function.decorator_list = []
-        if options:
-            function.args.defaults = []
-            function.args.kw_defaults = [None] * len(function.args.kwonlyargs)
+        function = implementations[name]
         if source:
             function.source_text = function_source(source, functions[name], function)
         result.append(function)
 
     for name in sorted(included):
         emit(name)
-    return names, tuple(result)
+    return tuple(result)
 
 
 def referenced_helpers(scopes, function):

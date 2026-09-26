@@ -16,8 +16,8 @@ from .analysis import (
 )
 from .document import Document
 from .helpers import START as HELPERS_START
-from .helpers import dependencies, manage_helpers
-from .imports import import_entries, manage_imports
+from .helpers import helper_section, manage_helpers
+from .imports import manage_imports
 from .interaction import Editor
 from .paths import personal_collection
 from .project import Project
@@ -31,6 +31,7 @@ from .snippets import (
     recognize,
     upgrade,
 )
+from .syntax import Syntax
 
 
 class Session:
@@ -70,6 +71,17 @@ class Session:
         identities = [s.identity for s in snippets if not s.historical]
         if len(identities) != len(set(identities)):
             raise ValueError("Collections define duplicate current snippet identities")
+        helpers = {}
+        for snippet in snippets:
+            if snippet.historical:
+                continue
+            for name, signature in snippet.helper_signatures.items():
+                previous = helpers.setdefault(name, (signature, snippet.identity))
+                if previous[0] != signature:
+                    raise ValueError(
+                        f"Helper name {name!r} conflicts between "
+                        f"{previous[1]!r} and {snippet.identity!r}; rename one function"
+                    )
         for snippet in snippets if self.project else ():
             collection = snippet.identity.split("/")[0]
             pinned = self.project.pins.get(collection)
@@ -83,17 +95,17 @@ class Session:
         self.validate_snippets(snippets)
         self.snippets = snippets
         self._helpers = {
-            node.name: node for snippet in snippets for node in snippet.helpers
+            node.name: node
+            for snippet in snippets
+            if not snippet.historical
+            for node in snippet.helpers
         }
-        self._helper_imports = {}
-        for snippet in snippets:
-            for function in snippet.helpers:
-                used = dependencies(ast.Module(body=[function], type_ignores=[]))
-                self._helper_imports[function.name] = tuple(
-                    text
-                    for name, text in import_entries(snippet.imports)
-                    if name in used
-                )
+        self._helper_imports = {
+            name: tuple(text for _, text in signature[1])
+            for snippet in snippets
+            if not snippet.historical
+            for name, signature in snippet.helper_signatures.items()
+        }
         self.document.prepare = None if self.document.fragment else self._prepare_source
         self._reset_cache()
 
@@ -457,10 +469,35 @@ class Session:
     ):
         prepared = source
         if helpers and not self.document.fragment:
+            definitions = {
+                node.name: node for text in helpers for node in ast.parse(text).body
+            }
+            syntax = Syntax(source)
+            scopes = Scopes(syntax.tree)
+            start = offset
+            while start < len(source) and source[start] in " \t":
+                start += 1
+            inserted = next(
+                n
+                for n in syntax.ancestors(syntax.at(start))
+                if isinstance(n, (ast.Call, ast.stmt, ast.Module))
+            )
+            for node in ast.walk(inserted):
+                if (
+                    isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Name)
+                    and node.func.id in definitions
+                ):
+                    owner = scopes.resolve(node.func, node.func.id)
+                    if owner is not None and owner is not scopes.root:
+                        raise ValueError(
+                            f"Helper name {node.func.id!r} conflicts with a local binding"
+                        )
             prepared, _ = manage_helpers(
                 source,
-                {node.name: node for text in helpers for node in ast.parse(text).body},
+                definitions,
                 retain=self.document.state.scratch if scratch is None else scratch,
+                required=definitions,
             )
         imported = self.with_imports(prepared, required)
         self.editor.commit(
@@ -550,7 +587,29 @@ class Session:
             if token.type == tokenize.COMMENT
         ]
         replacement = "\n".join([*comments, expansion.source])
-        source = self._replace_match(match, replacement)
+        if match.snippet.mode == "function":
+            # A named definition is shared by every call, including Scratch.
+            source = self.document.state.source
+        else:
+            source = self._replace_match(match, replacement)
+        syntax = Syntax(source)
+        section = helper_section(source)
+        if section:
+            definitions = {n.name: n for n in current.helpers}
+            source = edit.patches(
+                source,
+                [
+                    (
+                        syntax.spans[n],
+                        getattr(definitions[n.name], "source_text", None)
+                        or ast.unparse(definitions[n.name]),
+                    )
+                    for n in syntax.tree.body
+                    if isinstance(n, ast.FunctionDef)
+                    and n.name in definitions
+                    and section.contains(syntax.spans[n].start)
+                ],
+            )
         return self.document.candidate(
             self.with_imports(source, expansion.imports)
         ).source

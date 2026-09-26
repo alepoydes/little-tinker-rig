@@ -82,7 +82,7 @@ def calculate(value: "int" = 3) -> "int":
     assert ast.unparse(match.bindings["value"]) == "next(values)"
 
 
-def test_shared_helper_identity_tracks_code_but_not_presentation():
+def test_shared_helpers_keep_authored_names_across_code_and_presentation_changes():
     source = """
 def twice(value):
     return value * 2
@@ -96,14 +96,18 @@ def display(value=3):
     print(twice(value))
 """
     first, second = load_module(source, "test", "1")
-    assert first.helpers[0].name == second.helpers[0].name
+    assert first.helpers[0].name == second.helpers[0].name == "twice"
     old_call = instantiate(first, {}).source
     updated, _ = load_module(
         source.replace('level="beginner"', 'level="expert"'), "test", "2"
     )
     assert instantiate(updated, {}).source == old_call
     updated, _ = load_module(source.replace("value * 2", "value * 3"), "test", "2")
-    assert instantiate(updated, {}).source != old_call
+    assert instantiate(updated, {}).source == old_call == "calculate(3)"
+    changed = instantiate(updated, {})
+    scope = {}
+    exec("\n".join(changed.helpers), scope)
+    assert eval(changed.source, scope) == 9
     namespace = {}
     expanded = instantiate(second, {})
     exec("\n\n".join(expanded.helpers), namespace)
@@ -273,9 +277,9 @@ def show(value=3):
     detached = session.document.state
     assert len(detached.scratch) == 1
     assert "from math import sqrt" in detached.source
-    assert "def _pyblocks_" in detached.source
+    assert "def show(value):" in detached.source
     session.editor.commit(detached.source, ())
-    assert "_pyblocks_" not in session.document.state.source
+    assert "def " not in session.document.state.source
     assert "from math" not in session.document.state.source
     session.editor.undo()
     assert session.document.state is detached
@@ -299,7 +303,7 @@ def test_helper_cleanup_preserves_user_code_comments_and_changed_implementations
     )
     assert (
         source.index("from __future__")
-        < source.index("def _pyblocks")
+        < source.index("def value()")
         < source.index("# My code")
     )
     edited = source.replace("return 1", "# Keep my implementation\n    return 2")
@@ -311,7 +315,7 @@ def test_helper_cleanup_preserves_user_code_comments_and_changed_implementations
     detached = retained.replace("print(" + expanded.source + ")", "pass")
     assert "return 2" in manage_helpers(detached, {}, retain=(name + "(",))[0]
     cleaned, _ = manage_helpers(detached, {})
-    assert "def _pyblocks" not in cleaned and "# My code" in cleaned
+    assert "def value()" not in cleaned and "# My code" in cleaned
     assert '"""Program."""' in cleaned and "from __future__" in cleaned
 
 
@@ -324,7 +328,9 @@ def test_helper_roots_respect_local_shadowing_and_report_global_collisions():
     source = f"def user({name}):\n    return {name}()\n"
     assert manage_helpers(source, helpers) == (source, ())
     with pytest.raises(ValueError, match="conflicts"):
-        manage_helpers(f"{name} = external\nprint({name}())\n", helpers)
+        manage_helpers(
+            f"{name} = external\nprint({name}())\n", helpers, required=helpers
+        )
 
 
 def test_typed_declarations_recognize_existing_unannotated_source(tmp_path):
@@ -583,7 +589,7 @@ def calculate(value=4):
     )
     session.editor.commit(source)
     assert "import sqrt" not in session.document.state.source
-    assert "def _pyblocks" not in session.document.state.source
+    assert "automatically managed helpers" not in session.document.state.source
 
 
 def test_helper_imports_follow_selected_implementations_after_library_reload(tmp_path):
@@ -596,7 +602,11 @@ def calculate(value=4):
     return operation(value)
 """
     old = load_module(source, "first", "1")[0]
-    other = load_module(source.replace("sqrt", "cos"), "second", "1")[0]
+    other = load_module(
+        source.replace("sqrt", "cos").replace("calculate", "calculate_cos"),
+        "second",
+        "1",
+    )[0]
     session = Session(tmp_path / "main.py")
     session.set_snippets((old, other))
     # Pasting a generated call also inserts its own helper dependencies.
@@ -724,3 +734,125 @@ def test_class_skeleton_can_be_named_and_filled_without_exposing_class_locals():
             "test",
             "1",
         )
+
+
+def test_named_calls_share_definitions_and_cleanup_only_after_last_reference(tmp_path):
+    from pyblocks.core import edit
+    from pyblocks.core.session import Session
+
+    snippets = load_module(
+        """from math import sqrt
+
+def magnitude(value):
+    return sqrt(value * value)
+
+@block
+def show(value=-3):
+    print(magnitude(value))
+
+@block
+def show_twice(value=-5):
+    print(2 * magnitude(value))
+""",
+        "test",
+        "1",
+    )
+    owner = Session(tmp_path / "main.py")
+    owner.set_snippets(snippets)
+    for snippet in (snippets[0], snippets[1], snippets[0]):
+        suite = owner.document.syntax.suites[0]
+        owner.insert_snippet(snippet, {}, edit.Target(suite, len(suite.statements)))
+    source = owner.document.state.source
+    tree = owner.document.syntax.tree
+    assert [n.name for n in tree.body if isinstance(n, ast.FunctionDef)] == [
+        "magnitude",
+        "show",
+        "show_twice",
+    ]
+    assert [ast.unparse(n) for n in tree.body if isinstance(n, ast.Expr)] == [
+        "show(-3)",
+        "show_twice(-5)",
+        "show(-3)",
+    ]
+    assert (
+        source.index("import sqrt")
+        < source.index("def magnitude")
+        < source.index("show(-3)")
+    )
+    output = []
+    exec(source, {"print": output.append})
+    assert output == [3, 10, 3]
+
+    def remove_call(name):
+        owner.editor.selection = next(
+            n
+            for n in owner.document.syntax.tree.body
+            if isinstance(n, ast.Expr) and n.value.func.id == name
+        )
+        owner.editor.delete()
+
+    remove_call("show")
+    assert "def show(" in owner.document.state.source
+    remove_call("show")
+    assert "def show(" not in owner.document.state.source
+    assert "def magnitude(" in owner.document.state.source
+    remove_call("show_twice")
+    assert not owner.document.syntax.tree.body
+    owner.editor.undo()
+    assert "def magnitude(" in owner.document.state.source
+
+
+def test_named_helper_conflicts_are_explicit_and_leave_the_document_unchanged(tmp_path):
+    from pyblocks.core.session import Session
+
+    source = "@block\ndef show(value=3):\n    print(value)\n"
+    (first,) = load_module(source, "first", "1")
+    (other,) = load_module(
+        source.replace("print(value)", "print(value + 1)"), "second", "1"
+    )
+    owner = Session(tmp_path / "main.py")
+    owner.set_snippets((first,))
+    before = owner.document.state
+    with pytest.raises(ValueError, match="conflicts.*first/show.*second/show"):
+        owner.set_snippets((first, other))
+    assert owner.document.state is before
+    assert owner.snippets == (first,)
+    owner.insert_snippet(first, {})
+    before = owner.document.state
+    with pytest.raises(ValueError, match="different definition"):
+        owner.insert_snippet(other, {})
+    assert owner.document.state is before
+
+    owner.editor.commit("def show(value):\n    return value\nshow(2)\n")
+    assert not owner.matches
+    before = owner.document.state
+    with pytest.raises(ValueError, match="conflicts"):
+        owner.insert_snippet(first, {})
+    assert owner.document.state is before
+
+
+def test_shadowed_function_names_are_not_recognized_as_library_blocks():
+    (snippet,) = load_module(
+        "@block\ndef show(value=3):\n    print(value)\n", "test", "1"
+    )
+    syntax = Syntax("def user(show):\n    show(3)\nshow(4)\n")
+    (match,) = recognize(syntax, (snippet,))
+    assert syntax.source[match.span.start : match.span.end] == "show(4)"
+
+
+def test_function_insertion_rejects_a_shadowed_callee_atomically(tmp_path):
+    from pyblocks.core import edit
+    from pyblocks.core.session import Session
+
+    (snippet,) = load_module(
+        "@block\ndef show(value=3):\n    print(value)\n", "test", "1"
+    )
+    owner = Session(tmp_path / "main.py")
+    owner.set_snippets((snippet,))
+    owner.editor.commit("def user(show):\n    pass\n")
+    before = owner.document.state
+    with pytest.raises(ValueError, match="show.*local binding"):
+        owner.insert_snippet(
+            snippet, {}, edit.Target(owner.document.syntax.suites[1], 0)
+        )
+    assert owner.document.state is before

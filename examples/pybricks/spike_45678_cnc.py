@@ -14,7 +14,7 @@ from pybricks.pupdevices import Motor
 
 
 # --- automatically managed helpers ---
-def _pyblocks_pybricks_lessons_draw_rectangle_4dac17c6a7c8(
+def draw_rectangle(
     horizontal: "Motor",
     vertical: "Motor",
     width: "number[deg]",
@@ -39,6 +39,6 @@ hub = PrimeHub()
 horizontal_motor = Motor(Port.A)
 vertical_motor = Motor(Port.C)
 
-_pyblocks_pybricks_lessons_draw_rectangle_4dac17c6a7c8(
+draw_rectangle(
     horizontal_motor, vertical_motor, 400, 100, 1000
 )

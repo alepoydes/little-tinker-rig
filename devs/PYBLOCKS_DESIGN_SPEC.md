@@ -526,11 +526,15 @@ assignments in the body; result annotations describe actual returned values.
 while body for break/continue; control context is not a result type.
 
 Undecorated functions in a format-2 module are shared helpers. Reachable helpers
-are emitted once, with stable implementation-derived private names. Definitions
+are emitted once after imports, retaining their authored Python names. Definitions
 and dependencies are retained while referenced by ordinary code or Scratch and
 pruned after their final use. Existing implementations survive library reloads;
 undo restores code and dependencies atomically. Imports are similarly managed,
 while local imports inside generated functions retain normal Python scope.
+Function blocks show only their actual calls, with editable arguments and program
+comments. Their bodies are accessible through Open definition and the complete
+Python source, never appended to each call. Conflicting function names require an
+explicit rename; presentation must never conceal a different runtime name.
 
 Block signatures have fixed parameters. Inline templates reject recursion,
 classes and global/nonlocal declarations; ordinary helpers use normal Python
@@ -732,7 +736,12 @@ match old template
     -> replace old source region
 ```
 
-The desktop shows a diff before committing. Cancel preserves the source; Undo restores the whole change, including managed helpers. Type/unit and result/declaration contract changes require manual editing. Helpers already use implementation fingerprints, so old and new implementations can coexist.
+The desktop shows a diff before committing. Cancel preserves the source; Undo
+restores the whole change, including managed helpers. Type/unit and
+result/declaration contract changes require manual editing. Function blocks retain
+one named implementation shared by all calls. Historical recognition compares
+saved implementations and their imports. An explicit function upgrade replaces the
+shared definition for every call; changed call signatures require manual editing.
 
 ### 20.5 Compatibility rule
 
@@ -1731,7 +1740,7 @@ name and group.
 
 ### Block context navigation and repeated fields
 
-Recognized blocks have an upper-right A/S/D menu for Auto, Source and Definition.
+Recognized inline blocks have an upper-right A/S/D menu for Auto, Source and Definition.
 Auto uses program comments/layout when the block owns comments in the program;
 otherwise it uses definition comments/layout. Blank lines do not choose a mode.
 Each block's choice is independent and retained through parameter edits in the
@@ -1739,10 +1748,10 @@ open view. Switching is a source-mapped presentation change, never a document
 commit. Hover, parameters and drag/drop resolve to the original logical owner.
 Definitions retain their source text alongside the AST. Inline insertion emits
 code without explanatory comments; function definitions preserve their comments
-in the managed helper section. Definition view shows function calls and their
-read-only implementation, without turning the call into inline code. Managed
-helper bodies are shown at their call sites in Blocks and remain fully accessible
-in Python. Program comments and definition comments are never merged automatically.
+in the managed helper section. Function blocks always show the actual call and
+its program comments; their bodies are inspected through Open definition or Python
+view. The comment-source switch applies to inline blocks. Program comments and
+definition comments are never merged automatically.
 
 The program and Scratch context menus target the block under the pointer, including
 its generated comment. Open definition carries the recognized Snippet object so a

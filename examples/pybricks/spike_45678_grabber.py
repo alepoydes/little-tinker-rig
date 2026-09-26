@@ -10,7 +10,7 @@ from pybricks.pupdevices import ForceSensor, Motor
 
 
 # --- automatically managed helpers ---
-def _pyblocks_pybricks_lessons_force_gripper_8a45fc5f4b96(
+def force_gripper(
     motor: "Motor",
     sensor: "ForceSensor",
     speed: "number[deg/s]",
@@ -34,4 +34,4 @@ force_sensor = ForceSensor(Port.E)
 motor = Motor(Port.A)
 
 
-_pyblocks_pybricks_lessons_force_gripper_8a45fc5f4b96(motor, force_sensor, 1000)
+force_gripper(motor, force_sensor, 1000)

@@ -130,9 +130,6 @@ class Library(QTreeWidget):
                     {p.name: p.name for p in snippet.parameters if p.default is None},
                 )
                 preview = expansion.source
-                if snippet.mode == "function":
-                    call = snippet.body if snippet.expression else snippet.body[0].value
-                    preview = preview.replace(call.func.id, name, 1)
                 item = QTreeWidgetItem(heading, [name])
                 item.setData(0, IDENTITY, snippet.identity)
                 item.setData(0, ICON, block_icon(snippet))

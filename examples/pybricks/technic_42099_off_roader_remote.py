@@ -5,7 +5,7 @@ from pybricks.tools import wait
 
 
 # --- automatically managed helpers ---
-def _pyblocks_pybricks_remote_center_steering_4b19cf12a3ec(
+def center_steering(
     steering: "Motor", speed: "number[deg/s]"
 ):
     """Find both steering stops and start returning to the center.
@@ -36,7 +36,7 @@ rear.control.limits(acceleration=1000)
 # Connect to the remote.
 remote = Remote()
 
-_pyblocks_pybricks_remote_center_steering_4b19cf12a3ec(steer, 200)
+center_steering(steer, 200)
 
 # Now we can start driving!
 while True:

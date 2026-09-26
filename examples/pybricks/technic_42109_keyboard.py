@@ -6,7 +6,7 @@ from pybricks.tools import wait
 
 
 # --- automatically managed helpers ---
-def _pyblocks_pybricks_keyboard_read_key_code_e35adf93f3c8() -> "int | None":
+def read_key_code() -> "int | None":
     """Read one keyboard character code, or None when no key is available.
 
     Keep the hub connected and give its console keyboard focus. This is the
@@ -38,7 +38,7 @@ steer.reset_angle()
 steer.run_target(SPEED_STEER, 0, then=Stop.BRAKE)
 
 while True:
-    c = _pyblocks_pybricks_keyboard_read_key_code_e35adf93f3c8()
+    c = read_key_code()
     if c == ord("q"):
         drive.dc(SPEED_DRIVE)
         wait(TIME_DRIVE)

@@ -1,5 +1,6 @@
 """Presentation must preserve source, comment ownership and editing coordinates."""
 
+import pytest
 from PySide6.QtCore import QEvent, QPointF, Qt
 from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QApplication
@@ -12,6 +13,7 @@ from pyblocks.core.snippets import instantiate, load_module
 from pyblocks.core.syntax import Syntax
 from pyblocks.core.transfer import Transfer
 from pyblocks.qt.editor import SourceView
+from pyblocks.qt.structure import block_menu
 
 DEFINITION = '''@inline_block(level="beginner", icon="▶", color="action")
 def pair(value=3):
@@ -110,11 +112,11 @@ def test_function_definition_keeps_comments_and_does_not_inline_runtime():
     assert next(namespace["values"]) == 100
     owner = Session.fragment(expansion.source + "\n", (snippet,))
     display = Display(owner)
-    assert "# First value." in display.text
+    assert display.text == expansion.source + "\n"
     assert owner.document.state.source == expansion.source + "\n"
 
 
-def test_instances_choose_independently_and_definition_uses_saved_helper():
+def test_instances_choose_independently_and_function_bodies_stay_in_managed_source():
     owner = make_session(
         "# My pair.\nprint(3)\nprint(3 + 1)\nprint(8)\n\nprint(8 + 1)\n"
     )
@@ -128,13 +130,13 @@ def test_instances_choose_independently_and_definition_uses_saved_helper():
     source = START + "\n" + saved + "\n" + END + "\n" + expansion.source + "\n"
     owner = Session.fragment(source, (snippet,))
     display = Display(owner)
-    assert "# Saved explanation." in display.text
+    assert display.text == "pair(3)\n"
     assert "# First value." not in display.text
-    assert display.text.count("def pair(") == 1
+    assert "def pair(" not in display.text
     assert owner.document.state.source == source
 
 
-def test_expression_function_definition_is_a_separate_read_only_preview(qt_app):
+def test_expression_function_shows_the_real_call_with_editable_arguments(qt_app):
     (snippet,) = load_module(
         '''@block
 def double(value=3):
@@ -153,19 +155,50 @@ def double(value=3):
     qt_app.processEvents()
     try:
         block = view.display.blocks[0]
-        assert block.preview is not None
-        assert "result = double(3)\ndef double" in view.toPlainText()
-        row, _ = view.display.position(block.preview.start)
-        point = view._display_rect(row + 2, 0).center().toPoint()
+        assert block.preview is None
+        assert view.mode_rect(block) is None
+        assert (
+            view.toPlainText()
+            == owner.document.state.source
+            == "result = double(3)\nprint(result)\n"
+        )
+        slot = next(p for p in view.parameter_slots if p.parameter.name == "value")
+        point = view.parameter_rect(slot).center().toPoint()
+        assert view.parameter_at(point) is slot
         hover(view, point)
         assert view.hover == block.match.span
-        assert view.parameter_at(point) is None
-        assert owner.document.state.source == "result = " + call + "\nprint(result)\n"
+        opened = []
+        view.definition_requested.connect(opened.append)
+        menu = block_menu(view, point)
+        next(a for a in menu.actions() if a.text() == "Open definition").trigger()
+        assert opened == [snippet]
+        menu.deleteLater()
+        change_parameter(owner, slot, "8")
+        view.refresh_source()
+        assert (
+            view.toPlainText()
+            == owner.document.state.source
+            == "result = double(8)\nprint(result)\n"
+        )
     finally:
         view.close()
 
 
-def test_function_preview_retains_enclosing_indentation_colors(qt_app):
+@pytest.mark.parametrize("mode", ["auto", "source", "definition"])
+def test_function_calls_preserve_source_comments_and_layout_in_every_mode(mode):
+    (snippet,) = load_module(DEFINITION.replace("@inline_block", "@block"), "test", "1")
+    source = "# My action.\npair(\n    3,  # chosen value\n)\n\npair(8)\n"
+    owner = Session.fragment(source, (snippet,))
+    state = owner.document.state
+    modes = {(m.span.start, m.snippet.identity): mode for m in owner.matches}
+    display = Display(owner, modes.items())
+    assert len(display.blocks) == 2
+    assert display.text == source
+    assert owner.document.state is state
+    assert all(b.preview is None for b in display.blocks)
+
+
+def test_function_call_retains_enclosing_indentation_colors(qt_app):
     (snippet,) = load_module(DEFINITION.replace("@inline_block", "@block"), "test", "1")
     call = instantiate(snippet, {}).source
     owner = Session.fragment("while False:\n    " + call + "\n", (snippet,))

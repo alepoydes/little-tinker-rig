@@ -1130,6 +1130,8 @@ class SourceView(QTextEdit):
             raise ValueError(tr("This block has no editable parameters"))
 
     def mode_rect(self, block):
+        if block.match.snippet.mode == "function":
+            return None
         if location := self.note_locations.get(block.match.span):
             rect = self.note_rect(*location)
             if rect:

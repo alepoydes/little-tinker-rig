@@ -14,7 +14,12 @@ from pyblocks.i18n import N_
 
 from .analysis import Analysis, Scopes, annotation_text, identifiers
 from .block_metadata import LEVELS, decorator, metadata
-from .helpers import helper_functions, helper_section, referenced_helpers
+from .helpers import (
+    helper_functions,
+    helper_section,
+    helper_signature,
+    referenced_helpers,
+)
 from .source_text import body_source, rewrite
 from .syntax import Span, Syntax
 from .types import Compatibility, canonical, compatibility, numeric_literal
@@ -48,6 +53,10 @@ class Snippet:
     group_help: str = ""
     context: str | None = None
     definition: str = ""
+
+    @cached_property
+    def helper_signatures(self):
+        return {n.name: helper_signature(n, self.imports) for n in self.helpers}
 
     @property
     def expression(self) -> bool:
@@ -120,8 +129,7 @@ def load_module(
         options = metadata(original)
         if options is None and not legacy:
             continue
-        copies = {}
-        function = copy.deepcopy(original, copies)
+        function = copy.deepcopy(original)
         if (
             (function.decorator_list and options is None)
             or function.args.vararg
@@ -210,11 +218,9 @@ def load_module(
                 canonical(annotation_text(node.annotation))
         helpers = ()
         if mode == "function":
-            helper_names, helpers = helper_functions(
-                tree, (function.name,), collection, source=source
-            )
+            helpers = helper_functions(tree, (function.name,), source=source)
             call = ast.Call(
-                func=ast.Name(id=helper_names[function.name], ctx=ast.Load()),
+                func=ast.Name(id=function.name, ctx=ast.Load()),
                 args=[ast.Name(id=arg.arg, ctx=ast.Load()) for arg in positional],
                 keywords=[
                     ast.keyword(arg=arg.arg, value=ast.Name(id=arg.arg, ctx=ast.Load()))
@@ -245,14 +251,11 @@ def load_module(
                 # and hygienically annotating the inline body.
                 references = referenced_helpers(scopes, original)
                 if references:
-                    helper_names, helpers = helper_functions(
+                    helpers = helper_functions(
                         tree,
                         {node.id for node in references},
-                        collection,
                         source=source,
                     )
-                    for node in references:
-                        copies[id(node)].id = helper_names[node.id]
             local_names, names = _template_names(
                 function, body, imports, parameters, options["names"] if options else ()
             )
@@ -273,10 +276,8 @@ def load_module(
             template = ast.Constant(None)
         definition = ""
         if mode == "function":
-            helper = next(n for n in helpers if n.name == helper_names[function.name])
-            definition = (
-                getattr(helper, "source_text", None) or ast.unparse(helper)
-            ).replace(helper.name, function.name, 1)
+            helper = next(n for n in helpers if n.name == function.name)
+            definition = getattr(helper, "source_text", None) or ast.unparse(helper)
         else:
             definition = body_source(source, body)
             if isinstance(template, ast.expr) and isinstance(body[0], ast.Return):
@@ -800,6 +801,19 @@ def recognize(
     """Recognize whole algorithms before fragments; current forms supersede history."""
     analysis = analysis or Analysis(syntax)
     helper_span = helper_section(syntax.source)
+    imports = [
+        n
+        for n in syntax.tree.body
+        if isinstance(n, (ast.Import, ast.ImportFrom))
+        and not (isinstance(n, ast.ImportFrom) and n.module == "__future__")
+    ]
+    saved_helpers = {
+        node.name: helper_signature(node, imports)
+        for node in syntax.tree.body
+        if isinstance(node, ast.FunctionDef)
+        and helper_span
+        and helper_span.contains(syntax.spans[node].start)
+    }
 
     def keys(node):
         kind = ast.Assign if isinstance(node, ast.AnnAssign) else type(node)
@@ -852,6 +866,12 @@ def recognize(
     candidates = []
     mismatches = {}
     for snippet in snippets:
+        if any(
+            (name in saved_helpers and saved_helpers[name] != signature)
+            or (name in analysis.root.bindings and name not in saved_helpers)
+            for name, signature in snippet.helper_signatures.items()
+        ):
+            continue
         if snippet.expression:
             regions = (
                 all_expressions
@@ -872,6 +892,11 @@ def recognize(
                 if index + count <= len(suite.statements)
             )
         for span, candidate in regions:
+            if snippet.mode == "function":
+                call = candidate if snippet.expression else candidate[0].value
+                owner = analysis.resolve(call.func, call.func.id)
+                if owner is not None and owner is not analysis.root:
+                    continue
             result = _match(snippet, candidate)
             if result is not None:
                 bindings = result[0]
@@ -957,6 +982,17 @@ def upgrade(
         raise ValueError("Major-version upgrades require manual editing")
     if match.snippet.expression != current.expression:
         raise ValueError("Cannot change statement/expression kind automatically")
+    if match.snippet.mode == "function":
+        if current.mode != "function" or tuple(old) != tuple(new):
+            raise ValueError("Shared function signature changes require manual editing")
+        before = (
+            match.snippet.body
+            if match.snippet.expression
+            else match.snippet.body[0].value
+        )
+        after = current.body if current.expression else current.body[0].value
+        if ast.dump(before) != ast.dump(after):
+            raise ValueError("Shared function signature changes require manual editing")
     if any(
         canonical(old[name].annotation) != canonical(new[name].annotation)
         for name in old

@@ -5,7 +5,7 @@ from pybricks.tools import wait
 
 
 # --- automatically managed helpers ---
-def _pyblocks_pybricks_lessons_conveyor_transfer_0a4e99628417(
+def conveyor_transfer(
     arm: "Motor",
     belt: "Motor",
     pickup: "number[deg]",
@@ -33,7 +33,7 @@ def _pyblocks_pybricks_lessons_conveyor_transfer_0a4e99628417(
     arm.run_target(300, 0)
 
 
-def _pyblocks_pybricks_motors_home_motor_5ca9fab66554(
+def home_motor(
     motor: "Motor", speed: "number[deg/s]", power: "number[%]"
 ):
     """Find a mechanical stop with limited power and set zero there.
@@ -48,11 +48,11 @@ def _pyblocks_pybricks_motors_home_motor_5ca9fab66554(
 
 # Initialize the arm motor
 arm = Motor(Port.D)
-_pyblocks_pybricks_motors_home_motor_5ca9fab66554(arm, -100, 30)
+home_motor(arm, -100, 30)
 
 # Initialize the belt motor
 belt = Motor(Port.B)
-_pyblocks_pybricks_motors_home_motor_5ca9fab66554(belt, -100, 30)
+home_motor(belt, -100, 30)
 
 # Component positions
 FEET = 0
@@ -65,7 +65,7 @@ BASE = 697
 # Place all the elements
 for element in (FEET, BELLY, ARMS, NECK, HEAD):
 
-    _pyblocks_pybricks_lessons_conveyor_transfer_0a4e99628417(arm, belt, element, BASE)
+    conveyor_transfer(arm, belt, element, BASE)
 
 # When we are done, eject the result
 belt.run_target(200, FEET)

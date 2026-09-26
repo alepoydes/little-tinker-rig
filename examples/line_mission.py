@@ -12,7 +12,7 @@ from pybricks.tools import StopWatch
 
 
 # --- automatically managed helpers ---
-def _pyblocks_pybricks_lessons_follow_for_2ec8d3869ebc(
+def follow_for(
     drive: "DriveBase",
     sensor: "ColorSensor | ColorDistanceSensor",
     duration: "number[ms]",
@@ -45,7 +45,7 @@ drive = DriveBase(left_motor, right_motor, wheel_diameter=56, axle_track=112)
 
 sensor = ColorSensor(Port.C)
 
-_pyblocks_pybricks_lessons_follow_for_2ec8d3869ebc(drive, sensor, 1000, 100, 50, 2)
+follow_for(drive, sensor, 1000, 100, 50, 2)
 
 drive.straight(50)
 print("Mission finished")
