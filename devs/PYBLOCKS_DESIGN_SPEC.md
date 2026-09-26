@@ -1702,6 +1702,26 @@ inventory including exclusions, hashes, hardware requirements and attribution.
 Shared libraries stay beside importing programs; multi-hub crane programs are
 independent entry points, not import dependencies. Radio uses Pybricks 4; vision
 programs require an external host. The simulator does not claim either feature.
+Community control schemes may be reimplemented with explicit behavioral changes,
+separate attribution and pinned reference sources. The 42100 excavator has two
+independent programs using existing blocks: Xbox/base and upper mechanisms.
+Their radio protocol carries a model tag, changing sequence and signed commands;
+the receiver brakes on invalid input or a 500 ms sequence timeout. Slow mode,
+stop controls and motor limits are documented beside the examples in EN/RU.
+Scripted virtual tests cover commands and failures; they do not establish physical
+travel limits or radio reliability. Xbox button choices share the editor's enum
+catalog with the scripted virtual runtime, including face buttons and bumpers.
+Community imports record a pinned original URL, source hash, author, redistributable
+license and explicit behavioral changes. Source links also live in each program.
+Sensor lessons and Xbox/LEGO remote programs reuse existing palette blocks; custom
+mechanics include ports, dimensions, motor directions and startup positioning.
+Controller inputs are percentages: mixing must keep motor duty within its declared
+limit. Mode changes stop inactive actuators, toggles use button edges, and missing
+ultrasonic measurements do not become full-speed following commands. Async examples
+await device I/O and explicitly stop motion when a race finishes or fails.
+These invariants have short scripted runtime checks, separate from compilation,
+block rebuilding and physical verification. The community review records duplicate,
+incomplete and out-of-scope sources instead of presenting them as working examples.
 Four prepared activities join Beginner; homing and steering centering start at
 Intermediate, with controller settings and background targets at Advanced.
 Check coverage without generic catch-all assignments, rebuild library fragments,

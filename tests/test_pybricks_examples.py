@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
 from queue import Queue
-from types import SimpleNamespace
+from types import ModuleType, SimpleNamespace
 from unittest.mock import patch
 
 import pytest
@@ -419,7 +419,9 @@ def test_catalog_has_unique_set_names_and_local_dependencies():
             assert f"_{item['set']}_" in item["file"]
         assert set(item["dependencies"]) <= files
         if item["source"].startswith("https://"):
-            assert item["source"].startswith("https://pybricks.com/")
+            assert item["source"].startswith(
+                ("https://pybricks.com/", "https://raw.githubusercontent.com/")
+            )
         else:
             assert item["source"].split("/")[1] in CATALOG["families"]
         # One upstream program can be adapted for more than one LEGO build.
@@ -488,8 +490,6 @@ def test_xbox_examples_preserve_input_sampling_and_commands(
 
 
 def test_crane_coasts_when_radio_messages_disappear():
-    from types import ModuleType
-
     path = EXAMPLES / "website/technic_42146_crane.py"
 
     def run(source):
@@ -540,6 +540,182 @@ def test_crane_coasts_when_radio_messages_disappear():
         ("coast", "D"),
         ("coast", "B"),
     ]
+
+
+@pytest.mark.parametrize("disconnect", [False, True], ids=["stop-button", "xbox-loss"])
+def test_excavator_xbox_controls_and_cleanup(disconnect):
+    path = EXAMPLES / "community/technic_42100_base_xbox.py"
+
+    def run(source):
+        with virtual_activity(path.stem) as (world, trace):
+            from pybricks import iodevices, tools
+            from pybricks.parameters import Button
+
+            # Buttons, triggers, left stick, right stick.
+            inputs = iter(
+                [
+                    ((), (0, 0), (0, 0), (0, 0)),
+                    ((Button.RIGHT, Button.A), (100, 50), (0, 100), (-50, 25)),
+                    (
+                        (Button.RIGHT, Button.A, Button.X),
+                        (100, 50),
+                        (0, 100),
+                        (-50, 25),
+                    ),
+                    (
+                        (Button.LB, Button.RB, Button.LEFT, Button.B),
+                        (0, 0),
+                        (0, -100),
+                        (50, -25),
+                    ),
+                    (
+                        (Button.LB, Button.RB, Button.A, Button.B),
+                        (50, 50),
+                        (0, 0),
+                        (0, 0),
+                    ),
+                    ((), (0, 0), (0, 0), (0, 0)),
+                    ((Button.A,), (100, 100), (0, 50), (50, 50)),
+                ]
+            )
+            current, counts, packets, snapshots = [None], [0, 0, 0, 0], [], []
+
+            def buttons():
+                counts[0] += 1
+                current[0] = next(inputs, None)
+                if current[0] is None:
+                    return () if disconnect else (Button.Y,)
+                return current[0][0]
+
+            def sample(index):
+                counts[index] += 1
+                if current[0] is None:
+                    if disconnect:
+                        raise OSError("Xbox disconnected")
+                    return (0, 0)
+                return current[0][index]
+
+            iodevices.XboxController = lambda: SimpleNamespace(
+                buttons=SimpleNamespace(pressed=buttons),
+                triggers=lambda: sample(1),
+                joystick_left=lambda: sample(2),
+                joystick_right=lambda: sample(3),
+            )
+            messaging = ModuleType("pybricks.messaging")
+
+            def radio(broadcast_channel):
+                assert broadcast_channel == 100
+                return SimpleNamespace(broadcast=packets.append)
+
+            messaging.BLERadio = radio
+            sys.modules["pybricks.messaging"] = messaging
+            original_wait = tools.wait
+
+            def wait(milliseconds):
+                assert milliseconds == 50
+                snapshots.append(tuple(world.ports[p]["speed"] for p in "ABD"))
+                original_wait(milliseconds)
+
+            tools.wait = wait
+            if disconnect:
+                with pytest.raises(OSError, match="Xbox disconnected"):
+                    exec(source, {})
+            else:
+                exec(source, {})
+            assert all(world.ports[p]["speed"] == 0 for p in "ABD")
+            assert packets[-1] is None
+            assert counts == ([8, 8, 7, 7] if disconnect else [8, 8, 8, 8])
+            return snapshots, packets, trace
+
+    source = path.read_text()
+    snapshots, packets, trace = run(source)
+    assert run(rebuild(source, builtin_snippets())) == (snapshots, packets, trace)
+    # Shaft directions include the right track and turntable reversal.
+    assert snapshots == [
+        (0, 0, 0),
+        (600, -300, -300),
+        (240, -120, -120),
+        (-600, 600, 300),
+        (0, 0, 0),
+        (0, 0, 0),
+        (600, -600, 0),
+    ]
+    assert packets[:-1] == [
+        (42100, 0, 0, 0, 0, 0),
+        (42100, 1, 100, 25, -50, 100),
+        (42100, 2, 40, 10, -20, 40),
+        (42100, 3, -100, -25, 50, -100),
+        (42100, 4, 0, 0, 0, 0),
+        (42100, 5, 0, 0, 0, 0),
+        (42100, 6, 50, 50, 50, 100),
+    ]
+
+
+def test_excavator_upper_rejects_stale_and_invalid_commands():
+    path = EXAMPLES / "community/technic_42100_upper.py"
+
+    def run(source):
+        with virtual_activity(path.stem) as (world, trace):
+            from pybricks import tools
+
+            moving = (42100, 254, 100, 20, -40, 100)
+            packets = iter(
+                [None]
+                + [moving] * 13
+                + [
+                    (42100, 255, 100, 20, -40, 100),
+                    (42100, 0, -100, -20, 40, -100),
+                    None,
+                    (42146, 1, 100, 100, 100, 100),
+                    (42100, 1, 100),
+                    "unrelated broadcast",
+                    (42100, 1, 101, 0, 0, 0),
+                    (42100, 1, "100", 0, 0, 0),
+                    (42100, 256, 100, 0, 0, 0),
+                    (42100, 1, 0, 0, 0, 0),
+                ]
+            )
+            snapshots = []
+
+            def observe(channel):
+                assert channel == 100
+                try:
+                    return next(packets)
+                except StopIteration:
+                    raise EndInputs from None
+
+            def radio(broadcast_channel, observe_channels):
+                assert broadcast_channel is None and observe_channels == [100]
+                return SimpleNamespace(observe=observe)
+
+            messaging = ModuleType("pybricks.messaging")
+            messaging.BLERadio = radio
+            sys.modules["pybricks.messaging"] = messaging
+            original_wait = tools.wait
+
+            def wait(milliseconds):
+                assert milliseconds == 50
+                snapshots.append(tuple(world.ports[p]["speed"] for p in "ABCD"))
+                original_wait(milliseconds)
+
+            tools.wait = wait
+            with pytest.raises(EndInputs):
+                exec(source, {})
+            assert all(world.ports[p]["speed"] == 0 for p in "ABCD")
+            return snapshots, trace
+
+    source = path.read_text()
+    snapshots, trace = run(source)
+    assert run(rebuild(source, builtin_snippets())) == (snapshots, trace)
+    stopped = (0, 0, 0, 0)
+    moving = (-600, -90, -180, 300)
+    assert snapshots[0] == stopped
+    assert snapshots[1:11] == [moving] * 10
+    # Stop within 500 ms plus one polling interval, even if radio keeps its value.
+    assert snapshots[12:14] == [stopped, stopped]
+    assert snapshots[14] == moving
+    assert snapshots[15] == (600, 90, 180, -300)  # Sequence 255 -> 0 is fresh.
+    assert snapshots[16:] == [stopped] * 8
 
 
 def test_website_inventory_accounts_for_sources_and_exclusions():

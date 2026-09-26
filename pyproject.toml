@@ -9,7 +9,7 @@ description = "Structural Python editor with optional Pybricks robotics support"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
-license-files = ["LICENSE.txt", "examples/pybricks/LICENSE.txt", "examples/pybricks/website/NOTICE.md"]
+license-files = ["LICENSE.txt", "examples/pybricks/LICENSE.txt", "examples/pybricks/website/NOTICE.md", "examples/pybricks/community/licenses/*.txt"]
 authors = [{ name = "Igor Lobanov", email = "lobanov.igor@gmail.com" }]
 dependencies = ["platformdirs>=4,<5", "ruff>=0.14,<1"]
 

@@ -1466,6 +1466,500 @@
         "Python source extracted from the project page, preserving local module imports."
       ],
       "source_file": "spike_45678_choose_program.py"
+    },
+    {
+      "file": "community/technic_42100_base_xbox.py",
+      "set": 42100,
+      "source": "https://raw.githubusercontent.com/gibona/pybricks/74a66fc2c2de2ce7707f15d388f85bd7243c64fa/technic42100bottom.py",
+      "reference": "https://github.com/orgs/pybricks/discussions/1738",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Assembled LEGO 42100 with both Technic hubs",
+        "Compatible Bluetooth Xbox controller"
+      ],
+      "firmware": "4.0",
+      "sha256": "91cd79dc21ee327a84354943f8492fe559018385f2d5bd19c2721edf5ef91142",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-virtual-motors"
+      ],
+      "status": "modernized",
+      "level": "expert",
+      "notes": [
+        "Lower hub: Xbox input, tracks, turntable, command broadcaster",
+        "New implementation using the community control/port layout; upstream source is a reference, not an AST-equivalent import.",
+        "50 ms loop, reduced speed limits, X slow mode, Y stop, 500 ms receiver sequence watchdog; no physical verification."
+      ]
+    },
+    {
+      "file": "community/technic_42100_upper.py",
+      "set": 42100,
+      "source": "https://raw.githubusercontent.com/gibona/pybricks/74a66fc2c2de2ce7707f15d388f85bd7243c64fa/technic42100top.py",
+      "reference": "https://github.com/orgs/pybricks/discussions/1738",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Assembled LEGO 42100 with both Technic hubs",
+        "Compatible Bluetooth Xbox controller"
+      ],
+      "firmware": "4.0",
+      "sha256": "91023a94a41547738f9bd8364f59e3ba178241b86df8da7f256c28b93367aa86",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-virtual-motors"
+      ],
+      "status": "modernized",
+      "level": "expert",
+      "notes": [
+        "Upper hub: boom, arm, bucket tilt/opening, command watchdog",
+        "New implementation using the community control/port layout; upstream source is a reference, not an AST-equivalent import.",
+        "50 ms loop, reduced speed limits, X slow mode, Y stop, 500 ms receiver sequence watchdog; no physical verification."
+      ]
+    },
+    {
+      "file": "community/spike_45678_51515_obstacle_avoidance.py",
+      "set": 45678,
+      "sets": [
+        45678,
+        51515
+      ],
+      "source": "https://raw.githubusercontent.com/The-GummyBears-Robotics/PybricksPythonTut/5d199cfea9246176dc37a153250233f40f3d082c/7-sensors/distance-avoid.py",
+      "source_file": "The-GummyBears-Robotics/PybricksPythonTut/7-sensors/distance-avoid.py",
+      "reference": "https://github.com/The-GummyBears-Robotics/PybricksPythonTut/blob/5d199cfea9246176dc37a153250233f40f3d082c/7-sensors/distance-avoid.py",
+      "author": "The-GummyBears-Robotics",
+      "license": "MIT",
+      "license_file": "community/licenses/gummybears.txt",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Forward sonar C; differential drive motors A/B, 56 mm wheels, 112 mm axle track"
+      ],
+      "firmware": "4.0",
+      "sha256": "be88aaaef4f6000b46261b624a462bfc57b9dd35f448b83725d9dd36a76d7957",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-runtime"
+      ],
+      "status": "modernized",
+      "adaptation": "manual",
+      "level": "intermediate",
+      "notes": [
+        "Preserve the 300 mm obstacle threshold, reverse/turn sequence, speed and timing; brake on exit.",
+        "No physical validation; verify the custom build, gearing and motor directions before use."
+      ]
+    },
+    {
+      "file": "community/spike_45678_51515_follow_object.py",
+      "set": 45678,
+      "sets": [
+        45678,
+        51515
+      ],
+      "source": "https://raw.githubusercontent.com/The-GummyBears-Robotics/PybricksPythonTut/5d199cfea9246176dc37a153250233f40f3d082c/7-sensors/distance-follow.py",
+      "source_file": "The-GummyBears-Robotics/PybricksPythonTut/7-sensors/distance-follow.py",
+      "reference": "https://github.com/The-GummyBears-Robotics/PybricksPythonTut/blob/5d199cfea9246176dc37a153250233f40f3d082c/7-sensors/distance-follow.py",
+      "author": "The-GummyBears-Robotics",
+      "license": "MIT",
+      "license_file": "community/licenses/gummybears.txt",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Forward sonar C; differential drive motors A/B, 56 mm wheels, 112 mm axle track"
+      ],
+      "firmware": "4.0",
+      "sha256": "7157ed2f9811e2c5f0657f3d95fea7e1d4d2607f42aa26a924bade4df19b52c3",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-runtime"
+      ],
+      "status": "modernized",
+      "adaptation": "manual",
+      "level": "advanced",
+      "notes": [
+        "Preserve the 300 mm target and proportional gain; cap speed at +/-150 mm/s and brake on the 2000 mm no-measurement sentinel and on exit.",
+        "No physical validation; verify the custom build, gearing and motor directions before use."
+      ]
+    },
+    {
+      "file": "community/spike_45678_51515_follow_wall.py",
+      "set": 45678,
+      "sets": [
+        45678,
+        51515
+      ],
+      "source": "https://raw.githubusercontent.com/The-GummyBears-Robotics/PybricksPythonTut/5d199cfea9246176dc37a153250233f40f3d082c/7-sensors/distance-wallfollow.py",
+      "source_file": "The-GummyBears-Robotics/PybricksPythonTut/7-sensors/distance-wallfollow.py",
+      "reference": "https://github.com/The-GummyBears-Robotics/PybricksPythonTut/blob/5d199cfea9246176dc37a153250233f40f3d082c/7-sensors/distance-wallfollow.py",
+      "author": "The-GummyBears-Robotics",
+      "license": "MIT",
+      "license_file": "community/licenses/gummybears.txt",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "RIGHT-facing sonar C; differential drive motors A/B, 56 mm wheels, 112 mm axle track"
+      ],
+      "firmware": "4.0",
+      "sha256": "2dfe495cb3aaa3ba06a8d2170b41c2a94796ba751a3265713e36e504f588f516",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-runtime"
+      ],
+      "status": "modernized",
+      "adaptation": "manual",
+      "level": "advanced",
+      "notes": [
+        "Preserve the 200 mm target and proportional gain; cap turn rate at +/-90 deg/s and brake on missing measurements and on exit.",
+        "No physical validation; verify the custom build, gearing and motor directions before use."
+      ]
+    },
+    {
+      "file": "community/spike_45678_51515_stop_at_red.py",
+      "set": 45678,
+      "sets": [
+        45678,
+        51515
+      ],
+      "source": "https://raw.githubusercontent.com/The-GummyBears-Robotics/PybricksPythonTut/5d199cfea9246176dc37a153250233f40f3d082c/7-sensors/color-stopatcolor.py",
+      "source_file": "The-GummyBears-Robotics/PybricksPythonTut/7-sensors/color-stopatcolor.py",
+      "reference": "https://github.com/The-GummyBears-Robotics/PybricksPythonTut/blob/5d199cfea9246176dc37a153250233f40f3d082c/7-sensors/color-stopatcolor.py",
+      "author": "The-GummyBears-Robotics",
+      "license": "MIT",
+      "license_file": "community/licenses/gummybears.txt",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Downward color sensor C; differential drive motors A/B, 56 mm wheels, 112 mm axle track"
+      ],
+      "firmware": "4.0",
+      "sha256": "850c449251123147c4c6f3c85007b5fb9650a51e9ff151bce135dad447ed2103",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-runtime"
+      ],
+      "status": "modernized",
+      "adaptation": "manual",
+      "level": "intermediate",
+      "notes": [
+        "Preserve red detection and display feedback; brake instead of coasting, including on interrupted sensor reads.",
+        "No physical validation; verify the custom build, gearing and motor directions before use."
+      ]
+    },
+    {
+      "file": "community/spike_45678_51515_gyro_straight.py",
+      "set": 45678,
+      "sets": [
+        45678,
+        51515
+      ],
+      "source": "https://raw.githubusercontent.com/The-GummyBears-Robotics/PybricksPythonTut/5d199cfea9246176dc37a153250233f40f3d082c/7-sensors/imu-drivingbase1.py",
+      "source_file": "The-GummyBears-Robotics/PybricksPythonTut/7-sensors/imu-drivingbase1.py",
+      "reference": "https://github.com/The-GummyBears-Robotics/PybricksPythonTut/blob/5d199cfea9246176dc37a153250233f40f3d082c/7-sensors/imu-drivingbase1.py",
+      "author": "The-GummyBears-Robotics",
+      "license": "MIT",
+      "license_file": "community/licenses/gummybears.txt",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Differential drive motors A/B, 56 mm wheels, 112 mm axle track; level, stationary hub at startup"
+      ],
+      "firmware": "4.0",
+      "sha256": "056b580b2fe10afefc76164b8afc602d33a0205ec86334621dcfbf720e9fdd22",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-runtime"
+      ],
+      "status": "modernized",
+      "adaptation": "manual",
+      "level": "intermediate",
+      "notes": [
+        "Wait for IMU readiness before enabling gyro; preserve the 1000 mm movement and feedback, brake on exit.",
+        "No physical validation; verify the custom build, gearing and motor directions before use."
+      ]
+    },
+    {
+      "file": "community/spike_45678_51515_parallel_motors.py",
+      "set": 45678,
+      "sets": [
+        45678,
+        51515
+      ],
+      "source": "https://raw.githubusercontent.com/The-GummyBears-Robotics/PybricksPythonTut/5d199cfea9246176dc37a153250233f40f3d082c/10-multitask/twomotors.py",
+      "source_file": "The-GummyBears-Robotics/PybricksPythonTut/10-multitask/twomotors.py",
+      "reference": "https://github.com/The-GummyBears-Robotics/PybricksPythonTut/blob/5d199cfea9246176dc37a153250233f40f3d082c/10-multitask/twomotors.py",
+      "author": "The-GummyBears-Robotics",
+      "license": "MIT",
+      "license_file": "community/licenses/gummybears.txt",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Two free-running motors A/B"
+      ],
+      "firmware": "4.0",
+      "sha256": "ce501035d52a4d459ee749d5e2277622235be05c01aed6a5476b7a69f239308a",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-runtime"
+      ],
+      "status": "adapted",
+      "adaptation": "automatic",
+      "level": "expert",
+      "notes": [
+        "Formatting only; both motor angles and speeds and the wait-for-both behavior are unchanged.",
+        "No physical validation; verify the custom build, gearing and motor directions before use."
+      ]
+    },
+    {
+      "file": "community/spike_45678_51515_motor_timeout.py",
+      "set": 45678,
+      "sets": [
+        45678,
+        51515
+      ],
+      "source": "https://raw.githubusercontent.com/The-GummyBears-Robotics/PybricksPythonTut/5d199cfea9246176dc37a153250233f40f3d082c/10-multitask/timeout.py",
+      "source_file": "The-GummyBears-Robotics/PybricksPythonTut/10-multitask/timeout.py",
+      "reference": "https://github.com/The-GummyBears-Robotics/PybricksPythonTut/blob/5d199cfea9246176dc37a153250233f40f3d082c/10-multitask/timeout.py",
+      "author": "The-GummyBears-Robotics",
+      "license": "MIT",
+      "license_file": "community/licenses/gummybears.txt",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Free-running motor A"
+      ],
+      "firmware": "4.0",
+      "sha256": "a7bcb3a22151c94a23a868e4c262fc5fdfb49ce9ffdbaa176c2302f7958e8f1d",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-runtime"
+      ],
+      "status": "modernized",
+      "adaptation": "manual",
+      "level": "expert",
+      "notes": [
+        "Preserve 1080 deg movement versus 1000 ms timeout; stop in finally, including task failures.",
+        "No physical validation; verify the custom build, gearing and motor directions before use."
+      ]
+    },
+    {
+      "file": "community/spike_45678_51515_obstacle_race.py",
+      "set": 45678,
+      "sets": [
+        45678,
+        51515
+      ],
+      "source": "https://raw.githubusercontent.com/The-GummyBears-Robotics/PybricksPythonTut/5d199cfea9246176dc37a153250233f40f3d082c/10-multitask/multitaskuntilonewin.py",
+      "source_file": "The-GummyBears-Robotics/PybricksPythonTut/10-multitask/multitaskuntilonewin.py",
+      "reference": "https://github.com/The-GummyBears-Robotics/PybricksPythonTut/blob/5d199cfea9246176dc37a153250233f40f3d082c/10-multitask/multitaskuntilonewin.py",
+      "author": "The-GummyBears-Robotics",
+      "license": "MIT",
+      "license_file": "community/licenses/gummybears.txt",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Motor A and forward ultrasonic sensor C; this is a one-motor demonstration, not a two-wheel driving base"
+      ],
+      "firmware": "4.0",
+      "sha256": "cd87feab17b19e70734c8e07d27736ad3a10a31dd61e5e959a3f49c2066dfaaf",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-runtime"
+      ],
+      "status": "modernized",
+      "adaptation": "manual",
+      "level": "expert",
+      "notes": [
+        "Await sensor I/O in the coroutine; preserve obstacle/time/blink race, stop in finally and report either stop reason accurately.",
+        "No physical validation; verify the custom build, gearing and motor directions before use."
+      ]
+    },
+    {
+      "file": "community/spike_45678_51515_xbox_drive_arm.py",
+      "set": 45678,
+      "sets": [
+        45678,
+        51515
+      ],
+      "source": "https://raw.githubusercontent.com/yavuzselimkolbasar/Pybricks-Lego-Spike/79199995d335f8eaeaf262079960376dbf2c5b97/DrivingBaseXboxController.py",
+      "source_file": "yavuzselimkolbasar/Pybricks-Lego-Spike/DrivingBaseXboxController.py",
+      "reference": "https://github.com/yavuzselimkolbasar/Pybricks-Lego-Spike/blob/79199995d335f8eaeaf262079960376dbf2c5b97/DrivingBaseXboxController.py",
+      "author": "YavuzSelimKolbasar",
+      "license": "MIT",
+      "license_file": "community/licenses/yavuzselimkolbasar.txt",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Custom differential chassis: left C clockwise, right D counterclockwise, arm E; Bluetooth Xbox controller"
+      ],
+      "firmware": "4.0",
+      "sha256": "adf3733dd75d564aa9e66bb097a02b0df20fbe86d3ae3846b6f4d69f232780b6",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-runtime"
+      ],
+      "status": "modernized",
+      "adaptation": "manual",
+      "level": "advanced",
+      "notes": [
+        "Correct LT/RT order; normalize mixed duty cycles to +/-80%, sample controls once, retain 80% steering deadzone; manually zero raised arm, B exits and finally brakes.",
+        "No physical validation; verify the custom build, gearing and motor directions before use."
+      ]
+    },
+    {
+      "file": "community/spike_45678_51515_xbox_car_lift.py",
+      "set": 45678,
+      "sets": [
+        45678,
+        51515
+      ],
+      "source": "https://raw.githubusercontent.com/yavuzselimkolbasar/Pybricks-Lego-Spike/79199995d335f8eaeaf262079960376dbf2c5b97/Remote-Car.py",
+      "source_file": "yavuzselimkolbasar/Pybricks-Lego-Spike/Remote-Car.py",
+      "reference": "https://github.com/yavuzselimkolbasar/Pybricks-Lego-Spike/blob/79199995d335f8eaeaf262079960376dbf2c5b97/Remote-Car.py",
+      "author": "YavuzSelimKolbasar",
+      "license": "MIT",
+      "license_file": "community/licenses/yavuzselimkolbasar.txt",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Custom steering chassis: steering B, drive D, lift E clockwise; Bluetooth Xbox controller"
+      ],
+      "firmware": "4.0",
+      "sha256": "2527c1854810fdf70ddd35895bec95c79d7cb6e8658e7e536b7d226c68a94d6f",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-runtime"
+      ],
+      "status": "modernized",
+      "adaptation": "manual",
+      "level": "advanced",
+      "notes": [
+        "Replace invalid nonbreaking indentation; use percentage duty cycles, edge-trigger Y, brake inactive mechanisms, manually zero centered steering, B exits and finally brakes; remove empty feedback stub.",
+        "No physical validation; verify the custom build, gearing and motor directions before use."
+      ]
+    },
+    {
+      "file": "community/spike_45678_51515_xbox_boxer.py",
+      "set": 45678,
+      "sets": [
+        45678,
+        51515
+      ],
+      "source": "https://raw.githubusercontent.com/yavuzselimkolbasar/Pybricks-Lego-Spike/79199995d335f8eaeaf262079960376dbf2c5b97/Boxing.py",
+      "source_file": "yavuzselimkolbasar/Pybricks-Lego-Spike/Boxing.py",
+      "reference": "https://github.com/yavuzselimkolbasar/Pybricks-Lego-Spike/blob/79199995d335f8eaeaf262079960376dbf2c5b97/Boxing.py",
+      "author": "YavuzSelimKolbasar",
+      "license": "MIT",
+      "license_file": "community/licenses/yavuzselimkolbasar.txt",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Custom four-motor boxer: left A counterclockwise, right B, left arm C, right arm D clockwise; Bluetooth Xbox controller; SPIKE 45678 needs one additional motor"
+      ],
+      "firmware": "4.0",
+      "sha256": "4c44df48bbc2cc58966a24afc3be5b2f0294753cdea9770e41610b97e59036cf",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-runtime"
+      ],
+      "status": "modernized",
+      "adaptation": "manual",
+      "level": "advanced",
+      "notes": [
+        "Correct percentage scaling; normalize wheel powers, use opposing-trigger cancellation; nonblocking 500 ms arm returns, one punch/defense per button press, manual arm zero, B exits and finally brakes.",
+        "No physical validation; verify the custom build, gearing and motor directions before use."
+      ]
+    },
+    {
+      "file": "community/technic_42100_base_remote.py",
+      "set": 42100,
+      "sets": [
+        42100
+      ],
+      "source": "https://raw.githubusercontent.com/Tcm0/PybricksRemoteLayouts/7e2580ec5e525cb017ffa10348abee71fceac800/42100%20LOWER%20HUB%20EXPERIMENTAL.py",
+      "source_file": "Tcm0/PybricksRemoteLayouts/42100 LOWER HUB EXPERIMENTAL.py",
+      "reference": "https://github.com/Tcm0/PybricksRemoteLayouts/blob/7e2580ec5e525cb017ffa10348abee71fceac800/42100%20LOWER%20HUB%20EXPERIMENTAL.py",
+      "author": "Tcm0",
+      "license": "MIT",
+      "license_file": "community/licenses/tcm0.txt",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Assembled LEGO 42100: lower hub motors A/B/D and its own LEGO Powered Up remote 88010"
+      ],
+      "firmware": "4.0",
+      "sha256": "2dd4c7f4611f2e2708d6a92a147ff5134de8868616719f227be9d664f999f564",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-runtime"
+      ],
+      "status": "modernized",
+      "adaptation": "manual",
+      "level": "advanced",
+      "notes": [
+        "Retain experimental upstream default motor directions; explicit imports, initial duty limit 40%, cancel opposing buttons, brake inactive mechanisms and on exit; center button exits this hub only.",
+        "Upstream explicitly labels both programs experimental and untested on LEGO 42100; physical validation is still outstanding."
+      ]
+    },
+    {
+      "file": "community/technic_42100_upper_remote.py",
+      "set": 42100,
+      "sets": [
+        42100
+      ],
+      "source": "https://raw.githubusercontent.com/Tcm0/PybricksRemoteLayouts/7e2580ec5e525cb017ffa10348abee71fceac800/42100%20UPPER%20HUB%20EXPERIMENTAL.py",
+      "source_file": "Tcm0/PybricksRemoteLayouts/42100 UPPER HUB EXPERIMENTAL.py",
+      "reference": "https://github.com/Tcm0/PybricksRemoteLayouts/blob/7e2580ec5e525cb017ffa10348abee71fceac800/42100%20UPPER%20HUB%20EXPERIMENTAL.py",
+      "author": "Tcm0",
+      "license": "MIT",
+      "license_file": "community/licenses/tcm0.txt",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Assembled LEGO 42100: upper hub motors A/B/C/D and a second LEGO Powered Up remote 88010"
+      ],
+      "firmware": "4.0",
+      "sha256": "cfee1ff6d7de65ca1fa24a39914d6a6b3688aa14d4c06f213efc523d9c6bcb32",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-runtime"
+      ],
+      "status": "modernized",
+      "adaptation": "manual",
+      "level": "advanced",
+      "notes": [
+        "Retain experimental upstream default motor directions; explicit imports, initial duty limit 40%, cancel opposing buttons, brake inactive mechanisms and on exit; center button exits this hub only.",
+        "Upstream explicitly labels both programs experimental and untested on LEGO 42100; physical validation is still outstanding."
+      ]
     }
   ]
 }

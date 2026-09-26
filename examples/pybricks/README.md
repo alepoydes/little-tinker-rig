@@ -1,8 +1,9 @@
 # LEGO set examples from Pybricks
 
-The catalog contains **69 Python files**: all 37 files in the BOOST, Robot Inventor,
+The catalog contains **84 Python files**: all 37 files in the BOOST, Robot Inventor,
 SPIKE Prime and Technic families of the pinned Pybricks Projects revision, plus
-a 42109 Xbox adaptation and 31 [website programs](website/README.md).
+a 42109 Xbox adaptation, 31 [website programs](website/README.md), and 15
+[community programs](community/README.md).
 The Projects repository does not include every example
 published on the Pybricks website. EV3 and City hubs are outside this import.
 Filenames include the LEGO set number, not just
@@ -19,6 +20,11 @@ Sources: [Pybricks Projects](https://github.com/pybricks/pybricks-projects), rev
 Copyright (c) 2018-2023 The Pybricks Authors. Original comments and author credits
 are retained under the [upstream MIT license](LICENSE.txt) for repository imports.
 Website downloads have their own [source notice](website/NOTICE.md).
+The Xbox 42100 pair consists of new implementations of a community control scheme; its
+[credits and changes](community/README.md#sources-and-validation) distinguish them
+from behavior-preserving imports.
+The additional community programs retain their authors' [MIT notices](community/SOURCES.md),
+with pinned source links in each file and explicit behavior changes in the catalog.
 [The machine-readable catalog](catalog.json) records original paths and SHA-256
 hashes, set numbers, dependencies, roles and validation for every file.
 The 42109 Xbox variant reuses the MIT Audi Xbox example with the motor configuration
@@ -28,6 +34,10 @@ Its catalog entry distinguishes that guide from the code's upstream source.
 ## Repository inventory
 
 The website additions and their equipment are listed in the [website inventory](website/README.md).
+The [community guide](community/README.md) covers sensor lessons, asynchronous
+tasks, custom Xbox robots and both Xbox/radio and dual-remote 42100 controls.
+The [community source review](community/SOURCES.md) records included programs,
+duplicates and deferred candidates; it is a selection, not an exhaustive archive.
 The rows below cover the pinned repository and the earlier 42109 adaptation.
 Every program rebuilds recognized blocks without
 changing executable AST structure, and compiles for MPY ABI 5 and 6. These checks
