@@ -40,6 +40,9 @@ Scratch is visible by default and can be resized or closed with its dock control
 The bottom Scratch button restores it. Control mode hides Scratch. The title bar
 always shows minimize, maximize/restore, and close. Double-click it to toggle
 maximization; drag it or a window edge to move or resize. F11 toggles full screen.
+After a normal close, the next launch restores the window position, size and
+maximized or full-screen state. A minimized window reopens visibly. Qt adjusts
+off-screen positions when the monitor configuration changes.
 
 Block titles and action symbols explain their purpose without adding comments to
 the Python file. Titles and source comments use the editor's normal font size.

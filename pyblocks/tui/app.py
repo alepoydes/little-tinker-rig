@@ -544,7 +544,7 @@ class Studio(App):
                     values["name"], values["transport"], values["model"]
                 ),
                 fields=[
-                    ("transport", "virtual", "virtual / ble / usb"),
+                    ("transport", "ble", "ble / usb / virtual"),
                     ("model", "inventor", "inventor / boost / technic (virtual)"),
                     ("name", "", "Bluetooth hub"),
                 ],

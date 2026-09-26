@@ -1,6 +1,8 @@
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from pyblocks.core import edit
 from pyblocks.core.presentation import PALETTE
 from pyblocks.core.syntax import Syntax
@@ -154,6 +156,67 @@ def test_courier_ports_names_and_plain_fields_accept_real_clicks(tmp_path, qt_ap
         QTest.keyClicks(field.line_edit, "right_motor")
         QTest.keyClick(field.line_edit, Qt.Key.Key_Return)
         assert "right_motor = Motor(Port.B)" in window.session.document.state.source
+    finally:
+        close_window(window)
+
+
+@pytest.mark.parametrize(
+    "state", ["normal", "maximized", "fullscreen", "minimized", "maximized_minimized"]
+)
+def test_window_geometry_and_state_survive_reopening(tmp_path, qt_app, state):
+    from PySide6.QtCore import QSettings
+
+    from pyblocks.qt.app import Studio
+
+    path = tmp_path / "main.py"
+    path.write_text("print(1)\n")
+    window = Studio(path)
+    window.resize(1100, 760)
+    window.move(45, 60)
+    window.show()
+    qt_app.processEvents()
+    normal = window.geometry()
+    if state.startswith("maximized"):
+        window.showMaximized()
+    elif state == "fullscreen":
+        window.showFullScreen()
+    qt_app.processEvents()
+    if state.endswith("minimized"):
+        window.showMinimized()
+        qt_app.processEvents()
+    assert window.close()
+    stored = QSettings(window.settings.fileName(), QSettings.Format.IniFormat)
+    assert stored.value("windowGeometry")
+
+    restored = Studio(path)
+    restored.show()
+    qt_app.processEvents()
+    try:
+        assert not restored.isMinimized()
+        assert restored.isMaximized() == state.startswith("maximized")
+        assert restored.isFullScreen() == (state == "fullscreen")
+        assert restored.title_bar.isVisible() == (state != "fullscreen")
+        restored.showNormal()
+        qt_app.processEvents()
+        assert restored.geometry() == normal
+    finally:
+        close_window(restored)
+
+
+def test_cancelled_close_does_not_replace_saved_geometry(tmp_path, qt_app):
+    from pyblocks.qt.app import Studio
+
+    window = Studio(tmp_path / "main.py")
+    window.show()
+    qt_app.processEvents()
+    saved = window.saveGeometry()
+    window.settings.setValue("windowGeometry", saved)
+    window.showMaximized()
+    try:
+        with patch.object(window, "confirm_close", return_value=False):
+            assert not window.close()
+        assert window.isVisible()
+        assert window.settings.value("windowGeometry") == saved
     finally:
         close_window(window)
 

@@ -1,9 +1,12 @@
 """Standalone Pybricks port monitor and manual motor driver (MicroPython)."""
 
-import pybricks.hubs as hubs
-import pybricks.pupdevices as pup
 from pybricks.parameters import Port
 from pybricks.tools import StopWatch, read_input_byte, wait
+
+# Firmware modules need not expose their children as attributes. Request the
+# leaf modules explicitly; this also works with CPython's package importer.
+hubs = __import__("pybricks.hubs", None, None, ("*",))
+pup = __import__("pybricks.pupdevices", None, None, ("*",))
 
 try:
     from pybricks.iodevices import PUPDevice

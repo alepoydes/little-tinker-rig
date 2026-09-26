@@ -121,6 +121,7 @@ def connect(window, model="inventor"):
     def choose():
         dialog = QApplication.activeModalWidget()
         assert isinstance(dialog, ConnectDialog)
+        dialog.transport.setCurrentIndex(dialog.transport.findData("virtual"))
         dialog.model.setCurrentIndex(dialog.model.findData(model))
         QTest.mouseClick(
             dialog.findChild(QDialogButtonBox).button(

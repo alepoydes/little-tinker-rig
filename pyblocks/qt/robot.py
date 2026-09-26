@@ -112,7 +112,7 @@ class Robot(QObject):
         await self.connection.connect(name, transport)
         self.output.emit(tr("Hub connected.") + "\n")
 
-    def connect_hub(self, name=None, transport="virtual", model="inventor"):
+    def connect_hub(self, name=None, transport="ble", model="inventor"):
         return self.submit(self._connect(name, transport, model), operation=True)
 
     def run_file(self, path):

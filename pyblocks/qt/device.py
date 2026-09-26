@@ -67,6 +67,7 @@ class ConnectDialog(QDialog):
                 self.transport.currentData() == "virtual"
             )
         )
+        self.transport.setCurrentIndex(self.transport.findData("ble"))
         form.addRow(N_("Connection"), self.transport)
         form.addRow(N_("Bluetooth name"), self.name)
         form.addRow(N_("Virtual hub model"), self.model)

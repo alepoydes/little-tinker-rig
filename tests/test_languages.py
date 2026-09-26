@@ -39,14 +39,11 @@ def test_english_source_and_russian_catalog():
 def test_launch_preserves_language_choice(tmp_path, qt_app, stored, expected):
     from PySide6.QtCore import QTimer
 
-    from pyblocks.qt.app import launch
+    from pyblocks.qt.app import QSettings, launch
 
-    class Settings:
-        def __init__(self, *args):
-            pass
-
-        def value(self, key, default):
-            return default if stored is None else stored
+    settings = QSettings()
+    if stored is not None:
+        settings.setValue("language", stored)
 
     observed = []
 
@@ -64,9 +61,8 @@ def test_launch_preserves_language_choice(tmp_path, qt_app, stored, expected):
         window.close()
         qt_app.quit()
 
-    with patch("pyblocks.qt.app.QSettings", Settings):
-        QTimer.singleShot(0, inspect_window)
-        launch(tmp_path / "main.py")
+    QTimer.singleShot(0, inspect_window)
+    launch(tmp_path / "main.py")
     assert observed == [
         (expected, "Программа" if expected == "ru" else "Program", expected)
     ]

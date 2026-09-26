@@ -198,6 +198,8 @@ class Studio(QMainWindow):
         self.documents.tabBar().tabMoved.connect(lambda *_: self.recovery.schedule())
         self.recovery.schedule()
         QTimer.singleShot(0, self.recovery.offer)
+        if geometry := self.settings.value("windowGeometry", b""):
+            self.restoreGeometry(geometry)
 
     def _icon(self, theme, fallback):
         return QIcon.fromTheme(
@@ -1407,6 +1409,8 @@ class Studio(QMainWindow):
             self.error(str(error))
             event.ignore()
             return
+        self.settings.setValue("windowGeometry", self.saveGeometry())
+        self.settings.sync()
         event.accept()
 
     def ensure_user_collection(self):

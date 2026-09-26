@@ -17,6 +17,16 @@ those tests correctly. No test requires a physical robot.
 
 ## Invariants
 
+Window geometry uses Qt's save/restore API, including maximized/full-screen state
+and screen-bound adjustment. Save only after close confirmation and recovery
+cleanup succeed. Reopening must remain visible even after closing while minimized.
+
+Hub firmware modules are registered by full name and need not be attributes of
+their parent module. Load modules directly when inspecting available classes;
+do not assume `import pybricks.hubs as hubs` has CPython package semantics.
+Monitor tests must exercise this import boundary as well as port telemetry and
+motor cleanup. Compilation alone cannot detect missing module attributes.
+
 Inline block display has a per-instance Auto/Source/Definition choice. Auto considers
 owned comments, never blank lines. Definition text is a source-mapped projection;
 changing its mode must not commit, save, format or execute any code. All pointer,

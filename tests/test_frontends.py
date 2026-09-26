@@ -264,7 +264,7 @@ def test_qt_upload_reports_worker_output_progress_and_failure(
     try:
         with capture_output(window.append_output):
             robot = window._robot()
-            future = robot.connect_hub(transport="ble")
+            future = robot.connect_hub()
             qt_wait(lambda: future.done() and not window.hub_is_busy)
             window.upload_hub()
             qt_wait(lambda: entered.is_set() and "50%" in window.console.toPlainText())
@@ -417,7 +417,7 @@ def test_qt_interrupts_pending_connection_before_disconnect(qt_app, monkeypatch)
     monkeypatch.setattr("pyblocks.qt.robot.VirtualConnection", Connection)
     robot = Robot()
     try:
-        future = robot.connect_hub()
+        future = robot.connect_hub(transport="virtual")
         qt_wait(entered.is_set)
         disconnected = robot.disconnect_hub()
         qt_wait(disconnected.done)

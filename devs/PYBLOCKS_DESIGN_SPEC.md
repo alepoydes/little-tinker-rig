@@ -208,6 +208,11 @@ The primary desktop layout should conceptually have three columns:
 
 The exact layout can differ in the TUI, but the same concepts should exist.
 
+The desktop window saves its geometry only after closing is accepted. Restore
+position, normal size and maximized/full-screen state before the next first show,
+using Qt's geometry serialization and screen-bound adjustment. Do not restore a
+minimized state or replace saved geometry when closing is cancelled.
+
 ### 7.1 Main source
 
 The main editor represents a valid Python program.

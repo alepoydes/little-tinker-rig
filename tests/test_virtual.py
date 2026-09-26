@@ -270,6 +270,66 @@ async def test_virtual_error_and_stderr_do_not_break_telemetry(tmp_path):
         await hub.disconnect()
 
 
+@pytest.mark.parametrize(
+    "model, ports", [("inventor", "ABCDEF"), ("boost", "ABCD"), ("technic", "ABCD")]
+)
+def test_monitor_imports_firmware_modules_and_reports_ports(model, ports, capsys):
+    import builtins
+    import queue
+    from unittest.mock import patch
+
+    from pyblocks.pybricks.sim_runtime import install_modules
+
+    class Finished(BaseException):
+        pass
+
+    world = World(model=model)
+    with patch.dict(sys.modules):
+        install_modules(world, queue.Queue())
+        package = sys.modules["pybricks"]
+        modules = {
+            "pybricks." + name: value
+            for name, value in vars(package).items()
+            if not name.startswith("_")
+        }
+        for name in tuple(vars(package)):
+            if not name.startswith("_"):
+                delattr(package, name)
+
+        def firmware_import(name, globals=None, locals=None, fromlist=(), level=0):
+            # Built-in firmware modules are registered by full name and return
+            # the leaf, even without fromlist. There is no parent.hubs attribute.
+            if name.startswith("pybricks."):
+                if name not in modules:
+                    raise ImportError(name)
+                return modules[name]
+            return builtins.__import__(name, globals, locals, fromlist, level)
+
+        def finish(milliseconds):
+            raise Finished()
+
+        modules["pybricks.tools"].wait = finish
+        monitor = Path(__file__).parents[1] / "pyblocks/pybricks/hub_monitor.py"
+        with pytest.raises(Finished):
+            exec(
+                compile(monitor.read_text(), str(monitor), "exec"),
+                {
+                    "__name__": "__main__",
+                    "__builtins__": dict(vars(builtins), __import__=firmware_import),
+                },
+            )
+    reports = []
+    TelemetryStream(lambda text: None, reports.append).feed(
+        capsys.readouterr().out.encode()
+    )
+    assert len(reports) == 1
+    assert reports[0]["model"] == model
+    assert set(reports[0]["ports"]) == set(ports)
+    assert reports[0]["ports"]["A"]["type"] == "motor"
+    assert reports[0]["battery_mv"] > 0
+    assert reports[0]["monitoring"] is True
+
+
 def test_monitor_brakes_started_motors_if_later_device_fails(monkeypatch):
     import queue
     import runpy

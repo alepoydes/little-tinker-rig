@@ -349,7 +349,7 @@ def test_virtual_runtime_and_run_stored_keep_the_uploaded_source(tmp_path, qt_ap
     window = Studio(path)
     try:
         robot = window._robot()
-        robot.connect_hub()
+        robot.connect_hub(transport="virtual")
         wait_until(lambda: window.hub_info.connected and not window.hub_is_busy)
         window.run_hub()
         wait_until(
