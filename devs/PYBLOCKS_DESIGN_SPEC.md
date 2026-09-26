@@ -1823,3 +1823,54 @@ by source text. Hover and active editing highlight the group and show its use co
 Editing any occurrence commits all occurrences once; Escape changes nothing.
 Inline expressions still evaluate at every use, while function-block arguments
 evaluate once. UI synchronization does not change Python evaluation semantics.
+
+### Optional lessons and assembly workspaces
+
+Lessons (`.pylesson`) are immutable, localized materials with goals, stages,
+progressive hints, allowed block identities and explicit completion criteria.
+Student projects (`.pyblocks`) snapshot these materials together with ordinary
+Python files, per-file Scratch, editor state and lesson progress. The writable
+working directory belongs to the user data directory. Archives are atomic, detect
+external modifications and retain unfinished Python. Recovery retains archive
+save baselines; normal close removes private working copies.
+
+Stage navigation never edits program source. Applying a starter is explicit and
+undoable through the editor's normal commit operation, which also remaps selection.
+Visiting an assembly step, changing a camera or viewing a hint never completes a
+physical task. Manual completion and observable device checks remain distinct.
+
+The lesson palette restricts library search and contextual expression proposals,
+without removing recognition definitions. A stage may expose a block above the
+global learning level. Free exploration lifts the palette constraint and preserves
+progress. Multiple programs can belong to one project; saving any of them saves
+the project's open programs and progress together.
+
+Robot models use LDraw/MPD geometry. Original models and instructional materials
+belong to the lesson; third-party libraries stay outside the repository. A library
+reference pins its id, version, HTTPS URL and SHA-256. Opening Assembly lazily
+downloads a verified ZIP into the shared user cache, with progress, cancellation,
+retry and local ZIP import. The loader indexes the archive once and reads only
+needed members into memory, without extracting the library. Updates are explicit;
+a changed remote archive fails verification instead of silently changing geometry.
+Local project-owned libraries may also be ZIP files or directories.
+
+Normal project saves retain external references. Export with resources creates a
+separate offline project containing only the model's transitive dependencies,
+colors, attribution and licenses. It includes current drafts, Scratch and progress
+without changing the original save path or save baseline. Export workers own an
+independent snapshot so closing a project cannot invalidate an ongoing export.
+
+The scene
+contains shared meshes, transformed instances, stable identities, submodel groups
+and authored steps. Device metadata binds instance IDs to expected ports. This is
+instructional wiring; the Python program remains the runtime source of truth.
+Assembly uses its own workspace and supports orbit/pan/zoom, picking, current-step
+parts, previous-step muting, optional future outlines and camera hints. OpenGL
+failure must leave instructional text and part information usable. No physics,
+automatic assembly planning or proprietary asset extraction is implied.
+
+The first complete lesson teaches a two-wheel SPIKE Prime base: assemble, check
+motor ports, drive, experiment, add a distance sensor and stop before an obstacle.
+Full lesson construction is reviewed once as a development exercise. Recurring
+checks protect persistence, palette isolation, geometry reuse, mating coordinates,
+step visibility, picking and completion semantics.

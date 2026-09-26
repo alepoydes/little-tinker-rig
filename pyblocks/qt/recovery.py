@@ -113,6 +113,10 @@ class Recovery(QObject):
                     pages = []
                     for item in data["documents"]:
                         page = self.window.open_document(Path(item["path"]))
+                        if item.get("lesson_project"):
+                            page.lesson_project = self.window.lessons.restore(
+                                item["lesson_project"]
+                            )
                         if page.dirty and (
                             page.text != item["source"]
                             or list(page.session.document.state.scratch)

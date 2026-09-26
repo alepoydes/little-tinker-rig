@@ -34,6 +34,7 @@ class DocumentPage(QWidget):
         super().__init__()
         self.session = Session(path, collections, allow_draft=True)
         self.unnamed = False
+        self.lesson_project = None
         self.session.editor.select(0)
         self.code_active = False
         self.source = SourceView(self.session)
@@ -127,6 +128,9 @@ class DocumentPage(QWidget):
             unnamed=self.unnamed,
             cursor=editor.textCursor().position(),
             scroll=editor.verticalScrollBar().value(),
+            lesson_project=(
+                self.lesson_project.checkpoint() if self.lesson_project else None
+            ),
         )
 
     def restore(self, checkpoint):

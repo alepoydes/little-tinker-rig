@@ -108,6 +108,7 @@ class Library(QTreeWidget):
         self.level = "all"
         self.context_key = None
         self.eligible_ids = None
+        self.lesson_ids = None
         self.load(snippets)
 
     def load(self, snippets):
@@ -183,6 +184,10 @@ class Library(QTreeWidget):
                     (
                         self.eligible_ids is None
                         or item.data(0, IDENTITY) in self.eligible_ids
+                    )
+                    and (
+                        self.lesson_ids is None
+                        or item.data(0, IDENTITY) in self.lesson_ids
                     )
                     and (
                         self.level == "all"

@@ -450,6 +450,11 @@ def expression_menu(view, point, *, menu=None):
                 view.failed.emit(str(error))
 
         for operation in OPERATIONS:
+            if (
+                view.expression_operations is not None
+                and operation.template not in view.expression_operations
+            ):
+                continue
             level = view.expression_level
             if (
                 level != "all"

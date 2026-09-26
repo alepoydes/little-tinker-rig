@@ -1,0 +1,162 @@
+{
+  "format": 1,
+  "model": "car.mpd",
+  "library": {
+    "id": "ldraw",
+    "version": "2026-08",
+    "url": "https://library.ldraw.org/library/updates/complete.zip",
+    "sha256": "d2a695868ed2b3957c45b022a6451908edab22cc043179dd61d18dd382b35e11"
+  },
+  "description": {
+    "en": "Rotate with the left mouse button, pan with the right button, and zoom with the wheel. The current step keeps its colors; earlier parts are muted.",
+    "ru": "Вращай левой кнопкой мыши, сдвигай правой, приближай колёсиком. Детали текущего шага сохраняют цвет, предыдущие приглушены."
+  },
+  "parts": {
+    "4519.dat": {
+      "en": "Axle · 3 modules",
+      "ru": "Ось · 3 модуля"
+    },
+    "32524.dat": {
+      "en": "Beam · 7 modules",
+      "ru": "Балка · 7 модулей"
+    },
+    "39367p01.dat": {
+      "en": "Wheel · 56 mm",
+      "ru": "Колесо · 56 мм"
+    },
+    "45601c01.dat": {
+      "en": "SPIKE Prime hub with battery",
+      "ru": "Хаб SPIKE Prime с аккумулятором"
+    },
+    "2780.dat": {
+      "en": "Friction pin · 2 modules",
+      "ru": "Пин с трением · 2 модуля"
+    },
+    "54696p01.dat": {
+      "en": "Medium angular motor",
+      "ru": "Средний угловой мотор"
+    },
+    "39370c01.dat": {
+      "en": "H-shaped support with ball",
+      "ru": "H-образная опора с шаром"
+    },
+    "37316.dat": {
+      "en": "Ultrasonic distance sensor",
+      "ru": "Ультразвуковой датчик расстояния"
+    }
+  },
+  "steps": {
+    "1": {
+      "text": {
+        "en": "Start with the hub, battery installed. The yellow bottom faces down. Ports A and B are at the front of this robot.",
+        "ru": "Начни с хаба с установленным аккумулятором. Жёлтая часть внизу. Порты A и B находятся спереди этого робота."
+      }
+    },
+    "2": {
+      "text": {
+        "en": "Insert four black friction pins into the lowest side holes: two on each side, at the front and rear ends.",
+        "ru": "Вставь четыре чёрных пина с трением в нижние боковые отверстия: по два с каждой стороны, спереди и сзади."
+      }
+    },
+    "3": {
+      "text": {
+        "en": "Press the two medium angular motors onto the side pins. Their circular outputs face outward and their cable ends face backward.",
+        "ru": "Надень два средних угловых мотора на боковые пины. Круглые выходы смотрят наружу, провода — назад."
+      }
+    },
+    "4": {
+      "text": {
+        "en": "Slide a 3-module grey axle into each motor output. Leave enough axle exposed for the wheel.",
+        "ru": "Вставь серую ось длиной 3 модуля в каждый мотор. Оставь выступающую часть для колеса."
+      }
+    },
+    "5": {
+      "text": {
+        "en": "Add both 56 mm wheels. Keep a small gap between each wheel and the motor so it spins freely.",
+        "ru": "Надень оба колеса диаметром 56 мм. Оставь небольшой зазор между колесом и мотором для свободного вращения."
+      }
+    },
+    "6": {
+      "text": {
+        "en": "At the back, insert two black pins into the middle row of holes, four modules apart.",
+        "ru": "Сзади вставь два чёрных пина в средний ряд отверстий на расстоянии четырёх модулей."
+      }
+    },
+    "7": {
+      "text": {
+        "en": "Attach the H-shaped ball support with its ball downward. Its upper pair of holes goes over the pins. The wheels and ball should touch the same flat surface.",
+        "ru": "Надень H-образную опору верхней парой отверстий на пины. Шар направлен вниз. Оба колеса и шар должны касаться плоской поверхности."
+      }
+    },
+    "8": {
+      "text": {
+        "en": "At the front, insert two black pins into the lowest row of holes, four modules apart.",
+        "ru": "Спереди вставь два чёрных пина в нижний ряд отверстий на расстоянии четырёх модулей."
+      }
+    },
+    "9": {
+      "text": {
+        "en": "Place the yellow 7-module beam horizontally across the front pins. One hole remains beyond each pin.",
+        "ru": "Установи жёлтую балку длиной 7 модулей горизонтально на передние пины. По краям остаётся по одному отверстию."
+      }
+    },
+    "10": {
+      "text": {
+        "en": "Insert two black pins into the outermost holes of the yellow beam, pointing forward.",
+        "ru": "Вставь два чёрных пина в крайние отверстия жёлтой балки, направив их вперёд."
+      }
+    },
+    "11": {
+      "text": {
+        "en": "Attach the distance sensor to those pins, with its two round eyes facing forward. Connect its cable to D. Route all cables above the wheels.",
+        "ru": "Установи датчик расстояния на пины круглыми глазами вперёд. Подключи провод к D. Уложи все провода выше колёс."
+      }
+    }
+  },
+  "devices": [
+    {
+      "instance": "left-motor",
+      "name": {
+        "en": "Left motor",
+        "ru": "Левый мотор"
+      },
+      "port": "A",
+      "type": "motor"
+    },
+    {
+      "instance": "right-motor",
+      "name": {
+        "en": "Right motor",
+        "ru": "Правый мотор"
+      },
+      "port": "B",
+      "type": "motor"
+    },
+    {
+      "instance": "distance-sensor",
+      "name": {
+        "en": "Distance sensor",
+        "ru": "Датчик расстояния"
+      },
+      "port": "D",
+      "type": "ultrasonic"
+    }
+  ],
+  "ports": {
+    "A": [
+      -70,
+      -68,
+      40
+    ],
+    "B": [
+      70,
+      -68,
+      40
+    ],
+    "D": [
+      70,
+      -68,
+      0
+    ]
+  }
+}

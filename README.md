@@ -76,6 +76,7 @@ following, obstacle detection, a gripper, and an emergency button. Open
 - [First steps](doc/en/tutorial/first.md)
 - [Editing and command-line tools](doc/en/usage.md)
 - [Robots and controls](doc/en/robotics.md)
+- [Optional lessons, student projects and 3D assembly](doc/en/lessons.md)
 - [Authoring snippet libraries](doc/en/snippets.md)
 - [Block Editor and live preview](doc/en/block-editor.md)
 - [Developer API](doc/en/api.md)

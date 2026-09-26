@@ -29,6 +29,9 @@ def isolated_personal_collection(tmp_path, monkeypatch):
     monkeypatch.setattr(
         pyblocks.core.paths, "user_data_path", lambda *a, **k: tmp_path / "user-data"
     )
+    monkeypatch.setattr(
+        pyblocks.core.paths, "user_cache_path", lambda *a, **k: tmp_path / "user-cache"
+    )
 
 
 @pytest.fixture(autouse=True)

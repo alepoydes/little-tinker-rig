@@ -10,6 +10,9 @@ uv run python tools/check_docs.py
 uv build
 ```
 
+The uv development environment pins Python 3.13 to use binary wheels for the
+locked renderer dependencies. The application's minimum remains Python 3.11.
+
 Core uses the standard library, platformdirs for user-data paths and Ruff's supported CLI with packaged settings.
 Qt tests run offscreen. Tests covering asyncio worker threads require local
 socketpair communication; a sandbox that denies socketpair writes cannot run
@@ -381,3 +384,50 @@ and preserve both text and Undo when the destination changes.
 Review translated layouts with Console open on a laptop-sized screen. Workspace
 tabs may shorten their captions, but all tabs must remain clickable and retain
 the full localized name in a tooltip. Initial window bounds respect screen space.
+
+## Lesson and renderer invariants
+
+Use the editor's `commit` operation when applying lesson starters: a direct
+Document commit leaves selection pointing into the old syntax tree. Stage changes
+must never commit source. Save a project's raw drafts and Scratch before replacing
+its archive, and keep it dirty if archive writing fails after the working files
+were saved. Recovery keeps the original archive hash to detect external changes.
+Remove a closed project's working directory only after the recovery checkpoint
+stops referencing it; a failed checkpoint must leave that directory recoverable.
+
+Keep palette policy separate from the session's recognition catalog. Verify that
+an existing block remains editable when hidden by the current stage, and that
+search, expression suggestions and direct drops respect the stage palette.
+
+For OpenGL integration, verify a real QOpenGLWidget under both Wayland and X11,
+as well as headless shader results. An X11-only check misses EGL attachment errors.
+Resolve OpenGL functions through `QOpenGLContext.getProcAddress`: Qt owns the
+native context and selects its backend. Do not infer GLX from Linux, create a
+second native context, or reuse another widget's cached ModernGL context. Detect
+the current Qt framebuffer on every paint; zero is not its render target. The
+small native-context regression can be run with `QT_QPA_PLATFORM=wayland` or
+`xcb`; it is skipped on Qt's non-GL offscreen test platform. Mesh loading belongs
+off the GUI thread. Camera and step changes reuse uploaded meshes and buffers.
+Model traversal must retain inline primitives alongside part references, including
+their assembly step; test mixed geometry rather than only standalone part files.
+
+Third-party part libraries are external resources, not lesson source assets.
+Keep pinned references in Git and verified archives in the shared user cache.
+Downloads and ZIP/mesh loading run off the GUI thread; index a ZIP once and read
+only needed members. Do not copy downloaded geometry into lesson directories for
+packaging. Offline export owns a snapshot and writes a separate archive, retaining
+drafts, Scratch, dependency closure and licenses without marking the original
+project saved. Test cancellation and checksum failure against synthetic archives,
+then reopen an exported project with its cache removed and networking disabled.
+The pilot mating check is optional: set `PYBLOCKS_TEST_LDRAW` to a verified local
+`complete.zip`. Routine tests never download the full library.
+
+Package only authored lesson Python, JSON, Markdown, text notices, LDraw models
+(`.ldr`/`.mpd`) and PNG/SVG illustrations. Keep the lesson file filters in
+`MANIFEST.in` and `build_support.py` aligned; both exclude the `ldraw` directory,
+archives and working state. Git ignore rules do not control Python packaging.
+Verify both sdist and wheel with stray resources present in a temporary source
+tree, including a direct wheel build. The local `AI/` working notes are excluded
+from version control and distributions; maintained decisions belong in the design
+specification or developer documentation. Original lesson materials use the
+project's MIT license; external parts retain their own license notices.

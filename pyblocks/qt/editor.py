@@ -91,6 +91,8 @@ class SourceView(QTextEdit):
         self.session = session
         self.display_modes = {}
         self.expression_level = "all"
+        self.expression_ids = None
+        self.expression_operations = None
         self.expression_popup = None
         self.display = Display(session)
         self.setReadOnly(True)

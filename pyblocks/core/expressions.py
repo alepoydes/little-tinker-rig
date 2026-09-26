@@ -224,13 +224,15 @@ class Proposal:
     snippet: object = None
 
 
-def proposals(session, level="all", *, wrap=False):
+def proposals(session, level="all", *, wrap=False, ids=None, operations=None):
     """Contextual search entries; unknown types remain available, never guessed."""
     node = session.editor.selection
     if not public(session, node):
         return ()
     result = []
     for operation in OPERATIONS:
+        if operations is not None and operation.template not in operations:
+            continue
         if level != "all" and LEVELS.index(operation.level) > LEVELS.index(level):
             continue
         if accepts(session, node, known_type(operation.result)) and operation_fits(
@@ -268,6 +270,8 @@ def proposals(session, level="all", *, wrap=False):
         ):
             result.append(Proposal(value, value))
     for snippet in session.available_snippets:
+        if ids is not None and snippet.identity not in ids:
+            continue
         if snippet.historical or not snippet.expression:
             continue
         if level != "all" and LEVELS.index(snippet.level) > LEVELS.index(level):

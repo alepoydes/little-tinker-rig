@@ -1,0 +1,170 @@
+{
+  "format": 1,
+  "id": "first-drive-spike",
+  "title": {
+    "en": "First drive · SPIKE Prime 45678",
+    "ru": "Первая поездка · SPIKE Prime 45678"
+  },
+  "robot": "robot/robot.json",
+  "stages": [
+    {
+      "id": "build",
+      "title": {
+        "en": "Build a rolling base",
+        "ru": "Собери колёсную базу"
+      },
+      "goal": {
+        "en": "Build steps 1–7. Both wheels and the support ball must turn freely.",
+        "ru": "Собери шаги 1–7. Колёса и опорный шар должны свободно вращаться."
+      },
+      "description": {
+        "en": "en/build.md",
+        "ru": "ru/build.md"
+      },
+      "mode": "assembly",
+      "blocks": [],
+      "assembly": [
+        1,
+        7
+      ]
+    },
+    {
+      "id": "connect",
+      "title": {
+        "en": "Connect and check",
+        "ru": "Подключи и проверь"
+      },
+      "goal": {
+        "en": "Connect the left motor to A and the right motor to B.",
+        "ru": "Подключи левый мотор к A, правый — к B."
+      },
+      "description": {
+        "en": "en/connect.md",
+        "ru": "ru/connect.md"
+      },
+      "mode": "control",
+      "blocks": [
+        "pybricks/drive/create_robot"
+      ],
+      "check": "devices",
+      "devices": [
+        "left-motor",
+        "right-motor"
+      ]
+    },
+    {
+      "id": "drive",
+      "title": {
+        "en": "Your first journey",
+        "ru": "Первая поездка"
+      },
+      "goal": {
+        "en": "Build a program that drives 200 mm forward.",
+        "ru": "Составь программу движения вперёд на 200 мм."
+      },
+      "description": {
+        "en": "en/drive.md",
+        "ru": "ru/drive.md"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_robot",
+        "pybricks/drive/straight"
+      ],
+      "starter": "setup.py",
+      "hints": [
+        {
+          "en": "Start with “Set up a two-wheel robot”. Set the wheel diameter to 56 and axle track to 136.",
+          "ru": "Начни с «Создать двухколёсного робота». Диаметр колеса — 56, колея — 136."
+        },
+        {
+          "en": "Place “Drive a distance, then stop” after setup. Set distance to 200.",
+          "ru": "После настройки добавь «Проехать расстояние и остановиться». Расстояние — 200."
+        }
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, try",
+        "ru": "Предскажи, измени, проверь"
+      },
+      "goal": {
+        "en": "Try 400 mm, then −200 mm. Add a 90° turn.",
+        "ru": "Попробуй 400 мм, затем −200 мм. Добавь поворот на 90°."
+      },
+      "description": {
+        "en": "en/experiment.md",
+        "ru": "ru/experiment.md"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_robot",
+        "pybricks/drive/straight",
+        "pybricks/drive/turn"
+      ],
+      "hints": [
+        {
+          "en": "A negative distance reverses the robot. A positive turn is to the right.",
+          "ru": "Отрицательное расстояние означает движение назад. Положительный угол — поворот направо."
+        }
+      ]
+    },
+    {
+      "id": "sensor",
+      "title": {
+        "en": "Add an obstacle sensor",
+        "ru": "Добавь датчик препятствий"
+      },
+      "goal": {
+        "en": "Build steps 8–11. Connect the distance sensor to D.",
+        "ru": "Собери шаги 8–11. Подключи датчик расстояния к D."
+      },
+      "description": {
+        "en": "en/sensor.md",
+        "ru": "ru/sensor.md"
+      },
+      "mode": "assembly",
+      "blocks": [
+        "pybricks/drive/create_robot",
+        "pybricks/drive/straight",
+        "pybricks/drive/turn"
+      ],
+      "assembly": [
+        8,
+        11
+      ]
+    },
+    {
+      "id": "stop",
+      "title": {
+        "en": "Stop before the obstacle",
+        "ru": "Остановись перед препятствием"
+      },
+      "goal": {
+        "en": "Make the robot stop 100 mm before a large upright object.",
+        "ru": "Останови робота за 100 мм до большого вертикального препятствия."
+      },
+      "description": {
+        "en": "en/stop.md",
+        "ru": "ru/stop.md"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_robot",
+        "pybricks/sensors/create_ultrasonic_sensor",
+        "pybricks/lessons/stop_near_object"
+      ],
+      "hints": [
+        {
+          "en": "Set up the distance sensor on D, after setting up the drive base.",
+          "ru": "После настройки колёсной базы создай датчик расстояния на D."
+        },
+        {
+          "en": "Add “Drive until an ultrasonic obstacle, then brake”. Keep speed 100 mm/s and distance 100 mm.",
+          "ru": "Добавь «Ехать до препятствия и затормозить». Скорость — 100 мм/с, расстояние — 100 мм."
+        }
+      ]
+    }
+  ]
+}

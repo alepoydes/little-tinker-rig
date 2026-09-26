@@ -7,3 +7,9 @@ recursive-include examples *.md *.txt *.json
 recursive-include tests *.py
 recursive-include tools *.py
 recursive-include devs *.md
+recursive-include lessons *.py *.json *.md *.txt *.ldr *.mpd *.png *.svg
+prune lessons/**/ldraw
+prune lessons/**/__pycache__
+prune lessons/**/.*
+recursive-exclude lessons *.pyblocks.json .*
+prune AI

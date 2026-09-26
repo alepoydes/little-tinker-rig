@@ -54,7 +54,11 @@ class ExpressionChooser(QDialog):
         wrap = bool(self.mode.currentIndex())
         if wrap not in self.options:
             self.options[wrap] = proposals(
-                self.view.session, self.view.expression_level, wrap=wrap
+                self.view.session,
+                self.view.expression_level,
+                wrap=wrap,
+                ids=self.view.expression_ids,
+                operations=self.view.expression_operations,
             )
         words = self.search.text().casefold().split()
         self.entries = [

@@ -55,6 +55,7 @@ from .dialogs import EditDialog
 from .document import DocumentPage
 from .editor import source_offset
 from .help import HelpPage
+from .lessons import Lessons
 from .library import IDENTITY, LEVEL_TITLES, Library
 from .localization import localize, translate_standard_dialogs
 from .navigation import ModeTabs
@@ -67,6 +68,11 @@ from .window import TitleBar, resize_edges
 class Studio(QMainWindow):
     def __init__(self, path: Path | None = None, collections=()):
         super().__init__()
+        lesson_path = (
+            path if path and path.suffix in {".pyblocks", ".pylesson"} else None
+        )
+        if lesson_path:
+            path = None
         self.setWindowFlags(
             Qt.WindowType.Window
             | Qt.WindowType.FramelessWindowHint
@@ -139,7 +145,11 @@ class Studio(QMainWindow):
         self.library_pane = library
         self.program_page = QSplitter()
         self.program_page.addWidget(library)
-        self.program_page.addWidget(self.documents)
+        self.program_documents = QWidget()
+        program_layout = QVBoxLayout(self.program_documents)
+        program_layout.setContentsMargins(0, 0, 0, 0)
+        program_layout.addWidget(self.documents, 1)
+        self.program_page.addWidget(self.program_documents)
         self.program_page.setSizes([320, 1060])
         self.controls = ControlsPage()
         self.controls.monitor_requested.connect(self.start_monitor)
@@ -174,6 +184,7 @@ class Studio(QMainWindow):
         self.setCentralWidget(workspace)
         self._docks()
         self._menus()
+        self.lessons = Lessons(self)
         self.block_editor.configure(
             self.session.snippets, self.session.collection_paths
         )
@@ -200,6 +211,8 @@ class Studio(QMainWindow):
         QTimer.singleShot(0, self.recovery.offer)
         if geometry := self.settings.value("windowGeometry", b""):
             self.restoreGeometry(geometry)
+        if lesson_path:
+            self.perform(lambda: self.lessons.open(lesson_path))
 
     def _icon(self, theme, fallback):
         return QIcon.fromTheme(
@@ -288,6 +301,7 @@ class Studio(QMainWindow):
         toolbar.setIconSize(QSize(23, 23))
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
         file = self.menuBar().addMenu(N_("File"))
+        self.file_menu = file
         self._action(
             file,
             N_("New"),
@@ -590,6 +604,8 @@ class Studio(QMainWindow):
         self.library.filter(self.search.text(), level)
         if hasattr(self, "scratch"):
             self.editing_source.expression_level = level
+        if hasattr(self, "lessons"):
+            self.lessons.palette()
 
     def commit_code(self):
         if self.pages.currentIndex() == 3:
@@ -612,6 +628,8 @@ class Studio(QMainWindow):
             self.session.snippets, self.session.collection_paths
         )
         self.document_mode_changed()
+        if hasattr(self, "lessons"):
+            self.lessons.activate()
         self.refresh_views()
 
     def change_language(self, code):
@@ -634,6 +652,9 @@ class Studio(QMainWindow):
         self.library.filter(self.search.text(), self.level_filter.currentData())
         self.help_page.retranslate()
         self.block_editor.retranslate()
+        self.lessons.refresh()
+        if self.lessons.assembly:
+            self.lessons.assembly.retranslate()
         self.runtime_panel.retranslate()
         self.update_hub(self.hub_info)
         self.refresh_status()
@@ -650,12 +671,33 @@ class Studio(QMainWindow):
 
     def open_document(self, path, *, unnamed=False):
         path = Path(path).resolve()
+        if path.suffix in {".pylesson", ".pyblocks"} and hasattr(self, "lessons"):
+            return self.lessons.open(path)
         for index in range(self.documents.count()):
             if self.documents.widget(index).session.project.path == path:
                 self.documents.setCurrentIndex(index)
                 self.remember_file(path)
                 return self.documents.widget(index)
-        page = DocumentPage(path, self.collections)
+        project = None
+        if hasattr(self, "lessons"):
+            project = next(
+                (
+                    p
+                    for p in self.lessons.projects.values()
+                    if path.is_relative_to(p.root / "programs")
+                ),
+                None,
+            )
+        collections = self.collections
+        if project and "collection" in project.lesson.data:
+            from pyblocks.core.lessons import resource
+
+            collections = (
+                *collections,
+                resource(project.lesson.root, project.lesson.data["collection"]),
+            )
+        page = DocumentPage(path, collections)
+        page.lesson_project = project
         page.unnamed = unnamed
         page.changed.connect(self.refresh_views)
         page.failed.connect(self.error)
@@ -672,6 +714,10 @@ class Studio(QMainWindow):
         return page
 
     def remember_file(self, path):
+        if hasattr(self, "lessons") and any(
+            path.is_relative_to(p.root) for p in self.lessons.projects.values()
+        ):
+            return
         if path.is_file():
             recent = self.settings.value("recentFiles", [])
             recent = [recent] if isinstance(recent, str) else recent
@@ -745,7 +791,8 @@ class Studio(QMainWindow):
         if not Path(path).is_file():
             raise FileNotFoundError(path)
         self.open_document(path)
-        self.set_mode(0)
+        if Path(path).suffix == ".py":
+            self.set_mode(0)
 
     def mousePressEvent(self, event):
         edges = resize_edges(self, event.position().toPoint())
@@ -777,7 +824,7 @@ class Studio(QMainWindow):
         super().mouseMoveEvent(event)
 
     def confirm_close(self, page):
-        if not page.dirty:
+        if not page.dirty and not (page.lesson_project and page.lesson_project.dirty):
             return True
         result = QMessageBox.question(
             self,
@@ -807,7 +854,8 @@ class Studio(QMainWindow):
             self.new_file()
         self.documents.removeTab(self.documents.indexOf(page))
         page.deleteLater()
-        self.recovery.flush()
+        if self.recovery.flush():
+            self.lessons.release_unused()
 
     def scratch_visibility(self, visible):
         if self.pages.currentIndex() == 0:
@@ -817,6 +865,10 @@ class Studio(QMainWindow):
 
     def set_mode(self, index):
         self.pages.setCurrentIndex(index)
+        if self.document_page.lesson_project:
+            self.document_page.lesson_project.progress["mode"] = index
+            if hasattr(self, "recovery"):
+                self.recovery.schedule()
         self.mode_tabs.setCurrentIndex(index)
         self.scratch_dock.setVisible(index == 0 and self.scratch_visible)
         self.scratch_dock.toggleViewAction().setEnabled(index == 0)
@@ -825,7 +877,7 @@ class Studio(QMainWindow):
             self.device_dock.show()
             if index == 1:
                 self.device_dock.raise_()
-        elif index in (2, 3):
+        else:
             self.device_dock.hide()
         if index == 3:
             self.block_editor.configure(
@@ -862,6 +914,8 @@ class Studio(QMainWindow):
         if not hasattr(self, "undo_action"):
             return
         self.editing_source.expression_level = self.level_filter.currentData()
+        if hasattr(self, "lessons"):
+            self.lessons.palette()
         self.library.set_context(self.editing_session)
         match = self.session.selected_match()
         selection = (
@@ -876,9 +930,16 @@ class Studio(QMainWindow):
                 p1=len(self.session.analysis.diagnostics()),
             )
         )
-        self.setWindowTitle(
-            f'{"● " if self.document_page.dirty else ""}{self.session.project.path.name} — PyBlocks Studio'
-        )
+        project = self.document_page.lesson_project
+        dirty = self.document_page.dirty or (project is not None and project.dirty)
+        name = self.session.project.path.name
+        if project:
+            name = (
+                (project.path.name if project.path else self.lessons.title.text())
+                + " · "
+                + name
+            )
+        self.setWindowTitle(f'{"● " if dirty else ""}{name} — PyBlocks Studio')
         text_editor = self.text_editor()
         self.undo_action.setEnabled(
             text_editor.document().isUndoAvailable()
@@ -1001,6 +1062,17 @@ class Studio(QMainWindow):
 
     def insert_snippet(self, identity, target=None):
         from pyblocks.core.expressions import targets
+
+        if (
+            self.library.lesson_ids is not None
+            and identity not in self.library.lesson_ids
+        ):
+            self.error(
+                tr(
+                    "This block is outside the current lesson palette. Enable Show all blocks to use it."
+                )
+            )
+            return
 
         view = self.editing_source if target is None else self.source
         session = view.session
@@ -1183,6 +1255,8 @@ class Studio(QMainWindow):
         return self.save_document(self.document_page)
 
     def save_document(self, page):
+        if page.lesson_project:
+            return self.lessons.save(page.lesson_project)
         if page.unnamed:
             return self.save_as(page=page)
         page.save()
@@ -1214,20 +1288,25 @@ class Studio(QMainWindow):
 
     def new_file(self):
         self.open_document(
-            self.new_document_path(self.session.project.path.parent), unnamed=True
+            self.new_document_path(
+                None
+                if self.document_page.lesson_project
+                else self.session.project.path.parent
+            ),
+            unnamed=True,
         )
         self.set_mode(0)
 
     def open_file(self):
         paths, _ = QFileDialog.getOpenFileNames(
             self,
-            tr("Open Python"),
+            tr("Open program or lesson"),
             str(self.session.project.path.parent),
-            "Python (*.py)",
+            "Programs and lessons (*.py *.pyblocks *.pylesson);;Python (*.py);;PyBlocks (*.pyblocks *.pylesson)",
         )
         for path in paths:
             self.open_document(Path(path))
-        if paths:
+        if paths and Path(paths[-1]).suffix == ".py":
             self.set_mode(0)
 
     def save_as(self, *, page=None):
@@ -1235,6 +1314,8 @@ class Studio(QMainWindow):
             self.block_editor.copy_block()
             return True
         page = page or self.document_page
+        if page.lesson_project:
+            return self.lessons.save(page.lesson_project, choose=True)
         session = page.session
         page.prepare_save()
         path, _ = QFileDialog.getSaveFileName(
@@ -1303,6 +1384,8 @@ class Studio(QMainWindow):
         if info.error and info.error != self.hub_info.error:
             self.error(info.error)
         self.hub_info = info
+        if hasattr(self, "lessons"):
+            self.lessons.update_check()
         self.hub_button.setText(
             tr("Please wait…")
             if self.hub_is_busy
@@ -1410,6 +1493,7 @@ class Studio(QMainWindow):
             event.ignore()
             return
         self.settings.setValue("windowGeometry", self.saveGeometry())
+        self.lessons.release_unused(all_projects=True)
         self.settings.sync()
         event.accept()
 
