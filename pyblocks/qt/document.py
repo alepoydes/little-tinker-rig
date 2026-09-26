@@ -33,6 +33,7 @@ class DocumentPage(QWidget):
     def __init__(self, path: Path, collections=()):
         super().__init__()
         self.session = Session(path, collections, allow_draft=True)
+        self.unnamed = False
         self.session.editor.select(0)
         self.code_active = False
         self.source = SourceView(self.session)
@@ -123,12 +124,14 @@ class DocumentPage(QWidget):
         return dict(
             self.session.project.checkpoint(self.text),
             python=self.code_active,
+            unnamed=self.unnamed,
             cursor=editor.textCursor().position(),
             scroll=editor.verticalScrollBar().value(),
         )
 
     def restore(self, checkpoint):
         self.session.project.restore(checkpoint)
+        self.unnamed = checkpoint.get("unnamed", False)
         self.session.editor.select(0)
         self.session.set_snippets(self.session.load_snippets())
         self.code_active = (

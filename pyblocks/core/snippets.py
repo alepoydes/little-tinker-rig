@@ -290,6 +290,20 @@ def load_module(
 
 def function_snippets(syntax):
     """Calls to module-level user functions, rebuilt from the current document."""
+
+    def produces_value(node):
+        if isinstance(
+            node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)
+        ):
+            return False
+        if isinstance(node, (ast.Yield, ast.YieldFrom)):
+            return True
+        if isinstance(node, ast.Return):
+            return node.value is not None and not (
+                isinstance(node.value, ast.Constant) and node.value.value is None
+            )
+        return any(produces_value(child) for child in ast.iter_child_nodes(node))
+
     result = []
     section = helper_section(syntax.source)
     for node in syntax.tree.body:
@@ -326,15 +340,26 @@ def function_snippets(syntax):
             ],
         )
         call = ast.fix_missing_locations(call)
+        result_type = annotation_text(node.returns)
+        expression = bool(node.decorator_list) or (
+            result_type != "None"
+            if result_type
+            else any(produces_value(n) for n in node.body)
+        )
         result.append(
             Snippet(
                 f"document/functions/{node.name}",
                 "1",
                 parameters,
-                call,
+                (
+                    call
+                    if expression
+                    else (ast.fix_missing_locations(ast.Expr(value=call)),)
+                ),
                 (),
                 ast.get_docstring(node) or node.name,
                 {},
+                result_type=result_type,
                 level="intermediate",
                 icon="ƒ",
                 color="definition",
@@ -539,7 +564,8 @@ def builtin_snippets() -> tuple[Snippet, ...]:
     root = Path(__file__).parents[1] / "snippets"
     return tuple(
         snippet
-        for path in sorted(root.iterdir())
+        # Basic language actions precede optional robotics on the first screen.
+        for path in sorted(root.iterdir(), key=lambda p: (p.name != "python", p.name))
         if (path / "collection.toml").is_file()
         for snippet in load_collection(path)
     )

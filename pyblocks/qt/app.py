@@ -5,7 +5,7 @@ import ast
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QSettings, QSize, Qt, QTimer
+from PySide6.QtCore import QSettings, QSize, QStandardPaths, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QTextCursor
 from PySide6.QtWidgets import (
     QApplication,
@@ -59,7 +59,7 @@ from .window import TitleBar, resize_edges
 
 
 class Studio(QMainWindow):
-    def __init__(self, path: Path, collections=()):
+    def __init__(self, path: Path | None = None, collections=()):
         super().__init__()
         self.setWindowFlags(
             Qt.WindowType.Window
@@ -74,8 +74,9 @@ class Studio(QMainWindow):
         self.setMouseTracking(True)
         self.scratch_visible = True
         self.collections = collections
-        self.resize(1380, 880)
-        self.setMinimumSize(930, 620)
+        available = self.screen().availableGeometry().size()
+        self.setMinimumSize(QSize(930, 620).boundedTo(available))
+        self.resize(QSize(1380, 880).boundedTo(available))
         self.robot = None
         self.hub_info = HubInfo()
         self.hub_is_busy = False
@@ -98,7 +99,7 @@ class Studio(QMainWindow):
         self.documents.setDocumentMode(True)
         self.documents.setTabsClosable(True)
         self.documents.setMovable(True)
-        self.open_document(path)
+        self.open_document(path or self.new_document_path(), unnamed=path is None)
         self.library = Library(self.session.available_snippets)
         self.library.definition_requested.connect(self.open_definition)
         self.library.itemDoubleClicked.connect(self.insert_selected)
@@ -613,7 +614,7 @@ class Studio(QMainWindow):
         self.editor_actions[int(self.code_active)].setChecked(True)
         self.refresh_status()
 
-    def open_document(self, path):
+    def open_document(self, path, *, unnamed=False):
         path = Path(path).resolve()
         for index in range(self.documents.count()):
             if self.documents.widget(index).session.project.path == path:
@@ -621,6 +622,7 @@ class Studio(QMainWindow):
                 self.remember_file(path)
                 return self.documents.widget(index)
         page = DocumentPage(path, self.collections)
+        page.unnamed = unnamed
         page.changed.connect(self.refresh_views)
         page.failed.connect(self.error)
         page.snippet_dropped.connect(self.insert_snippet)
@@ -755,8 +757,8 @@ class Studio(QMainWindow):
             return False
         if result == QMessageBox.StandardButton.Save:
             try:
-                page.save()
-                self.remember_file(page.session.project.path)
+                if not self.save_document(page):
+                    return False
             except (ValueError, SyntaxError, OSError) as error:
                 self.documents.setCurrentWidget(page)
                 self.error(str(error))
@@ -1057,13 +1059,28 @@ class Studio(QMainWindow):
     def save(self):
         if self.pages.currentIndex() == 3:
             self.block_editor.save()
-            return
-        self.document_page.save()
-        self.remember_file(self.session.project.path)
-        self.recovery.flush()
+            return True
+        return self.save_document(self.document_page)
 
-    def new_file(self):
-        parent = self.session.project.path.parent
+    def save_document(self, page):
+        if page.unnamed:
+            return self.save_as(page=page)
+        page.save()
+        self.remember_file(page.session.project.path)
+        self.recovery.flush()
+        return True
+
+    def new_document_path(self, parent=None):
+        if parent is None or parent.is_relative_to(examples_directory().resolve()):
+            parent = Path(
+                self.settings.value(
+                    "programDirectory",
+                    QStandardPaths.writableLocation(
+                        QStandardPaths.StandardLocation.DocumentsLocation
+                    )
+                    or str(Path.home()),
+                )
+            )
         paths = {
             self.documents.widget(i).session.project.path
             for i in range(self.documents.count())
@@ -1072,9 +1089,13 @@ class Studio(QMainWindow):
         while True:
             path = parent / ("untitled.py" if index == 0 else f"untitled_{index}.py")
             if not path.exists() and path not in paths:
-                break
+                return path
             index += 1
-        self.open_document(path)
+
+    def new_file(self):
+        self.open_document(
+            self.new_document_path(self.session.project.path.parent), unnamed=True
+        )
         self.set_mode(0)
 
     def open_file(self):
@@ -1089,15 +1110,17 @@ class Studio(QMainWindow):
         if paths:
             self.set_mode(0)
 
-    def save_as(self):
-        if self.pages.currentIndex() == 3:
+    def save_as(self, *, page=None):
+        if page is None and self.pages.currentIndex() == 3:
             self.block_editor.copy_block()
-            return
-        self.document_page.prepare_save()
+            return True
+        page = page or self.document_page
+        session = page.session
+        page.prepare_save()
         path, _ = QFileDialog.getSaveFileName(
             self,
             tr("Save Python"),
-            str(self.session.project.path),
+            str(session.project.path),
             "Python (*.py)",
         )
         if path:
@@ -1105,25 +1128,26 @@ class Studio(QMainWindow):
 
             destination = Path(path).resolve()
             for index in range(self.documents.count()):
-                page = self.documents.widget(index)
-                if (
-                    page is not self.document_page
-                    and page.session.project.path == destination
-                ):
+                other = self.documents.widget(index)
+                if other is not page and other.session.project.path == destination:
                     raise ValueError(tr("This file is already open in another tab"))
-            if destination == self.session.project.path:
-                self.save()
-                return
-            project = Project(destination, allow_draft=True)
-            project.document = self.session.document
-            project.draft = self.session.project.draft
-            project.collections = self.session.project.collections
-            project.pins = self.session.project.pins
-            project.save()
-            self.session.project = project
-            self.document_page.code.path = destination
+            if destination == session.project.path:
+                page.save()
+            else:
+                project = Project(destination, allow_draft=True)
+                project.document = session.document
+                project.draft = session.project.draft
+                project.collections = session.project.collections
+                project.pins = session.project.pins
+                project.save()
+                session.project = project
+                page.code.path = destination
+            page.unnamed = False
+            self.settings.setValue("programDirectory", str(destination.parent))
             self.remember_file(destination)
             self.recovery.flush()
+            return True
+        return False
 
     def _robot(self):
         if self.robot is None:
@@ -1199,14 +1223,14 @@ class Studio(QMainWindow):
     def run_hub(self):
         self.controls.armed.setChecked(False)
         self.commit_code()
-        self.save()
-        self._robot().run_file(self.session.project.path)
+        if self.save():
+            self._robot().run_file(self.session.project.path)
 
     def upload_hub(self):
         self.controls.armed.setChecked(False)
         self.commit_code()
-        self.save()
-        self._robot().upload_file(self.session.project.path)
+        if self.save():
+            self._robot().upload_file(self.session.project.path)
 
     def run_stored_hub(self):
         self.controls.armed.setChecked(False)
@@ -1343,7 +1367,7 @@ class Studio(QMainWindow):
         self.block_editor.create(definition)
 
 
-def launch(path: Path, collections=()) -> int:
+def launch(path: Path | None = None, collections=()) -> int:
     app = QApplication.instance() or QApplication(sys.argv)
     code = QSettings("PyBlocks", "Studio").value("language", DEFAULT_LANGUAGE)
     set_language(code if code in LANGUAGES else DEFAULT_LANGUAGE)
@@ -1354,5 +1378,5 @@ def launch(path: Path, collections=()) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="PyBlocks desktop editor")
-    parser.add_argument("file", type=Path, nargs="?", default=Path("main.py"))
+    parser.add_argument("file", type=Path, nargs="?")
     return launch(parser.parse_args().file)

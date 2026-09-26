@@ -156,6 +156,27 @@ def test_user_functions_and_contextual_templates():
     assert "range(0, 10, 1)" in instantiate(repeat, {}).source
 
 
+@pytest.mark.parametrize(
+    "definition, expression",
+    [
+        ("def f():\n    print(1)\n", False),
+        ("def f():\n    return None\n", False),
+        ("def f():\n    def inner():\n        return 1\n    print(inner())\n", False),
+        ("def f():\n    if ready:\n        return 1\n", True),
+        ("def f():\n    yield 1\n", True),
+        ("def f() -> int:\n    pass\n", True),
+        ("@decorate\ndef f():\n    pass\n", True),
+    ],
+)
+def test_user_function_cards_distinguish_actions_from_results(definition, expression):
+    owner = session(definition)
+    snippet = next(
+        s for s in owner.available_snippets if s.identity == "document/functions/f"
+    )
+    assert snippet.expression is expression
+    assert instantiate(snippet, {}).source == "f()"
+
+
 def test_shared_binding_edits_nested_operands_consistently():
     from pyblocks.core.snippets import load_module
 

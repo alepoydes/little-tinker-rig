@@ -405,12 +405,12 @@ class Session:
             suite = syntax.suites[0]
             return edit.Target(suite, len(suite.statements))
         node = self.editor.statement()
+        if isinstance(node, ast.Pass):
+            return edit.Target(syntax.statement_suite[node], 0)
         match = self.selected_match()
         if match and not match.snippet.expression:
             node = self._match_nodes(match)[-1]
         suite = syntax.statement_suite[node]
-        if isinstance(node, ast.Pass):
-            return edit.Target(suite, 0)
         return edit.Target(suite, suite.statements.index(node) + 1)
 
     def insert_snippet(

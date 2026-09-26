@@ -76,6 +76,7 @@ def localize(root):
             elif name == "tabs":
                 for index, text in enumerate(source):
                     item.setTabText(index, tr(text))
+                    item.setTabToolTip(index, tr(text))
                 item.updateGeometry()
             else:
                 item.setProperty(name, tr(source))

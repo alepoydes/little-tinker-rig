@@ -100,6 +100,7 @@ class Library(QTreeWidget):
         self.setDragEnabled(True)
         self.setMouseTracking(True)
         self.setIndentation(12)
+        self.setVerticalScrollMode(QTreeWidget.ScrollMode.ScrollPerPixel)
         self.setItemDelegate(CardDelegate(self))
         self.setMinimumWidth(270)
         self.level = "all"

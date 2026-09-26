@@ -30,7 +30,7 @@ Scratch. Runtime errors explain common failures and locate their blocks using
 the executed source snapshot, with a read-only view when the file has changed.
 
 The [Block Editor](doc/en/block-editor.md) shows a live preview above Python
-definitions. Inspect built-in blocks, copy them into a project collection, or
+definitions. Inspect built-in blocks, copy them into your personal collection, or
 create your own. Decorators define inline blocks or calls to shared helpers, with
 levels, icons, colors and editable names in the source. String annotations describe
 types and units. Invalid drafts stay separate from the working library.
@@ -45,8 +45,13 @@ LEGO firmware through the desktop [firmware dialog](doc/en/robotics.md#installin
 
 ```sh
 uv sync --extra qt
-uv run --extra qt pyblocks-qt examples/first.py
+uv run --extra qt pyblocks-qt
 ```
+
+Start with an empty document, or open **File → Examples → first.py**. The first
+Save of a new document asks for its name and folder. The
+[first lesson](doc/en/tutorial/first.md#from-an-empty-document) builds a repeating
+greeting from library blocks and runs it without a physical robot.
 
 Terminal editor: `uv run --extra tui pyblocks-tui examples/first.py`.
 Command line: `uv run pyblocks inspect examples/first.py`.

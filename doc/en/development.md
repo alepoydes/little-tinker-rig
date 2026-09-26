@@ -306,3 +306,32 @@ Contours use logical block ownership and shared fill/comment geometry. Opaque
 cosmetic strokes share edge pixels; they do not change layout. Test same-color
 siblings, nested comments, scrolling, error overlays and unchanged drop geometry.
 Keep viewport work bounded and verify the rendered result at multiple DPI scales.
+
+## End-to-end learning workflows
+
+Exercise visible controls from an empty document through saved source and virtual
+execution. Direct Session operations alone do not verify library selection,
+focus, dialogs or drag hit testing. Keep the complete window inside the configured
+test screen and wait for layout before clicking scrolled cards. With hidden rows
+and nonuniform card heights, per-item scrolling could leave a requested card
+outside the viewport; use pixel scrolling and assert the clicked item is visible.
+
+An empty `pass` body is an insertion hole before it is part of a recognized
+template. Default insertion must test that hole before promoting selection to
+the whole match. Cover loops, branches and function bodies through Add selected
+block as well as drag-and-drop.
+
+User function cards distinguish action calls from value expressions. Inspect only
+returns/yields in the function's own body; nested definitions do not supply its
+return value. Respect result annotations and leave decorated callables unknown.
+Verify consecutive calls after editing an argument, alongside expression insertion.
+
+Unnamed-document state belongs to the document page and its recovery checkpoint.
+Save, Run, Upload and Save-on-close share the same cancellable naming operation.
+Do not create a file merely by launching the editor. Keep explicit-path saves and
+external-change checks intact. Test cancellation before starting any hub worker
+and preserve both text and Undo when the destination changes.
+
+Review translated layouts with Console open on a laptop-sized screen. Workspace
+tabs may shorten their captions, but all tabs must remain clickable and retain
+the full localized name in a tooltip. Initial window bounds respect screen space.

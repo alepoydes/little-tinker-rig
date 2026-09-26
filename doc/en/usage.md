@@ -4,6 +4,9 @@
 
 Files have independent tabs, drafts and undo histories. The hub connection and
 console belong to the window. Run always saves and runs the active document.
+Starting without a filename and **File → New** create unnamed documents. Their
+first Save, Run or Upload asks for a file location; cancelling leaves the document
+open and does not start a hub operation. Saving while closing uses the same rule.
 Use the two document icons or **View → Blocks / Python** to change the editor mode.
 Global workspaces use narrow rotated labels and neutral active indicators.
 **Block Editor** (**Ctrl+Alt+3**) edits template definitions with a preview above
@@ -175,6 +178,12 @@ capturing renames are rejected. Changing a signature keeps existing calls visibl
 A known incompatible call receives a red border and an error comment; uncertain
 dynamic calls are not reported as signature errors. The program remains editable.
 Use **Return a value** inside a function.
+
+A function without a returned value appears as an action: adding another call
+after editing an argument creates the next statement. Functions with a returned
+value, generators and functions with a result annotation can be inserted as
+expressions. Returns inside a nested function do not change the outer function's
+kind. Decorated functions remain expressions because their result is unknown.
 
 The Beginner repeat block exposes its counter and repeat count. The Intermediate
 range block exposes the counter, start, exclusive stop and step. Expand a template

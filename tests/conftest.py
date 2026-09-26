@@ -1,3 +1,4 @@
+import json
 import os
 
 import pytest
@@ -5,7 +6,14 @@ import pytest
 
 @pytest.fixture(scope="session")
 def qt_app(tmp_path_factory):
-    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    if os.environ.get("QT_QPA_PLATFORM", "offscreen") == "offscreen":
+        # Pointer-based drag tests need the whole application inside a real-sized
+        # virtual screen; Qt's default 800x800 screen clips widgetAt hit testing.
+        screen = tmp_path_factory.mktemp("qt-screen") / "screen.json"
+        screen.write_text(
+            json.dumps({"screens": [{"name": "test", "width": 1920, "height": 1200}]})
+        )
+        os.environ["QT_QPA_PLATFORM"] = f"offscreen:configfile={screen}"
     pytest.importorskip("PySide6")
     import jedi
     from PySide6.QtWidgets import QApplication

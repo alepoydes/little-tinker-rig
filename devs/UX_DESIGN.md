@@ -54,6 +54,19 @@ Changing tabs never commits unfinished Python. Hub tools, the console, and globa
 modes belong to the window. Closing checks every changed document; reopening a
 path selects its existing tab.
 
+Launching without a filename opens an unnamed document. Its first Save, Run or
+Upload asks for a destination; cancellation propagates through execution and
+closing. Explicit filenames retain direct-save behavior. The initial window size
+fits the available screen, including the desktop's reserved panels.
+When Console reduces workspace height, navigation tabs shorten their labels and
+retain full tooltips instead of clipping the final mode.
+
+The library introduces Python basics before robotics. Cards of different heights
+scroll by pixels, so hidden level-filtered rows do not prevent revealing a card.
+Choosing a `pass` row fills that body when adding a statement, even when the
+surrounding construct is recognized as a library template. Action-only user
+functions insert sequential calls; value-returning functions remain expressions.
+
 File → Open recent stores up to ten successfully opened or saved paths. Opening
 an existing tab preserves its draft. Missing files are disabled; the list can be
 cleared.

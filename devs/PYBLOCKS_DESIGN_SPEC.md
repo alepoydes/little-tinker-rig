@@ -1701,6 +1701,11 @@ Explicit expression replacement and wrapping preserve grouping and evaluation
 order. Occupied fields remain protected against accidental drag replacement.
 
 Module-level user definitions contribute a transient My functions library group.
+Calls without a returned value are statements. Return values and generators make
+expression cards; result annotations are respected, and decorated functions have
+unknown results. Returns inside nested definitions do not classify their parent.
+Selecting a `pass` insertion hole takes precedence over its enclosing recognized
+template when adding actions from the library.
 Definition renames follow resolved lexical bindings, including known keyword
 calls. Signature changes retain existing call sites. Proven argument mismatches
 have a red frame and a generated error-comment row; unknown dynamic signatures
