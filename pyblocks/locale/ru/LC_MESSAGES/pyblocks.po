@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PyBlocks Studio 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-26 21:51+0300\n"
+"POT-Creation-Date: 2026-09-26 22:47+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -244,7 +244,7 @@ msgstr ""
 "Мигать индикатором по списку длительностей включения и выключения. Параметры: color, "
 "durations."
 
-#: pyblocks/qt/app.py:483 pyblocks/qt/navigation.py:21
+#: pyblocks/qt/app.py:483 pyblocks/qt/navigation.py:69
 msgid "Block Editor"
 msgstr "Редактор блоков"
 
@@ -762,7 +762,7 @@ msgstr "Консоль · {p0}"
 msgid "Continuously track a changing target angle. Options: target_angle."
 msgstr "Непрерывно следовать за изменяющимся целевым углом. Параметры: target_angle."
 
-#: pyblocks/qt/navigation.py:21
+#: pyblocks/qt/navigation.py:67
 msgid "Control"
 msgstr "Управление"
 
@@ -1551,7 +1551,7 @@ msgstr ""
 "Поместите операцию в try, восстановление после ошибки — в except.\n"
 "Выберите ожидаемое исключение, чтобы не скрывать все ошибки."
 
-#: pyblocks/qt/app.py:482 pyblocks/qt/navigation.py:21 pyblocks/qt/structure.py:325
+#: pyblocks/qt/app.py:482 pyblocks/qt/navigation.py:68 pyblocks/qt/structure.py:325
 msgid "Help"
 msgstr "Помощь"
 
@@ -2262,7 +2262,7 @@ msgstr "Прежнее положение"
 msgid "Previous step"
 msgstr "Предыдущий шаг"
 
-#: pyblocks/qt/app.py:298 pyblocks/qt/navigation.py:21
+#: pyblocks/qt/app.py:298 pyblocks/qt/navigation.py:66
 msgid "Program"
 msgstr "Программа"
 
@@ -3555,7 +3555,7 @@ msgstr "Предупреждения"
 msgid "Whole robot"
 msgstr "Весь робот"
 
-#: pyblocks/qt/navigation.py:23
+#: pyblocks/qt/navigation.py:73
 msgid "Workspaces"
 msgstr "Режимы"
 

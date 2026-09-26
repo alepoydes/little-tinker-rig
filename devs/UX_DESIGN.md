@@ -5,7 +5,11 @@ Every frontend uses the same document model and core editing operations.
 
 ## Workspace
 
-- A narrow vertical strip switches between Program, Control, Help, and Block Editor.
+- A left sidebar switches between Program, Control, Help, and Block Editor.
+  Lesson and Assembly appear for the corresponding student project. Each row has
+  a centered 24-pixel SVG icon in a 48-pixel row. The sidebar is 48 pixels wide;
+  names appear only in localized tooltips and remain available to assistive
+  technology. Active rows use a neutral background and a left accent.
 - Programs have structural and full Python views. Text drafts may be invalid;
   save, run, and returning to Blocks validate and format them atomically. Text
   edits and formatting remain undoable.
@@ -58,8 +62,9 @@ Launching without a filename opens an unnamed document. Its first Save, Run or
 Upload asks for a destination; cancellation propagates through execution and
 closing. Explicit filenames retain direct-save behavior. The initial window size
 fits the available screen, including the desktop's reserved panels.
-When Console reduces workspace height, navigation tabs shorten their labels and
-retain full tooltips instead of clipping the final mode.
+When Console reduces workspace height, only the mode list scrolls vertically.
+Scrolling never selects a mode. Keyboard navigation skips
+unavailable lesson modes.
 
 The library introduces Python basics before robotics. Cards of different heights
 scroll by pixels, so hidden level-filtered rows do not prevent revealing a card.
@@ -71,7 +76,7 @@ File → Open recent stores up to ten successfully opened or saved paths. Openin
 an existing tab preserves its draft. Missing files are disabled; the list can be
 cleared.
 
-Global navigation uses rotated labels and a neutral active indicator. Blocks and
+Global navigation uses icons and a neutral active indicator. Blocks and
 Python use two icons in the document header and matching View menu actions.
 A visible title bar provides minimize, maximize/restore, and close on every
 desktop, including GNOME layouts that hide native buttons. Dragging and edge

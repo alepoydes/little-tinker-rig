@@ -79,11 +79,10 @@ def test_documents_and_languages_preserve_text_and_undo(tmp_path, qt_app):
         assert window.document_page is one and window.documents.count() == 2
         set_language("en")
         window.retranslate()
-        assert window.mode_tabs.tabText(0) == "Program"
+        assert window.modes.item(0).text() == "Program"
         assert window.run_action.text() == "Run"
         assert window.code.toPlainText() == draft
         assert window.code_active
-        assert window.mode_tabs.width() <= 40
         window.undo_action.trigger()
         assert window.code.toPlainText() == "first = 1\n"
         window.documents.setCurrentWidget(two)
@@ -98,6 +97,77 @@ def test_documents_and_languages_preserve_text_and_undo(tmp_path, qt_app):
     finally:
         set_language("ru")
         discard_window(window)
+
+
+def test_short_mode_list_scrolls_without_switching_and_keeps_named_icons(qt_app):
+    from PySide6.QtCore import QPoint, QPointF, Qt
+    from PySide6.QtGui import QWheelEvent
+    from PySide6.QtTest import QTest
+    from PySide6.QtWidgets import QStyle, QStyleOptionViewItem
+
+    from pyblocks.qt.localization import localize
+    from pyblocks.qt.navigation import ModeList
+
+    modes = ModeList()
+    modes.add_mode("lesson", "Lesson")
+    modes.add_mode("assembly", "Assembly")
+    width = modes.sizeHint().width()
+    font = modes.font()
+    font.setPointSize(18)
+    modes.setFont(font)
+    set_language("ru")
+    localize(modes)
+    assert modes.sizeHint().width() == width
+    modes.resize(modes.sizeHint().width(), 140)
+    modes.show()
+    qt_app.processEvents()
+    try:
+        before = modes.currentRow()
+        point = modes.viewport().rect().center()
+        wheel = QWheelEvent(
+            QPointF(point),
+            QPointF(modes.viewport().mapToGlobal(point)),
+            QPoint(),
+            QPoint(0, -120),
+            Qt.MouseButton.NoButton,
+            Qt.KeyboardModifier.NoModifier,
+            Qt.ScrollPhase.NoScrollPhase,
+            False,
+        )
+        qt_app.sendEvent(modes.viewport(), wheel)
+        assert modes.verticalScrollBar().value() > 0
+        assert modes.currentRow() == before
+        for row in range(modes.count()):
+            item = modes.item(row)
+            modes.scrollToItem(item)
+            qt_app.processEvents()
+            rect = modes.visualItemRect(item)
+            assert modes.viewport().rect().contains(rect)
+            QTest.mouseClick(
+                modes.viewport(), Qt.MouseButton.LeftButton, pos=rect.center()
+            )
+            assert modes.currentRow() == row
+            option = QStyleOptionViewItem()
+            option.initFrom(modes)
+            option.rect = rect
+            option.decorationSize = modes.iconSize()
+            option.state |= QStyle.StateFlag.State_Selected
+            modes.itemDelegate().initStyleOption(option, modes.model().index(row, 0))
+            icon_rect = modes.style().subElementRect(
+                QStyle.SubElement.SE_ItemViewItemDecoration, option, modes
+            )
+            assert rect.contains(icon_rect)
+            assert not option.text
+            assert item.toolTip() == item.text()
+        modes.set_mode_visible(4, False)
+        modes.set_mode_visible(5, False)
+        modes.setCurrentRow(0)
+        qt_app.processEvents()
+        QTest.keyClick(modes, Qt.Key.Key_End)
+        assert modes.currentRow() == 3
+    finally:
+        modes.close()
+        modes.deleteLater()
 
 
 def test_library_drop_has_preview_and_inserts_defaults_without_dialog(tmp_path, qt_app):

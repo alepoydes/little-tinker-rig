@@ -1826,6 +1826,13 @@ evaluate once. UI synchronization does not change Python evaluation semantics.
 
 ### Optional lessons and assembly workspaces
 
+Workspace navigation stays on the left in a 48-pixel strip with centered 24-pixel
+SVG icons and 48-pixel rows. Names appear only in localized tooltips and remain
+available to assistive technology. Language and font changes do not widen the
+strip. When height is limited, the list scrolls without changing the current
+workspace. Lesson modes are shown only when relevant; hidden modes cannot be
+selected from the keyboard. Dimensions use logical pixels for display scaling.
+
 Lessons (`.pylesson`) are immutable, localized materials with goals, stages,
 progressive hints, allowed block identities and explicit completion criteria.
 Student projects (`.pyblocks`) snapshot these materials together with ordinary

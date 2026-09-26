@@ -47,7 +47,7 @@ namespaces = false
 build_py = "build_support.BuildPy"
 
 [tool.setuptools.package-data]
-pyblocks = ["snippets/**/*.py", "snippets/**/*.toml", "core/formatting.toml", "locale/languages.json", "locale/**/*.po", "locale/**/*.mo"]
+pyblocks = ["snippets/**/*.py", "snippets/**/*.toml", "core/formatting.toml", "locale/languages.json", "locale/**/*.po", "locale/**/*.mo", "qt/icons/*.svg"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

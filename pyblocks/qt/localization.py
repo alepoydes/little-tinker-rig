@@ -62,8 +62,8 @@ def localize(root):
                     item.horizontalHeaderItem(i).text()
                     for i in range(item.columnCount())
                 ]
-            if getattr(item, "translate_tabs", False):
-                sources["tabs"] = [item.tabText(i) for i in range(item.count())]
+            if getattr(item, "translate_items", False):
+                sources["rows"] = [item.item(i).text() for i in range(item.count())]
             item.setProperty("translationSources", sources)
     for item in items:
         sources = item.property("translationSources")
@@ -73,10 +73,10 @@ def localize(root):
                     item.setItemText(index, tr(text))
             elif name == "headers":
                 item.setHorizontalHeaderLabels([tr(text) for text in source])
-            elif name == "tabs":
+            elif name == "rows":
                 for index, text in enumerate(source):
-                    item.setTabText(index, tr(text))
-                    item.setTabToolTip(index, tr(text))
+                    item.item(index).setText(tr(text))
+                    item.item(index).setToolTip(tr(text))
                 item.updateGeometry()
             else:
                 item.setProperty(name, tr(source))

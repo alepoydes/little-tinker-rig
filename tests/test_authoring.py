@@ -364,7 +364,7 @@ def test_editor_groups_copies_and_language_changes_keep_edits(tmp_path, qt_app):
         qt_app.processEvents()
         assert page.vertical.sizes() == sizes
         window.change_language("ru")
-        assert window.mode_tabs.tabText(3) == "Редактор блоков"
+        assert window.modes.item(3).text() == "Редактор блоков"
         assert page.save_button.text() == "Сохранить и применить"
         assert window.help_page.root.name == "ru"
         page.code.undo()

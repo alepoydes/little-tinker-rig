@@ -382,8 +382,13 @@ external-change checks intact. Test cancellation before starting any hub worker
 and preserve both text and Undo when the destination changes.
 
 Review translated layouts with Console open on a laptop-sized screen. Workspace
-tabs may shorten their captions, but all tabs must remain clickable and retain
-the full localized name in a tooltip. Initial window bounds respect screen space.
+navigation uses a narrow, fixed-width icon strip with localized tooltips. Keep
+names in the item model for accessibility while suppressing painted labels; icons
+stay centered, and language/font changes do not widen the strip. Short panels
+scroll without selecting a mode. Hidden lesson modes are disabled and
+Home/End target visible rows: hiding a QListWidget row alone does not exclude it
+from keyboard navigation. Verify scrolling, selection, hidden modes, localized
+tooltips and icon rendering. Initial window bounds respect screen space.
 
 ## Lesson and renderer invariants
 

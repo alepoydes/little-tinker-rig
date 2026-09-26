@@ -1,58 +1,101 @@
-"""Narrow navigation tabs reserve color for the program's semantic blocks."""
+"""Compact workspace icons with localized tooltips and accessible names."""
 
-from PySide6.QtCore import QRectF, QSize, Qt
-from PySide6.QtGui import QColor, QFontMetrics, QPainter, QPen
-from PySide6.QtWidgets import QTabBar
+from pathlib import Path
+
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import (
+    QListWidget,
+    QListWidgetItem,
+    QSizePolicy,
+    QStyle,
+    QStyledItemDelegate,
+    QStyleOptionViewItem,
+)
 
 from pyblocks.i18n import N_
 
 
-class ModeTabs(QTabBar):
-    translate_tabs = True
+class ModeDelegate(QStyledItemDelegate):
+    def initStyleOption(self, option, index):
+        super().initStyleOption(option, index)
+        # Keep names in the model for accessibility and tooltips, not on screen.
+        option.text = ""
+        option.features &= ~QStyleOptionViewItem.ViewItemFeature.HasDisplay
+
+    def paint(self, painter, option, index):
+        option = QStyleOptionViewItem(option)
+        self.initStyleOption(option, index)
+        icon = QIcon(option.icon)
+        option.icon = QIcon()
+        option.features &= ~QStyleOptionViewItem.ViewItemFeature.HasDecoration
+        option.widget.style().drawControl(
+            QStyle.ControlElement.CE_ItemViewItem, option, painter, option.widget
+        )
+        rect = QStyle.alignedRect(
+            option.direction,
+            Qt.AlignmentFlag.AlignCenter,
+            option.decorationSize,
+            option.rect,
+        )
+        icon.paint(painter, rect)
+
+    def sizeHint(self, option, index):
+        return QSize(30, 48)
+
+
+class ModeList(QListWidget):
+    translate_items = True
 
     def __init__(self):
         super().__init__()
-        self.setShape(QTabBar.Shape.RoundedWest)
-        self.setExpanding(False)
-        self.setUsesScrollButtons(False)
-        self.setElideMode(Qt.TextElideMode.ElideRight)
-        self.setDrawBase(False)
-        self.setFixedWidth(36)
-        for label in (N_("Program"), N_("Control"), N_("Help"), N_("Block Editor")):
-            self.addTab(label)
+        self.setIconSize(QSize(24, 24))
+        self.setItemDelegate(ModeDelegate(self))
+        self.setUniformItemSizes(True)
+        self.setTextElideMode(Qt.TextElideMode.ElideNone)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setVerticalScrollMode(QListWidget.ScrollMode.ScrollPerPixel)
+        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+        self.setStyleSheet(
+            "ModeList { border: 0; background: transparent; color: #5b6572; }"
+            "ModeList::item { padding: 0; border-left: 3px solid transparent; border-right: 3px solid transparent; }"
+            "ModeList::item:hover { background: #f1f4f8; }"
+            "ModeList::item:selected { background: #e7eef6; color: #25303d; border-left-color: #344f73; }"
+        )
+        for icon, label in (
+            ("program", N_("Program")),
+            ("control", N_("Control")),
+            ("help", N_("Help")),
+            ("block-editor", N_("Block Editor")),
+        ):
+            self.add_mode(icon, label)
+        self.setCurrentRow(0)
         self.setAccessibleName(N_("Workspaces"))
 
-    def tabSizeHint(self, index):
-        return QSize(36, self.fontMetrics().horizontalAdvance(self.tabText(index)) + 36)
+    def add_mode(self, icon, label):
+        path = Path(__file__).with_name("icons") / f"{icon}.svg"
+        self.addItem(QListWidgetItem(QIcon(str(path)), label))
 
-    def minimumTabSizeHint(self, index):
-        return QSize(36, 54)
+    def set_mode_visible(self, row, visible):
+        item = self.item(row)
+        item.setHidden(not visible)
+        # Hidden QListWidget rows can still be targeted by Home/End unless disabled.
+        item.setFlags(
+            Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
+            if visible
+            else Qt.ItemFlag.NoItemFlags
+        )
 
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.TextAntialiasing)
-        for index in range(self.count()):
-            rect = self.tabRect(index)
-            active = index == self.currentIndex()
-            if active:
-                painter.setPen(QPen(QColor("#303944"), 2))
-                painter.drawLine(
-                    rect.left() + 2, rect.top() + 8, rect.left() + 2, rect.bottom() - 8
-                )
-            painter.save()
-            painter.translate(rect.center())
-            painter.rotate(-90)
-            font = self.font()
-            font.setBold(active)
-            painter.setFont(font)
-            painter.setPen(QColor("#25303d" if active else "#697380"))
-            painter.drawText(
-                QRectF(
-                    -rect.height() / 2, -rect.width() / 2, rect.height(), rect.width()
-                ),
-                Qt.AlignmentFlag.AlignCenter,
-                QFontMetrics(font).elidedText(
-                    self.tabText(index), Qt.TextElideMode.ElideRight, rect.height() - 20
-                ),
-            )
-            painter.restore()
+    def moveCursor(self, action, modifiers):
+        if action in (self.CursorAction.MoveHome, self.CursorAction.MoveEnd):
+            rows = [i for i in range(self.count()) if not self.item(i).isHidden()]
+            if rows:
+                row = rows[0] if action == self.CursorAction.MoveHome else rows[-1]
+                return self.model().index(row, 0)
+        return super().moveCursor(action, modifiers)
+
+    def sizeHint(self):
+        return QSize(48, 48 * self.count())
+
+    def minimumSizeHint(self):
+        return QSize(48, 48)

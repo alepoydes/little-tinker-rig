@@ -87,15 +87,15 @@ class Lessons(QObject):
         card_layout.addWidget(button)
         window.program_documents.layout().insertWidget(0, self.card)
         window.pages.addWidget(self.page)
-        window.mode_tabs.addTab(N_("Lesson"))
+        window.modes.add_mode("lesson", N_("Lesson"))
         # The assembly widget is loaded only when a lesson uses a robot model.
         self.assembly_host = QWidget()
         self.assembly_host.setLayout(QVBoxLayout())
         self.assembly = None
         window.pages.addWidget(self.assembly_host)
-        window.mode_tabs.addTab(N_("Assembly"))
-        window.mode_tabs.setTabVisible(4, False)
-        window.mode_tabs.setTabVisible(5, False)
+        window.modes.add_mode("assembly", N_("Assembly"))
+        window.modes.set_mode_visible(4, False)
+        window.modes.set_mode_visible(5, False)
         self.card.hide()
         self.menu = window.file_menu.addMenu(N_("Lessons"))
         self.menu.aboutToShow.connect(self.populate)
@@ -210,8 +210,8 @@ class Lessons(QObject):
         self.new_program_action.setEnabled(project is not None)
         self.export_action.setEnabled(project is not None and self.export_job is None)
         self.card.setVisible(project is not None)
-        self.window.mode_tabs.setTabVisible(4, project is not None)
-        self.window.mode_tabs.setTabVisible(
+        self.window.modes.set_mode_visible(4, project is not None)
+        self.window.modes.set_mode_visible(
             5, project is not None and "robot" in project.lesson.data
         )
         if project is None:

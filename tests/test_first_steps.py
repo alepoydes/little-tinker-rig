@@ -548,22 +548,42 @@ def test_new_document_asks_for_name_and_cancel_does_not_run_or_close(
         window.close()
 
 
-def test_small_screen_navigation_keeps_every_workspace_accessible(tmp_path, qt_app):
+@pytest.mark.parametrize("language", ["en", "ru"])
+def test_small_screen_navigation_keeps_every_workspace_accessible(
+    tmp_path, qt_app, language
+):
     window = Studio(tmp_path / "small_screen.py")
     window.resize(1280, 720)
     window.show()
     qt_app.processEvents()
     try:
-        window.change_language("ru")
+        from pyblocks.core.lessons import lessons_directory
+
+        window.lessons.open(lessons_directory() / "first_drive")
+        window.change_language(language)
         window.console_dock.show()
         qt_app.processEvents()
-        tabs = window.mode_tabs
-        for index in range(tabs.count()):
-            assert tabs.rect().contains(tabs.tabRect(index))
-            assert tabs.tabToolTip(index) == tabs.tabText(index)
-        QTest.mouseClick(tabs, Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
+        modes = window.modes
+        for index in range(modes.count()):
+            item = modes.item(index)
+            assert not item.isHidden()
+            assert modes.viewport().rect().contains(modes.visualItemRect(item))
+            assert item.toolTip() == item.text()
+            assert not item.icon().isNull()
+        QTest.mouseClick(
+            modes.viewport(),
+            Qt.MouseButton.LeftButton,
+            pos=modes.visualItemRect(modes.item(3)).center(),
+        )
         assert window.pages.currentIndex() == 3
-        QTest.mouseClick(tabs, Qt.MouseButton.LeftButton, pos=tabs.tabRect(0).center())
+        QTest.mouseClick(
+            modes.viewport(),
+            Qt.MouseButton.LeftButton,
+            pos=modes.visualItemRect(modes.item(0)).center(),
+        )
         assert window.pages.currentIndex() == 0
     finally:
+        window.confirm_close = lambda *_: True
         window.close()
+        window.deleteLater()
+        QTest.qWait(1)

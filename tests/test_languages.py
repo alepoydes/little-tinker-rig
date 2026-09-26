@@ -56,7 +56,7 @@ def test_launch_preserves_language_choice(tmp_path, qt_app, stored, expected):
             if isinstance(w, Studio) and w.isVisible()
         )
         observed.append(
-            (language(), window.mode_tabs.tabText(0), window.help_page.root.name)
+            (language(), window.modes.item(0).text(), window.help_page.root.name)
         )
         window.close()
         qt_app.quit()

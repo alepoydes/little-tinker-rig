@@ -8,7 +8,10 @@ Starting without a filename and **File → New** create unnamed documents. Their
 first Save, Run or Upload asks for a file location; cancelling leaves the document
 open and does not start a hub operation. Saving while closing uses the same rule.
 Use the two document icons or **View → Blocks / Python** to change the editor mode.
-Global workspaces use narrow rotated labels and neutral active indicators.
+Global workspaces appear as icons in the narrow left sidebar. Hover over an icon
+to see its full name. The selected mode has a shaded background and a left accent.
+Short panels scroll vertically without changing the current mode. Lesson and
+Assembly appear when the open project provides them.
 **Block Editor** (**Ctrl+Alt+3**) edits template definitions with a preview above
 the source; see [its guide](block-editor.md).
 

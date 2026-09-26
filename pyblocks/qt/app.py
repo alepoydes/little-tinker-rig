@@ -58,7 +58,7 @@ from .help import HelpPage
 from .lessons import Lessons
 from .library import IDENTITY, LEVEL_TITLES, Library
 from .localization import localize, translate_standard_dialogs
-from .navigation import ModeTabs
+from .navigation import ModeList
 from .recovery import Recovery
 from .runtime import RuntimePanel
 from .scratch import ScratchPane
@@ -173,13 +173,13 @@ class Studio(QMainWindow):
         self.pages = QStackedWidget()
         for page in (self.program_page, scroll, self.help_page, self.block_editor):
             self.pages.addWidget(page)
-        self.mode_tabs = ModeTabs()
-        self.mode_tabs.currentChanged.connect(self.set_mode)
+        self.modes = ModeList()
+        self.modes.currentRowChanged.connect(self.set_mode)
         workspace = QWidget()
         workspace_layout = QHBoxLayout(workspace)
         workspace_layout.setContentsMargins(0, 0, 0, 0)
         workspace_layout.setSpacing(4)
-        workspace_layout.addWidget(self.mode_tabs, 0, Qt.AlignmentFlag.AlignTop)
+        workspace_layout.addWidget(self.modes)
         workspace_layout.addWidget(self.pages, 1)
         self.setCentralWidget(workspace)
         self._docks()
@@ -869,7 +869,7 @@ class Studio(QMainWindow):
             self.document_page.lesson_project.progress["mode"] = index
             if hasattr(self, "recovery"):
                 self.recovery.schedule()
-        self.mode_tabs.setCurrentIndex(index)
+        self.modes.setCurrentRow(index)
         self.scratch_dock.setVisible(index == 0 and self.scratch_visible)
         self.scratch_dock.toggleViewAction().setEnabled(index == 0)
         self.scratch_button.setEnabled(index == 0)
