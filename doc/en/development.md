@@ -52,7 +52,7 @@ operate on the active tab. Changing language must not translate user text or cle
 histories. Drops preview the committed destination and insert without dialogs.
 Parameter edits preserve expression grouping and reject stale revisions.
 Deleting or detaching a standalone expression removes its owning statement;
-only nested expressions leave a `None` placeholder. Empty suites retain `pass`.
+only nested expressions leave an `...` placeholder. Empty suites retain `pass`.
 Deletion and transfer share this rule; replacement adds parentheses only when
 needed to preserve the AST.
 
@@ -196,6 +196,12 @@ the nesting of a drop onto an empty line.
 
 ## Imported set programs
 
+Assess construction from an empty document as a one-time manual design review:
+can the available tools express the program, and are those tools discoverable?
+Record gaps and findings in `AI`. Do not add complete GUI reconstruction scenarios
+to the recurring suite. Keep focused regression tests for the semantic and UI
+invariants that can break accidentally.
+
 Imported programs in `examples/pybricks` must remain composable from the standard
 palette. A generic assignment or function-call placeholder must not count as
 coverage for an unknown device API. Test each actual call against the bundled
@@ -220,7 +226,11 @@ code style is checked with the development Black dependency. Scratch views parse
 existing text without reformatting it; committed edits still format and validate.
 Source indexes and derived presentation are reused while the revision is unchanged.
 Hit testing and snippet overlap selection use indexes, and rendering visits visible
-rows. Formatting operations batch Qt layout updates. Benchmark library-to-Scratch
+rows. Match note ownership through an indexed statement range, not a full-document
+scan per block. Definition comment projection reuses the template's comment owners;
+it must not instantiate each call merely to display the same comments. Reporter
+compatibility is cached per catalog/input type, while receiver names retain the
+current lexical context. Formatting operations batch Qt layout updates. Benchmark library-to-Scratch
 and program-to-Scratch separately, and verify undo after each transfer.
 
 Regression checks must exercise actual pointer activation for every enum value,

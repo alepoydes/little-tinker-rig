@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from pyblocks.core.expressions import navigate
 from pyblocks.core.parameters import change_parameter, choices
 from pyblocks.core.types import known_type
 from pyblocks.i18n import tr
@@ -113,11 +114,22 @@ class ParameterEditor(QWidget):
                 self.mapToGlobal(self.rect().bottomLeft()), self.error, self
             )
             self.line_edit.setFocus()
-            return
+            return False
         self.applied.emit()
         self.close()
+        return True
 
     def eventFilter(self, watched, event):
+        if event.type() == QEvent.Type.KeyPress and event.key() in (
+            Qt.Key.Key_Tab,
+            Qt.Key.Key_Backtab,
+        ):
+            previous = event.key() == Qt.Key.Key_Backtab
+            if self.apply():
+                navigate(self.session, "previous" if previous else "next")
+                self.view.setFocus()
+                self.view.reveal_selection()
+            return True
         if event.type() == QEvent.Type.Resize:
             self.unit.move(
                 self.line_edit.width() - self.unit.width() - 3,

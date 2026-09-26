@@ -200,7 +200,7 @@ def _removal(syntax: Syntax, node: ast.AST | tuple[ast.stmt, ...]) -> tuple[Span
         if isinstance(parent, ast.Expr):
             node = parent
         else:
-            return syntax.spans[node], "None"
+            return syntax.spans[node], "..."
     if not isinstance(node, (ast.stmt, tuple)):
         raise ValueError("Select a statement or expression")
     suite, span, count = statement_group(syntax, node)

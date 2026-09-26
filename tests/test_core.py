@@ -94,7 +94,7 @@ def test_expression_replacement_preserves_precedence():
         ("(1 + 2)\n", ""),
         ("print(0)\n# owned comment\n(1 + 2)\nprint(3)\n", "print(0)\nprint(3)\n"),
         ("if True:\n    (1 + 2)\n", "if True:\n    pass\n"),
-        ("value = 1 + 2\n", "value = None\n"),
+        ("value = 1 + 2\n", "value = ...\n"),
     ],
 )
 def test_expression_removal_respects_statement_ownership(source, expected):

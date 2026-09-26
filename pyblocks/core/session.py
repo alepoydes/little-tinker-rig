@@ -122,6 +122,7 @@ class Session:
         return manage_imports(source, required, retain=scratch)
 
     def _reset_cache(self):
+        self._reporter_choices = {}
         self._revision = None
         self._matches: tuple[Match, ...] = ()
         self._analysis = None
@@ -267,18 +268,62 @@ class Session:
         match = self.enclosing_match(node)
         if match is None:
             return True
+        if (
+            part == "expression"
+            and match.snippet.expression
+            and self.document.syntax.spans[node] == match.span
+        ):
+            return True
         if part == "name":
             return match.snippet.mode == "legacy" or any(
                 node in nodes for nodes in match.named.values()
             )
         if self.field_binding(node) is not None:
             return True
+        if (
+            part == "operator"
+            and isinstance(node, ast.AugAssign)
+            and not match.snippet.expression
+            and len(match.snippet.body) == 1
+            and isinstance(match.snippet.body[0], ast.AugAssign)
+        ):
+            template = match.snippet.body[0]
+            return bool(
+                getattr(template.value, "template_parameter", None)
+                and self.editable(node.target, "name")
+            )
+        # A generic assignment publishes both its target and its value. Explicit
+        # structural tools may turn its name into an attribute or unpacking target;
+        # ordinary name editing still performs a lexical rename.
+        if (
+            part == "expression"
+            and isinstance(getattr(node, "ctx", None), ast.Store)
+            and self.editable(node, "name")
+            and not match.snippet.expression
+            and len(match.snippet.body) == 1
+            and isinstance(match.snippet.body[0], ast.Assign)
+            and getattr(match.snippet.body[0].value, "template_parameter", None)
+        ):
+            return True
         if part == "sequence":
             if isinstance(node, ast.Call):
-                return self.field_binding(node.func) is not None
+                parent = self.document.syntax.parent.get(node)
+                return (
+                    self.field_binding(node.func) is not None
+                    or match.snippet.expression
+                    and self.document.syntax.spans[node] == match.span
+                    or isinstance(parent, (ast.Expr, ast.Assign, ast.AnnAssign))
+                    and parent.value is node
+                    and self.document.syntax.spans[parent] == match.span
+                )
             if isinstance(node, ast.BoolOp):
                 return all(
                     self.field_binding(value) is not None for value in node.values
+                )
+            if isinstance(node, ast.Compare):
+                return all(
+                    self.field_binding(value) is not None
+                    for value in (node.left, *node.comparators)
                 )
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 return self.editable(node, "name") and all(
@@ -291,7 +336,7 @@ class Session:
                 )
         return False
 
-    def _commit_field(self, node, source, *, focus):
+    def _field_source(self, node, source):
         if binding := self.field_binding(node):
             match, parameter, root = binding
             span = self.document.syntax.spans[root]
@@ -304,7 +349,10 @@ class Session:
                     for item in match.occurrences[parameter.name]
                 ],
             )
-        self.editor.commit(source, focus=focus)
+        return source
+
+    def _commit_field(self, node, source, *, focus):
+        self.editor.commit(self._field_source(node, source), focus=focus)
 
     def replace_expression(self, node, text):
         if not self.editable(node):
@@ -316,15 +364,45 @@ class Session:
         )
 
     def change_sequence(self, sequence, index, action, text=None):
+        from .structure import sequence as list_sequence
+
         if sequence.syntax is not self.document.syntax:
             raise ValueError("Document changed; choose the list again")
         if not self.editable(sequence.node, "sequence"):
             raise ValueError("Expand the block to edit its fixed implementation")
+        route = self.document.syntax.path(sequence.node)
         self._commit_field(
             sequence.node,
             sequence.change(index, action, text),
             focus=sequence.span.start,
         )
+        syntax = self.document.syntax
+        node = syntax.follow(route)
+        self.editor.selection = node
+        updated = list_sequence(syntax, node)
+        if updated and updated.items:
+            index = max(
+                0,
+                min(
+                    index + {"left": -1, "right": 1}.get(action, 0),
+                    len(updated.items) - 1,
+                ),
+            )
+            span = updated.items[index]
+            candidates = [
+                n
+                for n, s in syntax.spans.items()
+                if isinstance(n, ast.expr) and span.start <= s.start < span.end
+            ]
+            if candidates:
+                self.editor.selection = min(
+                    candidates,
+                    key=lambda n: (
+                        not (isinstance(n, ast.Constant) and n.value is Ellipsis),
+                        syntax.spans[n].start,
+                        -syntax.spans[n].end,
+                    ),
+                )
 
     def accepts_target(self, target):
         if isinstance(target, ast.expr):
@@ -395,6 +473,10 @@ class Session:
         return frozenset(self._expanded)
 
     def selected_nodes(self):
+        if isinstance(self.editor.selection, ast.expr) and self.field_binding(
+            self.editor.selection
+        ):
+            return self.editor.selection
         match = self.selected_match()
         if not match:
             return self.editor.selection
@@ -447,6 +529,7 @@ class Session:
                 raise ValueError("Expand the block to edit its fixed implementation")
             offset = syntax.spans[self.editor.selection].start
             source = edit.replace(syntax, self.editor.selection, expansion.source)
+            source = self._field_source(self.editor.selection, source)
         else:
             target = target or self.destination()
             if not self.accepts_target(target):
@@ -619,7 +702,12 @@ class Session:
 
     def extract_selection(self):
         """Return detached text and the valid remainder, without changing state."""
-        source = edit.delete(self.document.syntax, self.selected_nodes())
+        nodes = self.selected_nodes()
+        source = edit.delete(self.document.syntax, nodes)
+        if isinstance(nodes, ast.expr) and not isinstance(
+            self.document.syntax.parent.get(nodes), ast.Expr
+        ):
+            source = self._field_source(nodes, source)
         return edit.reindent(self.selected_text(), 0), source
 
     def to_scratch(self, position=None) -> None:
@@ -681,6 +769,7 @@ class Session:
                 raise ValueError("Expand the block to edit its fixed implementation")
             offset = syntax.spans[node].start
             source = edit.replace(syntax, node, text)
+            source = self._field_source(node, source)
         else:
             target = target or self.destination()
             if not self.accepts_target(target):

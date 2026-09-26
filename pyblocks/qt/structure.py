@@ -3,6 +3,7 @@
 import ast
 
 from PySide6.QtWidgets import (
+    QApplication,
     QComboBox,
     QHBoxLayout,
     QInputDialog,
@@ -13,8 +14,21 @@ from PySide6.QtWidgets import (
 )
 
 from pyblocks.core import edit
-from pyblocks.core.structure import sequence
+from pyblocks.core.expressions import (
+    EMPTY,
+    OPERATIONS,
+    Proposal,
+    accepts,
+    children,
+    compose,
+    operation_fits,
+    public,
+    unwrap,
+)
+from pyblocks.core.snippets import LEVELS
+from pyblocks.core.structure import declare_scope, function_field, sequence
 from pyblocks.core.transfer import Transfer
+from pyblocks.core.types import known_type
 from pyblocks.i18n import tr
 
 
@@ -50,6 +64,14 @@ class StructureBar(QWidget):
                     tr("Insert before selected item"),
                     lambda: self.change("insert_before"),
                 )
+                for kind, title in (
+                    ("keyword", tr("Add named argument")),
+                    ("star", tr("Unpack positional arguments")),
+                    ("double_star", tr("Unpack named arguments")),
+                ):
+                    menu.addAction(
+                        title, lambda checked=False, kind=kind: self.change(kind)
+                    )
                 button.setMenu(menu)
                 button.setPopupMode(QToolButton.ToolButtonPopupMode.MenuButtonPopup)
             layout.addWidget(button)
@@ -73,7 +95,18 @@ class StructureBar(QWidget):
         labels = []
         for owner in syntax.ancestors(node):
             if not isinstance(
-                owner, (ast.Call, ast.BoolOp, ast.FunctionDef, ast.AsyncFunctionDef)
+                owner,
+                (
+                    ast.Call,
+                    ast.BoolOp,
+                    ast.Compare,
+                    ast.FunctionDef,
+                    ast.AsyncFunctionDef,
+                    ast.List,
+                    ast.Tuple,
+                    ast.Set,
+                    ast.Dict,
+                ),
             ):
                 continue
             if self.view.session.simplified_range(owner):
@@ -91,7 +124,15 @@ class StructureBar(QWidget):
                         operator="and" if isinstance(owner.op, ast.And) else "or",
                     )
                     if item.kind == "operands"
-                    else tr("Arguments: {name}", name=ast.unparse(owner.func))
+                    else (
+                        tr("Comparison operands")
+                        if item.kind == "comparisons"
+                        else (
+                            tr("Collection items")
+                            if item.kind in {"items", "entries"}
+                            else tr("Arguments: {name}", name=ast.unparse(owner.func))
+                        )
+                    )
                 )
             )
         self.choice.blockSignals(True)
@@ -135,6 +176,8 @@ class StructureBar(QWidget):
         self.buttons["remove"].setEnabled(index >= 0 and len(seq.items) > seq.minimum)
         self.buttons["left"].setEnabled(index > 0)
         self.buttons["right"].setEnabled(0 <= index < len(seq.items) - 1)
+        for action in self.buttons["insert"].menu().actions()[1:]:
+            action.setVisible(seq.kind == "arguments")
 
     def change(self, action):
         seq = self.current()
@@ -142,31 +185,56 @@ class StructureBar(QWidget):
             return
         index = self.item_index(seq)
         text = None
-        if action in {"insert", "insert_before"}:
+        if action in {"keyword", "star", "double_star"}:
+            if seq.kind != "arguments":
+                return
+            if action == "keyword":
+                name, accepted = QInputDialog.getText(
+                    self.view, tr("Add named argument"), tr("Argument name")
+                )
+                if not accepted:
+                    return
+                import keyword
+
+                if not name.isidentifier() or keyword.iskeyword(name):
+                    self.view.failed.emit(tr("Enter a Python identifier"))
+                    return
+                text = name + "=" + EMPTY
+            else:
+                text = ("*" if action == "star" else "**") + EMPTY
+            action, index = "insert", len(seq.items)
+        elif action in {"insert", "insert_before"}:
             index = (
                 max(0, index)
                 if action == "insert_before"
                 else index + 1 if index >= 0 else len(seq.items)
             )
             action = "insert"
-            text, accepted = QInputDialog.getText(
-                self.view,
-                tr("Add item"),
-                (
-                    tr("Parameter (name, optionally = default)")
-                    if seq.kind == "parameters"
-                    else tr("Python expression or named argument")
-                ),
-                text="parameter" if seq.kind == "parameters" else "None",
-            )
-            if not accepted:
-                return
+            if seq.kind == "parameters":
+                text, accepted = QInputDialog.getText(
+                    self.view,
+                    tr("Add item"),
+                    tr("Parameter (name, optionally = default)"),
+                    text="parameter",
+                )
+                if not accepted:
+                    return
+            else:
+                if isinstance(getattr(seq.node, "ctx", None), ast.Store):
+                    text = "item"
+                    suffix = 2
+                    while text in self.view.session.analysis.used_names:
+                        text, suffix = f"item{suffix}", suffix + 1
+                else:
+                    text = f"{EMPTY}: {EMPTY}" if seq.kind == "entries" else EMPTY
         try:
             if seq.syntax is not self.view.session.document.syntax:
                 raise ValueError(tr("Document changed; choose the list again"))
             self.view.session.change_sequence(seq, index, action, text)
             self.view.refresh_source()
             self.view.changed.emit()
+            if action == "insert" and seq.kind != "parameters":
+                self.view.choose_expression()
         except (ValueError, SyntaxError) as error:
             QMessageBox.warning(self.view, tr("Cannot change this list"), str(error))
 
@@ -176,11 +244,19 @@ def block_menu(view, point):
     syntax = session.document.syntax
     node = view.node_at(point)
     match = session.enclosing_match(node)
-    session.editor.selection = (
-        syntax.at(match.span.start)
-        if match
-        else next((n for n in syntax.ancestors(node) if isinstance(n, ast.stmt)), node)
-    )
+    if match:
+        session.editor.selection = next(
+            (
+                n
+                for n in syntax.ancestors(syntax.at(match.span.start))
+                if syntax.spans[n] == match.span and isinstance(n, (ast.expr, ast.stmt))
+            ),
+            session._match_nodes(match)[0] if not match.snippet.expression else node,
+        )
+    else:
+        session.editor.selection = next(
+            (n for n in syntax.ancestors(node) if isinstance(n, ast.stmt)), node
+        )
     view.setFocus()
     view.selected.emit()
     menu = QMenu(view)
@@ -194,6 +270,48 @@ def block_menu(view, point):
             (view.transferred if transfer else view.changed).emit()
         except (ValueError, SyntaxError, OSError) as error:
             view.failed.emit(str(error))
+
+    function = next(
+        (
+            n
+            for n in syntax.ancestors(node)
+            if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
+        ),
+        None,
+    )
+    if function and view.expression_level in {"expert", "all"}:
+
+        def add_function_field(kind):
+            perform(lambda: function_field(session, function, kind))
+            view.choose_expression()
+
+        menu.addAction(tr("Add decorator"), lambda: add_function_field("decorator"))
+        menu.addAction(
+            tr("Edit return annotation"), lambda: add_function_field("returns")
+        )
+
+        def scope_choice(kind):
+            scope = session.analysis.defined_scopes[function].parent
+            names = set(session.analysis.root.bindings) if kind == "global" else set()
+            while kind == "nonlocal" and scope and scope is not session.analysis.root:
+                if not isinstance(scope.node, ast.ClassDef):
+                    names.update(scope.bindings)
+                scope = scope.parent
+            name, accepted = QInputDialog.getItem(
+                view,
+                tr("Variable scope"),
+                tr("Variable name"),
+                sorted(names),
+                editable=True,
+            )
+            if accepted:
+                perform(lambda: declare_scope(session, node, name, kind))
+
+        menu.addAction(tr("Use module variable"), lambda: scope_choice("global"))
+        menu.addAction(
+            tr("Use enclosing function variable"), lambda: scope_choice("nonlocal")
+        )
+        menu.addSeparator()
 
     definition = match or next(
         (m for m in session.matches if m.span.contains(syntax.spans[node].start)), None
@@ -287,35 +405,80 @@ def expression_menu(view, point, *, menu=None):
             replace(owner, text)
 
     for owner in syntax.ancestors(node):
-        if not isinstance(owner, ast.expr) or not view.session.editable(owner):
+        if not public(view.session, owner):
             continue
         text = syntax.text(owner)
         submenu = menu.addMenu(text[:65] + ("…" if len(text) > 65 else ""))
+
+        def choose(checked=False, owner=owner, wrap=False):
+            view.session.editor.selection = owner
+            view.choose_expression(wrap=wrap)
+
+        submenu.addAction(tr("Compose expression"), choose)
+        submenu.addAction(
+            tr("Copy expression"),
+            lambda owner=owner: QApplication.clipboard().setText(syntax.text(owner)),
+        )
+        submenu.addAction(
+            tr("Paste expression"),
+            lambda owner=owner: replace(owner, QApplication.clipboard().text()),
+        )
         submenu.addAction(
             tr("Edit expression"), lambda owner=owner: edit_expression(owner)
         )
         submenu.addAction(
-            tr("Clear expression"), lambda owner=owner: replace(owner, "None")
+            tr("Clear expression"), lambda owner=owner: replace(owner, EMPTY)
         )
         wrap = submenu.addMenu(tr("Wrap expression"))
-        for operation in (
-            "({value}) and None",
-            "({value}) or None",
-            "not ({value})",
-            "({value}) + None",
-            "({value}) - None",
-            "({value}) * None",
-            "({value}) / None",
-            "({value}) == None",
-            "({value}) < None",
-            "({value}) > None",
-        ):
+
+        def apply(operation, owner):
+            try:
+                if syntax is not view.session.document.syntax:
+                    raise ValueError(
+                        tr("Document changed; choose the expression again")
+                    )
+                view.session.editor.selection = owner
+                compose(
+                    view.session,
+                    Proposal(operation.label, operation=operation),
+                    wrap=True,
+                )
+                view.refresh_source()
+                view.changed.emit()
+                view.reveal_selection()
+            except (ValueError, SyntaxError) as error:
+                view.failed.emit(str(error))
+
+        for operation in OPERATIONS:
+            level = view.expression_level
+            if (
+                level != "all"
+                and LEVELS.index(operation.level) > LEVELS.index(level)
+                or not operation_fits(view.session, owner, operation)
+                or not accepts(view.session, owner, known_type(operation.result))
+            ):
+                continue
             wrap.addAction(
-                operation.format(value="…"),
-                lambda owner=owner, operation=operation: replace(
-                    owner, operation.format(value=syntax.text(owner))
-                ),
+                tr(operation.label),
+                lambda owner=owner, operation=operation: apply(operation, owner),
             )
+        operands = children(view.session, owner)
+        if operands:
+            keep = submenu.addMenu(tr("Unwrap: keep an operand"))
+
+            def keep_operand(owner, operand):
+                if syntax is not view.session.document.syntax:
+                    return
+                view.session.editor.selection = owner
+                unwrap(view.session, operand)
+                view.refresh_source()
+                view.changed.emit()
+
+            for operand in operands:
+                keep.addAction(
+                    syntax.text(operand)[:65],
+                    lambda owner=owner, operand=operand: keep_operand(owner, operand),
+                )
     if menu.isEmpty():
         return
     if standalone:

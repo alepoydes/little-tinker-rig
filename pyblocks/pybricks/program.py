@@ -27,6 +27,14 @@ class Program:
                 encoding, _ = tokenize.detect_encoding(io.BytesIO(raw).readline)
                 source = raw.decode(encoding)
                 tree = ast.parse(source)
+                for node in ast.walk(tree):
+                    if isinstance(node, ast.Constant) and node.value is Ellipsis:
+                        from pyblocks.i18n import tr
+
+                        raise ValueError(
+                            f"{file.name}:{node.lineno}: "
+                            + tr("Fill this input before running the program")
+                        )
                 target = Path(self.directory.name) / file.relative_to(root)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(raw)

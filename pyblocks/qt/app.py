@@ -14,9 +14,11 @@ from PySide6.QtWidgets import (
     QDockWidget,
     QFileDialog,
     QHBoxLayout,
+    QInputDialog,
     QLabel,
     QLineEdit,
     QMainWindow,
+    QMenu,
     QMessageBox,
     QPlainTextEdit,
     QPushButton,
@@ -34,6 +36,7 @@ from PySide6.QtWidgets import (
 
 from pyblocks.core.authoring import template_from_source, user_collection
 from pyblocks.core.edit import target_position
+from pyblocks.core.expressions import navigate as navigate_expression
 from pyblocks.core.parameters import default_bindings
 from pyblocks.core.snippets import LEVELS, load_collection
 from pyblocks.core.transfer import Transfer
@@ -350,8 +353,16 @@ class Studio(QMainWindow):
                 self._action(edit, label, key, callback, icon=icon)
             )
         for label, key, callback in (
-            (N_("Parent"), "Alt+Left", lambda: self.editing_session.editor.parent()),
-            (N_("Child"), "Alt+Right", lambda: self.editing_session.editor.child()),
+            (
+                N_("Parent"),
+                "Alt+Left",
+                lambda: navigate_expression(self.editing_session, "parent"),
+            ),
+            (
+                N_("Child"),
+                "Alt+Right",
+                lambda: navigate_expression(self.editing_session, "child"),
+            ),
             (N_("Previous node / target"), "Alt+Up", lambda: self.navigate(-1)),
             (N_("Next node / target"), "Alt+Down", lambda: self.navigate(1)),
             (
@@ -393,6 +404,9 @@ class Studio(QMainWindow):
         ):
             self.structural_actions.append(self._action(edit, label, key, callback))
         self._action(edit, N_("Format Python"), "Ctrl+Alt+L", self.commit_code)
+        self.structural_actions.append(
+            self._action(edit, N_("Import module…"), None, self.import_module)
+        )
         self._action(edit, N_("Find"), "Ctrl+F", self.show_find)
         self.create_block_action = self._action(
             edit,
@@ -556,6 +570,8 @@ class Studio(QMainWindow):
         level = self.level_filter.currentData()
         self.settings.setValue("blockLevel", level)
         self.library.filter(self.search.text(), level)
+        if hasattr(self, "scratch"):
+            self.editing_source.expression_level = level
 
     def commit_code(self):
         if self.pages.currentIndex() == 3:
@@ -823,6 +839,8 @@ class Studio(QMainWindow):
     def refresh_status(self):
         if not hasattr(self, "undo_action"):
             return
+        self.editing_source.expression_level = self.level_filter.currentData()
+        self.library.set_context(self.editing_session)
         match = self.session.selected_match()
         selection = (
             tr(match.snippet.help).splitlines()[0]
@@ -943,25 +961,73 @@ class Studio(QMainWindow):
             self.insert_snippet(item.data(0, IDENTITY))
 
     def insert_snippet(self, identity, target=None):
+        from pyblocks.core.expressions import targets
+
+        view = self.editing_source if target is None else self.source
+        session = view.session
         snippet = next(
             s
-            for s in self.session.available_snippets
+            for s in session.available_snippets
             if s.identity == identity and not s.historical
         )
-        syntax = self.session.document.syntax
+        syntax = session.document.syntax
+        if not snippet.expression and isinstance(
+            getattr(session.editor.selection, "ctx", None), ast.Store
+        ):
+            session.editor.selection = session.editor.statement()
+        if (
+            target is None
+            and snippet.expression
+            and not isinstance(session.editor.selection, ast.expr)
+        ):
+            inputs = targets(session, snippet)
+            if inputs:
+                if len(inputs) == 1:
+                    session.editor.selection = inputs[0]
+                else:
+                    menu = QMenu(view)
+                    menu.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+                    original = session.editor.selection
+
+                    def restore_selection():
+                        if syntax is session.document.syntax:
+                            session.editor.selection = original
+                            view.viewport().update()
+
+                    menu.aboutToHide.connect(restore_selection)
+                    for node in inputs:
+                        span = syntax.spans[node]
+                        label = syntax.text(node)
+                        line, column = syntax.position(span.start)
+                        action = menu.addAction(f"{line}:{column + 1} · {label[:60]}")
+
+                        def choose(checked=False, node=node):
+                            if syntax is session.document.syntax:
+                                session.editor.selection = node
+                                self.insert_snippet(identity)
+
+                        action.triggered.connect(choose)
+                        action.hovered.connect(
+                            lambda node=node: (
+                                setattr(session.editor, "selection", node),
+                                view.viewport().update(),
+                            )
+                        )
+                    menu.popup(view.mapToGlobal(view.rect().center()))
+                    self.input_menu = menu
+                    return
         offset = (
             target_position(syntax, target)[0]
             if target
-            else syntax.spans[self.session.editor.selection].start
+            else syntax.spans[session.editor.selection].start
         )
         try:
-            self.session.insert_snippet(
-                snippet, default_bindings(self.session, snippet, offset), target
+            session.insert_snippet(
+                snippet, default_bindings(session, snippet, offset), target
             )
+            view.changed.emit()
             self.refresh_views()
-            self.source.reveal(
-                self.session.document.syntax.spans[self.session.editor.selection].start
-            )
+            view.reveal(session.document.syntax.spans[session.editor.selection].start)
         except (ValueError, SyntaxError, OSError) as error:
             self.error(str(error))
 
@@ -975,6 +1041,20 @@ class Studio(QMainWindow):
             self.session.edit_python,
             text=self.session.selected_text(),
         )
+
+    def import_module(self):
+        from pyblocks.core.structure import add_import
+
+        module, accepted = QInputDialog.getText(
+            self, tr("Import module…"), tr("Module")
+        )
+        if not accepted:
+            return
+        names, accepted = QInputDialog.getText(
+            self, tr("Import module…"), tr("Names (leave empty to import the module)")
+        )
+        if accepted:
+            add_import(self.editing_session, module.strip(), names.strip())
 
     def edit_parameters(self):
         self.editing_source.edit_parameters()

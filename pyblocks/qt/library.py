@@ -4,6 +4,7 @@ from PySide6.QtCore import QMimeData, QSize, Qt, Signal
 from PySide6.QtGui import QColor, QFontDatabase, QFontMetrics, QPainter, QPen
 from PySide6.QtWidgets import QStyle, QStyledItemDelegate, QTreeWidget, QTreeWidgetItem
 
+from pyblocks.core.expressions import eligible, input_roots
 from pyblocks.core.presentation import role_color, snippet_role
 from pyblocks.core.snippets import LEVELS, instantiate, snippet_groups
 from pyblocks.i18n import N_, tr
@@ -105,9 +106,14 @@ class Library(QTreeWidget):
         self.setItemDelegate(CardDelegate(self))
         self.setMinimumWidth(270)
         self.level = "all"
+        self.context_key = None
+        self.eligible_ids = None
         self.load(snippets)
 
     def load(self, snippets):
+        self.snippets = {s.identity: s for s in snippets}
+        self.context_key = None
+        self.eligible_ids = None
         expanded = {
             self.topLevelItem(i).toolTip(0): self.topLevelItem(i).isExpanded()
             for i in range(self.topLevelItemCount())
@@ -174,21 +180,28 @@ class Library(QTreeWidget):
             for child in range(group.childCount()):
                 item = group.child(child)
                 match = (
-                    self.level == "all"
-                    or LEVELS.index(item.data(0, LEVEL)) <= LEVELS.index(self.level)
-                ) and (
-                    all(
-                        word
-                        in (
-                            item.text(0)
-                            + " "
-                            + item.toolTip(0)
-                            + " "
-                            + group.text(0)
-                            + " "
-                            + item.data(0, DEFINITION)
-                        ).casefold()
-                        for word in words
+                    (
+                        self.eligible_ids is None
+                        or item.data(0, IDENTITY) in self.eligible_ids
+                    )
+                    and (
+                        self.level == "all"
+                        or LEVELS.index(item.data(0, LEVEL)) <= LEVELS.index(self.level)
+                    )
+                    and (
+                        all(
+                            word
+                            in (
+                                item.text(0)
+                                + " "
+                                + item.toolTip(0)
+                                + " "
+                                + group.text(0)
+                                + " "
+                                + item.data(0, DEFINITION)
+                            ).casefold()
+                            for word in words
+                        )
                     )
                 )
                 item.setHidden(not match)
@@ -200,6 +213,24 @@ class Library(QTreeWidget):
                 group.setExpanded(
                     self.expanded_before_search.get(group.toolTip(0), False)
                 )
+        item = self.currentItem()
+        if item and (item.isHidden() or item.parent() and item.parent().isHidden()):
+            self.setCurrentItem(None)
+
+    def set_context(self, session):
+        key = (
+            session.document.syntax,
+            session.editor.selection,
+            session.visible_matches,
+        )
+        if key == self.context_key:
+            return
+        self.context_key = key
+        inputs = input_roots(session)
+        self.eligible_ids = {
+            s.identity for s in self.snippets.values() if eligible(session, s, inputs)
+        }
+        self.filter(getattr(self, "search", ""))
 
     def mimeData(self, items):
         data = QMimeData()

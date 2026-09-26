@@ -1,8 +1,13 @@
 """Presentation must preserve source, comment ownership and editing coordinates."""
 
+import ast
+import io
+import tokenize
+
 import pytest
 from PySide6.QtCore import QEvent, QPointF, Qt
 from PySide6.QtGui import QMouseEvent
+from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 
 from pyblocks.core.display import Display
@@ -26,11 +31,86 @@ def pair(value=3):
 '''
 
 
+def test_comment_modes_preserve_program_tokens_names_and_code_layout():
+    (snippet,) = load_module(
+        '''@inline_block(names=("reading",))
+def read(value=3):
+    """Read a value."""
+    # The definition describes a reading.
+    reading: "int" = value  # Remember it.
+    if reading:
+        # Show the reading.
+        print(reading)
+''',
+        "test",
+        "1",
+    )
+    source = "# My explanation.\nanswer = (3)  # My value.\n\nif answer:\n    print( answer )\n"
+    owner = Session.fragment(source, (snippet,))
+    assert len(owner.matches) == 1
+    match = owner.matches[0]
+
+    def code(text):
+        return [
+            (t.type, t.string)
+            for t in tokenize.generate_tokens(io.StringIO(text).readline)
+            if t.type not in {tokenize.COMMENT, tokenize.NL}
+        ]
+
+    for mode in ("auto", "source", "definition"):
+        display = Display(owner, [((match.span.start, snippet.identity), mode)])
+        assert ast.dump(ast.parse(display.text)) == ast.dump(ast.parse(source))
+        assert code(display.text) == code(source)
+        assert "reading" not in display.text.replace(
+            "# The definition describes a reading.", ""
+        ).replace("# Show the reading.", "")
+        assert "answer = (3)" in display.text
+        assert "print( answer )" in display.text
+        for token in ("answer =", "(3)", "print("):
+            offset = source.index(token)
+            shown = display.forward(offset)
+            assert display.text[shown : shown + len(token)] == token
+            assert display.backward(shown) == offset
+    assert owner.document.state.source == source
+
+
 def make_session(source=None):
     snippets = load_module(DEFINITION, "test", "1")
     return Session.fragment(
         source or instantiate(snippets[0], {}).source + "\n", snippets
     )
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "# Program explanation.\n1 + 2\n",
+        "result = (1 +  # Program explanation.\n          2)\n",
+    ],
+)
+def test_expression_modes_do_not_mix_program_and_definition_comments(source):
+    snippets = load_module(
+        '''@inline_block
+def addition(left=1, right=2):
+    """Add two values."""
+    # Definition explanation.
+    return left + right
+''',
+        "test",
+        "1",
+    )
+    owner = Session.fragment(source, snippets)
+    match = owner.matches[0]
+    automatic = Display(owner)
+    assert automatic.blocks[0].effective == "source"
+    assert automatic.text == source
+    display = Display(
+        owner, [((match.span.start, match.snippet.identity), "definition")]
+    )
+    assert "# Program explanation." not in display.text
+    assert "# Definition explanation." in display.text
+    assert ast.dump(ast.parse(display.text)) == ast.dump(ast.parse(source))
+    assert owner.document.state.source == source
 
 
 def hover(view, point):
@@ -52,7 +132,7 @@ def test_auto_uses_owned_comments_not_blank_lines_and_never_rewrites_source():
     state = owner.document.state
     display = Display(owner)
     assert display.blocks[0].effective == "definition"
-    assert display.text == "# First value.\nprint(3)\n\n# Next value.\nprint(3 + 1)\n"
+    assert display.text == "# First value.\nprint(3)\n\n\n# Next value.\nprint(3 + 1)\n"
     assert owner.document.state is state
     for comment in (
         "# My explanation.\n\nprint(3)\nprint(3 + 1)\n",
@@ -235,14 +315,28 @@ def test_switching_and_parameter_edits_preserve_modes_and_highlight_whole_block(
     try:
         state = owner.document.state
         block = view.display.blocks[0]
-        menu = view.display_menu(block)
-        assert [a.text() for a in menu.actions()] == ["Auto", "Source", "Definition"]
-        menu.actions()[1].trigger()
+        QTest.mouseClick(
+            view.viewport(),
+            Qt.MouseButton.LeftButton,
+            pos=view.mode_rect(block).center().toPoint(),
+        )
         assert view.toPlainText() == state.source
         assert owner.document.state is state
         assert view.mode_rect(view.display.blocks[0]) is not None
-        menu.deleteLater()
-        view.set_display_mode(view.display.blocks[0], "definition")
+        QTest.mouseClick(
+            view.viewport(),
+            Qt.MouseButton.LeftButton,
+            pos=view.mode_rect(view.display.blocks[0]).center().toPoint(),
+        )
+        assert view.display.blocks[0].mode == "definition"
+        QTest.mouseClick(
+            view.viewport(),
+            Qt.MouseButton.LeftButton,
+            pos=view.mode_rect(view.display.blocks[0]).center().toPoint(),
+        )
+        assert view.display.blocks[0].mode == "auto"
+        view.cycle_display_mode(view.display.blocks[0])
+        view.cycle_display_mode(view.display.blocks[0])
         slot = view.parameter_slots[0]
         point = view.parameter_rect(slot).center().toPoint()
         assert view.parameter_at(point) is slot

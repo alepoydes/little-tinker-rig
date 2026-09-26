@@ -547,6 +547,14 @@ class Analysis(Scopes):
                     Diagnostic(self.syntax.spans[node], f"Name {name!r} is not defined")
                 )
         for node in ast.walk(self.syntax.tree):
+            if isinstance(node, ast.Constant) and node.value is Ellipsis:
+                result.append(
+                    Diagnostic(
+                        self.syntax.spans[node],
+                        tr("Fill this input before running the program"),
+                        "error",
+                    )
+                )
             pairs = ()
             if isinstance(node, ast.BinOp) and isinstance(
                 node.op, (ast.Add, ast.Sub, ast.Mod)

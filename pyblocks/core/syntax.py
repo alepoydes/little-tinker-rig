@@ -115,6 +115,25 @@ class Syntax:
     def validate(self, source):
         return parse(source, fragment=self.fragment)
 
+    def path(self, node):
+        """Follow a node through expression edits and managed-prefix changes."""
+        result = []
+        while node is not self.tree:
+            parent = self.parent[node]
+            index = self.children[parent].index(node)
+            # Imports/helpers can be added before the user's statements.
+            result.append(
+                index - len(self.children[parent]) if parent is self.tree else index
+            )
+            node = parent
+        return tuple(reversed(result))
+
+    def follow(self, path):
+        node = self.tree
+        for index in path:
+            node = self.children[node][index]
+        return node
+
     @cached_property
     def tokens(self):
         return tuple(tokenize.generate_tokens(io.StringIO(self.source).readline))

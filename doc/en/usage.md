@@ -45,13 +45,16 @@ Block titles and action symbols explain their purpose without adding comments to
 the Python file. Titles and source comments use the editor's normal font size.
 Indentation colors continue through blank lines.
 
-Each recognized inline block has an **A / S / D** button in its upper-right corner:
+Each recognized inline block has an **A / P / D** button in its upper-right corner.
+Each click cycles through these modes:
 
-- **Auto** (default): use the definition's comments and layout until the program
+- **Auto** (default): use the definition's comments until the program
   contains a comment belonging to this block. Blank lines do not affect the choice.
-- **Source**: show the program's own comments and layout.
-- **Definition**: show the definition's comments and layout, with the current
-  parameter values.
+- **Program comments**: show the program's own comments.
+- **Definition comments**: show comments from the definition next to the matching code.
+
+Code, names, annotations, parentheses and code formatting always remain those of
+the program. This button never expands a function body or substitutes definition code.
 
 The choice is independent for each block and survives parameter edits in the open
 view. Switching never changes saved Python, execution or Undo. Comments inserted
@@ -70,6 +73,25 @@ final comments without a following statement belong to their enclosing definitio
 or scope. File metadata and managed section markers retain their file ownership.
 
 ## Structural navigation
+
+Expressions use Python's syntax to convey nesting. Hovering or selecting an editable
+subexpression highlights its exact extent, without additional nesting borders.
+Use **Alt+Left / Right** to select its parent or child, and **Tab / Shift+Tab** to
+visit inputs. **Ctrl+Space** or **Enter** opens local search for operations, scoped
+names and compatible blocks. **Ctrl+Shift+Space** wraps the selected expression.
+Typing an operator such as `+` wraps it and selects the new operand. **Escape**
+selects the enclosing statement and restores its palette context.
+
+New empty inputs use Python's `...` placeholder; `None` is an ordinary value.
+Click an empty input to build an expression. Unfinished inputs survive save, recovery
+and Undo; Run/Upload requires filling them. Collection and argument controls add,
+remove and reorder items. The context menu also offers wrapping and keeping one
+operand of an expression. Optional Python expression entry remains available.
+
+The library filters expression blocks for the current input, including known type
+and unit contracts. Unknown types remain available. When a selected block has more
+than one suitable input, choose the destination from the offered list; hovering
+highlights that input. Levels still limit the catalog.
 
 | Action | Qt | TUI |
 | --- | --- | --- |
@@ -98,7 +120,7 @@ row opens space before the destination's descriptions. Its appearance keeps the
 same source row and relative point under the pointer. Edges scroll the view;
 dragging does not fold code automatically.
 
-Only an empty parameter (`None`) accepts a compatible expression. Populated
+Only an empty parameter (`...`) accepts a compatible expression. Populated
 parameters are not replaced by a drop. Invalid contexts offer no insertion and
 release restores the source. Library blocks use defaults and known device names.
 A successful transfer commits once; Undo restores both program and Scratch.
@@ -180,7 +202,7 @@ the toolbar focuses on files, history and hub actions.
 Edit the receiver, callable name, operands and operators directly in the source.
 For example, `left.run(speed + 10)` has separate editable values. Click an operator
 to choose another; operand grouping is preserved. Right-click an expression to
-edit it as Python, clear it to `None`, or wrap it in a logical, arithmetic or
+edit it as Python, clear it to `...`, or wrap it in a logical, arithmetic or
 comparison expression. Drag compatible blocks into the resulting empty fields.
 
 Click inside a call, function header or logical expression to show its compact
@@ -192,10 +214,21 @@ include annotations, defaults and Python's `/`, `*`, `*args` and `**kwargs` form
 Edits that violate Python syntax leave the document unchanged. Each accepted
 operation is one Undo step.
 
+The same controls edit lists, tuples, sets, dictionaries and comparison chains.
+The **+** menu on calls adds named arguments, `*args` and `**kwargs`. Literal values
+entered in local search take priority over descriptions that happen to contain
+the same number. **Copy expression / Paste expression** transfers a subexpression;
+**Unwrap** keeps a chosen operand. Assignment targets can be composed as attributes,
+indexed items or unpacking tuples. Click `+=` to choose another update operator.
+
+At Expert level, a function's context menu can add decorators, edit its return
+annotation and declare `global` or `nonlocal` variables. **Edit → Import module…**
+adds an explicit import, including classes/functions from other project files.
+
 Use **Define your own function** to create a definition, then edit its name and
 parameters and insert actions into its body. Module-level functions appear in
 **My functions** in the library. Their calls initially include required
-parameters as `None`; optional parameters use the function’s own defaults. Add
+parameters as `...`; optional parameters use the function’s own defaults. Add
 optional arguments explicitly when needed. Renaming a function or parameter
 updates statically resolved references and known keyword calls. Conflicting or
 capturing renames are rejected. Changing a signature keeps existing calls visible.
@@ -203,8 +236,8 @@ A known incompatible call receives a red border and an error comment; uncertain
 dynamic calls are not reported as signature errors. The program remains editable.
 Use **Return a value** inside a function.
 
-A function without a returned value appears as an action: adding another call
-after editing an argument creates the next statement. Functions with a returned
+A function without a returned value appears as an action. Press **Escape** after
+editing an input to select its statement before adding the next action. Functions with a returned
 value, generators and functions with a result annotation can be inserted as
 expressions. Returns inside a nested function do not change the outer function's
 kind. Decorated functions remain expressions because their result is unknown.
@@ -229,7 +262,7 @@ current user definitions are editable. The menu also provides Help, Expand/Colla
 Duplicate, Move to Scratch and Delete. Expressions duplicate to Scratch. Compound
 statements move or delete as a whole; Undo restores program and Scratch together.
 Deleting an expression on its own line removes the statement. Inside another
-expression it leaves an empty `None` field; an emptied suite retains `pass`.
+expression it leaves an empty `...` field; an emptied suite retains `pass`.
 Right-clicking a parameter keeps its expression-editing submenu.
 
 Hovering or editing a repeated parameter highlights its occurrences in the same

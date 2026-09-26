@@ -145,9 +145,9 @@ def test_user_functions_and_contextual_templates():
         s for s in owner.available_snippets if s.identity == "document/functions/move"
     )
     expansion = instantiate(snippet, {})
-    assert expansion.source == "move(None)"
+    assert expansion.source == "move(...)"
     owner.insert_snippet(snippet, {}, edit.Target(owner.document.syntax.suites[0], 1))
-    assert "move(None)" in owner.document.syntax.source
+    assert "move(...)" in owner.document.syntax.source
     ret = next(s for s in owner.snippets if s.identity == "python/basics/return_value")
     assert not ret.expression and instantiate(ret, {}).source == "return 0"
     repeat = next(
@@ -205,12 +205,21 @@ def test_ui_list_controls_and_red_diagnostic(qt_app):
         point = view._rect(3, 2, 3).center().toPoint()
         QTest.mouseClick(view.viewport(), Qt.MouseButton.LeftButton, pos=point)
         assert view.structure_bar.isVisible()
-        with patch.object(QInputDialog, "getText", return_value=("1", True)):
+        with patch.object(
+            QInputDialog,
+            "getText",
+            side_effect=AssertionError("No Python-fragment dialog"),
+        ):
             QTest.mouseClick(
                 view.structure_bar.buttons["insert"], Qt.MouseButton.LeftButton
             )
+        assert owner.document.syntax.source.endswith("f(...)\n")
+        chooser = view.expression_popup
+        chooser.search.setText("1")
+        QTest.keyClick(chooser.search, Qt.Key.Key_Return)
         assert owner.document.syntax.source.endswith("f(1)\n")
         assert not any(note.error for notes in view.notes.values() for note in notes)
+        owner.editor.undo()
         owner.editor.undo()
         view.refresh_source()
         assert any(note.error for notes in view.notes.values() for note in notes)

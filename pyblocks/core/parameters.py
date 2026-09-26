@@ -196,6 +196,26 @@ def slots(session):
                     expression(child.iter, "iterable")
                     for test in child.ifs:
                         expression(test, "condition")
+                elif isinstance(child, ast.Slice):
+                    for value in (child.lower, child.upper, child.step):
+                        expression(
+                            value, "index", match=match, parameter=parameter, root=root
+                        )
+                elif isinstance(child, ast.arguments):
+                    for argument in (
+                        *child.posonlyargs,
+                        *child.args,
+                        *child.kwonlyargs,
+                    ):
+                        add(argument, "parameter", "identifier", field="arg")
+                    for value in (*child.defaults, *child.kw_defaults):
+                        expression(
+                            value,
+                            "default",
+                            match=match,
+                            parameter=parameter,
+                            root=root,
+                        )
 
     for match in session.visible_matches:
         covered.append(match.span)
@@ -276,7 +296,9 @@ def slots(session):
     bindings.sort(key=lambda item: item[0])
     binding_starts = [item[0].start for item in bindings]
     for node in syntax.spans:
-        if not session.editable(node):
+        if not session.editable(node) and not (
+            isinstance(node, ast.AugAssign) and session.editable(node, "operator")
+        ):
             continue
         for span, kind, index in operator_spans(syntax, node):
             position = bisect_right(binding_starts, syntax.spans[node].start) - 1
@@ -347,12 +369,27 @@ def _choices(session, parameter, offset):
             for name, actual in names.items()
             if actual is None or actual.name not in {"type", "function", "module"}
         )
-    # Static library definitions supply readings without importing user modules.
+    # Template compatibility depends on the catalog, not the position of each
+    # painted input. Receiver names/types still come from its current lexical scope.
+    if kind is not None:
+        if expected not in session._reporter_choices:
+            session._reporter_choices[expected] = tuple(_reporters(session, expected))
+        for snippet, device in session._reporter_choices[expected]:
+            for name, actual in names.items():
+                if (
+                    actual is not None
+                    and compatibility(device.annotation, actual)
+                    is Compatibility.COMPATIBLE
+                ):
+                    yield instantiate(snippet, {device.name: name}).source
+
+
+def _reporters(session, expected):
+    """Static library readings that can satisfy one input contract."""
     for snippet in session.snippets:
         body = snippet.body
         if not (
             snippet.expression
-            and kind is not None
             and known_type(snippet.result_type) is not None
             and compatibility(expected, known_type(snippet.result_type))
             is not Compatibility.INCOMPATIBLE
@@ -364,13 +401,7 @@ def _choices(session, parameter, offset):
         receiver = getattr(root, "template_parameter", None)
         device = next((p for p in snippet.parameters if p.name == receiver), None)
         if device is not None:
-            for name, actual in names.items():
-                if (
-                    actual is not None
-                    and compatibility(device.annotation, actual)
-                    is Compatibility.COMPATIBLE
-                ):
-                    yield instantiate(snippet, {device.name: name}).source
+            yield snippet, device
 
 
 def default_bindings(session, snippet, offset=None):

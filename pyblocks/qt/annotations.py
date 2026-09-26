@@ -1,7 +1,7 @@
 """Display-only explanations of structural blocks; never written into Python."""
 
 import ast
-from bisect import bisect_right
+from bisect import bisect_left, bisect_right
 from collections import defaultdict
 from dataclasses import dataclass
 
@@ -24,6 +24,8 @@ LABELS = {
     ast.AugAssign: N_("Change a value"),
     ast.Expr: N_("Perform an action"),
     ast.Pass: N_("Place actions here"),
+    ast.Global: N_("Use module variables"),
+    ast.Nonlocal: N_("Use enclosing function variables"),
 }
 
 
@@ -61,6 +63,8 @@ def block_notes(session, runtime_problem=None):
     syntax = session.document.syntax
     matches = session.visible_matches
     starts = [m.span.start for m in matches]
+    statements = sorted(syntax.statement_suite, key=lambda n: syntax.spans[n].start)
+    statement_starts = [syntax.spans[n].start for n in statements]
     notes = defaultdict(list)
     for node, span in syntax.spans.items():
         if type(node) not in LABELS:
@@ -87,9 +91,12 @@ def block_notes(session, runtime_problem=None):
             line = min(
                 (
                     syntax.position(syntax.owned_spans[node].start)[0]
-                    for node in syntax.statement_suite
-                    if match.span.start <= syntax.spans[node].start
-                    and syntax.spans[node].end <= match.span.end
+                    for node in statements[
+                        bisect_left(statement_starts, match.span.start) : bisect_left(
+                            statement_starts, match.span.end
+                        )
+                    ]
+                    if syntax.spans[node].end <= match.span.end
                 ),
                 default=line,
             )

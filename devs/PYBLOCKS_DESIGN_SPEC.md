@@ -260,9 +260,9 @@ and where an expression is structurally required:
 some_call(None)
 ```
 
-`pass` and `None` are examples of context-dependent valid placeholders. The exact rules for when to introduce them should remain simple and Python-native.
+`pass` and `...` are examples of context-dependent valid placeholders. The exact rules for when to introduce them should remain simple and Python-native.
 
-The UI may present an automatically introduced placeholder as an editable slot rather than emphasizing the literal `None` or `pass` to a beginner.
+The UI may present an automatically introduced placeholder as an editable slot rather than emphasizing the literal `...` or `pass` to a beginner.
 
 ---
 
@@ -1326,7 +1326,7 @@ Structural edits must be atomic.
 A failed edit should leave the previous source unchanged.
 
 Removing or detaching a standalone expression removes its owning statement.
-Only an expression used inside another construct leaves `None`; an emptied suite
+Only an expression used inside another construct leaves `...`; an emptied suite
 retains `pass`. Deletion and transfer must use the same removal semantics.
 Expression replacement introduces parentheses only to preserve the intended AST.
 
@@ -1716,6 +1716,19 @@ and definitions allow zero items, while `and`/`or` keep at least two operands.
 Explicit expression replacement and wrapping preserve grouping and evaluation
 order. Occupied fields remain protected against accidental drag replacement.
 
+Public subexpressions are independently selectable and highlighted only while
+active. A contextual chooser composes, replaces and wraps expressions; list tools
+also cover collections and comparison chains. `...` denotes an unfinished input,
+survives save/recovery/Undo and blocks Run/Upload until filled; `None` remains a
+normal value. Local search, palette filtering and drops use the same type/unit
+compatibility contract, retaining unknown types. Ambiguous statement inputs require
+an explicit destination choice. Keyboard navigation visits public inputs, and
+Escape returns to the enclosing statement's palette context.
+
+Building representative bundled programs from scratch is a one-time manual design
+review, with findings in `AI`. Recurring tests protect focused semantic and UI
+invariants, without replaying full GUI construction scenarios.
+
 Module-level user definitions contribute a transient My functions library group.
 Calls without a returned value are statements. Return values and generators make
 expression cards; result annotations are respected, and decorated functions have
@@ -1740,9 +1753,14 @@ name and group.
 
 ### Block context navigation and repeated fields
 
-Recognized inline blocks have an upper-right A/S/D menu for Auto, Source and Definition.
-Auto uses program comments/layout when the block owns comments in the program;
-otherwise it uses definition comments/layout. Blank lines do not choose a mode.
+Recognized inline blocks have an upper-right A/P/D button. A click cycles Auto,
+Program comments, Definition comments, then Auto without opening a menu.
+Auto uses program comments when the block owns comments in the program;
+otherwise it uses definition comments. Blank lines do not choose a mode.
+All modes preserve actual program code, names, annotations, parentheses and code
+layout. Definition comments are attached to corresponding AST owners, never used
+to regenerate code. Expressions have no extra permanent nesting decoration;
+their selected or hovered span uses the common block color pass.
 Each block's choice is independent and retained through parameter edits in the
 open view. Switching is a source-mapped presentation change, never a document
 commit. Hover, parameters and drag/drop resolve to the original logical owner.

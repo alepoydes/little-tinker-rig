@@ -86,6 +86,12 @@ def field(window, before, after):
         Qt.MouseButton.LeftButton,
         pos=view.parameter_rect(slot).center().toPoint(),
     )
+    if before == "...":
+        popup = view.expression_popup
+        QTest.keyClicks(popup.search, after)
+        QTest.keyClick(popup.search, Qt.Key.Key_Return)
+        QApplication.processEvents()
+        return
     editor = view.parameter_editor.line_edit
     editor.selectAll()
     QTest.keyClicks(editor, after)
@@ -260,11 +266,13 @@ def test_route_lesson_lists_iteration_and_measured_results(tmp_path, qt_app):
         select_line(window, "pass")
         add(window, "pybricks/drive/straight")
         field(window, "200", "item")
+        QTest.keyClick(window.source, Qt.Key.Key_Escape)
         add(window, "pybricks/drive/turn")
         select_line(window, "for item in values:")
         add(window, "python/basics/display")
         select_value(window, '"Hello!"')
         add(window, "pybricks/drive/drive_distance")
+        QTest.keyClick(window.source, Qt.Key.Key_Escape)
         add(window, "python/basics/display")
         select_value(window, '"Hello!"')
         add(window, "pybricks/drive/drive_angle")
@@ -480,9 +488,10 @@ def test_function_lesson_add_parameter_body_calls_and_rename(tmp_path, qt_app):
         add(window, "python/basics/display")
         select_line(window, "def greet(times):")
         add(window, "document/functions/greet")
-        field(window, "None", "3")
+        field(window, "...", "3")
+        QTest.keyClick(window.source, Qt.Key.Key_Escape)
         add(window, "document/functions/greet")
-        field(window, "None", "2")
+        field(window, "...", "2")
         field(window, "greet", "welcome")
         assert "def welcome(times):" in window.document_page.text
         assert "welcome(3)\nwelcome(2)" in window.document_page.text

@@ -6,8 +6,9 @@ from bisect import bisect_left, bisect_right
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 
+from .comments import definition_comments
 from .helpers import helper_section
-from .snippets import Match, instantiate
+from .snippets import Match
 from .syntax import Span
 
 
@@ -67,11 +68,24 @@ class Display:
             index = bisect_right(match_starts, span.start) - 1
             if index >= 0 and span.end <= matches[index].span.end:
                 commented.add(matches[index].span)
+        for comment in syntax.comment_owners:
+            index = bisect_right(match_starts, comment.start) - 1
+            if index >= 0 and comment.end <= matches[index].span.end:
+                commented.add(matches[index].span)
         for match in matches:
             snippet = match.snippet
             if not snippet.definition and snippet.mode != "function":
                 continue
             span = match.span
+            nodes = []
+            if snippet.expression:
+                nodes = [
+                    n
+                    for n in syntax.ancestors(syntax.at(span.start))
+                    if isinstance(n, ast.Expr) and syntax.spans[n] == span
+                ]
+                if nodes:
+                    span = syntax.owned_spans[nodes[0]]
             if not snippet.expression:
                 nodes = [
                     n
@@ -99,20 +113,7 @@ class Display:
             text = self.source[span.start : span.end]
             preview = None
             if effective == "definition":
-                text = instantiate(
-                    snippet,
-                    match.bindings,
-                    local_names=match.locals,
-                    formatted=True,
-                ).source
-                column = syntax.position(match.span.start)[1]
-                if snippet.expression:
-                    text = text.strip()
-                    if "\n" in text:
-                        preview = text
-                        text = self.source[span.start : span.end]
-                else:
-                    text = textwrap.indent(text, " " * column) + "\n"
+                text, preview = definition_comments(syntax, match, span, nodes)
             block = BlockDisplay(match, span, mode, effective, Span(0, 0))
             self.blocks.append(block)
             replacements.append((span.start, span.end, text, block, False))
@@ -122,7 +123,7 @@ class Display:
                     for n in syntax.ancestors(syntax.at(match.span.start))
                     if isinstance(n, ast.stmt)
                 )
-                end = syntax.block_span(statement).end
+                end = syntax.block_span(statement).start
                 preview = textwrap.indent(preview, " " * statement.col_offset) + "\n"
                 if end and self.source[end - 1] != "\n":
                     preview = "\n" + preview
@@ -184,7 +185,11 @@ class Display:
                 span.start <= block.match.span.start
                 and block.match.span.end <= span.end
             ):
-                start = min(start, block.shown.start)
+                start = min(
+                    start,
+                    block.shown.start,
+                    block.preview.start if block.preview else start,
+                )
                 end = max(
                     end, block.shown.end, block.preview.end if block.preview else 0
                 )

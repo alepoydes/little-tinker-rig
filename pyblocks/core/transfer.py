@@ -35,6 +35,12 @@ class Transfer:
             else:
                 text, remainder = session.extract_selection()
                 nodes = session.selected_nodes()
+            if (
+                node is not None
+                and isinstance(nodes, ast.expr)
+                and not isinstance(session.document.syntax.parent.get(nodes), ast.Expr)
+            ):
+                remainder = session._field_source(nodes, remainder)
         return cls(
             owner,
             owner.document.state,
@@ -90,14 +96,36 @@ class Transfer:
                 self.origin, target, fragment=(self.text, self.remainder)
             )
         else:
-            source = edit.move(self.syntax, self.nodes, target)
-            offset = (
-                self.syntax.spans[target].start
-                if isinstance(target, ast.expr)
-                else edit.target_position(self.syntax, target)[0]
+            self.move_within(self.owner, target)
+
+    def move_within(self, session, target):
+        syntax = session.document.syntax
+        if isinstance(self.nodes, ast.expr) and isinstance(target, ast.expr):
+            from .expressions import copy_to
+
+            copy_to(session, self.nodes, target, move=True)
+            return
+        offset = edit.target_position(syntax, target)[0]
+        if (
+            isinstance(self.nodes, ast.expr)
+            and session.field_binding(self.nodes)
+            and not isinstance(syntax.parent.get(self.nodes), ast.Expr)
+        ):
+            # Detaching a repeated input changes every occurrence, but keeps its
+            # containing statements and hence the destination suite's indices.
+            remaining = Syntax(self.remainder, fragment=session.document.fragment)
+            owner = remaining.follow(syntax.path(target.suite.owner))
+            suite = next(
+                s
+                for s in remaining.suites
+                if s.owner is owner and s.field == target.suite.field
             )
-            focus = edit.map_offset(self.syntax.source, self.remainder, offset)
-            self.owner.editor.commit(source, focus=focus)
+            source = edit.insert(remaining, edit.Target(suite, target.index), self.text)
+        else:
+            source = edit.move(syntax, self.nodes, target)
+        session.editor.commit(
+            source, focus=edit.map_offset(syntax.source, source, offset)
+        )
 
     def to_fragment(self, index, fragment, target):
         self.validate()
@@ -107,7 +135,8 @@ class Transfer:
         if self.origin == index:
             if syntax is not self.fragment_syntax:
                 raise ValueError("Fragment changed during drag")
-            source = edit.move(syntax, self.nodes, target)
+            self.move_within(fragment, target)
+            source = fragment.document.state.source
             scratch = list(self.revision.scratch)
             scratch[index] = format_source(source, fragment=True)
             self.owner.editor.commit(self.revision.source, tuple(scratch))
@@ -117,6 +146,8 @@ class Transfer:
             if isinstance(target, ast.expr)
             else edit.insert(syntax, target, self.text)
         )
+        if isinstance(target, ast.expr):
+            source = fragment._field_source(target, source)
         main, scratch = self.remaining()
         if (
             self.origin is not None

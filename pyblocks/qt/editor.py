@@ -19,14 +19,24 @@ from PySide6.QtGui import (
     QTextCharFormat,
     QTextCursor,
 )
-from PySide6.QtWidgets import QApplication, QMenu, QTextEdit
+from PySide6.QtWidgets import QApplication, QTextEdit
 
 from pyblocks.core import edit
 from pyblocks.core.analysis import identifiers
 from pyblocks.core.display import Display
 from pyblocks.core.edit import target_position
+from pyblocks.core.expressions import (
+    EMPTY,
+    Operation,
+    Proposal,
+    accepts,
+    compose,
+    empty,
+    navigate,
+    public,
+)
 from pyblocks.core.parameters import default_bindings, has_choices, slots
-from pyblocks.core.presentation import regions, role_color
+from pyblocks.core.presentation import Region, regions, role, role_color, snippet_role
 from pyblocks.core.snippets import instantiate
 from pyblocks.core.transfer import Transfer
 from pyblocks.i18n import language, tr
@@ -80,6 +90,8 @@ class SourceView(QTextEdit):
         super().__init__()
         self.session = session
         self.display_modes = {}
+        self.expression_level = "all"
+        self.expression_popup = None
         self.display = Display(session)
         self.setReadOnly(True)
         self.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
@@ -539,9 +551,46 @@ class SourceView(QTextEdit):
         )
         syntax = self.session.document.syntax
         match = self.session.selected_match()
-        selected = match.span if match else syntax.spans[self.session.editor.selection]
+        selection = self.session.editor.selection
+        selected = (
+            syntax.spans[selection]
+            if public(self.session, selection)
+            else match.span if match else syntax.spans[selection]
+        )
         if self.session.editor.selection is syntax.tree:
             selected = None
+        # Only active subexpressions need a region inside a recognized block.
+        # This uses the same color pass as other blocks, with no permanent borders.
+        for span in dict.fromkeys((self.hover, selected)):
+            if span is None:
+                continue
+            node = next(
+                (
+                    n
+                    for n in syntax.ancestors(syntax.at(span.start))
+                    if syntax.spans[n] == span and public(self.session, n)
+                ),
+                None,
+            )
+            if node is None:
+                continue
+            owner = self.session.enclosing_match(node)
+            line, column = syntax.position(span.start)
+            end_line, end_column = syntax.position(span.end)
+            visible_regions += (
+                Region(
+                    span,
+                    0,
+                    snippet_role(owner.snippet) if owner else role(node),
+                    line,
+                    column,
+                    end_line,
+                    end_column,
+                    False,
+                    False,
+                    False,
+                ),
+            )
         pulse = float(self.pulse.currentValue() or 0)
         outlines = []
         for region in reversed(visible_regions):
@@ -661,7 +710,7 @@ class SourceView(QTextEdit):
                 painter.drawText(
                     rect,
                     Qt.AlignmentFlag.AlignCenter,
-                    {"auto": "A", "source": "S", "definition": "D"}[block.mode],
+                    {"auto": "A", "source": "P", "definition": "D"}[block.mode],
                 )
         active = (
             self.parameter_editor.slot
@@ -1092,6 +1141,10 @@ class SourceView(QTextEdit):
         return name + (" · " + unit if unit else "")
 
     def show_parameter(self, slot):
+        if empty(slot.node):
+            self.session.editor.selection = slot.node
+            self.choose_expression()
+            return
         if self.parameter_editor:
             self.parameter_editor.close()
         self.reveal(slot.span.start)
@@ -1161,20 +1214,116 @@ class SourceView(QTextEdit):
         self.refresh_source()
         self.layout_changed.emit()
 
-    def display_menu(self, block):
-        menu = QMenu(self)
-        for mode, label in (
-            ("auto", tr("Auto")),
-            ("source", tr("Source")),
-            ("definition", tr("Definition")),
-        ):
-            action = menu.addAction(label)
-            action.setCheckable(True)
-            action.setChecked(block.mode == mode)
-            action.triggered.connect(
-                lambda checked=False, m=mode: self.set_display_mode(block, m)
+    def cycle_display_mode(self, block):
+        modes = ("auto", "source", "definition")
+        self.set_display_mode(block, modes[(modes.index(block.mode) + 1) % len(modes)])
+
+    def reveal_selection(self):
+        span = self.session.document.syntax.spans[self.session.editor.selection]
+        self.reveal(span.start)
+        self.selected.emit()
+        self.viewport().update()
+
+    def choose_expression(self, *, wrap=False):
+        from .expressions import ExpressionChooser
+
+        if not public(self.session, self.session.editor.selection):
+            return
+        if self.parameter_editor:
+            self.parameter_editor.close()
+        if self.expression_popup:
+            self.expression_popup.close()
+        self.expression_popup = popup = ExpressionChooser(self, wrap=wrap)
+        popup.destroyed.connect(
+            lambda: (
+                setattr(self, "expression_popup", None)
+                if self.expression_popup is popup
+                else None
             )
-        return menu
+        )
+        span = self.session.document.syntax.spans[self.session.editor.selection]
+        line, column = self.session.document.syntax.position(span.start)
+        point = self.viewport().mapToGlobal(
+            self._rect(line, column).bottomLeft().toPoint()
+        )
+        screen = self.screen().availableGeometry()
+        point.setX(max(screen.left(), min(point.x(), screen.right() - popup.width())))
+        point.setY(max(screen.top(), min(point.y(), screen.bottom() - popup.height())))
+        popup.move(point)
+        popup.show()
+
+    def keyPressEvent(self, event):
+        key, modifiers = event.key(), event.modifiers()
+        if key == Qt.Key.Key_Escape:
+            self.cancel_pointer_move()
+            try:
+                self.session.editor.selection = self.session.editor.statement()
+            except ValueError:
+                self.session.editor.selection = self.session.document.syntax.tree
+            self.reveal_selection()
+            return
+        if (
+            modifiers & Qt.KeyboardModifier.ControlModifier
+            and key in (Qt.Key.Key_C, Qt.Key.Key_V)
+            and public(self.session, self.session.editor.selection)
+        ):
+            node = self.session.editor.selection
+            if key == Qt.Key.Key_C:
+                QApplication.clipboard().setText(
+                    self.session.document.syntax.text(node)
+                )
+            else:
+                try:
+                    compose(self.session, Proposal("", QApplication.clipboard().text()))
+                    self.refresh_source()
+                    self.changed.emit()
+                    self.reveal_selection()
+                except (ValueError, SyntaxError) as error:
+                    self.failed.emit(str(error))
+            return
+        if key == Qt.Key.Key_Space and modifiers & Qt.KeyboardModifier.ControlModifier:
+            self.choose_expression(
+                wrap=bool(modifiers & Qt.KeyboardModifier.ShiftModifier)
+            )
+            return
+        if key in (Qt.Key.Key_Tab, Qt.Key.Key_Backtab):
+            navigate(self.session, "previous" if key == Qt.Key.Key_Backtab else "next")
+            self.reveal_selection()
+            return
+        if modifiers & Qt.KeyboardModifier.AltModifier and key in (
+            Qt.Key.Key_Left,
+            Qt.Key.Key_Right,
+        ):
+            navigate(self.session, "parent" if key == Qt.Key.Key_Left else "child")
+            self.reveal_selection()
+            return
+        if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            self.choose_expression()
+            return
+        if event.text() in ("+", "-", "*", "/", "%", "<", ">", "&", "|") and public(
+            self.session, self.session.editor.selection
+        ):
+            try:
+                compose(
+                    self.session,
+                    Proposal(
+                        event.text(),
+                        operation=Operation(event.text(), f"$ {event.text()} {EMPTY}"),
+                    ),
+                    wrap=True,
+                )
+                self.refresh_source()
+                self.changed.emit()
+                self.reveal_selection()
+            except (ValueError, SyntaxError) as error:
+                self.failed.emit(str(error))
+            return
+        super().keyPressEvent(event)
+
+    def focusNextPrevChild(self, next):
+        navigate(self.session, "next" if next else "previous")
+        self.reveal_selection()
+        return True
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
@@ -1182,9 +1331,7 @@ class SourceView(QTextEdit):
             point = event.position().toPoint()
             block = self.mode_at(point)
             if block:
-                menu = self.display_menu(block)
-                menu.popup(self.viewport().mapToGlobal(point))
-                menu.aboutToHide.connect(menu.deleteLater)
+                self.cycle_display_mode(block)
                 return
             self.pending_parameter = self.parameter_at(point)
             self.press_position = point
@@ -1192,7 +1339,9 @@ class SourceView(QTextEdit):
             node = self.node_at(point)
             self.session.editor.selection = (
                 node
-                if self.note_at(point) or self.pending_parameter
+                if self.note_at(point)
+                or self.pending_parameter
+                or public(self.session, node)
                 else next(
                     (n for n in syntax.ancestors(node) if isinstance(n, ast.stmt)), node
                 )
@@ -1246,13 +1395,18 @@ class SourceView(QTextEdit):
         else:
             syntax = self.session.document.syntax
             node = self.node_at(point)
-            if not self.note_at(point):
+            expression = public(self.session, node) and not self.note_at(point)
+            if not self.note_at(point) and not expression:
                 node = next(
                     (n for n in syntax.ancestors(node) if isinstance(n, ast.stmt)), node
                 )
             displayed = self.displayed_block_at(point)
             match = displayed.match if displayed else self.session.enclosing_match(node)
-            self.hover = match.span if match else syntax.spans[node]
+            self.hover = (
+                syntax.spans[node]
+                if expression
+                else match.span if match else syntax.spans[node]
+            )
             self.viewport().setCursor(
                 Qt.CursorShape.PointingHandCursor
                 if self.parameter_at(point)
@@ -1273,7 +1427,9 @@ class SourceView(QTextEdit):
             if block:
                 self.viewport().setCursor(Qt.CursorShape.PointingHandCursor)
                 label = (
-                    tr("Source") if block.effective == "source" else tr("Definition")
+                    tr("Program comments")
+                    if block.effective == "source"
+                    else tr("Definition comments")
                 )
                 self.setToolTip(
                     tr("Auto: {mode}", mode=label) if block.mode == "auto" else label
@@ -1388,11 +1544,7 @@ class SourceView(QTextEdit):
                 ),
                 None,
             )
-            if (
-                isinstance(node, ast.Constant)
-                and node.value is None
-                and not slot.binding
-            ):
+            if isinstance(node, ast.Constant) and empty(node) and not slot.binding:
                 candidate = node
         else:
             candidate = self.pointer_target(point)
@@ -1422,24 +1574,15 @@ class SourceView(QTextEdit):
                 else:
                     edit.insert(syntax, candidate, text)
                 if isinstance(candidate, ast.expr) and slot:
-                    from pyblocks.core.types import (
-                        Compatibility,
-                        compatibility,
-                        known_type,
-                        numeric_literal,
-                    )
+                    from pyblocks.core.types import known_type, numeric_literal
 
-                    expected = slot.parameter.annotation
                     actual = known_type(
                         self.drop_snippet.result_type
                         if self.drop_snippet
                         else self.drop_transfer.result_type
                     )
                     literal = numeric_literal(ast.parse(text.strip(), mode="eval").body)
-                    if (
-                        compatibility(expected, actual, literal=literal)
-                        is Compatibility.INCOMPATIBLE
-                    ):
+                    if not accepts(self.session, candidate, actual, literal=literal):
                         raise ValueError("The expression does not fit this parameter")
                 self.drop_validity[candidate] = True
             except (SyntaxError, ValueError):

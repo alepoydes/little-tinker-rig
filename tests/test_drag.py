@@ -162,7 +162,7 @@ def test_incompatible_drop_is_not_offered_and_filled_parameter_is_preserved(
 
     from pyblocks.qt.drag import BlockMime
 
-    view = view_for(qt_app, "print(1)\nif None:\n    pass\n")
+    view = view_for(qt_app, "print(1)\nif ...:\n    pass\n")
     try:
         # break is valid only in a loop, never at the closest top-level boundary.
         path = tmp_path / "main.py"
@@ -194,7 +194,7 @@ def test_incompatible_drop_is_not_offered_and_filled_parameter_is_preserved(
         empty = next(
             s
             for s in view.parameter_slots
-            if view.session.document.syntax.source[s.span.start : s.span.end] == "None"
+            if view.session.document.syntax.source[s.span.start : s.span.end] == "..."
         )
         assert hover(
             qt_app, view, args, view.parameter_rect(empty).center().toPoint()
@@ -214,7 +214,7 @@ def test_expression_and_same_fragment_moves_are_one_atomic_edit(tmp_path):
     original = owner.document.state
     transfer = Transfer.capture(owner, index=0, fragment=fragment, node=value)
     transfer.to_fragment(0, fragment, empty)
-    assert owner.document.state.scratch == ("print(None)\nprint(1 + 2)\n",)
+    assert owner.document.state.scratch == ("print(...)\nprint(1 + 2)\n",)
     owner.editor.undo()
     assert owner.document.state is original
     syntax = owner.document.syntax
@@ -237,8 +237,8 @@ def test_standalone_expression_transfers_the_whole_match_with_comments(tmp_path)
     owner.editor.commit("print(0)\n# addition\n1 + 2  # details\nresult = 3 * None\n")
     original = owner.document.state
     syntax = owner.document.syntax
-    # A click at the start of a matched expression can select its first operand.
-    owner.editor.selection = syntax.tree.body[1].value.left
+    # The block title selects the complete expression; operands are separate inputs.
+    owner.editor.selection = syntax.tree.body[1].value
     transfer = Transfer.capture(owner)
     assert isinstance(transfer.nodes, ast.BinOp)
     assert "1 + 2" in transfer.text and "# addition" in transfer.text
@@ -248,7 +248,7 @@ def test_standalone_expression_transfers_the_whole_match_with_comments(tmp_path)
     owner.editor.undo()
     assert owner.document.state is original
     syntax = owner.document.syntax
-    owner.editor.selection = syntax.tree.body[1].value.left
+    owner.editor.selection = syntax.tree.body[1].value
     transfer = Transfer.capture(owner)
     transfer.to_program(syntax.tree.body[-1].value.right)
     assert ast.dump(owner.document.syntax.tree) == ast.dump(

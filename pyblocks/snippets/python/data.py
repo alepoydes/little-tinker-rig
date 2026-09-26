@@ -2,6 +2,15 @@
 
 Lists, strings and mappings as ordinary Python data."""
 
+@inline_block(level="advanced", icon="▣", color="state")
+def store(target=value, value=0):
+    """Store a value in a variable, attribute, item or unpacking target.
+
+    Compose an attribute or indexed target, or a tuple of names for unpacking.
+    The simpler assignment block renames one variable and its references."""
+    target = value
+
+
 @inline_block(level="advanced", icon="▣", color="state", names=("name",))
 def make_list(name=values, items=(10, 20, 30)):
     """Create a list of values.

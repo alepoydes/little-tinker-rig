@@ -54,7 +54,7 @@ def test_scratch_keeps_attached_comments_and_dependencies(tmp_path):
     path = tmp_path / "main.py"
     path.write_text("x = 1\n# turn now\nmotor.run(500)\n")
     session = Session(path)
-    session.editor.select(session.document.state.source.index("motor"))
+    session.editor.selection = session.document.syntax.tree.body[-1]
     session.to_scratch()
     assert "# turn now" in session.document.state.scratch[0]
     assert "# turn now" not in session.document.state.source
@@ -109,8 +109,8 @@ def test_expansion_allows_generic_edit_and_expression_scratch_round_trip(tmp_pat
     assert session.selected_match() is None
     session.editor.parent()
     session.to_scratch()
-    assert session.document.state.source == "print(None)\n"
-    session.editor.select(session.document.state.source.index("None"))
+    assert session.document.state.source == "print(...)\n"
+    session.editor.select(session.document.state.source.index("..."))
     session.restore_scratch(0)
     assert ast.dump(ast.parse(session.document.state.source)) == ast.dump(
         ast.parse("print(2 + 3)")

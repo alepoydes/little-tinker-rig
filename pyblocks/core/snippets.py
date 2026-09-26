@@ -342,7 +342,7 @@ def function_snippets(syntax):
             if default is None
         ]
         parameters = tuple(
-            Parameter(arg.arg, "None", annotation_text(arg.annotation))
+            Parameter(arg.arg, "...", annotation_text(arg.annotation))
             for arg in positional + required_keywords
         )
 

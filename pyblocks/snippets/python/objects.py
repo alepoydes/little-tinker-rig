@@ -22,6 +22,13 @@ def use_context(manager=resource):
         pass
 
 
+@inline_block(level="expert", icon="◇", color="control", names=("name",))
+def use_named_context(manager=resource, name=robot):
+    """Enter a context, name its resource, and clean up when leaving."""
+    with manager as name:
+        pass
+
+
 @inline_block(level="expert", icon="◇", color="control", kind="statement")
 def yield_value(value=None):
     """Yield a value from a generator, resuming here on its next iteration."""
