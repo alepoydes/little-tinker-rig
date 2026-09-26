@@ -22,6 +22,15 @@ def _pyblocks_pybricks_drive_legacy_curve_113379487174(
     )
 
 
+def _pyblocks_pybricks_lessons_dance_turns_414954eb5e4d(
+    drive: "DriveBase", angle: "number[deg]"
+):
+    """Turn one way and back, like Tricky's dance."""
+    # Turn both ways to finish facing the original direction.
+    drive.turn(angle)
+    drive.turn(-angle)
+
+
 # --- user program ---
 
 hub = PrimeHub()
@@ -114,8 +123,7 @@ drive_base = DriveBase(left_wheel, right_wheel, diameter, track)
 
 drive_base.straight(distance)  # straight forward for distance then stop
 drive_base.straight(-distance)  # backwards
-drive_base.turn(angle)  # turn in place to the right by angle
-drive_base.turn(-angle)  # to the left
+_pyblocks_pybricks_lessons_dance_turns_414954eb5e4d(drive_base, angle)
 _pyblocks_pybricks_drive_legacy_curve_113379487174(
     drive_base, radius, angle
 )  # arc of radius to the right for angle

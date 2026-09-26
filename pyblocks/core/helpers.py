@@ -11,6 +11,7 @@ from .analysis import Scopes, function_signature
 from .block_metadata import metadata
 from .edit import patches
 from .imports import managed_section
+from .source_text import function_source
 from .syntax import Span, Syntax
 
 START = "# --- automatically managed helpers ---"
@@ -94,7 +95,9 @@ def manage_helpers(source, available, *, retain=()):
             start = max(span.start, section.start + len(START) + 1)
             definitions.append(source[start : span.end].strip())
         else:
-            definitions.append(ast.unparse(function))
+            definitions.append(
+                getattr(function, "source_text", None) or ast.unparse(function)
+            )
     header = (
         START + "\n" + "\n\n".join(definitions) + "\n" + END + "\n" if selected else ""
     )
@@ -145,7 +148,7 @@ def function_dependencies(tree):
     return functions, dependencies
 
 
-def helper_functions(tree, roots, collection):
+def helper_functions(tree, roots, collection, *, source=""):
     """Private names fingerprint implementations, preserving existing program calls."""
     functions, dependencies = function_dependencies(tree)
 
@@ -251,6 +254,8 @@ def helper_functions(tree, roots, collection):
         if options:
             function.args.defaults = []
             function.args.kw_defaults = [None] * len(function.args.kwonlyargs)
+        if source:
+            function.source_text = function_source(source, functions[name], function)
         result.append(function)
 
     for name in sorted(included):

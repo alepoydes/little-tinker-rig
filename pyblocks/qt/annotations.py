@@ -70,7 +70,8 @@ def block_notes(session, runtime_problem=None):
             continue
         if isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant):
             continue
-        line, column = syntax.position(span.start)
+        line, _ = syntax.position(syntax.owned_spans[node].start)
+        column = syntax.position(span.start)[1]
         notes[line].append(
             BlockNote(
                 column,
@@ -82,6 +83,16 @@ def block_notes(session, runtime_problem=None):
         )
     for match in matches:
         line, column = syntax.position(match.span.start)
+        if not match.snippet.expression:
+            line = min(
+                (
+                    syntax.position(syntax.owned_spans[node].start)[0]
+                    for node in syntax.statement_suite
+                    if match.span.start <= syntax.spans[node].start
+                    and syntax.spans[node].end <= match.span.end
+                ),
+                default=line,
+            )
         description = (
             tr(match.snippet.help).splitlines()[0]
             if match.snippet.help

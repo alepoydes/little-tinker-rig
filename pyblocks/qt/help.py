@@ -68,7 +68,7 @@ def group_document(identity, snippets):
                 f"**{tr('Editable names')}:** "
                 + ", ".join(f"`{name}`" for name in snippet.names)
             )
-        source = (
+        source = snippet.definition or (
             ast.unparse(snippet.body)
             if snippet.expression
             else "\n".join(ast.unparse(node) for node in snippet.body)

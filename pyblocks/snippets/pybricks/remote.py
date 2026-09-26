@@ -6,7 +6,7 @@ LEGO Powered Up remote control; no host protocol or event framework."""
 # copyright and permission notice in examples/pybricks/LICENSE.txt.
 
 
-@inline_block(level="beginner", icon="▶", color="action")
+@block(level="beginner", icon="▶", color="action")
 def remote_drive(
     drive: "DriveBase" = drive, speed: "number[mm/s]" = 150, turn: "number[deg/s]" = 90
 ):
@@ -64,7 +64,7 @@ def buttons(remote: "Remote" = remote) -> "set":
     return remote.buttons.pressed()
 
 
-@inline_block(level="intermediate", icon="▣", color="state")
+@block(level="intermediate", icon="▣", color="state")
 def center_steering(steering: "Motor" = steer, speed: "number[deg/s]" = 200):
     """Find both steering stops and start returning to the center.
 

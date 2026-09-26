@@ -41,9 +41,30 @@ The bottom Scratch button restores it. Control mode hides Scratch. The title bar
 always shows minimize, maximize/restore, and close. Double-click it to toggle
 maximization; drag it or a window edge to move or resize. F11 toggles full screen.
 
-Descriptions above blocks and symbols before the comment text explain their purpose without
-adding comments to the Python file. Indentation colors continue through blank
-lines. A motor definition is one block with the same color as its library card.
+Block titles and action symbols explain their purpose without adding comments to
+the Python file. Titles and source comments use the editor's normal font size.
+Indentation colors continue through blank lines.
+
+Each recognized block has an **A / S / D** button in its upper-right corner:
+
+- **Auto** (default): use the definition's comments and layout until the program
+  contains a comment belonging to this block. Blank lines do not affect the choice.
+- **Source**: show the program's own comments and layout.
+- **Definition**: show the definition's comments and layout, with the current
+  parameter values. Function blocks show the call and a read-only function definition.
+
+The choice is independent for each block and survives parameter edits in the open
+view. Switching never changes saved Python, execution or Undo. Comments inserted
+in Python view belong to the program; definition comments are edited in Block
+Editor. Inserting an inline block does not copy explanatory comments into the
+program. A function block keeps its implementation, including comments, in the
+managed helper section. Blocks view shows that implementation at the call site;
+Python view exposes the complete saved file.
+
+Standalone comments attach to the next statement in the same scope, including
+across blank lines. End-of-line comments attach to that statement; docstrings and
+final comments without a following statement belong to their enclosing definition
+or scope. File metadata and managed section markers retain their file ownership.
 
 ## Structural navigation
 

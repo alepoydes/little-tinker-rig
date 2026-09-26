@@ -17,6 +17,22 @@ those tests correctly. No test requires a physical robot.
 
 ## Invariants
 
+Block display has a per-instance Auto/Source/Definition choice. Auto considers
+owned comments, never blank lines. Definition text is a source-mapped projection;
+changing its mode must not commit, save, format or execute any code. All pointer,
+parameter, selection, fold and drag coordinates must map back to the authoritative
+source. A compound block's hover span is the entire recognized match, including
+its header and definition preview; expanded children use their own spans. Verify
+actual pointer events and rendered colors for multi-statement blocks, not only AST
+selection or single-statement examples. Titles precede all owned source comments.
+
+Keep source text alongside definition ASTs. AST substitution determines semantics;
+text patches preserve comments and layout. Function helpers evaluate each argument
+once and isolate local variables. Generated helper definitions retain comments;
+inline insertion does not copy explanatory comments. Test source preservation,
+comment ownership (including docstrings and trailing suite comments), mode changes,
+parameter edits, Undo, and runtime traces after converting activities to functions.
+
 Source is authoritative; AST and presentation are derived. Committed documents
 parse and compile without executing (Scratch projections only require parsing). Failed operations preserve source, Scratch
 and both histories. Unicode spans, comments, literal contents and lexical scopes

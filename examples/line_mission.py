@@ -1,12 +1,43 @@
 """A finite line-following mission: motors A/B, SPIKE color sensor C."""
 
 # --- automatically managed imports ---
-from pybricks.parameters import Direction, Port
-from pybricks.pupdevices import ColorSensor, Motor
+from pybricks.parameters import Direction
+from pybricks.parameters import Port
+from pybricks.pupdevices import ColorSensor
+from pybricks.pupdevices import Motor
 from pybricks.robotics import DriveBase
-from pybricks.tools import StopWatch, wait
+from pybricks.tools import StopWatch
 
 # --- user imports ---
+
+
+# --- automatically managed helpers ---
+def _pyblocks_pybricks_lessons_follow_for_2ec8d3869ebc(
+    drive: "DriveBase",
+    sensor: "ColorSensor | ColorDistanceSensor",
+    duration: "number[ms]",
+    speed: "number[mm/s]",
+    target: "number[%]",
+    gain,
+):
+    """Follow a line edge for a set time, then brake.
+
+    Target is the reflection at the edge. Reverse gain to follow the other edge.
+    View the definition to inspect the timer, measurement and correction."""
+    from pybricks.tools import StopWatch, wait
+
+    # Measure the duration independently of each sensor reading.
+    clock: "StopWatch" = StopWatch()
+    try:
+        while clock.time() < duration:
+            error = sensor.reflection() - target
+            drive.drive(speed, gain * error)
+            wait(10)
+    finally:
+        drive.brake()
+
+
+# --- user program ---
 
 left_motor = Motor(Port.A, Direction.COUNTERCLOCKWISE)
 right_motor = Motor(Port.B)
@@ -14,14 +45,7 @@ drive = DriveBase(left_motor, right_motor, wheel_diameter=56, axle_track=112)
 
 sensor = ColorSensor(Port.C)
 
-clock = StopWatch()
-try:
-    while clock.time() < 1000:
-        error = sensor.reflection() - 50
-        drive.drive(100, 2 * error)
-        wait(10)
-finally:
-    drive.brake()
+_pyblocks_pybricks_lessons_follow_for_2ec8d3869ebc(drive, sensor, 1000, 100, 50, 2)
 
 drive.straight(50)
 print("Mission finished")

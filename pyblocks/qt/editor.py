@@ -19,10 +19,11 @@ from PySide6.QtGui import (
     QTextCharFormat,
     QTextCursor,
 )
-from PySide6.QtWidgets import QApplication, QTextEdit
+from PySide6.QtWidgets import QApplication, QMenu, QTextEdit
 
 from pyblocks.core import edit
 from pyblocks.core.analysis import identifiers
+from pyblocks.core.display import Display
 from pyblocks.core.edit import target_position
 from pyblocks.core.parameters import default_bindings, has_choices, slots
 from pyblocks.core.presentation import regions, role_color
@@ -78,6 +79,8 @@ class SourceView(QTextEdit):
     def __init__(self, session):
         super().__init__()
         self.session = session
+        self.display_modes = {}
+        self.display = Display(session)
         self.setReadOnly(True)
         self.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
@@ -149,30 +152,45 @@ class SourceView(QTextEdit):
             getattr(self.session, "ports", None),
             context.document.syntax if context else None,
             self.runtime_problem,
+            tuple(self.display_modes.items()),
         )
         if revision == self.parameter_revision:
             self.viewport().update()
             return
         self.structure_bar.hide()
         source = self.session.document.state.source
-        previous = self.toPlainText()
+        previous = self.display.source
         anchor = self.cursorForPosition(QPoint(0, 0))
         anchor.setPosition(anchor.block().position())
-        old_offset = source_offset(previous, anchor.position())
+        old_offset = self.display.backward(
+            source_offset(self.toPlainText(), anchor.position())
+        )
         old_y = self.cursorRect(anchor).y()
         horizontal = self.horizontalScrollBar().value()
         self.document().setLayoutEnabled(False)
         try:
             if source != previous:
+                self.display_modes = {
+                    (edit.map_offset(previous, source, offset), identity): mode
+                    for (offset, identity), mode in self.display_modes.items()
+                }
+            self.display = Display(self.session, self.display_modes.items())
+            if self.toPlainText() != self.display.text:
                 self.fade.stop()
                 self.fade_lines.clear()
                 self.fold_after_fade = None
                 self.hover = None
-                self.setPlainText(source)
+                self.setPlainText(self.display.text)
                 self.folded.clear()
             self.presentation = regions(
                 self.session.document.syntax, self.session.visible_matches
             )
+            if self.display.helpers:
+                self.presentation = tuple(
+                    r
+                    for r in self.presentation
+                    if not self.display.helpers.contains(r.span.start)
+                )
             if revision != self.parameter_revision:
                 self.parameter_revision = revision
                 self.hover_parameter = None
@@ -180,7 +198,13 @@ class SourceView(QTextEdit):
                     self.parameter_editor.close()
                     self.parameter_editor = None
                 self.parameter_slots = tuple(
-                    slot for slot in slots(self.session) if not slot.container
+                    slot
+                    for slot in slots(self.session)
+                    if not slot.container
+                    and not (
+                        self.display.helpers
+                        and self.display.helpers.contains(slot.span.start)
+                    )
                 )
                 self.parameter_lines = tuple(
                     self.session.document.syntax.position(slot.span.start)[0]
@@ -191,6 +215,20 @@ class SourceView(QTextEdit):
                     for slot in self.parameter_slots
                 }
                 self.notes = block_notes(self.session, self.runtime_problem)
+                if self.display.helpers:
+                    self.notes = {
+                        line: notes
+                        for line, notes in self.notes.items()
+                        if not self.display.helpers.contains(
+                            self.session.document.syntax.starts[line - 1]
+                        )
+                    }
+                self.note_locations = {
+                    note.span: (line, index)
+                    for line, notes in self.notes.items()
+                    for index, note in enumerate(notes)
+                    if not note.error
+                }
                 cursor = QTextCursor(self.document())
                 cursor.beginEditBlock()
                 cursor.select(QTextCursor.SelectionType.Document)
@@ -200,17 +238,28 @@ class SourceView(QTextEdit):
                     140, QTextBlockFormat.LineHeightTypes.ProportionalHeight.value
                 )
                 cursor.setBlockFormat(block_format)
+                first_notes = 0
                 for line, notes in self.notes.items():
-                    cursor = QTextCursor(self.document().findBlockByNumber(line - 1))
+                    displayed = self.display.by_span.get(notes[0].span)
+                    block = (
+                        self.document().findBlockByNumber(
+                            self.display.position(displayed.shown.start)[0] - 1
+                        )
+                        if displayed
+                        else self.source_block(line)
+                    )
+                    cursor = QTextCursor(block)
                     note_format = QTextBlockFormat(block_format)
                     note_format.setTopMargin(
                         (self.fontMetrics().height() + 3) * len(notes)
                     )
                     cursor.setBlockFormat(note_format)
+                    if block.blockNumber() == 0:
+                        first_notes = len(notes)
                 frame = self.document().rootFrame()
                 frame_format = frame.frameFormat()
                 frame_format.setTopMargin(
-                    4 + (self.fontMetrics().height() + 3) * len(self.notes.get(1, ()))
+                    4 + (self.fontMetrics().height() + 3) * first_notes
                 )
                 frame.setFrameFormat(frame_format)
                 for slot in self.parameter_slots:
@@ -218,9 +267,15 @@ class SourceView(QTextEdit):
                     end, _ = self.session.document.syntax.position(slot.span.end)
                     if start != end:
                         continue
-                    cursor.setPosition(qt_offset(source, slot.span.start))
                     cursor.setPosition(
-                        qt_offset(source, slot.span.end),
+                        qt_offset(
+                            self.display.text, self.display.forward(slot.span.start)
+                        )
+                    )
+                    cursor.setPosition(
+                        qt_offset(
+                            self.display.text, self.display.forward(slot.span.end)
+                        ),
                         QTextCursor.MoveMode.KeepAnchor,
                     )
                     format = QTextCharFormat()
@@ -240,7 +295,9 @@ class SourceView(QTextEdit):
             self.document().setLayoutEnabled(True)
         if previous:
             mapped = edit.map_offset(previous, source, old_offset)
-            anchor.setPosition(qt_offset(source, mapped))
+            anchor.setPosition(
+                qt_offset(self.display.text, self.display.forward(mapped))
+            )
             self.verticalScrollBar().setValue(
                 self.verticalScrollBar().value() + self.cursorRect(anchor).y() - old_y
             )
@@ -254,7 +311,7 @@ class SourceView(QTextEdit):
             self.folded -= hidden_by
             self._apply_folds()
         cursor = QTextCursor(self.document())
-        cursor.setPosition(qt_offset(self.toPlainText(), offset))
+        cursor.setPosition(qt_offset(self.toPlainText(), self.display.forward(offset)))
         rect = self.cursorRect(cursor)
         top = rect.top() - cursor.blockFormat().topMargin()
         bottom = rect.bottom()
@@ -280,11 +337,55 @@ class SourceView(QTextEdit):
         )
 
     def offset_at(self, point):
-        return source_offset(
+        offset = source_offset(
             self.toPlainText(), self.cursorForPosition(point).position()
         )
+        original = self.display.backward(offset)
+        block = self.display.block_at(offset)
+        if block and block.effective == "definition":
+            return max(block.match.span.start, min(original, block.match.span.end - 1))
+        return original
 
-    def _rect(self, line, column, end_column=None):
+    def source_line_at(self, point):
+        return self.session.document.syntax.position(self.offset_at(point))[0]
+
+    def source_block(self, line):
+        syntax = self.session.document.syntax
+        offset = syntax.starts[min(line - 1, len(syntax.starts) - 1)]
+        row, _ = self.display.position(self.display.forward(offset))
+        return self.document().findBlockByNumber(row - 1)
+
+    def displayed_block_at(self, point):
+        offset = source_offset(
+            self.toPlainText(), self.cursorForPosition(point).position()
+        )
+        return self.display.block_at(offset)
+
+    def _rect(self, line, column, end_column=None, *, background=False):
+        syntax = self.session.document.syntax
+        text = syntax.lines[line - 1] if line <= len(syntax.lines) else ""
+        offset = syntax.starts[min(line - 1, len(syntax.starts) - 1)]
+        row, col = self.display.position(
+            self.display.forward(offset + min(column, len(text.rstrip("\n"))))
+        )
+        end = None
+        if end_column is not None:
+            end_row, end = self.display.position(
+                self.display.forward(offset + min(end_column, len(text.rstrip("\n"))))
+            )
+            if end_row != row:
+                end = None
+        rect = self._display_rect(row, col, end, background=background)
+        if rect and column > len(text.rstrip("\n")):
+            rect.translate(
+                self.fontMetrics().horizontalAdvance(
+                    " " * (column - len(text.rstrip("\n")))
+                ),
+                0,
+            )
+        return rect
+
+    def _display_rect(self, line, column, end_column=None, *, background=False):
         block = self.document().findBlockByNumber(line - 1)
         if not block.isValid() or not block.isVisible():
             return None
@@ -309,24 +410,82 @@ class SourceView(QTextEdit):
                 + qt_offset(block.text(), min(end_column, len(block.text())))
             )
             end = self.cursorRect(cursor).x()
-        return QRectF(start.x(), start.y(), max(3, end - start.x()), start.height())
-
-    def background_rect(self, line, column, end_column=None):
-        rect = self._rect(line, column, end_column)
-        if rect is None:
-            return None
-        block = self.document().findBlockByNumber(line - 1)
-        following = block.next()
-        while following.isValid() and not following.isVisible():
-            following = following.next()
-        if following.isValid():
-            cursor = QTextCursor(following)
-            rect.setBottom(
-                self.cursorRect(cursor).top() - following.blockFormat().topMargin()
-            )
+        rect = QRectF(start.x(), start.y(), max(3, end - start.x()), start.height())
+        if background:
+            following = block.next()
+            while following.isValid() and not following.isVisible():
+                following = following.next()
+            if following.isValid():
+                rect.setBottom(
+                    self.cursorRect(QTextCursor(following)).top()
+                    - following.blockFormat().topMargin()
+                )
         return rect
 
+    def background_rect(self, line, column, end_column=None):
+        return self._rect(line, column, end_column, background=True)
+
     def region_rects(self, region, first_line, last_line):
+        displayed = self.display.by_span.get(region.span)
+        if region.extend_line and region.foldable and displayed is None:
+            for child in self.display.blocks:
+                if not (
+                    region.span.start <= child.match.span.start
+                    and child.match.span.end <= region.span.end
+                ):
+                    continue
+                for span in (child.shown, child.preview):
+                    if span is None:
+                        continue
+                    first, _ = self.display.position(span.start)
+                    last, _ = self.display.position(max(span.start, span.end - 1))
+                    for row in range(first, last + 1):
+                        rect = self._display_rect(row, region.column, background=True)
+                        if rect:
+                            yield rect
+        if displayed and displayed.preview:
+            first, _ = self.display.position(displayed.preview.start)
+            last, _ = self.display.position(displayed.preview.end - 1)
+            for row in range(first, last + 1):
+                rect = self._display_rect(row, 0, background=True)
+                if rect:
+                    yield rect
+        if (
+            displayed
+            and displayed.effective == "definition"
+            and displayed.match.snippet.expression
+        ):
+            first, column = self.display.position(displayed.shown.start)
+            last, end_column = self.display.position(displayed.shown.end)
+            for row in range(first, last + 1):
+                rect = self._display_rect(
+                    row,
+                    column if row == first else 0,
+                    end_column if row == last else None,
+                )
+                if rect:
+                    yield rect
+            if location := self.note_locations.get(region.span):
+                if rect := self.note_rect(*location):
+                    yield rect
+            return
+        if (
+            displayed
+            and displayed.effective == "definition"
+            and not displayed.match.snippet.expression
+        ):
+            first, _ = self.display.position(displayed.shown.start)
+            last, _ = self.display.position(
+                max(displayed.shown.start, displayed.shown.end - 1)
+            )
+            for row in range(first, last + 1):
+                rect = self._display_rect(row, region.column, background=True)
+                if rect:
+                    yield rect
+            if location := self.note_locations.get(region.span):
+                if rect := self.note_rect(*location):
+                    yield rect
+            return
         for line in range(
             max(first_line, region.line), min(last_line, region.end_line) + 1
         ):
@@ -365,11 +524,8 @@ class SourceView(QTextEdit):
 
     def paintEvent(self, event):
         super().paintEvent(event)
-        first_line = self.cursorForPosition(QPoint(0, 0)).blockNumber() + 1
-        last_line = (
-            self.cursorForPosition(QPoint(0, self.viewport().height())).blockNumber()
-            + 1
-        )
+        first_line = self.source_line_at(QPoint(0, 0))
+        last_line = self.source_line_at(QPoint(0, self.viewport().height()))
         painter = QPainter(self.viewport())
         painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_Multiply)
         painter.setPen(Qt.PenStyle.NoPen)
@@ -428,8 +584,7 @@ class SourceView(QTextEdit):
             # Opaque shared edges occupy the same pixel without accumulating alpha.
             painter.drawPath(path)
         note_font = self.font()
-        note_font.setPointSize(9)
-        note_font.setItalic(True)
+        note_font.setBold(True)
         for line in range(first_line, last_line + 1):
             for index, note in enumerate(self.notes.get(line, ())):
                 if (
@@ -441,18 +596,9 @@ class SourceView(QTextEdit):
                 rect = self.note_rect(line, index)
                 if rect is None or not rect.intersects(QRectF(event.rect())):
                     continue
-                code = self.session.document.syntax.lines[line - 1]
-                indent = len(code) - len(code.lstrip())
-                hash_rect = self._rect(line, indent)
-                hash_rect.setTop(rect.top())
-                hash_rect.setBottom(rect.bottom())
                 painter.setFont(note_font)
                 painter.setPen(QColor("#ab2027" if note.error else "#49596d"))
-                painter.drawText(hash_rect, Qt.AlignmentFlag.AlignVCenter, "#")
-                left = max(
-                    rect.left(),
-                    hash_rect.left() + QFontMetrics(note_font).horizontalAdvance("# "),
-                )
+                left = rect.left()
                 symbol_font = self.font()
                 symbol_font.setPixelSize(max(12, int(rect.height() - 2)))
                 painter.setFont(symbol_font)
@@ -477,7 +623,7 @@ class SourceView(QTextEdit):
                     QFontMetrics(note_font).elidedText(
                         note.description,
                         Qt.TextElideMode.ElideRight,
-                        int(text_rect.width()),
+                        int(text_rect.width()) - 32,
                     ),
                 )
                 if note.error:
@@ -503,6 +649,20 @@ class SourceView(QTextEdit):
                             painter.drawRect(area.adjusted(1, 1, -1, -1))
                     painter.restore()
         painter.setFont(self.font())
+        for region in visible_regions:
+            block = self.display.by_span.get(region.span)
+            if block is None:
+                continue
+            rect = self.mode_rect(block)
+            if rect and rect.intersects(QRectF(event.rect())):
+                painter.setPen(QColor("#41576d"))
+                painter.setBrush(QColor("#fafbfc"))
+                painter.drawRoundedRect(rect.adjusted(1, 1, -1, -1), 3, 3)
+                painter.drawText(
+                    rect,
+                    Qt.AlignmentFlag.AlignCenter,
+                    {"auto": "A", "source": "S", "definition": "D"}[block.mode],
+                )
         active = (
             self.parameter_editor.slot
             if self.parameter_editor and self.parameter_editor.isVisible()
@@ -636,15 +796,22 @@ class SourceView(QTextEdit):
         previous = self.verticalScrollBar().value()
         self.reveal(span.start)
         end_line, end_column = syntax.position(max(span.start, span.end - 1))
+        shown = self.display.bounds(span)
+        first_row, _ = self.display.position(shown.start)
+        last_row, _ = self.display.position(max(shown.start, shown.end - 1))
         rect = (
             self._rect(line, column, end_column + 1)
             if expression and end_line == line
-            else self.background_rect(line, column)
+            else self._display_rect(first_row, column)
         )
         if rect is None:
             return self.viewport().grab()
         end_line, _ = syntax.position(max(span.start, span.end - 1))
-        bottom = self._rect(end_line, column)
+        bottom = (
+            self._rect(end_line, column)
+            if expression
+            else self._display_rect(last_row, column)
+        )
         full_height = (bottom.bottom() - rect.top()) if bottom else rect.height()
         height = min((self.fontMetrics().height() + 3) * 4, full_height)
         rect.setHeight(max(self.fontMetrics().height(), height))
@@ -670,9 +837,9 @@ class SourceView(QTextEdit):
         if self.origin_expression:
             self.viewport().update()
             return
-        syntax = self.session.document.syntax
-        first = syntax.position(self.origin_span.start)[0]
-        last = syntax.position(max(self.origin_span.start, self.origin_span.end - 1))[0]
+        shown = self.display.bounds(self.origin_span)
+        first = self.display.position(shown.start)[0]
+        last = self.display.position(max(shown.start, shown.end - 1))[0]
         self.document().setLayoutEnabled(False)
         try:
             for line in range(first, last + 1):
@@ -727,7 +894,8 @@ class SourceView(QTextEdit):
             _, end = syntax.position(self.origin_span.end)
             return self._rect(line, column, end)
         text = syntax.lines[line - 1]
-        return self._rect(line, len(text) - len(text.lstrip()))
+        row, _ = self.display.position(self.display.bounds(self.origin_span).start)
+        return self._display_rect(row, len(text) - len(text.lstrip()))
 
     def scroll_area(self):
         widget = self.parentWidget() if self.scratch_owner else self
@@ -787,7 +955,7 @@ class SourceView(QTextEdit):
             if isinstance(target, edit.Target):
                 offset, _ = target_position(self.session.document.syntax, target)
                 line = min(
-                    self.session.document.syntax.position(offset)[0],
+                    self.display.position(self.display.forward(offset))[0],
                     self.document().blockCount(),
                 )
                 block = self.document().findBlockByNumber(line - 1)
@@ -822,7 +990,14 @@ class SourceView(QTextEdit):
 
     def note_rect(self, line, index):
         note = self.notes[line][index]
-        rect = self._rect(line, note.column)
+        displayed = self.display.by_span.get(note.span)
+        if displayed:
+            row, column = self.display.position(displayed.shown.start)
+            rect = self._display_rect(
+                row, column if displayed.match.snippet.expression else note.column
+            )
+        else:
+            rect = self._rect(line, note.column)
         if rect is None:
             return None
         height = self.fontMetrics().height() + 3
@@ -846,7 +1021,7 @@ class SourceView(QTextEdit):
         if rect:
             rect.translate(
                 0,
-                -self.document().findBlockByNumber(line - 1).blockFormat().topMargin(),
+                -self.source_block(line).blockFormat().topMargin(),
             )
         return rect
 
@@ -857,7 +1032,12 @@ class SourceView(QTextEdit):
         return self._rect(line, column, end_column) if line == end else None
 
     def note_at(self, point):
-        line = self.cursorForPosition(point).blockNumber() + 1
+        displayed = self.displayed_block_at(point)
+        if displayed and (location := self.note_locations.get(displayed.match.span)):
+            rect = self.note_rect(*location)
+            if rect and rect.contains(QPointF(point)):
+                return self.notes[location[0]][location[1]]
+        line = self.source_line_at(point)
         for row in (line, line + 1):
             for index, note in enumerate(self.notes.get(row, ())):
                 rect = self.note_rect(row, index)
@@ -880,7 +1060,7 @@ class SourceView(QTextEdit):
     def parameter_at(self, point):
         if self.note_at(point):
             return None
-        line = self.cursorForPosition(point).blockNumber() + 1
+        line = self.source_line_at(point)
         return next(
             (
                 slot
@@ -949,10 +1129,61 @@ class SourceView(QTextEdit):
         else:
             raise ValueError(tr("This block has no editable parameters"))
 
+    def mode_rect(self, block):
+        if location := self.note_locations.get(block.match.span):
+            rect = self.note_rect(*location)
+            if rect:
+                rect.setLeft(rect.right() - 26)
+            return rect
+        return None
+
+    def mode_at(self, point):
+        note = self.note_at(point)
+        block = (
+            self.display.by_span.get(note.span)
+            if note
+            else self.displayed_block_at(point)
+        )
+        if block and (rect := self.mode_rect(block)) and rect.contains(QPointF(point)):
+            return block
+        return None
+
+    def set_display_mode(self, block, mode):
+        if mode not in {"auto", "source", "definition"}:
+            raise ValueError("Unknown block display mode")
+        key = (block.match.span.start, block.match.snippet.identity)
+        if mode == "auto":
+            self.display_modes.pop(key, None)
+        else:
+            self.display_modes[key] = mode
+        self.refresh_source()
+        self.layout_changed.emit()
+
+    def display_menu(self, block):
+        menu = QMenu(self)
+        for mode, label in (
+            ("auto", tr("Auto")),
+            ("source", tr("Source")),
+            ("definition", tr("Definition")),
+        ):
+            action = menu.addAction(label)
+            action.setCheckable(True)
+            action.setChecked(block.mode == mode)
+            action.triggered.connect(
+                lambda checked=False, m=mode: self.set_display_mode(block, m)
+            )
+        return menu
+
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             self.setFocus()
             point = event.position().toPoint()
+            block = self.mode_at(point)
+            if block:
+                menu = self.display_menu(block)
+                menu.popup(self.viewport().mapToGlobal(point))
+                menu.aboutToHide.connect(menu.deleteLater)
+                return
             self.pending_parameter = self.parameter_at(point)
             self.press_position = point
             syntax = self.session.document.syntax
@@ -1017,15 +1248,13 @@ class SourceView(QTextEdit):
                 node = next(
                     (n for n in syntax.ancestors(node) if isinstance(n, ast.stmt)), node
                 )
-            self.hover = syntax.spans[node]
+            displayed = self.displayed_block_at(point)
+            match = displayed.match if displayed else self.session.enclosing_match(node)
+            self.hover = match.span if match else syntax.spans[node]
             self.viewport().setCursor(
                 Qt.CursorShape.PointingHandCursor
                 if self.parameter_at(point)
                 else Qt.CursorShape.OpenHandCursor
-            )
-            match = next(
-                (m for m in self.session.matches if m.span.contains(self.hover.start)),
-                None,
             )
             parameter = self.parameter_at(point)
             self.hover_parameter = parameter
@@ -1038,10 +1267,19 @@ class SourceView(QTextEdit):
                     else type(node).__name__
                 )
             )
+            block = self.mode_at(point)
+            if block:
+                self.viewport().setCursor(Qt.CursorShape.PointingHandCursor)
+                label = (
+                    tr("Source") if block.effective == "source" else tr("Definition")
+                )
+                self.setToolTip(
+                    tr("Auto: {mode}", mode=label) if block.mode == "auto" else label
+                )
         self.viewport().update()
 
     def target_coordinates(self, point):
-        line = self.cursorForPosition(point).blockNumber() + 1
+        line = self.source_line_at(point)
         origin = self._rect(line, 0)
         column = max(
             0,
@@ -1394,7 +1632,12 @@ class SourceView(QTextEdit):
 
     def _apply_folds(self):
         hidden = {
-            row for first, last in self.folded for row in range(first + 1, last + 1)
+            row
+            for first, last in self.folded
+            for row in range(
+                self.source_block(first).blockNumber() + 2,
+                self.source_block(last).blockNumber() + 2,
+            )
         }
         block = self.document().firstBlock()
         while block.isValid():

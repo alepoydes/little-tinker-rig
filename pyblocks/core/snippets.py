@@ -15,6 +15,7 @@ from pyblocks.i18n import N_
 from .analysis import Analysis, Scopes, annotation_text, identifiers
 from .block_metadata import LEVELS, decorator, metadata
 from .helpers import helper_functions, helper_section, referenced_helpers
+from .source_text import body_source, rewrite
 from .syntax import Span, Syntax
 from .types import Compatibility, canonical, compatibility, numeric_literal
 
@@ -46,6 +47,7 @@ class Snippet:
     helpers: tuple[ast.FunctionDef, ...] = ()
     group_help: str = ""
     context: str | None = None
+    definition: str = ""
 
     @property
     def expression(self) -> bool:
@@ -208,7 +210,9 @@ def load_module(
                 canonical(annotation_text(node.annotation))
         helpers = ()
         if mode == "function":
-            helper_names, helpers = helper_functions(tree, (function.name,), collection)
+            helper_names, helpers = helper_functions(
+                tree, (function.name,), collection, source=source
+            )
             call = ast.Call(
                 func=ast.Name(id=helper_names[function.name], ctx=ast.Load()),
                 args=[ast.Name(id=arg.arg, ctx=ast.Load()) for arg in positional],
@@ -242,7 +246,10 @@ def load_module(
                 references = referenced_helpers(scopes, original)
                 if references:
                     helper_names, helpers = helper_functions(
-                        tree, {node.id for node in references}, collection
+                        tree,
+                        {node.id for node in references},
+                        collection,
+                        source=source,
                     )
                     for node in references:
                         copies[id(node)].id = helper_names[node.id]
@@ -264,6 +271,16 @@ def load_module(
                 imports = (*module_imports, *imports)
         if template is None:
             template = ast.Constant(None)
+        definition = ""
+        if mode == "function":
+            helper = next(n for n in helpers if n.name == helper_names[function.name])
+            definition = (
+                getattr(helper, "source_text", None) or ast.unparse(helper)
+            ).replace(helper.name, function.name, 1)
+        else:
+            definition = body_source(source, body)
+            if isinstance(template, ast.expr) and isinstance(body[0], ast.Return):
+                definition = definition.replace("return ", "", 1)
         result.append(
             Snippet(
                 f"{collection}/{function.name}",
@@ -283,6 +300,7 @@ def load_module(
                 helpers=helpers,
                 group_help=group_help,
                 context=context,
+                definition=definition,
             )
         )
     return tuple(result)
@@ -577,6 +595,7 @@ def instantiate(
     occupied: set[str] | None = None,
     *,
     local_names: dict[str, str] | None = None,
+    formatted: bool = False,
 ) -> Expansion:
     """Substitute expressions. Repeated parameters repeat evaluation, as in source."""
     values = {}
@@ -665,10 +684,21 @@ def instantiate(
         else ast.Module(body=list(snippet.body), type_ignores=[])
     )
     tree = ast.fix_missing_locations(Substitute().visit(tree))
+    text = ast.unparse(tree)
+    if formatted and snippet.definition and snippet.mode != "function":
+        module = (
+            ast.Module(body=[ast.Expr(value=tree)], type_ignores=[])
+            if snippet.expression
+            else tree
+        )
+        text = rewrite(snippet.definition, module)
     return Expansion(
-        ast.unparse(tree),
+        text,
         tuple(ast.unparse(node) for node in snippet.imports),
-        tuple(ast.unparse(node) for node in snippet.helpers),
+        tuple(
+            getattr(node, "source_text", None) or ast.unparse(node)
+            for node in snippet.helpers
+        ),
     )
 
 

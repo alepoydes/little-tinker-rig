@@ -8,17 +8,30 @@ from pybricks.hubs import PrimeHub
 from pybricks.parameters import Port
 from pybricks.pupdevices import ForceSensor, Motor
 
+
+# --- automatically managed helpers ---
+def _pyblocks_pybricks_lessons_force_gripper_8a45fc5f4b96(
+    motor: "Motor",
+    sensor: "ForceSensor",
+    speed: "number[deg/s]",
+):
+    """Close a gripper while pressed; open to its stop when released.
+
+    Repeats until the program is stopped. Opening waits for a mechanical stall,
+    so a new press is handled after opening finishes. Requires physical stops."""
+    while True:
+        if sensor.pressed():
+            motor.run(-speed)
+        else:
+            motor.run_until_stalled(speed)
+
+
+# --- user program ---
+
 # Configure the Hub, the Force Sensor and the Motor
 hub = PrimeHub()
 force_sensor = ForceSensor(Port.E)
 motor = Motor(Port.A)
 
 
-while True:
-    # Grab when the Force Sensor is pressed
-    if force_sensor.pressed():
-        motor.run(-1000)
-
-    # else let go
-    else:
-        motor.run_until_stalled(1000)
+_pyblocks_pybricks_lessons_force_gripper_8a45fc5f4b96(motor, force_sensor, 1000)

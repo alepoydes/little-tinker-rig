@@ -13,6 +13,19 @@ from pybricks.pupdevices import Motor, UltrasonicSensor
 from pybricks.robotics import DriveBase
 from pybricks.tools import wait
 
+
+# --- automatically managed helpers ---
+def _pyblocks_pybricks_lessons_dance_turns_414954eb5e4d(
+    drive: "DriveBase", angle: "number[deg]"
+):
+    """Turn one way and back, like Tricky's dance."""
+    # Turn both ways to finish facing the original direction.
+    drive.turn(angle)
+    drive.turn(-angle)
+
+
+# --- user program ---
+
 # Configure the Drive Base and the Distance Sensor.
 left_motor = Motor(Port.A, Direction.COUNTERCLOCKWISE)
 right_motor = Motor(Port.B)
@@ -30,6 +43,5 @@ distance_sensor.lights.on(100)
 # something closer than 10 cm (100 mm).
 while True:
     if distance_sensor.distance() < 100:
-        drive_base.turn(360)
-        drive_base.turn(-360)
+        _pyblocks_pybricks_lessons_dance_turns_414954eb5e4d(drive_base, 360)
     wait(10)

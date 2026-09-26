@@ -3,6 +3,25 @@ from pybricks.parameters import Button, Direction, Port, Stop
 from pybricks.pupdevices import Motor, Remote
 from pybricks.tools import wait
 
+
+# --- automatically managed helpers ---
+def _pyblocks_pybricks_remote_center_steering_4b19cf12a3ec(
+    steering: "Motor", speed: "number[deg/s]"
+):
+    """Find both steering stops and start returning to the center.
+
+    The midpoint is measured, not assumed. Returning to zero does not wait;
+    subsequent remote commands can immediately replace that target."""
+    from pybricks.parameters import Stop
+
+    left_end = steering.run_until_stalled(-speed, then=Stop.HOLD)
+    right_end = steering.run_until_stalled(speed, then=Stop.HOLD)
+    steering.reset_angle((right_end - left_end) / 2)
+    steering.run_target(speed, 0, wait=False)
+
+
+# --- user program ---
+
 # Initialize the motors.
 steer = Motor(Port.B)
 front = Motor(Port.A, Direction.COUNTERCLOCKWISE)
@@ -13,15 +32,7 @@ front.control.limits(acceleration=1000)
 # Connect to the remote.
 remote = Remote()
 
-# Find the steering endpoint on the left and right.
-# The middle is in between.
-left_end = steer.run_until_stalled(-200, then=Stop.HOLD)
-right_end = steer.run_until_stalled(200, then=Stop.HOLD)
-
-# We are now at the right. Reset this angle to be half the difference.
-# That puts zero in the middle.
-steer.reset_angle((right_end - left_end) / 2)
-steer.run_target(200, 0, wait=False)
+_pyblocks_pybricks_remote_center_steering_4b19cf12a3ec(steer, 200)
 
 # Now we can start driving!
 while True:

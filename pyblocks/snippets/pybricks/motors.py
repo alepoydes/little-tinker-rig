@@ -175,7 +175,7 @@ def stall_limited(
     return motor.run_until_stalled(speed, duty_limit=power)
 
 
-@inline_block(level="intermediate", icon="↻", color="action")
+@block(level="intermediate", icon="↻", color="action")
 def home_motor(
     motor: "Motor" = motor, speed: "number[deg/s]" = -100, power: "number[%]" = 30
 ):

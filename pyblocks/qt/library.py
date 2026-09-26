@@ -18,6 +18,7 @@ COLOR = int(IDENTITY) + 2
 DESCRIPTION = int(IDENTITY) + 3
 ICON = int(IDENTITY) + 4
 LEVEL = int(IDENTITY) + 5
+DEFINITION = int(IDENTITY) + 6
 
 LEVEL_TITLES = {
     "beginner": N_("Beginner"),
@@ -128,14 +129,19 @@ class Library(QTreeWidget):
                     snippet,
                     {p.name: p.name for p in snippet.parameters if p.default is None},
                 )
+                preview = expansion.source
+                if snippet.mode == "function":
+                    call = snippet.body if snippet.expression else snippet.body[0].value
+                    preview = preview.replace(call.func.id, name, 1)
                 item = QTreeWidgetItem(heading, [name])
                 item.setData(0, IDENTITY, snippet.identity)
                 item.setData(0, ICON, block_icon(snippet))
                 item.setData(0, LEVEL, snippet.level)
-                item.setData(0, PREVIEW, expansion.source)
+                item.setData(0, PREVIEW, preview)
                 item.setData(0, COLOR, role_color(snippet_role(snippet)))
                 item.setData(0, DESCRIPTION, snippet_title(snippet))
-                item.setToolTip(0, expansion.source + "\n\n" + tr(snippet.help))
+                item.setData(0, DEFINITION, snippet.definition)
+                item.setToolTip(0, preview + "\n\n" + tr(snippet.help))
 
     def update_functions(self, snippets):
         key = tuple(
@@ -177,7 +183,13 @@ class Library(QTreeWidget):
                     all(
                         word
                         in (
-                            item.text(0) + " " + item.toolTip(0) + " " + group.text(0)
+                            item.text(0)
+                            + " "
+                            + item.toolTip(0)
+                            + " "
+                            + group.text(0)
+                            + " "
+                            + item.data(0, DEFINITION)
                         ).casefold()
                         for word in words
                     )

@@ -155,6 +155,10 @@ class Syntax:
         """Deepest owner; attached comments and indentation belong to statements."""
         if not 0 <= offset <= len(self.source):
             raise ValueError("Offset outside source")
+        spans, starts = self.comment_index
+        index = bisect_right(starts, offset) - 1
+        if index >= 0 and spans[index].contains(offset):
+            return self.comment_owners[spans[index]]
         node = self.tree
         while True:
             if node in self._child_ranges:
@@ -194,10 +198,92 @@ class Syntax:
         span = self.spans[node]
         return self.source[span.start : span.end]
 
+    @cached_property
+    def comment_owners(self):
+        """Comments attach to code, independently of blank-line formatting."""
+        statements = sorted(self.statement_suite, key=lambda n: self.spans[n].start)
+        starts = [self.spans[n].start for n in statements]
+        result = {}
+        for token in self.tokens:
+            if token.type != tokenize.COMMENT:
+                continue
+            span = Span(self.offset(*token.start), self.offset(*token.end))
+            line, column = token.start
+            prefix = self.lines[line - 1][:column]
+            if token.string.startswith(("#!", "# -*-", "# coding", "# ---")) or (
+                line == 1
+                and any(
+                    word in token.string.lower()
+                    for word in ("copyright", "license", "adapted from")
+                )
+            ):
+                owner = self.tree
+            elif prefix.strip():
+                index = bisect_right(starts, span.start) - 1
+                owner = next(
+                    (
+                        n
+                        for n in reversed(statements[: index + 1])
+                        if n.end_lineno >= line
+                    ),
+                    self.tree,
+                )
+            else:
+                index = bisect_right(starts, span.start)
+                following = next(
+                    (n for n in statements[index:] if n.col_offset <= column), None
+                )
+                same_suite = following is not None and not any(
+                    text.strip()
+                    and not text.lstrip().startswith("#")
+                    and len(text) - len(text.lstrip()) < column
+                    for text in self.lines[line : following.lineno - 1]
+                )
+                if (
+                    following is not None
+                    and following.col_offset == column
+                    and same_suite
+                ):
+                    owner = following
+                else:
+                    owner = next(
+                        (
+                            n
+                            for n in reversed(statements[:index])
+                            if n.col_offset < column
+                            and any(s.owner is n for s in self.suites)
+                        ),
+                        self.tree,
+                    )
+            result[span] = owner
+        # A docstring belongs to its definition, never to a separate action block.
+        for node in self.spans:
+            if (
+                isinstance(
+                    node,
+                    (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef),
+                )
+                and ast.get_docstring(node) is not None
+            ):
+                result[self.spans[node.body[0]]] = node
+        return result
+
+    @cached_property
+    def owned_comments(self):
+        result = {}
+        for span, owner in self.comment_owners.items():
+            result.setdefault(owner, []).append(span)
+        return result
+
+    @cached_property
+    def comment_index(self):
+        spans = sorted(self.comment_owners)
+        return spans, [span.start for span in spans]
+
     def block_span(self, node: ast.stmt) -> Span:
         """Whole lines, including adjacent leading and inline comments.
 
-        Blank lines detach leading comments. File headers stay with the file.
+        Blank lines do not detach leading comments. File headers stay with the file.
         A non-isolated statement (e.g. fmt:off with semicolons) is rejected:
         editing a partial line as a statement could silently change neighbours.
         """
@@ -208,12 +294,7 @@ class Syntax:
         suffix = self.source[span.end : self.starts[last]]
         if prefix.strip() or (suffix.strip() and not suffix.lstrip().startswith("#")):
             raise ValueError("Statement must occupy its own lines; format it first")
-        header = bool(self.tree.body) and node is self.tree.body[0]
-        while first > 1 and not header:
-            previous = self.lines[first - 2]
-            if not previous.startswith(prefix + "#"):
-                break
-            if previous.startswith(("#!", "# -*-", "# coding", "# ---")):
-                break
-            first -= 1
+        for comment in self.owned_comments.get(node, ()):
+            first = min(first, self.position(comment.start)[0])
+            last = max(last, self.position(comment.end)[0])
         return Span(self.starts[first - 1], self.starts[last])

@@ -1,12 +1,12 @@
 """Robot activities
 
-Short complete behaviors, recognizable and decomposable as ordinary Python."""
+Short complete behaviors implemented as ordinary Python functions."""
 
 # Set activities adapted from Pybricks Projects, copyright 2018-2023 The Pybricks
 # Authors (MIT). Full notice: examples/pybricks/LICENSE.txt, included in distributions.
 
 
-@inline_block(level="beginner", icon="◇", color="control")
+@block(level="beginner", icon="◇", color="control")
 def stop_at_line(
     drive: "DriveBase" = drive,
     sensor: "ColorSensor | ColorDistanceSensor" = sensor,
@@ -27,7 +27,7 @@ def stop_at_line(
         drive.brake()
 
 
-@inline_block(level="intermediate", icon="◇", color="control")
+@block(level="intermediate", icon="◇", color="control")
 def stop_near_object(
     drive: "DriveBase" = drive,
     sensor: "UltrasonicSensor" = distance,
@@ -48,7 +48,7 @@ def stop_near_object(
         drive.brake()
 
 
-@inline_block(level="beginner", icon="▣", color="state")
+@block(level="beginner", icon="▣", color="state")
 def follow_for(
     drive: "DriveBase" = drive,
     sensor: "ColorSensor | ColorDistanceSensor" = sensor,
@@ -60,9 +60,10 @@ def follow_for(
     """Follow a line edge for a set time, then brake.
 
     Target is the reflection at the edge. Reverse gain to follow the other edge.
-    Expand the block to inspect the timer, repeated measurement and correction."""
+    View the definition to inspect the timer, measurement and correction."""
     from pybricks.tools import StopWatch, wait
 
+    # Measure the duration independently of each sensor reading.
     clock: "StopWatch" = StopWatch()
     try:
         while clock.time() < duration:
@@ -73,7 +74,7 @@ def follow_for(
         drive.brake()
 
 
-@inline_block(level="beginner", icon="▶", color="action")
+@block(level="beginner", icon="▶", color="action")
 def conveyor_transfer(
     arm: "Motor" = arm,
     belt: "Motor" = belt,
@@ -83,19 +84,26 @@ def conveyor_transfer(
     """Pick up a conveyor part and place it at the assembly position.
 
     For the homed BOOST Auto Builder: belt positions are motor degrees.
-    Expand to tune the 55-degree lift, speeds, and two-second arm strokes."""
+    View the definition to study the lift, speeds, and two-second arm strokes."""
     from pybricks.tools import wait
 
+    # Move the belt to the selected component.
     belt.run_target(200, pickup)
+
+    # Grab the component, then lift it clear of the belt.
     arm.run_time(300, 2000)
     arm.run_target(300, 55)
+
+    # Carry it to the assembly position and let the mechanism settle.
     belt.run_target(200, destination)
     wait(500)
+
+    # Put the component down and lift the arm back up.
     arm.run_time(300, 2000)
     arm.run_target(300, 0)
 
 
-@inline_block(level="beginner", icon="▶", color="action")
+@block(level="beginner", icon="▶", color="action")
 def draw_rectangle(
     horizontal: "Motor" = horizontal_motor,
     vertical: "Motor" = vertical_motor,
@@ -107,20 +115,22 @@ def draw_rectangle(
 
     Width and height are motor degrees, not millimeters. Motor gearing and the
     drawing mechanism determine the physical size."""
+    # Trace four sides; reversing each axis returns to the starting position.
     horizontal.run_angle(speed, width)
     vertical.run_angle(speed, height)
     horizontal.run_angle(speed, -width)
     vertical.run_angle(speed, -height)
 
 
-@inline_block(level="beginner", icon="▶", color="action")
+@block(level="beginner", icon="▶", color="action")
 def dance_turns(drive: "DriveBase" = drive, angle: "number[deg]" = 360):
     """Turn one way and back, like Tricky's dance."""
+    # Turn both ways to finish facing the original direction.
     drive.turn(angle)
     drive.turn(-angle)
 
 
-@inline_block(level="beginner", icon="⟳", color="loop")
+@block(level="beginner", icon="⟳", color="loop")
 def force_gripper(
     motor: "Motor" = motor,
     sensor: "ForceSensor" = force_sensor,

@@ -147,7 +147,11 @@ For a source position, the editor must be able to determine:
 
 The Python AST already provides source positions for most syntactic nodes. The core should build a convenient parent/child/range index from a single AST traversal.
 
-Comments are not represented directly in Python's `ast` tree. If comment ownership is needed for movement or presentation, standard tokenization can be used. The exact comment-attachment policy is not yet fully specified.
+Comments are indexed with standard tokenization alongside the AST. Standalone
+comments belong to the next statement in the same suite, across blank lines;
+inline comments belong to the statement on that line. Docstrings belong to their
+function, class or module. Final comments without a following statement belong to
+their scope. File metadata and managed section markers remain file-owned.
 
 ---
 
@@ -1646,8 +1650,9 @@ groups start collapsed; search expands matching groups and restores their prior
 expansion when cleared. Python view is the
 path to broader language/API features; levels never restrict editable source.
 Search, groups and the persisted level filter combine; help
-uses the same metadata. Generated comments place the action symbol before text,
-use the owning block's color, and preserve enclosing indentation bands.
+uses the same metadata. Display-only titles place the action symbol before text,
+use the owning block's color, and preserve enclosing indentation bands. Titles
+precede all owned comments and use the editor's normal font size.
 
 Hover and selection increase HSL saturation and moderately reduce lightness at
 fixed hue and opacity. Saturation alone cannot distinguish already-pale saturated
@@ -1657,8 +1662,10 @@ ancestor; comments and code use the same region pass. Never stack dark selection
 overlays on the base colors. The shared transform resolves both changes before
 painting a region, preserving each descendant's hue and comment ownership.
 
-Prepared activities use short inline templates and native Pybricks operations.
-Their source is visible and can be expanded without changing its behavior.
+Prepared actions use ordinary helper functions and native Pybricks operations.
+Declarations and language constructs remain inline. Function calls evaluate
+arguments once and isolate implementation locals. Their source can be viewed
+without inlining the call or changing its behavior.
 Expansion is a temporary editing view and is recalculated after source changes;
 separate use/unpack level metadata is not implemented. Shared helper lifecycle is implemented. General events, gait frameworks and
 host media blocks remain deferred.
@@ -1713,8 +1720,8 @@ are not treated as errors. Syntax validation and one-step Undo apply to all edit
 The Beginner range block fixes `range` and exposes the counter/count; the Intermediate
 variant exposes start, exclusive stop and step as well.
 
-Generated comments begin with `#` at their containing statement's indentation;
-the following enlarged icon and text may align with a nested expression without
+Block titles are interface elements; source comments retain their `#` prefix.
+The enlarged icon and title may align with a nested expression without
 increasing row height. They share backgrounds, ancestor bands, hover, selection
 and ownership hit testing with code. Origin and destination markers use explicit,
 contrasting colors; the origin starts at the moved block's former indentation.
@@ -1723,6 +1730,19 @@ name and group.
 
 
 ### Block context navigation and repeated fields
+
+Recognized blocks have an upper-right A/S/D menu for Auto, Source and Definition.
+Auto uses program comments/layout when the block owns comments in the program;
+otherwise it uses definition comments/layout. Blank lines do not choose a mode.
+Each block's choice is independent and retained through parameter edits in the
+open view. Switching is a source-mapped presentation change, never a document
+commit. Hover, parameters and drag/drop resolve to the original logical owner.
+Definitions retain their source text alongside the AST. Inline insertion emits
+code without explanatory comments; function definitions preserve their comments
+in the managed helper section. Definition view shows function calls and their
+read-only implementation, without turning the call into inline code. Managed
+helper bodies are shown at their call sites in Blocks and remain fully accessible
+in Python. Program comments and definition comments are never merged automatically.
 
 The program and Scratch context menus target the block under the pointer, including
 its generated comment. Open definition carries the recognized Snippet object so a

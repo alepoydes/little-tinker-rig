@@ -27,7 +27,7 @@ def blocks():
 
 def execute(blocks, name, namespace, **bindings):
     expansion = instantiate(blocks["pybricks/" + name], bindings)
-    source = "\n".join((*expansion.imports, expansion.source))
+    source = "\n".join((*expansion.imports, *expansion.helpers, expansion.source))
     exec(source, namespace)
 
 

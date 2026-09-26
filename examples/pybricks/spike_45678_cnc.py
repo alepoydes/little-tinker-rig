@@ -12,13 +12,33 @@ from pybricks.hubs import PrimeHub
 from pybricks.parameters import Port
 from pybricks.pupdevices import Motor
 
+
+# --- automatically managed helpers ---
+def _pyblocks_pybricks_lessons_draw_rectangle_4dac17c6a7c8(
+    horizontal: "Motor",
+    vertical: "Motor",
+    width: "number[deg]",
+    height: "number[deg]",
+    speed: "number[deg/s]",
+):
+    """Draw a rectangle with two motor axes and return to the start.
+
+    Width and height are motor degrees, not millimeters. Motor gearing and the
+    drawing mechanism determine the physical size."""
+    # Trace four sides; reversing each axis returns to the starting position.
+    horizontal.run_angle(speed, width)
+    vertical.run_angle(speed, height)
+    horizontal.run_angle(speed, -width)
+    vertical.run_angle(speed, -height)
+
+
+# --- user program ---
+
 # Configure the Hub, the Force Sensor and the Motor
 hub = PrimeHub()
 horizontal_motor = Motor(Port.A)
 vertical_motor = Motor(Port.C)
 
-# Draw a rectangle
-horizontal_motor.run_angle(1000, 400)  # go right
-vertical_motor.run_angle(1000, 100)  # go down
-horizontal_motor.run_angle(1000, -400)  # go left
-vertical_motor.run_angle(1000, -100)  # go up
+_pyblocks_pybricks_lessons_draw_rectangle_4dac17c6a7c8(
+    horizontal_motor, vertical_motor, 400, 100, 1000
+)

@@ -79,13 +79,13 @@ def test_reindent_preserves_multiline_f_string_contents():
 
 def test_comments_select_their_owner_and_file_header_stays_put():
     syntax = Syntax(
-        "# header one\n# header two\nx = 1\n# belongs to y\ny = 2  # inline\n"
+        "#!/usr/bin/env python\n# coding: utf-8\nx = 1\n# belongs to y\ny = 2  # inline\n"
     )
     assert syntax.at(0) is syntax.tree
     assert syntax.at(syntax.source.index("belongs")) is syntax.tree.body[1]
     assert syntax.at(syntax.source.index("inline")) is syntax.tree.body[1]
     moved = edit.move(syntax, syntax.tree.body[0], edit.Target(syntax.suites[0], 2))
-    assert moved.startswith("# header one\n# header two\n# belongs to y\n")
+    assert moved.startswith("#!/usr/bin/env python\n# coding: utf-8\n# belongs to y\n")
 
 
 def test_declared_names_resolve_in_their_binding_scope():
