@@ -90,6 +90,7 @@ class Robot(QObject):
         return future
 
     async def _connect(self, name, transport, model):
+        self.output.emit(tr("Connecting to hub…") + "\n")
         self.tracebacks = self.stored_program = None
         if self.connection:
             await self.connection.disconnect()
@@ -109,6 +110,7 @@ class Robot(QObject):
             **options,
         )
         await self.connection.connect(name, transport)
+        self.output.emit(tr("Hub connected.") + "\n")
 
     def connect_hub(self, name=None, transport="virtual", model="inventor"):
         return self.submit(self._connect(name, transport, model), operation=True)
@@ -130,6 +132,7 @@ class Robot(QObject):
                 await self.connection.stop()
                 self._start_trace(self.stored_program)
                 await self.connection.run()
+                self.output.emit(tr("Program started.") + "\n")
 
             return self.submit(run(), operation=True)
         self.failed.emit(tr("Connect a hub first"))
@@ -152,6 +155,7 @@ class Robot(QObject):
         self.program_started.emit(program)
 
     async def _transfer(self, program, *, run):
+        self.output.emit(tr("Uploading {name}…", name=program.entry.name) + "\n")
         await self.connection.stop()
         self.tracebacks = None
         self.stored_program = None
@@ -164,6 +168,9 @@ class Robot(QObject):
         else:
             await self.connection.upload(path)
         self.stored_program = program
+        self.output.emit(
+            (tr("Program started.") if run else tr("Program uploaded.")) + "\n"
+        )
 
     def stop_program(self):
         async def stop():

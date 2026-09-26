@@ -1,0 +1,354 @@
+{
+  "retrieved": "2026-09-26",
+  "sitemap": "https://pybricks.com/sitemap.xml",
+  "sources": [
+    {
+      "source": "https://pybricks.com/assets/programs/allow_missing_motors.py",
+      "sha256": "2dd13f4be2d023324bdfa21366c2f9b18011495720ccf0a6d6e45c650a435d89",
+      "pages": [
+        "https://pybricks.com/project/disable-motor-detect/"
+      ],
+      "status": "included",
+      "file": "website/tutorials/allow_missing_motors.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/ball_balancer_blocks.py",
+      "sha256": "171243e341a9de9e863f54299b5694848b369df9408713717b07dc7df3c583cf",
+      "pages": [
+        "https://pybricks.com/project/lego-mindstorms-ball-balancer/",
+        "https://pybricks.com/project/lego-spike-ball-balancer/"
+      ],
+      "status": "included",
+      "file": "website/inventor_51515_spike_45678_ball_balancer.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/block_comment.py",
+      "sha256": "328c4e60aff5bfeb15c2444c2db6a556b0dcc5fa94a673e3767fcff51df9e4e3",
+      "pages": [
+        "https://pybricks.com/project/pybricks-3-5-released/"
+      ],
+      "status": "included",
+      "file": "website/tutorials/block_comment.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/block_drivebase_reset.py",
+      "sha256": "b3de7010be439f00a737f51681586ad651a03a8979caba187bab87db59e6dd24",
+      "pages": [
+        "https://pybricks.com/project/pybricks-3-5-released/"
+      ],
+      "status": "included",
+      "file": "website/tutorials/block_drivebase_reset.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/block_keyboard.py",
+      "sha256": "822781e4a6800784bed804c95c84e967ccb14e65501fada6cd8db6061d2ac55b",
+      "pages": [
+        "https://pybricks.com/project/pybricks-3-5-released/"
+      ],
+      "status": "included",
+      "file": "website/tutorials/block_keyboard.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/block_rumble.py",
+      "sha256": "15f777607f85d5b0ce63d13b6d55df15588a5a56a4c34c772b59f6f6f032c6be",
+      "pages": [
+        "https://pybricks.com/project/pybricks-3-5-released/",
+        "https://pybricks.com/project/xbox-rumble/"
+      ],
+      "status": "included",
+      "file": "website/tutorials/block_rumble.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/block_stop_button.py",
+      "sha256": "e28121f0e70a52fe7cfbdfac257fc4889ffce3bf324b0038defd34e7cdb4c42a",
+      "pages": [
+        "https://pybricks.com/project/pybricks-3-5-released/"
+      ],
+      "status": "excluded",
+      "reason": "Requires the unsupported SPIKE Essential hub."
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/check_battery_box.py",
+      "sha256": "d4d39775cd386c9a88f5abfa453bb82265e5f94c825e8b93fb52456a6e80250b",
+      "pages": [
+        "https://pybricks.com/project/disable-motor-detect/"
+      ],
+      "status": "included",
+      "file": "website/tutorials/check_battery_box.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/check_motor.py",
+      "sha256": "8e305e6a07281cbdedeaade931fa65fdcc8eee06909b22bf8bb8c6c1fd292a87",
+      "pages": [
+        "https://pybricks.com/project/disable-motor-detect/"
+      ],
+      "status": "included",
+      "file": "website/tutorials/check_motor.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/check_override.py",
+      "sha256": "bdc135fe6c19b5cd96ad27585f85d25f2cafd942ad8dd100578ff4471c7765ec",
+      "pages": [
+        "https://pybricks.com/project/disable-motor-detect/"
+      ],
+      "status": "included",
+      "file": "website/tutorials/check_override.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/duplo.py",
+      "sha256": "9ae0f7adee96f81df742ece218b828062bfb3e6e6953c4fca0886cbbaeb82dd7",
+      "pages": [
+        "https://pybricks.com/project/control-the-duplo-train/"
+      ],
+      "status": "excluded",
+      "reason": "Requires the external Duplo train and LWP3 integration, outside the supported robot models."
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/duplo_example_basic.py",
+      "sha256": "76da77ae2161805045b8b91dce43f965957dc7db341ca3a291142d33a0a6ad39",
+      "pages": [
+        "https://pybricks.com/project/control-the-duplo-train/"
+      ],
+      "status": "excluded",
+      "reason": "Requires the external Duplo train and LWP3 integration, outside the supported robot models."
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/duplo_example_dial.py",
+      "sha256": "7d85d9cfcad9eb02464a7d3fb25226111f88a35ff8bd8c4b40cd13f7ad334889",
+      "pages": [
+        "https://pybricks.com/project/control-the-duplo-train/"
+      ],
+      "status": "excluded",
+      "reason": "Requires the external Duplo train and LWP3 integration, outside the supported robot models."
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/duplo_example_essential.py",
+      "sha256": "67f10e2b9d38caaccfbe015ccd9d48890b3d4f8ea7fd2d2f3108ebefb30c8e9c",
+      "pages": [
+        "https://pybricks.com/project/control-the-duplo-train/"
+      ],
+      "status": "excluded",
+      "reason": "Requires the unsupported SPIKE Essential hub."
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/hello_world.py",
+      "sha256": "72fb951a36579d186893224844b6bf3f931fba8cca184747d56a9c1c528ad04f",
+      "pages": [
+        "https://pybricks.com/project/spike-hub-menu/"
+      ],
+      "status": "included",
+      "file": "website/tutorials/hello_world.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/light.py",
+      "sha256": "3b94ad613a61ddab0e9b9226f02ea4669e708238593c5a7a3af0f5c484934c1d",
+      "pages": [
+        "https://pybricks.com/project/spike-hub-menu/"
+      ],
+      "status": "included",
+      "file": "website/tutorials/light.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/sensor_start.py",
+      "sha256": "23ca5faca636d15b34c748adc3a3f6a24aaec8500f2adeae36d92e6d288b61c2",
+      "pages": [
+        "https://pybricks.com/project/spike-hub-menu/"
+      ],
+      "status": "included",
+      "file": "website/tutorials/sensor_start.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/set_42099_pup_remote.py",
+      "sha256": "40d9b448f2f17fb0149a72b9c8ace1d5620c16d77f6a91f12f1dd5881fb6a94f",
+      "pages": [
+        "https://pybricks.com/project/technic-42099-powered-up-remote/"
+      ],
+      "status": "included",
+      "file": "website/technic_42099_remote.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/set_42099_xbox.py",
+      "sha256": "c37cb6a8bc07054e38075d7f6a15fbfa8f11bfb1137106bba1440682ae9ee4e0",
+      "pages": [
+        "https://pybricks.com/project/technic-42099-xbox/"
+      ],
+      "status": "included",
+      "file": "website/technic_42099_xbox.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/set_42109_pup_remote.py",
+      "sha256": "accdf1ce77835991932c8d93cf5719bf7405fc1d867028564900fc63820da1de",
+      "pages": [
+        "https://pybricks.com/project/technic-42109-powered-up-remote/"
+      ],
+      "status": "included",
+      "file": "website/technic_42109_remote.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/set_42109_xbox.py",
+      "sha256": "49b1fafb134e8896b52912e3ef8b518afc26e0cf52d47f5a86ba6f9b21ababdb",
+      "pages": [
+        "https://pybricks.com/project/technic-42109-xbox/"
+      ],
+      "status": "included",
+      "file": "technic_42109_xbox.py",
+      "notes": [
+        "Existing MIT adaptation has the same motor configuration and loop, with controller renamed."
+      ]
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/set_42124_pup_remote.py",
+      "sha256": "037438b91ee19a8dc465f3a2c816d05fa3df4e85b9bc60337d7f022f5efc8238",
+      "pages": [
+        "https://pybricks.com/project/technic-42124-powered-up-remote/"
+      ],
+      "status": "included",
+      "file": "website/technic_42124_remote.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/set_42124_xbox.py",
+      "sha256": "0d67505476b74462711a182d4db985f945e31018b82c266d23e6e3d6cb1209c4",
+      "pages": [
+        "https://pybricks.com/project/technic-42124-xbox/"
+      ],
+      "status": "included",
+      "file": "website/technic_42124_xbox.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/set_42129_pup_remote.py",
+      "sha256": "13412e71d90f6ee73d87cad183bcd01cf8caf89f4a56f2c4b806aee1b7efbdb8",
+      "pages": [
+        "https://pybricks.com/project/technic-42129-powered-up-remote/"
+      ],
+      "status": "included",
+      "file": "website/technic_42129_remote.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/set_42129_xbox.py",
+      "sha256": "5ed138628d917e021d6fa1405265c32e8faab1c8f831f98f91e5ac018bf87725",
+      "pages": [
+        "https://pybricks.com/project/technic-42129-xbox/"
+      ],
+      "status": "included",
+      "file": "website/technic_42129_xbox.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/set_42131_pup_remote.py",
+      "sha256": "f1ecc6c79612b1c22596a0045b89e43444ce4ca53a664282021d522eeac971b1",
+      "pages": [
+        "https://pybricks.com/project/technic-42131-powered-up-remote/"
+      ],
+      "status": "included",
+      "file": "website/technic_42131_remote.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/set_42131_xbox.py",
+      "sha256": "7679b19234d018497e5f66326d1e9ba9f90e11787da2c7108695db4b05b977a5",
+      "pages": [
+        "https://pybricks.com/project/technic-42131-xbox/"
+      ],
+      "status": "included",
+      "file": "website/technic_42131_xbox.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/set_42146_base_pup_remote.py",
+      "sha256": "1b5075483e5b5b5b4df3a9530b8b285bbe090ca099ea4cde9fd3adca60cb7353",
+      "pages": [
+        "https://pybricks.com/project/technic-42146-powered-up-remote/"
+      ],
+      "status": "included",
+      "file": "website/technic_42146_base_remote.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/set_42146_base_xbox.py",
+      "sha256": "ab74e3fb510c5f28b365cfe1a17bdd87f95a78e8532e5e2f326a205beb649eee",
+      "pages": [
+        "https://pybricks.com/project/technic-42146-xbox/"
+      ],
+      "status": "included",
+      "file": "website/technic_42146_base_xbox.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/set_42146_crane.py",
+      "sha256": "80d0d821ebc50635f041bdfa53e430bc130380305491f402a93e45c566d26873",
+      "pages": [
+        "https://pybricks.com/project/technic-42146-powered-up-remote/",
+        "https://pybricks.com/project/technic-42146-xbox/"
+      ],
+      "status": "included",
+      "file": "website/technic_42146_crane.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/set_42160_pup_remote.py",
+      "sha256": "7961a42df9681e47a61e40d9be99c4aaf5b2c77ebd01eaf087601bae1aebe746",
+      "pages": [
+        "https://pybricks.com/project/technic-42160-powered-up-remote/"
+      ],
+      "status": "included",
+      "file": "website/technic_42160_remote.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/set_42160_xbox.py",
+      "sha256": "9dd8a4a2924c69f4d7e1049b02abbe41dfc48949c7da510db07ad193ad145792",
+      "pages": [
+        "https://pybricks.com/project/technic-42160-xbox/"
+      ],
+      "status": "included",
+      "file": "website/technic_42160_xbox.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/sound.py",
+      "sha256": "02a6cf0d26cc2a6a5face2f5b01d8bbc193aa0c14aa2243c02c68017f78357be",
+      "pages": [
+        "https://pybricks.com/project/spike-hub-menu/"
+      ],
+      "status": "included",
+      "file": "website/tutorials/sound.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/spike_arm_camera.py",
+      "sha256": "13bcb316716788d437a4eb728d6d79da751f36d45675d90af57010a6a6df6b76",
+      "pages": [
+        "https://pybricks.com/project/robot-arm-camera-tracker/"
+      ],
+      "status": "included",
+      "file": "website/spike_45678_arm_camera.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/spike_groceries.py",
+      "sha256": "b77299e835565b8f351c87e571318d61a5a1d4f7b8660816493b1ec3e867729a",
+      "pages": [
+        "https://pybricks.com/project/machine-learning-groceries/"
+      ],
+      "status": "included",
+      "file": "website/spike_45678_groceries.py"
+    },
+    {
+      "source": "https://pybricks.com/assets/programs/tic_tac_toe.py",
+      "sha256": "856bf6426ba2452d5735fd4a7372783ebcb1b082523421fb4b0ea55958425fe5",
+      "pages": [
+        "https://pybricks.com/project/spike-essential-tic-tac-toe/"
+      ],
+      "status": "excluded",
+      "reason": "Requires the unsupported SPIKE Essential hub."
+    },
+    {
+      "source": "https://pybricks.com/project/spike-hub-menu/#spike_45678_menu",
+      "sha256": "78c04ef87e7499520ae5694c7e7409d0b3753b0d4ba7a69c81d114c59a920fac",
+      "pages": [
+        "https://pybricks.com/project/spike-hub-menu/"
+      ],
+      "status": "included",
+      "file": "website/tutorials/spike_45678_menu.py"
+    },
+    {
+      "source": "https://pybricks.com/project/spike-hub-menu/#spike_45678_choose_program",
+      "sha256": "f0e3a48837dc9c006f7417b08bb93e437c03d2f7ec4b650c543a2e0feebe3d06",
+      "pages": [
+        "https://pybricks.com/project/spike-hub-menu/"
+      ],
+      "status": "included",
+      "file": "website/tutorials/spike_45678_choose_program.py"
+    }
+  ]
+}

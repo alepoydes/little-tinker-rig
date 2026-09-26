@@ -103,7 +103,7 @@ PyBlocks runtime dependency.
 | `color` | A palette role or `#RRGGBB`; default `snippet` |
 | `names` | Renameable declarations in an inline block; default empty |
 | `kind` | Optional `statement` or `expression` override |
-| `context` | Optional `loop` wrapper for inline loop-control statements |
+| `context` | Optional `loop` or `async` wrapper for context-dependent inline statements |
 
 Palette roles are `control`, `loop`, `action`, `value`, `state`, `definition`,
 `placeholder`, `snippet`, and `warning`. Metadata values must be literals.
@@ -191,6 +191,10 @@ def return_value(value=0):
     """Return a result."""
     return value
 ```
+
+For `await`, use `context="async"` and one `async def` wrapper. Only its body
+is inserted; Python rejects insertion outside an async function. The bundled
+**Cooperative tasks** group includes the definition, await and run-task blocks.
 
 For `break` and `continue`, use `context="loop"` and one `while` wrapper. Only its
 body is inserted. The wrapper makes the definition valid Python; insertion still

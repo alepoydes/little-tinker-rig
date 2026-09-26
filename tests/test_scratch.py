@@ -254,6 +254,10 @@ def test_qt_window_controls_scratch_visibility_and_help(tmp_path, qt_app):
         assert window.isMinimized()
         window.showNormal()
         assert window.scratch_dock.isVisible()
+        assert window.device_dock in window.tabifiedDockWidgets(window.scratch_dock)
+        window.device_dock.raise_()
+        qt_app.processEvents()
+        assert window.scratch_visible
         window.set_mode(1)
         assert not window.scratch_dock.isVisible()
         window.set_mode(0)

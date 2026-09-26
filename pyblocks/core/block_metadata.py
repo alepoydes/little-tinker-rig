@@ -71,11 +71,11 @@ def metadata(function):
         raise ValueError(f"{function.name}: function block locals are private")
     if values.get("kind") not in (None, "statement", "expression"):
         raise ValueError(f"{function.name}: kind must be statement or expression")
-    if values.get("context") not in (None, "loop"):
+    if values.get("context") not in (None, "loop", "async"):
         raise ValueError(f"{function.name}: unsupported template context")
     if mode == "block" and values.get("context"):
         raise ValueError(
-            f"{function.name}: a function cannot control its caller's loop"
+            f"{function.name}: a function block cannot require its caller's context"
         )
     return dict(
         values,

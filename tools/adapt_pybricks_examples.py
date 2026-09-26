@@ -1,6 +1,6 @@
 """Audit a pinned Pybricks checkout and adapt its source without running it.
 
-Usage: python tools/adapt_pybricks_examples.py UPSTREAM_DIRECTORY [--write]
+Usage: python tools/adapt_pybricks_examples.py [UPSTREAM_DIRECTORY] [--website DIRECTORY] [--write]
 The catalog hashes guard the input; this tool performs only explicit API and
 call-spelling migrations. Manual adaptations have separate behavior tests.
 """
@@ -11,6 +11,7 @@ import hashlib
 import json
 import tokenize
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from pyblocks.core import edit
 from pyblocks.core.formatting import format_source
@@ -49,7 +50,7 @@ MANUAL_ADAPTATIONS = {
 }
 
 
-def adapt(source, filename):
+def adapt(source, filename, *, website=False):
     if source.startswith("# pybricks blocks file:"):
         source = source.split("\n", 1)[1]
     syntax = Syntax(source)
@@ -141,6 +142,17 @@ def adapt(source, filename):
             "drive_base.curve(radius, -angle)",
             "legacy_curve(drive_base, radius, -angle)",
         )
+        syntax = Syntax(source)
+        turns = tuple(
+            node
+            for node in syntax.tree.body
+            if ast.unparse(node)
+            in {"drive_base.turn(angle)", "drive_base.turn(-angle)"}
+        )
+        assert len(turns) == 2
+        _, span, _ = edit.statement_group(syntax, turns)
+        source = edit.patches(source, [(span, "dance_turns(drive_base, angle)\n")])
+        helper_blocks.append(("pybricks/lessons/dance_turns", "dance_turns"))
         helper_blocks.append(("pybricks/drive/legacy_curve", "legacy_curve"))
     for identity, alias in helper_blocks:
         snippet = next(s for s in builtin_snippets() if s.identity == identity)
@@ -156,43 +168,74 @@ def adapt(source, filename):
             ],
         )
         source, _ = manage_helpers(source, {f.name: f for f in snippet.helpers})
-    return format_source(
-        "# Adapted from Pybricks Projects (MIT); see LICENSE.txt and catalog.json.\n"
-        + source
+    credit = (
+        "# From the Pybricks project website; see website/NOTICE.md and catalog.json.\n"
+        if website
+        else "# Adapted from Pybricks Projects (MIT); see LICENSE.txt and catalog.json.\n"
     )
+    return format_source(credit + source)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("upstream", type=Path)
+    parser.add_argument("upstream", type=Path, nargs="?")
+    parser.add_argument(
+        "--website", type=Path, help="Downloaded/extracted website Python sources"
+    )
     parser.add_argument("--write", action="store_true")
     args = parser.parse_args()
+    if args.upstream is None and args.website is None:
+        parser.error("Provide a repository checkout or --website sources")
     catalog = json.loads((EXAMPLES / "catalog.json").read_text())
-    found = {
-        p.relative_to(args.upstream).as_posix()
-        for family in catalog["families"]
-        for p in (args.upstream / "sets" / family).rglob("*.py")
-    }
-    assert found == {
-        item["source"] for item in catalog["examples"]
+    found = (
+        {
+            p.relative_to(args.upstream).as_posix()
+            for family in catalog["families"]
+            for p in (args.upstream / "sets" / family).rglob("*.py")
+        }
+        if args.upstream
+        else set()
+    )
+    assert args.upstream is None or found == {
+        item["source"]
+        for item in catalog["examples"]
+        if not item["source"].startswith("https://")
     }, "Incomplete upstream inventory"
     for item in catalog["examples"]:
-        raw = (args.upstream / item["source"]).read_bytes()
+        website = item["source"].startswith("https://")
+        if website and args.website is None:
+            continue
+        if not website and args.upstream is None:
+            continue
+        path = (
+            args.website
+            / item.get("source_file", Path(urlsplit(item["source"]).path).name)
+            if website
+            else args.upstream / item["source"]
+        )
+        raw = path.read_bytes()
         assert hashlib.sha256(raw).hexdigest() == item["sha256"], item["source"]
         if item["file"] in MANUAL_ADAPTATIONS:
             continue
-        adapted = adapt(raw.decode(), item["file"])
+        adapted = adapt(raw.decode(), item["file"], website=website)
         path = EXAMPLES / item["file"]
         if args.write:
             path.write_text(adapted)
         else:
-            assert ast.dump(ast.parse(adapted)) == ast.dump(
-                ast.parse(path.read_text())
-            ), path
+            # Compare managed helpers in the same order the editor now uses.
+            current, _ = manage_helpers(path.read_text(), {})
+            assert ast.dump(ast.parse(adapted)) == ast.dump(ast.parse(current)), path
+    website_count = sum(
+        item["source"].startswith("https://") for item in catalog["examples"]
+    )
     print(
-        f"Verified {len(found)} pinned upstream files; "
-        f"{len(catalog['examples']) - len(MANUAL_ADAPTATIONS)} structural adaptations, "
-        f"{len(MANUAL_ADAPTATIONS)} manual adaptations covered by behavior tests."
+        f"Verified {len(found)} pinned repository sources."
+        if args.upstream
+        else "Repository sources not checked (provide a checkout)."
+    )
+    print(
+        f"Website sources: {website_count} {'verified' if args.website else 'not checked (provide --website)'}. "
+        f"{len(MANUAL_ADAPTATIONS)} manual adaptations have separate behavior tests."
     )
 
 

@@ -3,6 +3,18 @@
 Explicit device operations for studying complete robot programs."""
 
 @inline_block(level="expert", icon="▶", color="action")
+def drive_gyro(drive: "DriveBase" = drive, enabled: "bool" = True):
+    """Use the hub gyro to maintain the driving heading."""
+    drive.use_gyro(enabled)
+
+
+@inline_block(level="expert", icon="▶", color="action")
+def turn_to_heading(drive: "DriveBase" = drive, heading: "number[deg]" = 90):
+    """Turn to an absolute heading; requires firmware with absolute turns."""
+    drive.turn(heading, absolute=True)
+
+
+@inline_block(level="expert", icon="▶", color="action")
 def drivebase_left_right_wheel_diameter_axle_track(
     left: "Motor" = left,
     right: "Motor" = right,

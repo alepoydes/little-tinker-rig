@@ -2,6 +2,7 @@
 
 import argparse
 import ast
+import re
 import sys
 from pathlib import Path
 
@@ -21,6 +22,7 @@ from PySide6.QtWidgets import (
     QMenu,
     QMessageBox,
     QPlainTextEdit,
+    QProgressBar,
     QPushButton,
     QScrollArea,
     QSizePolicy,
@@ -46,6 +48,7 @@ from pyblocks.pybricks.control import ControlState
 from pyblocks.pybricks.devices import HubInfo
 
 from .authoring import BlockEditor
+from .console import capture_output
 from .controls import ControlsPage
 from .device import ConnectDialog, DevicePanel
 from .dialogs import EditDialog
@@ -215,6 +218,7 @@ class Studio(QMainWindow):
         return action
 
     def _docks(self):
+        self.console_return = False
         self.console = QPlainTextEdit()
         self.console.setReadOnly(True)
         self.console.setMaximumBlockCount(5000)
@@ -258,7 +262,8 @@ class Studio(QMainWindow):
             N_("Hub and devices"), scroll, Qt.DockWidgetArea.RightDockWidgetArea
         )
         self.device_dock.setMinimumWidth(285)
-        self.device_dock.hide()
+        self.tabifyDockWidget(self.scratch_dock, self.device_dock)
+        self.scratch_dock.raise_()
 
     def dock(self, title, widget, area):
         dock = QDockWidget(title, self)
@@ -266,6 +271,13 @@ class Studio(QMainWindow):
         dock.setWidget(widget)
         self.addDockWidget(area, dock)
         return dock
+
+    def toggle_dock(self, dock):
+        if dock.isVisible() and not dock.visibleRegion().isEmpty():
+            dock.hide()
+        else:
+            dock.show()
+            dock.raise_()
 
     def _menus(self):
         toolbar = self.addToolBar(N_("Program"))
@@ -498,7 +510,7 @@ class Studio(QMainWindow):
         self.hub_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         self.hub_button.clicked.connect(
             lambda: (
-                self.device_dock.setVisible(not self.device_dock.isVisible())
+                self.toggle_dock(self.device_dock)
                 if self.hub_info.connected
                 else self.connect_hub()
             )
@@ -515,12 +527,16 @@ class Studio(QMainWindow):
         self.console_button.clicked.connect(
             lambda: self.console_dock.setVisible(not self.console_dock.isVisible())
         )
+        self.hub_progress = QProgressBar()
+        self.hub_progress.setRange(0, 0)
+        self.hub_progress.setFixedWidth(130)
+        self.hub_progress.setToolTip(N_("Hub operation in progress"))
+        self.hub_progress.hide()
+        self.statusBar().addPermanentWidget(self.hub_progress)
         self.statusBar().addPermanentWidget(self.console_button)
         scratch_button = self.scratch_button = QToolButton()
         scratch_button.setText(N_("Scratch"))
-        scratch_button.clicked.connect(
-            lambda: self.scratch_dock.setVisible(not self.scratch_dock.isVisible())
-        )
+        scratch_button.clicked.connect(lambda: self.toggle_dock(self.scratch_dock))
         self.statusBar().addPermanentWidget(scratch_button)
         self.statusBar().addPermanentWidget(QLabel(N_("Block color")))
         intensity = QSlider(Qt.Orientation.Horizontal)
@@ -793,7 +809,9 @@ class Studio(QMainWindow):
 
     def scratch_visibility(self, visible):
         if self.pages.currentIndex() == 0:
-            self.scratch_visible = visible
+            # An inactive dock tab emits visibilityChanged(False) without being
+            # closed. Preserve the user's choice when switching tabs or modes.
+            self.scratch_visible = not self.scratch_dock.isHidden()
 
     def set_mode(self, index):
         self.pages.setCurrentIndex(index)
@@ -801,8 +819,10 @@ class Studio(QMainWindow):
         self.scratch_dock.setVisible(index == 0 and self.scratch_visible)
         self.scratch_dock.toggleViewAction().setEnabled(index == 0)
         self.scratch_button.setEnabled(index == 0)
-        if index == 1:
+        if index in (0, 1):
             self.device_dock.show()
+            if index == 1:
+                self.device_dock.raise_()
         elif index in (2, 3):
             self.device_dock.hide()
         if index == 3:
@@ -902,7 +922,24 @@ class Studio(QMainWindow):
     def append_output(self, text):
         cursor = self.console.textCursor()
         cursor.movePosition(QTextCursor.MoveOperation.End)
-        cursor.insertText(text)
+        # Terminal progress bars rewrite a line with carriage returns. Keep the
+        # latest value, including when CR and the replacement arrive separately.
+        for part in re.split(r"(\r\n|\r|\n)", text):
+            if part == "\r":
+                self.console_return = True
+            elif part in ("\r\n", "\n"):
+                self.console_return = False
+                cursor.insertBlock()
+            elif part:
+                if self.console_return:
+                    cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+                    cursor.movePosition(
+                        QTextCursor.MoveOperation.EndOfBlock,
+                        QTextCursor.MoveMode.KeepAnchor,
+                    )
+                    cursor.removeSelectedText()
+                    self.console_return = False
+                cursor.insertText(part)
         self.console.setTextCursor(cursor)
         self.console.ensureCursorVisible()
         if not self.console_dock.isVisible() and text:
@@ -1069,6 +1106,7 @@ class Studio(QMainWindow):
         else:
             self.session.to_scratch()
         self.scratch_dock.show()
+        self.scratch_dock.raise_()
 
     def show_help(self):
         if self.pages.currentIndex() == 3:
@@ -1244,6 +1282,7 @@ class Studio(QMainWindow):
 
     def hub_busy(self, busy):
         self.hub_is_busy = busy
+        self.hub_progress.setVisible(busy)
         self.hub_button.setEnabled(not busy)
         self.run_action.setEnabled(
             self.hub_info.connected and not busy and self.pages.currentIndex() != 3
@@ -1299,21 +1338,25 @@ class Studio(QMainWindow):
                 dialog.model.currentData(),
             )
             self.device_dock.show()
+            self.device_dock.raise_()
 
     def run_hub(self):
         self.controls.armed.setChecked(False)
         self.commit_code()
         if self.save():
+            self.console_dock.show()
             self._robot().run_file(self.session.project.path)
 
     def upload_hub(self):
         self.controls.armed.setChecked(False)
         self.commit_code()
         if self.save():
+            self.console_dock.show()
             self._robot().upload_file(self.session.project.path)
 
     def run_stored_hub(self):
         self.controls.armed.setChecked(False)
+        self.console_dock.show()
         self._robot().run_stored()
 
     def show_firmware(self):
@@ -1452,8 +1495,9 @@ def launch(path: Path | None = None, collections=()) -> int:
     code = QSettings("PyBlocks", "Studio").value("language", DEFAULT_LANGUAGE)
     set_language(code if code in LANGUAGES else DEFAULT_LANGUAGE)
     window = Studio(path, collections)
-    window.show()
-    return app.exec()
+    with capture_output(window.append_output):
+        window.show()
+        return app.exec()
 
 
 def main() -> int:

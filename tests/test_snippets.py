@@ -127,7 +127,7 @@ def test_bundled_libraries_can_load_without_robot_dependencies():
         bindings = {p.name: "device" for p in snippet.parameters if p.default is None}
         expansion = instantiate(snippet, bindings)
         if (
-            snippet.context == "loop"
+            snippet.context in ("loop", "async")
             or not snippet.expression
             and any(
                 isinstance(node, (ast.Return, ast.Yield, ast.YieldFrom))
@@ -138,11 +138,32 @@ def test_bundled_libraries_can_load_without_robot_dependencies():
             from textwrap import indent
 
             wrapper = (
-                "while True:\n" if snippet.context == "loop" else "def example():\n"
+                "while True:\n"
+                if snippet.context == "loop"
+                else (
+                    "async def example():\n"
+                    if snippet.context == "async"
+                    else "def example():\n"
+                )
             )
             Syntax(wrapper + indent(expansion.source + "\n", "    "))
         else:
             Syntax(expansion.source + "\n")
+
+
+def test_await_template_only_offers_async_destinations():
+    from pyblocks.core.edit import insertion_targets
+
+    snippet = next(
+        s for s in builtin_snippets() if s.identity == "pybricks/tasks/await_task"
+    )
+    source = instantiate(snippet, {"operation": "operation()"}).source
+    syntax = Syntax("async def task():\n    pass\n\ndef ordinary():\n    pass\n")
+    targets = tuple(insertion_targets(syntax, source))
+    assert targets
+    assert all(isinstance(t.suite.owner, ast.AsyncFunctionDef) for t in targets)
+    with pytest.raises(SyntaxError, match="await"):
+        Syntax(source)
 
 
 def test_hygiene_respects_nested_shadowing_and_keyword_arguments():

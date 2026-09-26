@@ -106,3 +106,33 @@ def hub_system_name(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "str":
 def hub_system_shutdown(hub: "PrimeHub | TechnicHub | MoveHub" = hub):
     """Stop the program and turn the hub off."""
     hub.system.shutdown()
+
+
+@inline_block(level="expert", icon="＝", color="value")
+def imu_ready(hub: "PrimeHub | TechnicHub" = hub) -> "bool":
+    """Check that the gyro has finished calibrating before balancing."""
+    return hub.imu.ready()
+
+
+@inline_block(level="expert", icon="＝", color="value")
+def imu_rotation(hub: "PrimeHub | TechnicHub" = hub, axis=Axis.X) -> "number[deg]":
+    """Read accumulated gyro rotation around an axis or vector."""
+    from pybricks.parameters import Axis
+
+    return hub.imu.rotation(axis)
+
+
+@inline_block(level="expert", icon="＝", color="value")
+def axis_vector(x: "number" = 1, y: "number" = 0, z: "number" = 0):
+    """Make a three-dimensional vector for the hub's mounting or measurement axis."""
+    from pybricks.tools import vector
+
+    return vector(x, y, z)
+
+
+@inline_block(level="advanced", icon="◇", color="control")
+def choose_program(first="H", second="S", third="L"):
+    """Choose a symbol with the Prime/Inventor hub buttons and display."""
+    from pybricks.tools import hub_menu
+
+    return hub_menu(first, second, third)

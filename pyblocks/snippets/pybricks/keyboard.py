@@ -2,6 +2,14 @@
 
 Nonblocking input from the connected computer's terminal."""
 
+@inline_block(level="advanced", icon="⌨", color="value")
+def input_byte(latest: "bool" = True, character: "bool" = True):
+    """Read a byte or character without waiting; optionally discard older buffered input."""
+    from pybricks.tools import read_input_byte
+
+    return read_input_byte(latest, character)
+
+
 @block(level="advanced", icon="⌨", color="value")
 def read_key_code() -> "int | None":
     """Read one keyboard character code, or None when no key is available.

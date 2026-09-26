@@ -726,6 +726,746 @@
       "status": "adapted",
       "level": "advanced",
       "notes": []
+    },
+    {
+      "file": "website/tutorials/allow_missing_motors.py",
+      "set": null,
+      "sets": [],
+      "source": "https://pybricks.com/assets/programs/allow_missing_motors.py",
+      "reference": "https://pybricks.com/project/disable-motor-detect/",
+      "role": "library",
+      "dependencies": [],
+      "extra_hardware": [],
+      "firmware": "3.5",
+      "sha256": "2dd13f4be2d023324bdfa21366c2f9b18011495720ccf0a6d6e45c650a435d89",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "website/inventor_51515_spike_45678_ball_balancer.py",
+      "set": 51515,
+      "sets": [
+        51515,
+        45678
+      ],
+      "source": "https://pybricks.com/assets/programs/ball_balancer_blocks.py",
+      "reference": "https://pybricks.com/project/lego-mindstorms-ball-balancer/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Ball and the exact published mechanism; SPIKE version also uses expansion elements"
+      ],
+      "firmware": "3.5",
+      "sha256": "171243e341a9de9e863f54299b5694848b369df9408713717b07dc7df3c583cf",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": [
+        "InventorHub is updated to its PrimeHub alias; motor directions and balance gains are preserved."
+      ]
+    },
+    {
+      "file": "website/tutorials/block_comment.py",
+      "set": null,
+      "sets": [],
+      "source": "https://pybricks.com/assets/programs/block_comment.py",
+      "reference": "https://pybricks.com/project/pybricks-3-5-released/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "firmware": "3.5",
+      "sha256": "328c4e60aff5bfeb15c2444c2db6a556b0dcc5fa94a673e3767fcff51df9e4e3",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/tutorials/block_drivebase_reset.py",
+      "set": null,
+      "sets": [],
+      "source": "https://pybricks.com/assets/programs/block_drivebase_reset.py",
+      "reference": "https://pybricks.com/project/pybricks-3-5-released/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "firmware": "3.5",
+      "sha256": "b3de7010be439f00a737f51681586ad651a03a8979caba187bab87db59e6dd24",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/tutorials/block_keyboard.py",
+      "set": null,
+      "sets": [],
+      "source": "https://pybricks.com/assets/programs/block_keyboard.py",
+      "reference": "https://pybricks.com/project/pybricks-3-5-released/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Host console forwarding keyboard input to hub stdin; Studio Console currently displays output only"
+      ],
+      "firmware": "3.5",
+      "sha256": "822781e4a6800784bed804c95c84e967ccb14e65501fada6cd8db6061d2ac55b",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/tutorials/block_rumble.py",
+      "set": null,
+      "sets": [],
+      "source": "https://pybricks.com/assets/programs/block_rumble.py",
+      "reference": "https://pybricks.com/project/pybricks-3-5-released/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Compatible Bluetooth Xbox controller; motor A"
+      ],
+      "firmware": "3.5",
+      "sha256": "15f777607f85d5b0ce63d13b6d55df15588a5a56a4c34c772b59f6f6f032c6be",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/tutorials/check_battery_box.py",
+      "set": null,
+      "sets": [],
+      "source": "https://pybricks.com/assets/programs/check_battery_box.py",
+      "reference": "https://pybricks.com/project/disable-motor-detect/",
+      "role": "program",
+      "dependencies": [
+        "website/tutorials/allow_missing_motors.py"
+      ],
+      "extra_hardware": [],
+      "firmware": "3.5",
+      "sha256": "d4d39775cd386c9a88f5abfa453bb82265e5f94c825e8b93fb52456a6e80250b",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/tutorials/check_motor.py",
+      "set": null,
+      "sets": [],
+      "source": "https://pybricks.com/assets/programs/check_motor.py",
+      "reference": "https://pybricks.com/project/disable-motor-detect/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "firmware": "3.5",
+      "sha256": "8e305e6a07281cbdedeaade931fa65fdcc8eee06909b22bf8bb8c6c1fd292a87",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/tutorials/check_override.py",
+      "set": null,
+      "sets": [],
+      "source": "https://pybricks.com/assets/programs/check_override.py",
+      "reference": "https://pybricks.com/project/disable-motor-detect/",
+      "role": "program",
+      "dependencies": [
+        "website/tutorials/allow_missing_motors.py"
+      ],
+      "extra_hardware": [],
+      "firmware": "3.5",
+      "sha256": "bdc135fe6c19b5cd96ad27585f85d25f2cafd942ad8dd100578ff4471c7765ec",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/tutorials/hello_world.py",
+      "set": 45678,
+      "sets": [
+        45678,
+        51515
+      ],
+      "source": "https://pybricks.com/assets/programs/hello_world.py",
+      "reference": "https://pybricks.com/project/spike-hub-menu/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "firmware": "3.5",
+      "sha256": "72fb951a36579d186893224844b6bf3f931fba8cca184747d56a9c1c528ad04f",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/tutorials/light.py",
+      "set": 45678,
+      "sets": [
+        45678,
+        51515
+      ],
+      "source": "https://pybricks.com/assets/programs/light.py",
+      "reference": "https://pybricks.com/project/spike-hub-menu/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Prime/Inventor hub"
+      ],
+      "firmware": "3.5",
+      "sha256": "3b94ad613a61ddab0e9b9226f02ea4669e708238593c5a7a3af0f5c484934c1d",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/tutorials/sensor_start.py",
+      "set": null,
+      "sets": [],
+      "source": "https://pybricks.com/assets/programs/sensor_start.py",
+      "reference": "https://pybricks.com/project/spike-hub-menu/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "BOOST ColorDistanceSensor on A and a DC motor on B, or menu motor on A"
+      ],
+      "firmware": "3.5",
+      "sha256": "23ca5faca636d15b34c748adc3a3f6a24aaec8500f2adeae36d92e6d288b61c2",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/technic_42099_remote.py",
+      "set": 42099,
+      "sets": [
+        42099
+      ],
+      "source": "https://pybricks.com/assets/programs/set_42099_pup_remote.py",
+      "reference": "https://pybricks.com/project/technic-42099-powered-up-remote/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "firmware": "3.5",
+      "sha256": "40d9b448f2f17fb0149a72b9c8ace1d5620c16d77f6a91f12f1dd5881fb6a94f",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/technic_42099_xbox.py",
+      "set": 42099,
+      "sets": [
+        42099
+      ],
+      "source": "https://pybricks.com/assets/programs/set_42099_xbox.py",
+      "reference": "https://pybricks.com/project/technic-42099-xbox/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Bluetooth Xbox controller"
+      ],
+      "firmware": "3.5",
+      "sha256": "c37cb6a8bc07054e38075d7f6a15fbfa8f11bfb1137106bba1440682ae9ee4e0",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/technic_42109_remote.py",
+      "set": 42109,
+      "sets": [
+        42109
+      ],
+      "source": "https://pybricks.com/assets/programs/set_42109_pup_remote.py",
+      "reference": "https://pybricks.com/project/technic-42109-powered-up-remote/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "firmware": "3.5",
+      "sha256": "accdf1ce77835991932c8d93cf5719bf7405fc1d867028564900fc63820da1de",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/technic_42124_remote.py",
+      "set": 42124,
+      "sets": [
+        42124
+      ],
+      "source": "https://pybricks.com/assets/programs/set_42124_pup_remote.py",
+      "reference": "https://pybricks.com/project/technic-42124-powered-up-remote/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "firmware": "3.5",
+      "sha256": "037438b91ee19a8dc465f3a2c816d05fa3df4e85b9bc60337d7f022f5efc8238",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/technic_42124_xbox.py",
+      "set": 42124,
+      "sets": [
+        42124
+      ],
+      "source": "https://pybricks.com/assets/programs/set_42124_xbox.py",
+      "reference": "https://pybricks.com/project/technic-42124-xbox/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Bluetooth Xbox controller"
+      ],
+      "firmware": "3.5",
+      "sha256": "0d67505476b74462711a182d4db985f945e31018b82c266d23e6e3d6cb1209c4",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/technic_42129_remote.py",
+      "set": 42129,
+      "sets": [
+        42129
+      ],
+      "source": "https://pybricks.com/assets/programs/set_42129_pup_remote.py",
+      "reference": "https://pybricks.com/project/technic-42129-powered-up-remote/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "firmware": "3.5",
+      "sha256": "13412e71d90f6ee73d87cad183bcd01cf8caf89f4a56f2c4b806aee1b7efbdb8",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/technic_42129_xbox.py",
+      "set": 42129,
+      "sets": [
+        42129
+      ],
+      "source": "https://pybricks.com/assets/programs/set_42129_xbox.py",
+      "reference": "https://pybricks.com/project/technic-42129-xbox/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Bluetooth Xbox controller"
+      ],
+      "firmware": "3.5",
+      "sha256": "5ed138628d917e021d6fa1405265c32e8faab1c8f831f98f91e5ac018bf87725",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/technic_42131_remote.py",
+      "set": 42131,
+      "sets": [
+        42131
+      ],
+      "source": "https://pybricks.com/assets/programs/set_42131_pup_remote.py",
+      "reference": "https://pybricks.com/project/technic-42131-powered-up-remote/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "firmware": "3.5",
+      "sha256": "f1ecc6c79612b1c22596a0045b89e43444ce4ca53a664282021d522eeac971b1",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "website/technic_42131_xbox.py",
+      "set": 42131,
+      "sets": [
+        42131
+      ],
+      "source": "https://pybricks.com/assets/programs/set_42131_xbox.py",
+      "reference": "https://pybricks.com/project/technic-42131-xbox/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Bluetooth Xbox controller"
+      ],
+      "firmware": "3.5",
+      "sha256": "7679b19234d018497e5f66326d1e9ba9f90e11787da2c7108695db4b05b977a5",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "website/technic_42146_base_remote.py",
+      "set": 42146,
+      "sets": [
+        42146
+      ],
+      "source": "https://pybricks.com/assets/programs/set_42146_base_pup_remote.py",
+      "reference": "https://pybricks.com/project/technic-42146-powered-up-remote/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010",
+        "Two Technic hubs; channel 5; run the crane program on the second hub"
+      ],
+      "firmware": "4.0",
+      "sha256": "1b5075483e5b5b5b4df3a9530b8b285bbe090ca099ea4cde9fd3adca60cb7353",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "website/technic_42146_base_xbox.py",
+      "set": 42146,
+      "sets": [
+        42146
+      ],
+      "source": "https://pybricks.com/assets/programs/set_42146_base_xbox.py",
+      "reference": "https://pybricks.com/project/technic-42146-xbox/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Bluetooth Xbox controller",
+        "Two Technic hubs; channel 5; run the crane program on the second hub"
+      ],
+      "firmware": "4.0",
+      "sha256": "ab74e3fb510c5f28b365cfe1a17bdd87f95a78e8532e5e2f326a205beb649eee",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "website/technic_42146_crane.py",
+      "set": 42146,
+      "sets": [
+        42146
+      ],
+      "source": "https://pybricks.com/assets/programs/set_42146_crane.py",
+      "reference": "https://pybricks.com/project/technic-42146-powered-up-remote/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Two Technic hubs; channel 5; run the crane program on the second hub"
+      ],
+      "firmware": "4.0",
+      "sha256": "80d0d821ebc50635f041bdfa53e430bc130380305491f402a93e45c566d26873",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "website/technic_42160_remote.py",
+      "set": 42160,
+      "sets": [
+        42160
+      ],
+      "source": "https://pybricks.com/assets/programs/set_42160_pup_remote.py",
+      "reference": "https://pybricks.com/project/technic-42160-powered-up-remote/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "firmware": "3.5",
+      "sha256": "7961a42df9681e47a61e40d9be99c4aaf5b2c77ebd01eaf087601bae1aebe746",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/technic_42160_xbox.py",
+      "set": 42160,
+      "sets": [
+        42160
+      ],
+      "source": "https://pybricks.com/assets/programs/set_42160_xbox.py",
+      "reference": "https://pybricks.com/project/technic-42160-xbox/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Bluetooth Xbox controller"
+      ],
+      "firmware": "3.5",
+      "sha256": "9dd8a4a2924c69f4d7e1049b02abbe41dfc48949c7da510db07ad193ad145792",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/tutorials/sound.py",
+      "set": 45678,
+      "sets": [
+        45678,
+        51515
+      ],
+      "source": "https://pybricks.com/assets/programs/sound.py",
+      "reference": "https://pybricks.com/project/spike-hub-menu/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Prime/Inventor hub"
+      ],
+      "firmware": "3.5",
+      "sha256": "02a6cf0d26cc2a6a5face2f5b01d8bbc193aa0c14aa2243c02c68017f78357be",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "website/spike_45678_arm_camera.py",
+      "set": 45678,
+      "sets": [
+        45678
+      ],
+      "source": "https://pybricks.com/assets/programs/spike_arm_camera.py",
+      "reference": "https://pybricks.com/project/robot-arm-camera-tracker/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Pybricks Code camera/vision host and the published model; Studio does not provide AppData camera processing"
+      ],
+      "firmware": "4.1",
+      "sha256": "13bcb316716788d437a4eb728d6d79da751f36d45675d90af57010a6a6df6b76",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "website/spike_45678_groceries.py",
+      "set": 45678,
+      "sets": [
+        45678
+      ],
+      "source": "https://pybricks.com/assets/programs/spike_groceries.py",
+      "reference": "https://pybricks.com/project/machine-learning-groceries/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Pybricks Code camera/vision host and the published model; Studio does not provide AppData camera processing"
+      ],
+      "firmware": "4.1",
+      "sha256": "b77299e835565b8f351c87e571318d61a5a1d4f7b8660816493b1ec3e867729a",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "website/tutorials/spike_45678_menu.py",
+      "set": 45678,
+      "sets": [
+        45678,
+        51515
+      ],
+      "source": "https://pybricks.com/project/spike-hub-menu/#spike_45678_menu",
+      "reference": "https://pybricks.com/project/spike-hub-menu/",
+      "role": "program",
+      "dependencies": [
+        "website/tutorials/hello_world.py",
+        "website/tutorials/sound.py",
+        "website/tutorials/light.py"
+      ],
+      "extra_hardware": [
+        "Prime/Inventor hub"
+      ],
+      "firmware": "3.5",
+      "sha256": "78c04ef87e7499520ae5694c7e7409d0b3753b0d4ba7a69c81d114c59a920fac",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": [
+        "Python source extracted from the project page, preserving local module imports."
+      ],
+      "source_file": "spike_45678_menu.py"
+    },
+    {
+      "file": "website/tutorials/spike_45678_choose_program.py",
+      "set": 45678,
+      "sets": [
+        45678,
+        51515
+      ],
+      "source": "https://pybricks.com/project/spike-hub-menu/#spike_45678_choose_program",
+      "reference": "https://pybricks.com/project/spike-hub-menu/",
+      "role": "program",
+      "dependencies": [
+        "website/tutorials/hello_world.py",
+        "website/tutorials/sensor_start.py"
+      ],
+      "extra_hardware": [
+        "BOOST ColorDistanceSensor on A and a DC motor on B, or menu motor on A",
+        "Prime/Inventor hub"
+      ],
+      "firmware": "3.5",
+      "sha256": "f0e3a48837dc9c006f7417b08bb93e437c03d2f7ec4b650c543a2e0feebe3d06",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": [
+        "Python source extracted from the project page, preserving local module imports."
+      ],
+      "source_file": "spike_45678_choose_program.py"
     }
   ]
 }

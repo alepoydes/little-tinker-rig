@@ -18,8 +18,13 @@ extra. USB depends on model support and OS permissions.
 **Upload / Shift+F5** saves and sends the active program without executing it.
 **Run / F5** saves, uploads and runs it; **Stop / F6** stops execution.
 **Hub → Run stored program** starts the previously uploaded program. On physical
-hubs only compiled code is sent; source read-back is not supported. Console output is indicated in the
-bottom bar. TUI uses F7/F5/F6 and F8 for its console. CLI can wait for completion:
+hubs only compiled code is sent; source read-back is not supported.
+Upload and Run open **Console** automatically. It shows connection messages,
+transfer progress, program output and errors, including stdout/stderr from the
+hub worker. The bottom-bar activity indicator stays visible during hub operations.
+Terminal progress updates replace their previous line. After hiding Console,
+its button counts new messages. TUI uses F7/F5/F6 and F8 for its console.
+CLI can wait for completion:
 
 ```sh
 uv run pyblocks run examples/motor.py --transport virtual --model boost
@@ -27,6 +32,8 @@ uv run --extra pybricks pyblocks run examples/motor.py --name 'My hub'
 ```
 
 The device panel shows hub identity, firmware, battery and port readings.
+**Hub and devices** and **Scratch** share the right dock as tabs. Their buttons
+select the corresponding tab; each panel can still be detached or closed.
 **Open port monitor** replaces the user program with a small monitor; it reports
 motor angles/speeds and color, distance or force values. Real readings become
 stale when a user program replaces the monitor. Virtual telemetry continues during

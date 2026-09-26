@@ -21,7 +21,7 @@ from pyblocks.pybricks.simulation import World
 
 EXAMPLES = Path(__file__).parents[1] / "examples/pybricks"
 CATALOG = json.loads((EXAMPLES / "catalog.json").read_text())
-PROGRAMS = sorted(EXAMPLES.glob("*.py"))
+PROGRAMS = sorted(EXAMPLES.rglob("*.py"))
 TRACE_PROGRAMS = [
     EXAMPLES / name
     for name in (
@@ -399,20 +399,29 @@ async def test_entire_catalog_compiles_and_rebuilds_without_changing_algorithms(
     for abi in (5, 6):
         compiled = await compile_multi_file(str(path.resolve()), abi)
         assert compiled
-    item = next(item for item in CATALOG["examples"] if item["file"] == path.name)
+    item = next(
+        item
+        for item in CATALOG["examples"]
+        if item["file"] == path.relative_to(EXAMPLES).as_posix()
+    )
     for dependency in item["dependencies"]:
-        assert dependency.removesuffix(".py").encode() in compiled
+        module = (EXAMPLES / dependency).relative_to(path.parent).with_suffix("")
+        assert module.as_posix().replace("/", ".").encode() + b"\0" in compiled
 
 
 def test_catalog_has_unique_set_names_and_local_dependencies():
     files = {item["file"] for item in CATALOG["examples"]}
     assert len(files) == len(CATALOG["examples"])
-    assert files == {p.name for p in PROGRAMS}
+    assert files == {p.relative_to(EXAMPLES).as_posix() for p in PROGRAMS}
     hashes = {}
     for item in CATALOG["examples"]:
-        assert f"_{item['set']}_" in item["file"]
+        if item["set"] is not None and "/tutorials/" not in item["file"]:
+            assert f"_{item['set']}_" in item["file"]
         assert set(item["dependencies"]) <= files
-        assert item["source"].split("/")[1] in CATALOG["families"]
+        if item["source"].startswith("https://"):
+            assert item["source"].startswith("https://pybricks.com/")
+        else:
+            assert item["source"].split("/")[1] in CATALOG["families"]
         # One upstream program can be adapted for more than one LEGO build.
         assert hashes.setdefault(item["source"], item["sha256"]) == item["sha256"]
 
@@ -423,6 +432,9 @@ def test_catalog_has_unique_set_names_and_local_dependencies():
         ("technic_42160_audi_xbox_blocks.py", ("D", ("A", "B")), [6, 22], []),
         ("technic_42160_audi_xbox_python.py", ("D", ("A", "B")), [8, 16, 24, 32], []),
         ("technic_42109_xbox.py", ("B", ("D",)), [6, 22], [50, 50]),
+        ("website/technic_42099_xbox.py", ("C", ("A", "B")), [6, 22], [50, 50]),
+        ("website/technic_42124_xbox.py", ("B", ("A",)), [6, 22], [50, 50]),
+        ("website/technic_42160_xbox.py", ("D", ("B", "A")), [6, 22], [50, 50]),
     ],
 )
 def test_xbox_examples_preserve_input_sampling_and_commands(
@@ -473,6 +485,83 @@ def test_xbox_examples_preserve_input_sampling_and_commands(
     assert [
         dict(value)["milliseconds"] for label, value in trace if label == "wait"
     ] == waits
+
+
+def test_crane_coasts_when_radio_messages_disappear():
+    from types import ModuleType
+
+    path = EXAMPLES / "website/technic_42146_crane.py"
+
+    def run(source):
+        with virtual_activity(path.stem) as (_, trace):
+            from pybricks import pupdevices
+
+            class Motor(pupdevices.Motor):
+                def stop(self):
+                    trace.append(("coast", self.port))
+                    super().stop()
+
+            class Radio:
+                def __init__(self, broadcast_channel, observe_channels):
+                    assert observe_channels == [5]
+                    self.values = iter((None, (10, -20, 30), None))
+
+                def observe(self, channel):
+                    assert channel == 5
+                    try:
+                        return next(self.values)
+                    except StopIteration:
+                        raise EndInputs from None
+
+            pupdevices.Motor = Motor
+            messaging = ModuleType("pybricks.messaging")
+            messaging.BLERadio = Radio
+            sys.modules["pybricks.messaging"] = messaging
+            with pytest.raises(EndInputs):
+                exec(source, {})
+            return trace
+
+    source = path.read_text()
+    trace = run(source)
+    assert run(rebuild(source, builtin_snippets())) == trace
+    commands = [
+        (label, dict(value)["speed"]) if label.endswith(".run") else (label, value)
+        for label, value in trace
+        if label.endswith(".run") or label == "coast"
+    ]
+    assert commands == [
+        ("coast", "A"),
+        ("coast", "D"),
+        ("coast", "B"),
+        ("A.run", 80),
+        ("D.run", -160),
+        ("B.run", 300),
+        ("coast", "A"),
+        ("coast", "D"),
+        ("coast", "B"),
+    ]
+
+
+def test_website_inventory_accounts_for_sources_and_exclusions():
+    inventory = json.loads((EXAMPLES / "website/catalog.json").read_text())
+    files = {item["file"]: item for item in CATALOG["examples"]}
+    included = set()
+    sources = set()
+    for item in inventory["sources"]:
+        assert item["source"] not in sources
+        sources.add(item["source"])
+        if item["status"] == "included":
+            assert item["file"] in files
+            included.add(item["file"])
+            entry = files[item["file"]]
+            if entry["source"].startswith("https://"):
+                assert (entry["source"], entry["sha256"]) == (
+                    item["source"],
+                    item["sha256"],
+                )
+        else:
+            assert item["status"] == "excluded" and item["reason"]
+    assert {name for name in files if name.startswith("website/")} <= included
 
 
 def test_keyboard_block_is_nonblocking_and_reads_one_character():
@@ -544,7 +633,11 @@ def test_hardware_operations_have_specific_palette_blocks():
             and (n.module or "").startswith("pybricks.")
             for a in n.names
         }
-        item = next(item for item in CATALOG["examples"] if item["file"] == path.name)
+        item = next(
+            item
+            for item in CATALOG["examples"]
+            if item["file"] == path.relative_to(EXAMPLES).as_posix()
+        )
         trees = [
             tree,
             *(

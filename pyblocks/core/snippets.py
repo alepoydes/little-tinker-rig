@@ -186,6 +186,12 @@ def load_module(
                     f"{function.name}: a loop template needs one while wrapper"
                 )
             body = body[0].body
+        elif context == "async":
+            if len(body) != 1 or not isinstance(body[0], ast.AsyncFunctionDef):
+                raise ValueError(
+                    f"{function.name}: an async template needs one async function wrapper"
+                )
+            body = body[0].body
         if not body:
             raise ValueError(f"{function.name}: empty template")
         for node in ast.walk(ast.Module(body=body, type_ignores=[])):

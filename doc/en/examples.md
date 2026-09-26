@@ -2,7 +2,8 @@
 
 The repository includes all 37 Python files for the supported hub families from the official
 [Pybricks Projects repository](https://github.com/pybricks/pybricks-projects).
-An additional Xbox adaptation for Technic 42109 brings the catalog to 38 files.
+Together with the 42109 Xbox adaptation and 31 programs from project pages,
+the catalog contains 69 Python files.
 Open a file using **File → Examples → pybricks** or **File → Open**. Select **All** in the
 library to find every component used by a program. The level filter limits new
 choices, never the blocks already in the document.
@@ -38,6 +39,15 @@ green hub button to stop**, then reconnect Studio to edit the program.
 See the [official Pybricks guide](https://pybricks.com/project/technic-42109-xbox/).
 
 ## Useful actions at each level
+
+The [website examples](../../examples/pybricks/website/README.md) add modern
+remote/Xbox programs for 42099, 42109, 42124, 42129, 42131, 42146 and 42160,
+the Inventor/SPIKE ball balancer, hub menus, and small input/motor tutorials.
+The crane needs two Technic hubs and Pybricks 4; its base and crane files run on
+different hubs. Camera projects require the external Pybricks Code vision host;
+Studio does not process camera data. These requirements are recorded per file.
+SPIKE Essential, Duplo and EV3 examples remain outside the supported hub scope.
+The beginner palette stays unchanged; task, radio and external-app blocks are Expert.
 
 **Beginner** adds four complete actions: transfer a conveyor part, draw a rectangle,
 turn one way and back, and operate a force-controlled gripper. These are ordinary

@@ -211,6 +211,90 @@ def qt_wait(predicate):
         QTest.qWait(20)
 
 
+@pytest.mark.parametrize("fail", [False, True])
+def test_qt_upload_reports_worker_output_progress_and_failure(
+    tmp_path, qt_app, monkeypatch, fail
+):
+    import asyncio
+    import sys
+    from threading import Event
+
+    from tqdm import tqdm
+
+    from pyblocks.pybricks.devices import HubInfo
+    from pyblocks.qt.app import Studio
+    from pyblocks.qt.console import capture_output
+
+    entered, release = Event(), Event()
+
+    class Connection:
+        def __init__(self, output, changed):
+            self.output, self.changed = output, changed
+
+        async def connect(self, *args):
+            self.changed(HubInfo(connected=True, transport="ble"))
+
+        async def stop(self):
+            pass
+
+        async def upload(self, path):
+            print("Compiling", path.name)
+            with tqdm(total=10, mininterval=0, ncols=40) as progress:
+                progress.update(5)
+                entered.set()
+                while not release.is_set():
+                    await asyncio.sleep(0.01)
+                if fail:
+                    raise OSError("Transfer interrupted")
+                progress.update(5)
+
+        async def run(self):
+            self.output(b"Hub: \xe2")
+            self.output(b"\x82\xac\n")
+
+        async def disconnect(self):
+            pass
+
+    monkeypatch.setattr("pyblocks.qt.robot.Connection", Connection)
+    path = tmp_path / "main.py"
+    path.write_text('print("Hub: €")\n')
+    window = Studio(path)
+    window.show()
+    previous = sys.stdout, sys.stderr
+    try:
+        with capture_output(window.append_output):
+            robot = window._robot()
+            future = robot.connect_hub(transport="ble")
+            qt_wait(lambda: future.done() and not window.hub_is_busy)
+            window.upload_hub()
+            qt_wait(lambda: entered.is_set() and "50%" in window.console.toPlainText())
+            assert window.console_dock.isVisible()
+            assert window.hub_progress.isVisible()
+            release.set()
+            qt_wait(lambda: robot.operation.done() and not window.hub_is_busy)
+            if not fail:
+                window.run_stored_hub()
+                qt_wait(
+                    lambda: "Hub: €" in window.console.toPlainText()
+                    and not window.hub_is_busy
+                )
+            assert not window.hub_progress.isVisible()
+        assert (sys.stdout, sys.stderr) == previous
+        text = window.console.toPlainText()
+        assert "Compiling main.py" in text
+        assert "Uploading main.py" in text
+        assert "\r" not in text and "  0%" not in text
+        assert ("Transfer interrupted" if fail else "Program uploaded.") in text
+        # A progress redraw split between writes must replace the whole old line.
+        window.append_output("long progress line\r")
+        window.append_output("done\r\n")
+        assert window.console.toPlainText().endswith("done\n")
+        assert "long progress line" not in window.console.toPlainText()
+    finally:
+        release.set()
+        window.close()
+
+
 @pytest.mark.parametrize(
     "model, ports", [("inventor", "ABCDEF"), ("boost", "ABCD"), ("technic", "ABCD")]
 )

@@ -508,7 +508,7 @@ locals are confined to the function. Modes are explicit and never converted
 silently. Generated programs need no PyBlocks runtime or decorators.
 
 Both decorators accept literal `level`, `icon`, `color`, and optional `kind`.
-Inline blocks additionally accept `names` and `context="loop"`. Difficulty is one
+Inline blocks additionally accept `names` and `context="loop"` or `context="async"`. Difficulty is one
 of beginner, intermediate, advanced, expert; all is only a filter. A color is a
 palette role or #RRGGBB. Defaults are intermediate, ▶, and the snippet palette.
 
@@ -523,7 +523,9 @@ and their previous descriptions.
 Input contracts live in parameter annotations. Created variables have annotated
 assignments in the body; result annotations describe actual returned values.
 `kind="statement"` keeps return as an instruction. `context="loop"` unwraps one
-while body for break/continue; control context is not a result type.
+while body for break/continue. `context="async"` unwraps an async function for
+await statements; compiler validation enforces the insertion context.
+Control context is not a result type.
 
 Undecorated functions in a format-2 module are shared helpers. Reachable helpers
 are emitted once after imports, retaining their authored Python names. Definitions
@@ -1197,6 +1199,14 @@ The exact wrapper API should remain thin and follow what the underlying Pybricks
 
 BLE/USB transport details stay inside this integration.
 
+The GUI captures process stdout/stderr for its lifetime through a queued Qt
+signal, including pybricksdev transfer progress from the hub worker. Carriage
+returns update a console line instead of accumulating terminal control characters.
+Upload/Run open the console; hub operations show an indeterminate activity bar
+until completion, cancellation or failure. Program stdout continues through the
+transport's public observable. Scratch and Hub and devices are tabified docks;
+switching an inactive tab must not record it as explicitly closed.
+
 ---
 
 ## 38. Virtual controls and physical controllers
@@ -1687,6 +1697,11 @@ while using bundled blocks for every device operation. Shared sequences become
 ordinary activity templates, not hidden per-example dependencies. All 37 Python files from the supported upstream families are cataloged at a pinned
 revision, with set-number filenames, dependencies and validation status. EV3 is
 excluded. Gelo remains a visible shared module; REPL/reference files retain their roles.
+Website project downloads and inline menu programs have a separate source
+inventory including exclusions, hashes, hardware requirements and attribution.
+Shared libraries stay beside importing programs; multi-hub crane programs are
+independent entry points, not import dependencies. Radio uses Pybricks 4; vision
+programs require an external host. The simulator does not claim either feature.
 Four prepared activities join Beginner; homing and steering centering start at
 Intermediate, with controller settings and background targets at Advanced.
 Check coverage without generic catch-all assignments, rebuild library fragments,

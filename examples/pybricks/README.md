@@ -1,8 +1,9 @@
 # LEGO set examples from Pybricks
 
-The catalog contains **38 Python files**: all 37 files in the BOOST, Robot Inventor,
+The catalog contains **69 Python files**: all 37 files in the BOOST, Robot Inventor,
 SPIKE Prime and Technic families of the pinned Pybricks Projects revision, plus
-a 42109 Xbox adaptation. The Projects repository does not include every example
+a 42109 Xbox adaptation and 31 [website programs](website/README.md).
+The Projects repository does not include every example
 published on the Pybricks website. EV3 and City hubs are outside this import.
 Filenames include the LEGO set number, not just
 the hub family. A matching hub alone does not imply a matching mechanism.
@@ -16,16 +17,19 @@ The Beginner palette remains twenty blocks.
 Sources: [Pybricks Projects](https://github.com/pybricks/pybricks-projects), revision
 `faaacce09ffe1d865fd1db241bcacb056234d597`, retrieved 2026-09-25.
 Copyright (c) 2018-2023 The Pybricks Authors. Original comments and author credits
-are retained under the [upstream MIT license](LICENSE.txt).
+are retained under the [upstream MIT license](LICENSE.txt) for repository imports.
+Website downloads have their own [source notice](website/NOTICE.md).
 [The machine-readable catalog](catalog.json) records original paths and SHA-256
 hashes, set numbers, dependencies, roles and validation for every file.
 The 42109 Xbox variant reuses the MIT Audi Xbox example with the motor configuration
 and loop timing from the [official 42109 guide](https://pybricks.com/project/technic-42109-xbox/).
 Its catalog entry distinguishes that guide from the code's upstream source.
 
-## Complete inventory
+## Repository inventory
 
-Every row is adapted, opens in the editor, rebuilds recognized blocks without
+The website additions and their equipment are listed in the [website inventory](website/README.md).
+The rows below cover the pinned repository and the earlier 42109 adaptation.
+Every program rebuilds recognized blocks without
 changing executable AST structure, and compiles for MPY ABI 5 and 6. These checks
 include the local Gelo dependency. Compilation does not establish firmware API
 availability, available hub memory, or physical behavior.
