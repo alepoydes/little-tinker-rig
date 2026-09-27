@@ -1,0 +1,202 @@
+{
+  "format": 1,
+  "id": "pybricks-inventor-51515-tricky",
+  "group": {
+    "en": "Pybricks · Robot Inventor",
+    "ru": "Pybricks · Robot Inventor"
+  },
+  "title": {
+    "en": "51515 · Tricky and soccer",
+    "ru": "51515 · Tricky и футбол"
+  },
+  "examples": {
+    "code/inventor_51515_tricky.py": "pybricks/inventor_51515_tricky.py",
+    "code/inventor_51515_tricky_soccer.py": "pybricks/inventor_51515_tricky_soccer.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "inventor_51515_tricky.py": "code/inventor_51515_tricky.py",
+    "inventor_51515_tricky_soccer.py": "code/inventor_51515_tricky_soccer.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "inventor_51515_tricky.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Compare Tricky’s basic movement and soccer programs.",
+        "ru": "Сравни обычную программу Tricky и игру в футбол."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "inventor_51515_tricky.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try the program",
+        "ru": "Попробуй: программа"
+      },
+      "goal": {
+        "en": "Compare Tricky’s basic movement and soccer programs.",
+        "ru": "Сравни обычную программу Tricky и игру в футбол."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_robot",
+        "pybricks/lessons/dance_turns",
+        "pybricks/sensors/create_ultrasonic_sensor",
+        "pybricks/sensors/distance_lights",
+        "pybricks/sensors/distance_lights_off",
+        "pybricks/sensors/wait_ms",
+        "python/basics/compare",
+        "python/basics/condition",
+        "python/basics/forever"
+      ],
+      "program": "inventor_51515_tricky.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "run-2",
+      "title": {
+        "en": "Try soccer",
+        "ru": "Попробуй: футбол"
+      },
+      "goal": {
+        "en": "Compare Tricky’s basic movement and soccer programs.",
+        "ru": "Сравни обычную программу Tricky и игру в футбол."
+      },
+      "description": {
+        "en": "en.md#run-2",
+        "ru": "ru.md#run-2"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/drive",
+        "pybricks/drive_options/coast_drive",
+        "pybricks/hub_feedback/animate_light",
+        "pybricks/hubs/beep",
+        "pybricks/hubs/display_off",
+        "pybricks/hubs/display_pattern",
+        "pybricks/hubs/light",
+        "pybricks/hubs/light_off",
+        "pybricks/motor_motion/motor_run_until_stalled_speed_then",
+        "pybricks/motor_motion/motor_track_target_target_angle",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_oriented_motor",
+        "pybricks/motors/turn_motor",
+        "pybricks/sensors/color",
+        "pybricks/sensors/distance_lights",
+        "pybricks/sensors/distance_lights_off",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/call_function",
+        "python/basics/compare",
+        "python/basics/condition",
+        "python/basics/define_function",
+        "python/basics/forever",
+        "python/basics/while_condition",
+        "python/data/store",
+        "python/objects/define_class"
+      ],
+      "program": "inventor_51515_tricky_soccer.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_robot",
+        "pybricks/drive/drive",
+        "pybricks/drive_options/coast_drive",
+        "pybricks/hub_feedback/animate_light",
+        "pybricks/hubs/beep",
+        "pybricks/hubs/display_off",
+        "pybricks/hubs/display_pattern",
+        "pybricks/hubs/light",
+        "pybricks/hubs/light_off",
+        "pybricks/lessons/dance_turns",
+        "pybricks/motor_motion/motor_run_until_stalled_speed_then",
+        "pybricks/motor_motion/motor_track_target_target_angle",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_oriented_motor",
+        "pybricks/motors/turn_motor",
+        "pybricks/sensors/color",
+        "pybricks/sensors/create_ultrasonic_sensor",
+        "pybricks/sensors/distance_lights",
+        "pybricks/sensors/distance_lights_off",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/call_function",
+        "python/basics/compare",
+        "python/basics/condition",
+        "python/basics/define_function",
+        "python/basics/forever",
+        "python/basics/while_condition",
+        "python/data/store",
+        "python/objects/define_class"
+      ],
+      "program": "inventor_51515_tricky.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

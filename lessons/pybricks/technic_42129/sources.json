@@ -1,0 +1,37 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "The Pybricks Team"
+  ],
+  "materials": [
+    {
+      "path": "sets/technic/42129-mercedes-benz-zetros/powered-up-remote/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/technic/42129-mercedes-benz-zetros/powered-up-remote/index.md",
+      "sha256": "b45f1fe7d55e07292a9b0d887a387d4e69dab27127df289fd916c23840b59633",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "technic_42129_zetros.py",
+      "set": 42129,
+      "source": "sets/technic/42129-mercedes-benz-zetros/powered-up-remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "d8f36c639f7e409ba7681c0091bd4f6d3f504ccb2e4b32c7852a041d3b5dfc6f",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

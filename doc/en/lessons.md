@@ -24,6 +24,28 @@ When an input is selected, the library offers suitable expressions. **← Back t
 whole blocks** (or Escape in the editor) returns to adding complete actions.
 Ordinary **File → New** creates a program outside the lesson, with the normal library.
 
+## Pybricks projects
+
+**File → Lessons → Pybricks · BOOST / Robot Inventor / SPIKE Prime / Technic**
+offers 23 project lessons with English/Russian goals, port tables, experiments and
+restricted block palettes. A lesson can contain several runnable variants and
+shared modules. **Open program** and program links select the indicated student
+copy; reopening it preserves edits. Stage navigation only changes the task.
+
+Programs, dependencies, descriptions, licenses and progress are saved together.
+Building instructions, photos and videos open as links in your browser; these
+links require internet. These lessons have no 3D assembly model. For keyboard
+projects, open **Console**, focus **Hub input** and enable **Send keys immediately**.
+Only that field sends keys; Escape returns to line input. In line mode, Enter
+sends the text and a carriage return. Input needs a physical Bluetooth/USB hub
+with its port monitor stopped. It is not a terminal or REPL emulator.
+
+Imported content is limited to the [MIT-licensed Projects repository](https://github.com/pybricks/pybricks-projects/blob/master/LICENSE).
+Additional [website projects](https://pybricks.com/project/) remain links because
+[the website terms](https://pybricks.com/legal/#pybricks-website-site-content)
+require permission to reproduce that content. Source attribution is included in
+every activity. EV3 is not included.
+
 ## Save and resume
 
 **Save** writes a portable `.pyblocks` archive containing ordinary Python programs,
@@ -127,6 +149,33 @@ English is the fallback. Descriptions are Markdown files; titles, goals and hint
 are localized strings. Optional `starter` names a Python file (at the lesson level
 it initializes a new project; at stage level it opens a new program explicitly).
 Optional `collection` names a normal block collection included in the lesson.
+
+Optional localized `group` creates a submenu in **File → Lessons**. Nested lesson
+directories are discovered recursively. A description may select an ATX Markdown
+section, for example `en.md#prepare`; preceding HTML anchors provide stable stage
+names across translations. Subheadings and fenced code remain in that section.
+
+For multi-file activities, `programs` maps workspace paths to lesson files and
+`main` names the initial Python program, for example:
+
+```json
+{
+  "programs": {"main.py": "code/main.py", "robot.py": "code/robot.py"},
+  "main": "main.py"
+}
+```
+
+A stage's optional `program` selects one of these Python files. Markdown links
+such as `[Open robot](program:robot.py)` open its editable copy without resetting
+it. Other files, such as licenses, may also be copied through `programs`.
+Local documentation links stay inside the lesson; HTTP(S) links open the browser.
+
+Bundled lessons may additionally map local paths to installed examples, e.g.
+`"examples": {"code/main.py": "pybricks/boost_17101_auto_builder.py"}`.
+Use `Lesson.load(directory).archive()` to produce a portable `.pylesson`: this
+materializes the referenced files and removes the `examples` mapping. Creating a
+student project does this automatically. The student's archive never depends on
+its author's installation or a future version of the example catalog.
 
 Stage `mode` is `program`, `control` or `assembly`; `assembly: [1, 7]` names an
 inclusive range of model steps. `check` is `manual` (default) or `devices`; a stage's

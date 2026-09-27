@@ -1,0 +1,36 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "The Pybricks Team"
+  ],
+  "materials": [
+    {
+      "path": "sets/boost/creative-toolbox/auto-builder/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/boost/creative-toolbox/auto-builder/index.md",
+      "sha256": "e830c699c29bd32f1ea3d527be5c13412e2fa957f75212a71f45015fc34b1038",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "boost_17101_auto_builder.py",
+      "set": 17101,
+      "source": "sets/boost/creative-toolbox/auto-builder/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "417e8fcaa15fcaf52ce3b8e9a040cb533ceb023ef892bb876bbfff85eac0f7a5",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "beginner activity / advanced details",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

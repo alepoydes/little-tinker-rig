@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from PySide6.QtCore import QObject, Qt, QThreadPool, QUrl
-from PySide6.QtGui import QAction, QIcon
+from PySide6.QtGui import QAction, QDesktopServices, QIcon
 from PySide6.QtWidgets import (
     QCheckBox,
     QFileDialog,
@@ -52,7 +52,10 @@ class Lessons(QObject):
         self.stages.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.stages.currentRowChanged.connect(self.select_stage)
         self.description = HelpBrowser()
-        self.description.setOpenExternalLinks(True)
+        self.description.setOpenLinks(False)
+        self.description.anchorClicked.connect(
+            lambda url: window.perform(lambda: self.follow_link(url))
+        )
         split.addWidget(self.stages)
         split.addWidget(self.description)
         split.setSizes([220, 850])
@@ -112,7 +115,7 @@ class Lessons(QObject):
         card_layout.addWidget(self.task)
         row = QHBoxLayout()
         self.open_lesson = QPushButton(N_("Open lesson"))
-        self.open_lesson.clicked.connect(lambda: window.set_mode(4))
+        self.open_lesson.clicked.connect(self.show_stage)
         row.addWidget(self.open_lesson)
         add_actions(row, ("start", "hint", "starter"))
         row.addStretch()
@@ -162,16 +165,62 @@ class Lessons(QObject):
         self.menu.clear()
         self.window._action(self.menu, tr("Open lesson or project…"), None, self.choose)
         self.menu.addSeparator()
-        for path in sorted(lessons_directory().glob("*/lesson.json")):
+        groups = {}
+        for path in sorted(lessons_directory().rglob("lesson.json")):
             try:
                 lesson = Lesson.load(path.parent)
             except (ValueError, OSError) as error:
                 self.window.error(str(error))
                 continue
             label = localized(lesson.data["title"], language())
+            group = localized(lesson.data.get("group", ""), language())
+            if group and group not in groups:
+                groups[group] = self.menu.addMenu(group)
             self.window._action(
-                self.menu, label, None, lambda p=path.parent: self.open(p)
+                groups.get(group, self.menu),
+                label,
+                None,
+                lambda p=path.parent: self.open(p),
             )
+
+    def open_program(self, name):
+        if (
+            self.current is None
+            or name not in self.current.lesson.data.get("programs", {})
+            or not name.endswith(".py")
+        ):
+            raise ValueError("Unknown lesson program")
+        self.window.open_document(resource(self.current.root / "programs", name))
+        self.window.set_mode(0)
+
+    def follow_link(self, url):
+        if url.scheme() == "program":
+            self.open_program(url.path())
+        elif url.scheme() == "lesson":
+            self.show_stage()
+        elif url.scheme() in ("http", "https"):
+            QDesktopServices.openUrl(url)
+        elif not url.path() and url.fragment():
+            self.description.scrollToAnchor(url.fragment())
+        else:
+            resolved = self.description.document().baseUrl().resolved(url)
+            if not resolved.isLocalFile():
+                return
+            path = Path(resolved.toLocalFile()).resolve()
+            if self.current and path.is_relative_to(self.current.lesson.root):
+                text = path.read_text(encoding="utf-8")
+                self.description.document().setBaseUrl(
+                    QUrl.fromLocalFile(str(path.parent) + "/")
+                )
+                self.description.setMarkdown(
+                    f"[{tr('Back to task')}](lesson:)\n\n{text}"
+                )
+                self.description.style_document()
+                self.description.scrollToAnchor(url.fragment())
+
+    def show_stage(self):
+        self.refresh()
+        self.window.set_mode(4)
 
     def choose(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -298,7 +347,14 @@ class Lessons(QObject):
         for hint in stage.get("hints", [])[:shown]:
             text += "\n\n---\n\n" + localized(hint, language())
         self.description.document().setBaseUrl(
-            QUrl.fromLocalFile(str(project.lesson.root) + "/")
+            QUrl.fromLocalFile(
+                str(
+                    project.lesson.file(
+                        localized(stage["description"], language()).partition("#")[0]
+                    ).parent
+                )
+                + "/"
+            )
         )
         self.description.setMarkdown(text)
         self.description.style_document()
@@ -342,7 +398,13 @@ class Lessons(QObject):
             target = {"program": 0, "control": 1, "assembly": 5}[
                 self.current.stage.get("mode", "program")
             ]
-            self.actions["start"].setVisible(mode != target)
+            program = self.current.stage.get("program")
+            other_program = (
+                program
+                and self.window.document_page.session.project.path
+                != resource(self.current.root / "programs", program)
+            )
+            self.actions["start"].setVisible(mode != target or bool(other_program))
 
     def toggle_guidance(self):
         if self.current:
@@ -367,6 +429,8 @@ class Lessons(QObject):
     def start_stage(self):
         if self.current:
             mode = self.current.stage.get("mode", "program")
+            if mode == "program" and "program" in self.current.stage:
+                self.open_program(self.current.stage["program"])
             if mode == "assembly" and self.assembly:
                 self.assembly_host.select_lesson()
                 steps = self.current.stage.get("assembly")
@@ -392,7 +456,7 @@ class Lessons(QObject):
         if name is None:
             self.status.setText(tr("This stage has no starter program."))
             return
-        source = resource(self.current.lesson.root, name).read_text(encoding="utf-8")
+        source = self.current.lesson.file(name).read_text(encoding="utf-8")
         self.new_program()
         page = self.window.document_page
         page.session.editor.commit(source, focus=0)

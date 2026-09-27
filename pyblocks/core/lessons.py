@@ -8,12 +8,16 @@ import hashlib
 import io
 import json
 import math
+import os
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from uuid import uuid4
 from zipfile import ZIP_DEFLATED, BadZipFile, ZipFile
+
+from pyblocks.documentation import section
+from pyblocks.examples import examples_directory
 
 from .paths import personal_collection, resource
 from .project import atomic_write
@@ -163,6 +167,36 @@ class Lesson:
         if not isinstance(data.get("id"), str) or not data["id"]:
             raise ValueError("A lesson needs an id")
         localized(data.get("title"))
+        localized(data.get("group", ""))
+        lesson = cls(root, data)
+        examples = data.get("examples", {})
+        if not isinstance(examples, dict):
+            raise ValueError("Lesson examples must map local paths to bundled files")
+        targets = set()
+        for name, origin in examples.items():
+            target = resource(root, name)
+            if target in targets or target.exists():
+                raise ValueError(f"A bundled example shadows a lesson file: {name}")
+            targets.add(target)
+            if not resource(examples_directory(), origin).is_file():
+                raise ValueError(f"Missing bundled example: {origin}")
+        programs = data.get("programs", {})
+        if not isinstance(programs, dict):
+            raise ValueError("Lesson programs must map workspace paths to lesson files")
+        targets = set()
+        for name, origin in programs.items():
+            target = resource(root / "programs", name)
+            if target in targets:
+                raise ValueError(f"Duplicate lesson program: {name}")
+            targets.add(target)
+            if not lesson.file(origin).is_file():
+                raise ValueError(f"Invalid lesson program: {name}")
+        if (programs or "main" in data) and (
+            not isinstance(data.get("main"), str) or data["main"] not in programs
+        ):
+            raise ValueError("Lesson main must name an included program")
+        if programs and not data["main"].endswith(".py"):
+            raise ValueError("Lesson main must be a Python program")
         stages = data.get("stages")
         if not isinstance(stages, list) or not stages:
             raise ValueError("A lesson needs at least one stage")
@@ -180,8 +214,7 @@ class Lesson:
             for name in (
                 description.values() if isinstance(description, dict) else [description]
             ):
-                if not resource(root, name).is_file():
-                    raise ValueError(f"Missing lesson material: {name}")
+                lesson.material(name)
             blocks = stage.get("blocks", [])
             if not isinstance(blocks, list) or not all(
                 isinstance(b, str) for b in blocks
@@ -201,8 +234,14 @@ class Lesson:
                     isinstance(v, str) for v in stage.get(key, [])
                 ):
                     raise ValueError(f"Stage {key} must be a list of names")
-            if "starter" in stage and not resource(root, stage["starter"]).is_file():
+            if "starter" in stage and not lesson.file(stage["starter"]).is_file():
                 raise ValueError("Missing starter program")
+            if "program" in stage and (
+                not isinstance(stage["program"], str)
+                or stage["program"] not in programs
+                or not stage["program"].endswith(".py")
+            ):
+                raise ValueError("A stage must name an included Python program")
             steps = stage.get("assembly")
             if steps is not None and (
                 not isinstance(steps, list)
@@ -214,7 +253,7 @@ class Lesson:
                     "Assembly ranges use inclusive, one-based step numbers"
                 )
         for key in ("robot", "starter", "collection"):
-            if key in data and not resource(root, data[key]).exists():
+            if key in data and not lesson.file(data[key]).exists():
                 raise ValueError(f"Missing lesson {key}: {data[key]}")
         if "robot" in data:
             robot = robot_description(resource(root, data["robot"]))
@@ -225,16 +264,33 @@ class Lesson:
             s.get("mode") == "assembly" or s.get("check") == "devices" for s in stages
         ):
             raise ValueError("Assembly and device checks need a robot description")
-        return cls(root, data)
+        return lesson
+
+    def file(self, name):
+        target = resource(self.root, name)
+        origin = self.data.get("examples", {}).get(name)
+        return resource(examples_directory(), origin) if origin else target
+
+    def material(self, name):
+        path, _, anchor = name.partition("#")
+        text = self.file(path).read_text(encoding="utf-8")
+        return section(text, anchor) if anchor else text
+
+    def archive(self):
+        # Resolve installed examples once. Portable archives never depend on the
+        # installed catalog, so updates cannot alter an existing student's lesson.
+        data = dict(self.data)
+        references = data.pop("examples", {})
+        additions = {name: self.file(name).read_bytes() for name in references}
+        additions["lesson.json"] = json.dumps(data, ensure_ascii=False, indent=2) + "\n"
+        return pack(self.root, additions)
 
     @property
     def stages(self):
         return self.data["stages"]
 
     def description(self, stage, language="en"):
-        return resource(self.root, localized(stage["description"], language)).read_text(
-            encoding="utf-8"
-        )
+        return self.material(localized(stage["description"], language))
 
 
 class StudentProject:
@@ -302,10 +358,13 @@ class StudentProject:
         try:
             if lesson_path.is_dir():
                 # Packing also rejects links, keeping imported materials self-contained.
-                extract(pack(lesson_path), root / "lesson")
+                extract(Lesson.load(lesson_path).archive(), root / "lesson")
             else:
                 extract(lesson_path.read_bytes(), root / "lesson")
             lesson = Lesson.load(root / "lesson")
+            if lesson.data.get("examples"):
+                extract(lesson.archive(), lesson.root)
+                lesson = Lesson.load(lesson.root)
             programs = root / "programs"
             programs.mkdir()
             source = (
@@ -315,20 +374,32 @@ class StudentProject:
                 if "starter" in lesson.data
                 else ""
             )
-            atomic_write(programs / "main.py", source)
+            main = lesson.data.get("main", "main.py")
+            for name, origin in lesson.data.get("programs", {}).items():
+                destination = resource(programs, name)
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(lesson.file(origin), destination)
+            if not (programs / main).exists():
+                atomic_write(programs / main, source)
             if "collection" in lesson.data:
-                write_json(
-                    programs / "main.py.pyblocks.json",
-                    {
-                        "format": 1,
-                        "scratch": [],
-                        "pins": {},
-                        "collections": ["../lesson/" + lesson.data["collection"]],
-                    },
-                )
+                collection = lesson.file(lesson.data["collection"])
+                for program in programs.rglob("*.py"):
+                    write_json(
+                        program.with_suffix(".py.pyblocks.json"),
+                        {
+                            "format": 1,
+                            "scratch": [],
+                            "pins": {},
+                            "collections": [
+                                Path(
+                                    os.path.relpath(collection, program.parent)
+                                ).as_posix()
+                            ],
+                        },
+                    )
             write_json(
                 root / "project.json",
-                {"format": 1, "id": uuid4().hex, "main": "programs/main.py"},
+                {"format": 1, "id": uuid4().hex, "main": "programs/" + main},
             )
             write_json(
                 root / "progress.json",

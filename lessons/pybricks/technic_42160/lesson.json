@@ -1,0 +1,227 @@
+{
+  "format": 1,
+  "id": "pybricks-technic-42160",
+  "group": {
+    "en": "Pybricks · Technic",
+    "ru": "Pybricks · Technic"
+  },
+  "title": {
+    "en": "42160 · Audi RS Q e-tron",
+    "ru": "42160 · Audi RS Q e-tron"
+  },
+  "examples": {
+    "code/technic_42160_audi_remote.py": "pybricks/technic_42160_audi_remote.py",
+    "code/technic_42160_audi_xbox_blocks.py": "pybricks/technic_42160_audi_xbox_blocks.py",
+    "code/technic_42160_audi_xbox_python.py": "pybricks/technic_42160_audi_xbox_python.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "technic_42160_audi_remote.py": "code/technic_42160_audi_remote.py",
+    "technic_42160_audi_xbox_blocks.py": "code/technic_42160_audi_xbox_blocks.py",
+    "technic_42160_audi_xbox_python.py": "code/technic_42160_audi_xbox_python.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "technic_42160_audi_remote.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Compare Powered Up remote and analog Xbox control.",
+        "ru": "Сравни пульт Powered Up и аналоговое управление Xbox."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "technic_42160_audi_remote.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try audi remote",
+        "ru": "Попробуй: пульт"
+      },
+      "goal": {
+        "en": "Compare Powered Up remote and analog Xbox control.",
+        "ru": "Сравни пульт Powered Up и аналоговое управление Xbox."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_clock",
+        "pybricks/drive/elapsed",
+        "pybricks/drive/reset_clock",
+        "pybricks/hub_measurements/hub_system_shutdown",
+        "pybricks/hubs/technic_hub",
+        "pybricks/motor_control/motor_control_limits_speed_acceleration",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_profiled_motor",
+        "pybricks/motors/reset_motor_angle",
+        "pybricks/motors/run_motor",
+        "pybricks/motors/target_background",
+        "pybricks/remote/create_remote",
+        "pybricks/sensors/wait_ms",
+        "python/basics/add_to",
+        "python/basics/assign",
+        "python/basics/both",
+        "python/basics/condition",
+        "python/basics/forever",
+        "python/data/contains"
+      ],
+      "program": "technic_42160_audi_remote.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "run-2",
+      "title": {
+        "en": "Try audi xbox blocks",
+        "ru": "Попробуй: Xbox: вариант из блоков"
+      },
+      "goal": {
+        "en": "Compare Powered Up remote and analog Xbox control.",
+        "ru": "Сравни пульт Powered Up и аналоговое управление Xbox."
+      },
+      "description": {
+        "en": "en.md#run-2",
+        "ru": "ru.md#run-2"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_car",
+        "pybricks/drive/power_car",
+        "pybricks/drive/steer_car",
+        "pybricks/motors/create_oriented_motor",
+        "python/basics/assign",
+        "python/basics/forever"
+      ],
+      "program": "technic_42160_audi_xbox_blocks.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "run-3",
+      "title": {
+        "en": "Try audi xbox python",
+        "ru": "Попробуй: Xbox: Python"
+      },
+      "goal": {
+        "en": "Compare Powered Up remote and analog Xbox control.",
+        "ru": "Сравни пульт Powered Up и аналоговое управление Xbox."
+      },
+      "description": {
+        "en": "en.md#run-3",
+        "ru": "ru.md#run-3"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_car",
+        "pybricks/drive/power_car",
+        "pybricks/drive/steer_car",
+        "pybricks/motors/create_oriented_motor",
+        "python/basics/assign",
+        "python/basics/forever",
+        "python/data/store"
+      ],
+      "program": "technic_42160_audi_xbox_python.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_car",
+        "pybricks/drive/create_clock",
+        "pybricks/drive/elapsed",
+        "pybricks/drive/power_car",
+        "pybricks/drive/reset_clock",
+        "pybricks/drive/steer_car",
+        "pybricks/hub_measurements/hub_system_shutdown",
+        "pybricks/hubs/technic_hub",
+        "pybricks/motor_control/motor_control_limits_speed_acceleration",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_oriented_motor",
+        "pybricks/motors/create_profiled_motor",
+        "pybricks/motors/reset_motor_angle",
+        "pybricks/motors/run_motor",
+        "pybricks/motors/target_background",
+        "pybricks/remote/create_remote",
+        "pybricks/sensors/wait_ms",
+        "python/basics/add_to",
+        "python/basics/assign",
+        "python/basics/both",
+        "python/basics/condition",
+        "python/basics/forever",
+        "python/data/contains",
+        "python/data/store"
+      ],
+      "program": "technic_42160_audi_remote.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

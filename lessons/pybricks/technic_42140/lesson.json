@@ -1,0 +1,193 @@
+{
+  "format": 1,
+  "id": "pybricks-technic-42140",
+  "group": {
+    "en": "Pybricks · Technic",
+    "ru": "Pybricks · Technic"
+  },
+  "title": {
+    "en": "42140 · Transformation vehicle",
+    "ru": "42140 · Машина-перевёртыш"
+  },
+  "examples": {
+    "code/technic_42140_transformation.py": "pybricks/technic_42140_transformation.py",
+    "code/technic_42140_transformation_flipped.py": "pybricks/technic_42140_transformation_flipped.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "technic_42140_transformation.py": "code/technic_42140_transformation.py",
+    "technic_42140_transformation_flipped.py": "code/technic_42140_transformation_flipped.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "technic_42140_transformation.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Compare tank-style and car-style control when the vehicle flips.",
+        "ru": "Сравни гусеничное и автомобильное управление при перевороте машины."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "technic_42140_transformation.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try transformation",
+        "ru": "Попробуй: управление гусеницами"
+      },
+      "goal": {
+        "en": "Compare tank-style and car-style control when the vehicle flips.",
+        "ru": "Сравни гусеничное и автомобильное управление при перевороте машины."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_clock",
+        "pybricks/drive/elapsed",
+        "pybricks/drive/reset_clock",
+        "pybricks/hub_measurements/hub_system_shutdown",
+        "pybricks/hubs/light",
+        "pybricks/hubs/technic_hub",
+        "pybricks/motor_control/motor_control_limits_speed_acceleration",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/run_motor",
+        "pybricks/remote/create_remote",
+        "pybricks/remote/remote_light",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/both",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/forever",
+        "python/data/contains",
+        "python/data/store"
+      ],
+      "program": "technic_42140_transformation.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "run-2",
+      "title": {
+        "en": "Try transformation flipped",
+        "ru": "Попробуй: движение и поворот"
+      },
+      "goal": {
+        "en": "Compare tank-style and car-style control when the vehicle flips.",
+        "ru": "Сравни гусеничное и автомобильное управление при перевороте машины."
+      },
+      "description": {
+        "en": "en.md#run-2",
+        "ru": "ru.md#run-2"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/hubs/technic_hub",
+        "pybricks/motors/acceleration",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_oriented_motor",
+        "pybricks/motors/run_motor",
+        "pybricks/remote/create_remote",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/either",
+        "python/basics/forever",
+        "python/data/contains",
+        "python/data/store"
+      ],
+      "program": "technic_42140_transformation_flipped.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_clock",
+        "pybricks/drive/elapsed",
+        "pybricks/drive/reset_clock",
+        "pybricks/hub_measurements/hub_system_shutdown",
+        "pybricks/hubs/light",
+        "pybricks/hubs/technic_hub",
+        "pybricks/motor_control/motor_control_limits_speed_acceleration",
+        "pybricks/motors/acceleration",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_oriented_motor",
+        "pybricks/motors/run_motor",
+        "pybricks/remote/create_remote",
+        "pybricks/remote/remote_light",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/both",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/either",
+        "python/basics/forever",
+        "python/data/contains",
+        "python/data/store"
+      ],
+      "program": "technic_42140_transformation.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "Gus Jansson"
+  ],
+  "materials": [
+    {
+      "path": "sets/mindstorms-robot-inventor/other-models/steerbot/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/mindstorms-robot-inventor/other-models/steerbot/index.md",
+      "sha256": "2305017648a59584d920fb4a49859da973fc1bc6713aa6384bf8735517aa6615",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "inventor_51515_steerbot.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/other-models/steerbot/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "947207fcdcf2bb019ab151fdb4afc33795505ba7c78fd25992e19dbfcff0277b",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

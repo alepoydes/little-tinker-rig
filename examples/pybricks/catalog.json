@@ -174,7 +174,9 @@
       ],
       "status": "adapted",
       "level": "expert",
-      "notes": []
+      "notes": [
+        "Fixed the obstacle turn condition to compare the sampled direction, allowing both left and right turns."
+      ]
     },
     {
       "file": "inventor_51515_gelo_template.py",

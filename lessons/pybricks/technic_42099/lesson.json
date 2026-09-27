@@ -1,0 +1,320 @@
+{
+  "format": 1,
+  "id": "pybricks-technic-42099",
+  "group": {
+    "en": "Pybricks · Technic",
+    "ru": "Pybricks · Technic"
+  },
+  "title": {
+    "en": "42099 · X-treme Off-Roader",
+    "ru": "42099 · Внедорожник X-treme"
+  },
+  "examples": {
+    "code/technic_42099_off_roader.py": "pybricks/technic_42099_off_roader.py",
+    "code/technic_42099_keyboard.py": "pybricks/technic_42099_keyboard.py",
+    "code/technic_42099_keyboard_monitor.py": "pybricks/technic_42099_keyboard_monitor.py",
+    "code/technic_42099_obstacle_avoidance.py": "pybricks/technic_42099_obstacle_avoidance.py",
+    "code/technic_42099_off_roader_remote.py": "pybricks/technic_42099_off_roader_remote.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "technic_42099_off_roader.py": "code/technic_42099_off_roader.py",
+    "technic_42099_keyboard.py": "code/technic_42099_keyboard.py",
+    "technic_42099_keyboard_monitor.py": "code/technic_42099_keyboard_monitor.py",
+    "technic_42099_obstacle_avoidance.py": "code/technic_42099_obstacle_avoidance.py",
+    "technic_42099_off_roader_remote.py": "code/technic_42099_off_roader_remote.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "technic_42099_off_roader.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Compare autonomous driving, keyboard, remote and obstacle detection.",
+        "ru": "Сравни автономную поездку, клавиатуру, пульт и обнаружение препятствий."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "technic_42099_off_roader.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try off roader",
+        "ru": "Попробуй: автономное движение"
+      },
+      "goal": {
+        "en": "Compare autonomous driving, keyboard, remote and obstacle detection.",
+        "ru": "Сравни автономную поездку, клавиатуру, пульт и обнаружение препятствий."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/motors/acceleration",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_profiled_motor",
+        "pybricks/motors/reset_motor_angle",
+        "pybricks/motors/run_motor",
+        "pybricks/motors/target_background",
+        "pybricks/motors/target_coast",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/define_function"
+      ],
+      "program": "technic_42099_off_roader.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "run-2",
+      "title": {
+        "en": "Try keyboard",
+        "ru": "Попробуй: клавиатура"
+      },
+      "goal": {
+        "en": "Compare autonomous driving, keyboard, remote and obstacle detection.",
+        "ru": "Сравни автономную поездку, клавиатуру, пульт и обнаружение препятствий."
+      },
+      "description": {
+        "en": "en.md#run-2",
+        "ru": "ru.md#run-2"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/keyboard/watch_input",
+        "pybricks/motor_motion/motor_run_target_speed_target_angle_wait_then",
+        "pybricks/motors/acceleration",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_profiled_motor",
+        "pybricks/motors/reset_motor_angle",
+        "pybricks/motors/run_motor",
+        "pybricks/motors/target_coast",
+        "python/basics/assign",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/forever",
+        "python/basics/opposite",
+        "python/data/contains",
+        "python/flow/continue_loop"
+      ],
+      "program": "technic_42099_keyboard.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "run-3",
+      "title": {
+        "en": "Try keyboard monitor",
+        "ru": "Попробуй: чтение клавиш"
+      },
+      "goal": {
+        "en": "Compare autonomous driving, keyboard, remote and obstacle detection.",
+        "ru": "Сравни автономную поездку, клавиатуру, пульт и обнаружение препятствий."
+      },
+      "description": {
+        "en": "en.md#run-3",
+        "ru": "ru.md#run-3"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/keyboard/ready_input",
+        "pybricks/keyboard/watch_input",
+        "python/basics/assign",
+        "python/basics/condition",
+        "python/basics/forever"
+      ],
+      "program": "technic_42099_keyboard_monitor.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "run-4",
+      "title": {
+        "en": "Try obstacle avoidance",
+        "ru": "Попробуй: обход препятствий"
+      },
+      "goal": {
+        "en": "Compare autonomous driving, keyboard, remote and obstacle detection.",
+        "ru": "Сравни автономную поездку, клавиатуру, пульт и обнаружение препятствий."
+      },
+      "description": {
+        "en": "en.md#run-4",
+        "ru": "ru.md#run-4"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/motors/acceleration",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_profiled_motor",
+        "pybricks/motors/reset_motor_angle",
+        "pybricks/motors/run_motor",
+        "pybricks/motors/target_background",
+        "pybricks/motors/target_coast",
+        "pybricks/sensors/boost_distance",
+        "pybricks/sensors/create_color_distance_sensor",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/condition_else",
+        "python/basics/define_function",
+        "python/basics/forever",
+        "python/basics/repeat"
+      ],
+      "program": "technic_42099_obstacle_avoidance.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "run-5",
+      "title": {
+        "en": "Try off roader remote",
+        "ru": "Попробуй: пульт"
+      },
+      "goal": {
+        "en": "Compare autonomous driving, keyboard, remote and obstacle detection.",
+        "ru": "Сравни автономную поездку, клавиатуру, пульт и обнаружение препятствий."
+      },
+      "description": {
+        "en": "en.md#run-5",
+        "ru": "ru.md#run-5"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/motors/acceleration",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_profiled_motor",
+        "pybricks/motors/run_motor",
+        "pybricks/motors/target_background",
+        "pybricks/remote/center_steering",
+        "pybricks/remote/create_remote",
+        "pybricks/sensors/wait_ms",
+        "python/basics/add_to",
+        "python/basics/assign",
+        "python/basics/condition",
+        "python/basics/forever",
+        "python/data/contains"
+      ],
+      "program": "technic_42099_off_roader_remote.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/keyboard/ready_input",
+        "pybricks/keyboard/watch_input",
+        "pybricks/motor_motion/motor_run_target_speed_target_angle_wait_then",
+        "pybricks/motors/acceleration",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_profiled_motor",
+        "pybricks/motors/reset_motor_angle",
+        "pybricks/motors/run_motor",
+        "pybricks/motors/target_background",
+        "pybricks/motors/target_coast",
+        "pybricks/remote/center_steering",
+        "pybricks/remote/create_remote",
+        "pybricks/sensors/boost_distance",
+        "pybricks/sensors/create_color_distance_sensor",
+        "pybricks/sensors/wait_ms",
+        "python/basics/add_to",
+        "python/basics/assign",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/define_function",
+        "python/basics/forever",
+        "python/basics/opposite",
+        "python/basics/repeat",
+        "python/data/contains",
+        "python/flow/continue_loop"
+      ],
+      "program": "technic_42099_off_roader.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

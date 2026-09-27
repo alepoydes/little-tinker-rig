@@ -1,0 +1,147 @@
+{
+  "format": 1,
+  "id": "pybricks-inventor-51515-exploration-rover",
+  "group": {
+    "en": "Pybricks · Robot Inventor",
+    "ru": "Pybricks · Robot Inventor"
+  },
+  "title": {
+    "en": "51515 · Exploration Rover",
+    "ru": "51515 · Исследовательский вездеход"
+  },
+  "examples": {
+    "code/inventor_51515_exploration_rover.py": "pybricks/inventor_51515_exploration_rover.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "inventor_51515_exploration_rover.py": "code/inventor_51515_exploration_rover.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "inventor_51515_exploration_rover.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Identify the rover motors and try one movement sequence.",
+        "ru": "Найди моторы вездехода и проверь одну последовательность движений."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "inventor_51515_exploration_rover.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try the program",
+        "ru": "Попробуй: программа"
+      },
+      "goal": {
+        "en": "Identify the rover motors and try one movement sequence.",
+        "ru": "Найди моторы вездехода и проверь одну последовательность движений."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_clock",
+        "pybricks/drive_options/coast_drive",
+        "pybricks/hub_display/hub_display_animate_frames_interval",
+        "pybricks/hub_feedback/hub_speaker_beep",
+        "pybricks/hubs/display_off",
+        "pybricks/hubs/icon",
+        "pybricks/motors/run_motor",
+        "pybricks/sensor_values/sensor_detectable_colors_colors",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/both",
+        "python/basics/call_function",
+        "python/basics/compare",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/define_function",
+        "python/basics/forever",
+        "python/basics/while_condition",
+        "python/data/contains",
+        "python/data/store",
+        "python/objects/define_class"
+      ],
+      "program": "inventor_51515_exploration_rover.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_clock",
+        "pybricks/drive_options/coast_drive",
+        "pybricks/hub_display/hub_display_animate_frames_interval",
+        "pybricks/hub_feedback/hub_speaker_beep",
+        "pybricks/hubs/display_off",
+        "pybricks/hubs/icon",
+        "pybricks/motors/run_motor",
+        "pybricks/sensor_values/sensor_detectable_colors_colors",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/both",
+        "python/basics/call_function",
+        "python/basics/compare",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/define_function",
+        "python/basics/forever",
+        "python/basics/while_condition",
+        "python/data/contains",
+        "python/data/store",
+        "python/objects/define_class"
+      ],
+      "program": "inventor_51515_exploration_rover.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

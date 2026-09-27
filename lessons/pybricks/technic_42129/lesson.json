@@ -1,0 +1,139 @@
+{
+  "format": 1,
+  "id": "pybricks-technic-42129",
+  "group": {
+    "en": "Pybricks · Technic",
+    "ru": "Pybricks · Technic"
+  },
+  "title": {
+    "en": "42129 · Zetros trial truck",
+    "ru": "42129 · Грузовик Zetros"
+  },
+  "examples": {
+    "code/technic_42129_zetros.py": "pybricks/technic_42129_zetros.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "technic_42129_zetros.py": "code/technic_42129_zetros.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "technic_42129_zetros.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Drive the truck and switch its differential lock.",
+        "ru": "Управляй грузовиком и блокировкой дифференциала."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "technic_42129_zetros.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try zetros",
+        "ru": "Попробуй: пульт"
+      },
+      "goal": {
+        "en": "Drive the truck and switch its differential lock.",
+        "ru": "Управляй грузовиком и блокировкой дифференциала."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/motors/acceleration",
+        "pybricks/motors/coast_motor",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_oriented_motor",
+        "pybricks/motors/motor_power",
+        "pybricks/motors/motor_target",
+        "pybricks/motors/reset_motor_angle",
+        "pybricks/motors/run_motor",
+        "pybricks/motors/target_background",
+        "pybricks/remote/create_remote",
+        "pybricks/remote/remote_light",
+        "pybricks/sensors/wait_ms",
+        "python/basics/add_to",
+        "python/basics/assign",
+        "python/basics/condition",
+        "python/basics/forever",
+        "python/data/contains"
+      ],
+      "program": "technic_42129_zetros.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/motors/acceleration",
+        "pybricks/motors/coast_motor",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_oriented_motor",
+        "pybricks/motors/motor_power",
+        "pybricks/motors/motor_target",
+        "pybricks/motors/reset_motor_angle",
+        "pybricks/motors/run_motor",
+        "pybricks/motors/target_background",
+        "pybricks/remote/create_remote",
+        "pybricks/remote/remote_light",
+        "pybricks/sensors/wait_ms",
+        "python/basics/add_to",
+        "python/basics/assign",
+        "python/basics/condition",
+        "python/basics/forever",
+        "python/data/contains"
+      ],
+      "program": "technic_42129_zetros.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

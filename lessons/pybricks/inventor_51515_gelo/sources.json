@@ -1,0 +1,193 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "The Lương-Phạm Family",
+    "The Pybricks Team"
+  ],
+  "materials": [
+    {
+      "path": "sets/mindstorms-robot-inventor/main-models/gelo/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/mindstorms-robot-inventor/main-models/gelo/index.md",
+      "sha256": "ffe91585a6847449ab905a6608fecc4fc979e99c9953cb020ff5f29ff5bb3805",
+      "license": "MIT"
+    },
+    {
+      "path": "sets/mindstorms-robot-inventor/main-models/gelo/basic.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/mindstorms-robot-inventor/main-models/gelo/basic.md",
+      "sha256": "63fd7f61036dec7c806cf2035eaa53d0542feca8a3011019bffdb0db7ea02d27",
+      "license": "MIT"
+    },
+    {
+      "path": "sets/mindstorms-robot-inventor/main-models/gelo/remote.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/mindstorms-robot-inventor/main-models/gelo/remote.md",
+      "sha256": "d8402361d864344f1f061cd51dea3d585885b8baac6cd0fb491b7a9c03ea5a03",
+      "license": "MIT"
+    },
+    {
+      "path": "sets/mindstorms-robot-inventor/main-models/gelo/repl.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/mindstorms-robot-inventor/main-models/gelo/repl.md",
+      "sha256": "23e8f52ef50423fd24617b6365c5607017c802979e7b32fe8898a93bc8de445a",
+      "license": "MIT"
+    },
+    {
+      "path": "sets/mindstorms-robot-inventor/main-models/gelo/roam.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/mindstorms-robot-inventor/main-models/gelo/roam.md",
+      "sha256": "f9abc6ca0d9ab0f091426d323fb004597502babf5d468229fe3722458c964378",
+      "license": "MIT"
+    },
+    {
+      "path": "sets/mindstorms-robot-inventor/main-models/gelo/template.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/mindstorms-robot-inventor/main-models/gelo/template.md",
+      "sha256": "9c68afd6a00e6ce7e1a9540dd1d226718a1106116c46db561355cb5846dc9130",
+      "license": "MIT"
+    },
+    {
+      "path": "sets/mindstorms-robot-inventor/main-models/gelo/tricks.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/mindstorms-robot-inventor/main-models/gelo/tricks.md",
+      "sha256": "f558d431e7068c7e94e844bd323e32eab86d1003ba02d2611b030c006379011b",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "inventor_51515_gelo.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/gelo/gelo.py",
+      "role": "library",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "a4755f7f296f296a8c39fdfe60a8471d981ab3dcbff3348326b7657debf9703a",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": [
+        "Shared Gelo classes, contexts and generators; imported by the other Gelo programs.",
+        "Added missing micropython.const import."
+      ]
+    },
+    {
+      "file": "inventor_51515_gelo_basic.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/gelo/gelo_basic.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "310cf35715a9d3d622c0a60dcfe610f7b7a4398351639cdef72154b9d4cba23e",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_gelo_remote.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/gelo/gelo_remote.py",
+      "role": "program",
+      "dependencies": [
+        "inventor_51515_gelo.py"
+      ],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "f8e86f0cdbf1101e44acfd53834bc137fa9f9d83c5b36dc63b90800492964773",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_gelo_repl.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/gelo/gelo_repl.py",
+      "role": "interactive",
+      "dependencies": [
+        "inventor_51515_gelo.py"
+      ],
+      "extra_hardware": [],
+      "sha256": "0fbfd282538ad90e9a5919666fdba27230814414421db42c76ca0cbf835de729",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": [
+        "Manual REPL session; initialization intentionally stays active."
+      ]
+    },
+    {
+      "file": "inventor_51515_gelo_roam.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/gelo/gelo_roam.py",
+      "role": "program",
+      "dependencies": [
+        "inventor_51515_gelo.py"
+      ],
+      "extra_hardware": [],
+      "sha256": "de98cdc765d05ad16770dfa1d6b396de4353a02ae91ae31608c687f30e41f48e",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": [
+        "Fixed the obstacle turn condition to compare the sampled direction, allowing both left and right turns."
+      ]
+    },
+    {
+      "file": "inventor_51515_gelo_template.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/gelo/gelo_template.py",
+      "role": "program",
+      "dependencies": [
+        "inventor_51515_gelo.py"
+      ],
+      "extra_hardware": [],
+      "sha256": "3217bf5429a03986e662c5ce6187c2c97da15cab3381a50ae0666dacce939923",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_gelo_tricks.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/gelo/gelo_tricks.py",
+      "role": "program",
+      "dependencies": [
+        "inventor_51515_gelo.py"
+      ],
+      "extra_hardware": [],
+      "sha256": "bf75c0adc1e14abfde0e6ebc2673b3e95ef57347f9c401acb48594a07bf71218",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

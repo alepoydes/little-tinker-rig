@@ -1,0 +1,36 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "The Lương-Phạm Family"
+  ],
+  "materials": [
+    {
+      "path": "sets/mindstorms-robot-inventor/main-models/mvp/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/mindstorms-robot-inventor/main-models/mvp/index.md",
+      "sha256": "8765a626c4a0ad80e02bf0c38203335b9a3dd3e36ed65749baf5ed78e3eb6752",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "inventor_51515_mvp.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/mvp/mvp-basic.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "56956e0b851f7ca41128c1b7e0309a50f71b8bbcccd9bc4cccaa2942e9986556",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

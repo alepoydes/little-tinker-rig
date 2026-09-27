@@ -1,0 +1,35 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "Dave Parker"
+  ],
+  "materials": [
+    {
+      "path": "sets/mindstorms-robot-inventor/other-models/block-flipper/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/mindstorms-robot-inventor/other-models/block-flipper/index.md",
+      "sha256": "2266290eb373c23254bbdafc57794cb7fb66e87b6e5ac4159d44ac5da51fb6c3",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "inventor_51515_block_flipper.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/other-models/block-flipper/block-flipper.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "662742c1055fd211a41eec87b65196642c6c38b397cd5919f706d92163629871",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

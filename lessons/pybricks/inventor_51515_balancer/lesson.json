@@ -1,0 +1,131 @@
+{
+  "format": 1,
+  "id": "pybricks-inventor-51515-balancer",
+  "group": {
+    "en": "Pybricks · Robot Inventor",
+    "ru": "Pybricks · Robot Inventor"
+  },
+  "title": {
+    "en": "51515 · Balancing robot",
+    "ru": "51515 · Балансирующий робот"
+  },
+  "examples": {
+    "code/inventor_51515_balancer.py": "pybricks/inventor_51515_balancer.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "inventor_51515_balancer.py": "code/inventor_51515_balancer.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "inventor_51515_balancer.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Study how motor feedback keeps a two-wheel robot upright.",
+        "ru": "Разберись, как обратная связь удерживает двухколёсного робота."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "inventor_51515_balancer.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try the program",
+        "ru": "Попробуй: программа"
+      },
+      "goal": {
+        "en": "Study how motor feedback keeps a two-wheel robot upright.",
+        "ru": "Разберись, как обратная связь удерживает двухколёсного робота."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_clock",
+        "pybricks/hubs/prime_hub",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_oriented_motor",
+        "pybricks/motors/motor_power",
+        "pybricks/motors/reset_motor_angle",
+        "pybricks/sensors/create_color_sensor",
+        "pybricks/sensors/wait_ms",
+        "python/basics/add_to",
+        "python/basics/assign",
+        "python/basics/forever",
+        "python/basics/quotient",
+        "python/data/set_item"
+      ],
+      "program": "inventor_51515_balancer.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_clock",
+        "pybricks/hubs/prime_hub",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_oriented_motor",
+        "pybricks/motors/motor_power",
+        "pybricks/motors/reset_motor_angle",
+        "pybricks/sensors/create_color_sensor",
+        "pybricks/sensors/wait_ms",
+        "python/basics/add_to",
+        "python/basics/assign",
+        "python/basics/forever",
+        "python/basics/quotient",
+        "python/data/set_item"
+      ],
+      "program": "inventor_51515_balancer.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

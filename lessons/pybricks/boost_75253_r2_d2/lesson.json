@@ -1,0 +1,147 @@
+{
+  "format": 1,
+  "id": "pybricks-boost-75253-r2-d2",
+  "group": {
+    "en": "Pybricks · BOOST",
+    "ru": "Pybricks · BOOST"
+  },
+  "title": {
+    "en": "75253 · R2-D2",
+    "ru": "75253 · R2-D2"
+  },
+  "examples": {
+    "code/boost_75253_r2_d2.py": "pybricks/boost_75253_r2_d2.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "boost_75253_r2_d2.py": "code/boost_75253_r2_d2.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "boost_75253_r2_d2.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Make R2-D2 move, turn, and return to a stable standing position.",
+        "ru": "Научи R2-D2 ехать, поворачивать и возвращаться в устойчивое положение."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "boost_75253_r2_d2.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try the program",
+        "ru": "Попробуй: программа"
+      },
+      "goal": {
+        "en": "Make R2-D2 move, turn, and return to a stable standing position.",
+        "ru": "Научи R2-D2 ехать, поворачивать и возвращаться в устойчивое положение."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/straight",
+        "pybricks/drive/turn",
+        "pybricks/drive_options/coast_drive",
+        "pybricks/drive_options/drive_settings_saved",
+        "pybricks/drive_options/drive_settings_straight_speed_straight_acceleration",
+        "pybricks/hubs/move_hub",
+        "pybricks/motor_motion/motor_run_angle_speed_rotation_angle_wait",
+        "pybricks/motors/turn_motor",
+        "pybricks/sensors/create_color_distance_sensor",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/call_function",
+        "python/basics/call_value",
+        "python/basics/condition",
+        "python/basics/define_function",
+        "python/basics/display",
+        "python/basics/opposite",
+        "python/basics/repeat",
+        "python/basics/return_value",
+        "python/flow/choose_value",
+        "python/flow/handle_error"
+      ],
+      "program": "boost_75253_r2_d2.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/straight",
+        "pybricks/drive/turn",
+        "pybricks/drive_options/coast_drive",
+        "pybricks/drive_options/drive_settings_saved",
+        "pybricks/drive_options/drive_settings_straight_speed_straight_acceleration",
+        "pybricks/hubs/move_hub",
+        "pybricks/motor_motion/motor_run_angle_speed_rotation_angle_wait",
+        "pybricks/motors/turn_motor",
+        "pybricks/sensors/create_color_distance_sensor",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/call_function",
+        "python/basics/call_value",
+        "python/basics/condition",
+        "python/basics/define_function",
+        "python/basics/display",
+        "python/basics/opposite",
+        "python/basics/repeat",
+        "python/basics/return_value",
+        "python/flow/choose_value",
+        "python/flow/handle_error"
+      ],
+      "program": "boost_75253_r2_d2.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

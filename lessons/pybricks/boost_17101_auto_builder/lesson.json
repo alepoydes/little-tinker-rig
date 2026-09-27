@@ -1,0 +1,117 @@
+{
+  "format": 1,
+  "id": "pybricks-boost-17101-auto-builder",
+  "group": {
+    "en": "Pybricks · BOOST",
+    "ru": "Pybricks · BOOST"
+  },
+  "title": {
+    "en": "17101 · Auto Builder",
+    "ru": "17101 · Автоматический сборщик"
+  },
+  "examples": {
+    "code/boost_17101_auto_builder.py": "pybricks/boost_17101_auto_builder.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "boost_17101_auto_builder.py": "code/boost_17101_auto_builder.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "boost_17101_auto_builder.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Build a figure by moving the conveyor and the lifting arm.",
+        "ru": "Собери фигурку с помощью конвейера и подъёмного рычага."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "boost_17101_auto_builder.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try the program",
+        "ru": "Попробуй: программа"
+      },
+      "goal": {
+        "en": "Build a figure by moving the conveyor and the lifting arm.",
+        "ru": "Собери фигурку с помощью конвейера и подъёмного рычага."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/lessons/conveyor_transfer",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/home_motor",
+        "pybricks/motors/motor_target",
+        "python/basics/assign",
+        "python/flow/for_each"
+      ],
+      "program": "boost_17101_auto_builder.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/lessons/conveyor_transfer",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/home_motor",
+        "pybricks/motors/motor_target",
+        "python/basics/assign",
+        "python/flow/for_each"
+      ],
+      "program": "boost_17101_auto_builder.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

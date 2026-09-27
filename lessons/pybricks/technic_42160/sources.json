@@ -1,0 +1,86 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "Geoff Stearns",
+    "The Pybricks Team"
+  ],
+  "materials": [
+    {
+      "path": "sets/technic/42160-audi-rs-q-e-tron/powered-up-remote/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/technic/42160-audi-rs-q-e-tron/powered-up-remote/index.md",
+      "sha256": "8757b9a5fdfe4ec3a5b19eecc58cfa093bd772e66697bdcb588738390654d7ce",
+      "license": "MIT"
+    },
+    {
+      "path": "sets/technic/42160-audi-rs-q-e-tron/xbox-controller/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/technic/42160-audi-rs-q-e-tron/xbox-controller/index.md",
+      "sha256": "b17dc814e5969353cc52272726320aca17174677418ad8deb1821d1a42f061f8",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "technic_42160_audi_remote.py",
+      "set": 42160,
+      "source": "sets/technic/42160-audi-rs-q-e-tron/powered-up-remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "7e912212df2f961d829bce33e5cef8bcd51b1795276ba9fab281a669168b6966",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": [
+        "Created the missing TechnicHub instance used by inactivity shutdown."
+      ]
+    },
+    {
+      "file": "technic_42160_audi_xbox_blocks.py",
+      "set": 42160,
+      "source": "sets/technic/42160-audi-rs-q-e-tron/xbox-controller/audi_blocks.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Bluetooth Xbox controller; Pybricks 3.5+"
+      ],
+      "sha256": "3ad7127da55175f825c603f635f30eed7b2418b7ff558e71300d178117fc50b0",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-controller"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "technic_42160_audi_xbox_python.py",
+      "set": 42160,
+      "source": "sets/technic/42160-audi-rs-q-e-tron/xbox-controller/audi_python.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Bluetooth Xbox controller; Pybricks 3.5+"
+      ],
+      "sha256": "2a704547abfb8ffe1626596f3939751a55c133c3dbafba5023efe45467fe66c3",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-controller"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

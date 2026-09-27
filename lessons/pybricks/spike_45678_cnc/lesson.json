@@ -1,0 +1,111 @@
+{
+  "format": 1,
+  "id": "pybricks-spike-45678-cnc",
+  "group": {
+    "en": "Pybricks · SPIKE Prime",
+    "ru": "Pybricks · SPIKE Prime"
+  },
+  "title": {
+    "en": "45678 · CNC drawing machine",
+    "ru": "45678 · Чертёжный станок"
+  },
+  "examples": {
+    "code/spike_45678_cnc.py": "pybricks/spike_45678_cnc.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "spike_45678_cnc.py": "code/spike_45678_cnc.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "spike_45678_cnc.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Draw a rectangle with two motor axes.",
+        "ru": "Нарисуй прямоугольник с помощью двух моторных осей."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "spike_45678_cnc.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try the program",
+        "ru": "Попробуй: программа"
+      },
+      "goal": {
+        "en": "Draw a rectangle with two motor axes.",
+        "ru": "Нарисуй прямоугольник с помощью двух моторных осей."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/hubs/prime_hub",
+        "pybricks/lessons/draw_rectangle",
+        "pybricks/motors/create_motor"
+      ],
+      "program": "spike_45678_cnc.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/hubs/prime_hub",
+        "pybricks/lessons/draw_rectangle",
+        "pybricks/motors/create_motor"
+      ],
+      "program": "spike_45678_cnc.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

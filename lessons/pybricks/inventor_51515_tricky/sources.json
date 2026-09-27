@@ -1,0 +1,53 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "The Lương-Phạm Family"
+  ],
+  "materials": [
+    {
+      "path": "sets/mindstorms-robot-inventor/main-models/tricky/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/mindstorms-robot-inventor/main-models/tricky/index.md",
+      "sha256": "292087e026388ca7cfd487a790586eb86579cdab3213465034622a9aa2d7aa91",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "inventor_51515_tricky.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/tricky/tricky-basic.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "b34fffd9290fc298927c8146b736a1be4b781460ad50aecd52597073a3ac772c",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "beginner activity / advanced details",
+      "notes": []
+    },
+    {
+      "file": "inventor_51515_tricky_soccer.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/tricky/tricky-playing-soccer.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "b9a7bb16bd004a6075e897ded987575d0ed2d8275b63f98456c044cc01b41056",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

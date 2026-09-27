@@ -1,0 +1,37 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "The Pybricks Team"
+  ],
+  "materials": [
+    {
+      "path": "sets/technic/42131-cat-bulldozer/powered-up-remote/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/technic/42131-cat-bulldozer/powered-up-remote/index.md",
+      "sha256": "a11eb13f95486947e8c71f6820c0af8091b7d29aa9c79f21b7581dc193fff39d",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "technic_42131_bulldozer.py",
+      "set": 42131,
+      "source": "sets/technic/42131-cat-bulldozer/powered-up-remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "c15fbd7261ce53166eb82c16e8e08abf694a9fdd42798d3c02f8bba506a0e010",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

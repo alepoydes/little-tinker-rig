@@ -1,0 +1,35 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "Laurens Valk"
+  ],
+  "materials": [
+    {
+      "path": "sets/mindstorms-robot-inventor/fan-inventions/exploration-rover/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/mindstorms-robot-inventor/fan-inventions/exploration-rover/index.md",
+      "sha256": "fb389e7c20de17ceacf70846d75d4f9e03f3d17c3fc4a98827eb95628cadd44c",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "inventor_51515_exploration_rover.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/fan-inventions/exploration-rover/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "09c2099f7ada810078d8c9ff54bf9f98c5c1728a9ca3a9147f2ce922d208ba5f",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

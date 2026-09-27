@@ -1,0 +1,151 @@
+{
+  "format": 1,
+  "id": "pybricks-inventor-51515-steerbot",
+  "group": {
+    "en": "Pybricks · Robot Inventor",
+    "ru": "Pybricks · Robot Inventor"
+  },
+  "title": {
+    "en": "51515 · Steer Bot",
+    "ru": "51515 · Робот с рулевым управлением"
+  },
+  "examples": {
+    "code/inventor_51515_steerbot.py": "pybricks/inventor_51515_steerbot.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "inventor_51515_steerbot.py": "code/inventor_51515_steerbot.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "inventor_51515_steerbot.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Follow the edge of a line using steering and reflected light.",
+        "ru": "Следуй вдоль края линии с помощью руля и отражённого света."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "inventor_51515_steerbot.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try the program",
+        "ru": "Попробуй: программа"
+      },
+      "goal": {
+        "en": "Follow the edge of a line using steering and reflected light.",
+        "ru": "Следуй вдоль края линии с помощью руля и отражённого света."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/hubs/button_pressed",
+        "pybricks/hubs/prime_hub",
+        "pybricks/motor_control/motor_control_limits_speed_acceleration_torque",
+        "pybricks/motor_motion/motor_run_target_speed_target_angle_then",
+        "pybricks/motor_motion/motor_run_target_speed_target_angle_then_wait",
+        "pybricks/motor_motion/motor_track_target_target_angle",
+        "pybricks/motors/coast_motor",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/reset_motor_angle",
+        "pybricks/motors/run_motor",
+        "pybricks/sensors/create_color_sensor",
+        "pybricks/sensors/pressed",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/call_function",
+        "python/basics/compare",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/define_function",
+        "python/basics/forever",
+        "python/basics/opposite",
+        "python/basics/return_value",
+        "python/basics/while_condition"
+      ],
+      "program": "inventor_51515_steerbot.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/hubs/button_pressed",
+        "pybricks/hubs/prime_hub",
+        "pybricks/motor_control/motor_control_limits_speed_acceleration_torque",
+        "pybricks/motor_motion/motor_run_target_speed_target_angle_then",
+        "pybricks/motor_motion/motor_run_target_speed_target_angle_then_wait",
+        "pybricks/motor_motion/motor_track_target_target_angle",
+        "pybricks/motors/coast_motor",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/reset_motor_angle",
+        "pybricks/motors/run_motor",
+        "pybricks/sensors/create_color_sensor",
+        "pybricks/sensors/pressed",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/call_function",
+        "python/basics/compare",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/define_function",
+        "python/basics/forever",
+        "python/basics/opposite",
+        "python/basics/return_value",
+        "python/basics/while_condition"
+      ],
+      "program": "inventor_51515_steerbot.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "format": 1,
+  "id": "pybricks-inventor-51515-block-flipper",
+  "group": {
+    "en": "Pybricks · Robot Inventor",
+    "ru": "Pybricks · Robot Inventor"
+  },
+  "title": {
+    "en": "51515 · Block Flipper",
+    "ru": "51515 · Перекладывание кубиков"
+  },
+  "examples": {
+    "code/inventor_51515_block_flipper.py": "pybricks/inventor_51515_block_flipper.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "inventor_51515_block_flipper.py": "code/inventor_51515_block_flipper.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "inventor_51515_block_flipper.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Move two blocks between platforms with the four-motor arm.",
+        "ru": "Переложи два кубика между платформами четырёхмоторным манипулятором."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "inventor_51515_block_flipper.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try the program",
+        "ru": "Попробуй: программа"
+      },
+      "goal": {
+        "en": "Move two blocks between platforms with the four-motor arm.",
+        "ru": "Переложи два кубика между платформами четырёхмоторным манипулятором."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/hubs/prime_hub",
+        "pybricks/motor_control/motor_control_limits_speed_acceleration_torque",
+        "pybricks/motor_control/motor_control_target_tolerances_speed_position",
+        "pybricks/motor_motion/motor_run_angle_speed_rotation_angle_wait",
+        "pybricks/motor_motion/motor_run_target_speed_target_angle_wait_then",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/motor_power",
+        "pybricks/motors/motor_target",
+        "pybricks/motors/reset_motor_angle",
+        "pybricks/motors/target_background",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/call_function",
+        "python/basics/compare",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/define_function",
+        "python/basics/forever",
+        "python/basics/while_condition",
+        "python/data/store",
+        "python/numbers/absolute"
+      ],
+      "program": "inventor_51515_block_flipper.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/hubs/prime_hub",
+        "pybricks/motor_control/motor_control_limits_speed_acceleration_torque",
+        "pybricks/motor_control/motor_control_target_tolerances_speed_position",
+        "pybricks/motor_motion/motor_run_angle_speed_rotation_angle_wait",
+        "pybricks/motor_motion/motor_run_target_speed_target_angle_wait_then",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/motor_power",
+        "pybricks/motors/motor_target",
+        "pybricks/motors/reset_motor_angle",
+        "pybricks/motors/target_background",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/call_function",
+        "python/basics/compare",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/define_function",
+        "python/basics/forever",
+        "python/basics/while_condition",
+        "python/data/store",
+        "python/numbers/absolute"
+      ],
+      "program": "inventor_51515_block_flipper.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

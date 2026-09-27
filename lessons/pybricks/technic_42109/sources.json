@@ -1,0 +1,69 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "The Pybricks Team"
+  ],
+  "materials": [
+    {
+      "path": "sets/technic/42109_top_gear_rally_car/keyboard_remote/README.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/technic/42109_top_gear_rally_car/keyboard_remote/README.md",
+      "sha256": "bcbea67923a7178698707094c76091c8e3df982e33ca7c7a18df2423e9cadc6b",
+      "license": "MIT"
+    },
+    {
+      "path": "sets/technic/42160-audi-rs-q-e-tron/xbox-controller/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/technic/42160-audi-rs-q-e-tron/xbox-controller/index.md",
+      "sha256": "b17dc814e5969353cc52272726320aca17174677418ad8deb1821d1a42f061f8",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "technic_42109_keyboard.py",
+      "set": 42109,
+      "source": "sets/technic/42109_top_gear_rally_car/keyboard_remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "connected computer keyboard"
+      ],
+      "sha256": "62ddf8e1065bea55b5c21ef07755aceab6b08fd89c01ad072980a14ace2280a2",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": [
+        "Replaced experimental.getchar with the managed nonblocking keyboard helper."
+      ]
+    },
+    {
+      "file": "technic_42109_xbox.py",
+      "set": 42109,
+      "source": "sets/technic/42160-audi-rs-q-e-tron/xbox-controller/audi_blocks.py",
+      "reference": "https://pybricks.com/project/technic-42109-xbox/",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Bluetooth Xbox controller; Pybricks 3.5+"
+      ],
+      "sha256": "3ad7127da55175f825c603f635f30eed7b2418b7ff558e71300d178117fc50b0",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-controller"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": [
+        "Retargeted the MIT Audi Xbox example to the official 42109 configuration: steering B, one drive motor D, both clockwise.",
+        "Matches the 42109 control loop: steer first, read triggers twice, set power, wait 50 ms."
+      ]
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

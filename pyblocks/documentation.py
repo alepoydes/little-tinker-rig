@@ -29,3 +29,22 @@ def heading_anchors(text):
             counts[slug] = count + 1
             yield [slug if count == 0 else f"{slug}-{count}", *pending]
             pending = []
+
+
+def section(text, anchor):
+    """Select an ATX section with its subsections; ignore headings in code fences."""
+    anchors = iter(heading_anchors(text))
+    lines = text.splitlines(keepends=True)
+    start, level, fenced = None, 0, False
+    for index, line in enumerate(lines):
+        if line.lstrip().startswith(("```", "~~~")):
+            fenced = not fenced
+        elif not fenced and (match := re.match(r"^(#{1,6})\s+(.+?)\s*#*$", line)):
+            names = next(anchors)
+            if start is not None and len(match[1]) <= level:
+                return "".join(lines[start:index])
+            if anchor in names:
+                start, level = index, len(match[1])
+    if start is None:
+        raise ValueError(f"Missing Markdown section: {anchor}")
+    return "".join(lines[start:])

@@ -166,3 +166,33 @@ async def test_upload_uses_download_without_running_and_stored_run_sends_no_sour
         None, wait=False, print_output=False, line_handler=False
     )
     assert hub.download.await_count == 1
+
+
+@pytest.mark.asyncio
+async def test_console_input_serializes_writes_and_does_not_enter_monitor():
+    import asyncio
+
+    connection = Connection()
+    with pytest.raises(ValueError, match="Connect"):
+        await connection.write_input(b"go\r")
+    active, received = False, []
+
+    class Hub:
+        async def write(self, data):
+            nonlocal active
+            assert not active
+            active = True
+            await asyncio.sleep(0)
+            received.append(data)
+            active = False
+
+    connection.hub = Hub()
+    await asyncio.gather(connection.write_input(b"a"), connection.write_input(b"b"))
+    assert received == [b"a", b"b"]
+    async with connection._write_lock:
+        pending = asyncio.create_task(connection.write_input(b"unexpected\r"))
+        await asyncio.sleep(0)
+        connection._update(monitoring=True)
+    with pytest.raises(ValueError, match="Stop the port monitor"):
+        await pending
+    assert received == [b"a", b"b"]

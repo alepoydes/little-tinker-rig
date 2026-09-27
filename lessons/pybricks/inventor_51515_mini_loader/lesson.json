@@ -1,0 +1,163 @@
+{
+  "format": 1,
+  "id": "pybricks-inventor-51515-mini-loader",
+  "group": {
+    "en": "Pybricks · Robot Inventor",
+    "ru": "Pybricks · Robot Inventor"
+  },
+  "title": {
+    "en": "51515 · Mini Loader",
+    "ru": "51515 · Мини-погрузчик"
+  },
+  "examples": {
+    "code/inventor_51515_mini_loader.py": "pybricks/inventor_51515_mini_loader.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "inventor_51515_mini_loader.py": "code/inventor_51515_mini_loader.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "inventor_51515_mini_loader.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Drive the loader and operate its lifting mechanism with the remote.",
+        "ru": "Управляй погрузчиком и подъёмным механизмом с пульта."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "inventor_51515_mini_loader.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try the program",
+        "ru": "Попробуй: программа"
+      },
+      "goal": {
+        "en": "Drive the loader and operate its lifting mechanism with the remote.",
+        "ru": "Управляй погрузчиком и подъёмным механизмом с пульта."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_drive",
+        "pybricks/drive/drive",
+        "pybricks/drive_options/coast_drive",
+        "pybricks/hubs/light",
+        "pybricks/hubs/prime_hub",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_oriented_motor",
+        "pybricks/motors/motor_angle",
+        "pybricks/motors/motor_target",
+        "pybricks/motors/target_background",
+        "pybricks/remote/create_remote",
+        "pybricks/remote/remote_light",
+        "pybricks/sensors/create_ultrasonic_sensor",
+        "pybricks/sensors/distance_lights",
+        "pybricks/sensors/distance_lights_off",
+        "python/basics/add_to",
+        "python/basics/assign",
+        "python/basics/both",
+        "python/basics/call_function",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/define_function",
+        "python/basics/either",
+        "python/basics/forever",
+        "python/basics/quotient",
+        "python/basics/return_value",
+        "python/basics/while_condition",
+        "python/data/contains",
+        "python/numbers/remainder"
+      ],
+      "program": "inventor_51515_mini_loader.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_drive",
+        "pybricks/drive/drive",
+        "pybricks/drive_options/coast_drive",
+        "pybricks/hubs/light",
+        "pybricks/hubs/prime_hub",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_oriented_motor",
+        "pybricks/motors/motor_angle",
+        "pybricks/motors/motor_target",
+        "pybricks/motors/target_background",
+        "pybricks/remote/create_remote",
+        "pybricks/remote/remote_light",
+        "pybricks/sensors/create_ultrasonic_sensor",
+        "pybricks/sensors/distance_lights",
+        "pybricks/sensors/distance_lights_off",
+        "python/basics/add_to",
+        "python/basics/assign",
+        "python/basics/both",
+        "python/basics/call_function",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/define_function",
+        "python/basics/either",
+        "python/basics/forever",
+        "python/basics/quotient",
+        "python/basics/return_value",
+        "python/basics/while_condition",
+        "python/data/contains",
+        "python/numbers/remainder"
+      ],
+      "program": "inventor_51515_mini_loader.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

@@ -1842,6 +1842,18 @@ working directory belongs to the user data directory. Archives are atomic, detec
 external modifications and retain unfinished Python. Recovery retains archive
 save baselines; normal close removes private working copies.
 
+Bundled Pybricks lessons reuse licensed example programs through explicit file
+references; packaging resolves them into immutable lesson resources. The `programs`
+mapping creates independent student copies, including shared modules and licenses,
+and `main` selects the entry point. Named stage programs and `program:` document
+links reopen the existing copy, preserving unfinished edits. Localized Markdown
+sections provide stage descriptions without one file per short page. Lesson groups
+form submenus and nested lesson directories are discovered recursively.
+Only explicitly licensed repository material is reproduced; website-only content
+and heavy media remain external links. No assembly sequence is inferred from a
+project page. Console input supplies line or focused immediate-key input to a
+physical hub, serialized with other writes and unavailable during port monitoring.
+
 Stage navigation never edits program source or depends on completion. Previous
 and Next open neighboring descriptions whenever they exist. Opening a starter
 creates a new unsaved document in the current project; it never replaces another

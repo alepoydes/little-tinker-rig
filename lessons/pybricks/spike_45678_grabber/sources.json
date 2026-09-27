@@ -1,0 +1,36 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "The Lương-Phạm Family"
+  ],
+  "materials": [
+    {
+      "path": "sets/spike-prime/core-set/hand-controlled-grabber/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/spike-prime/core-set/hand-controlled-grabber/index.md",
+      "sha256": "c638820de424239aae23271d0e783a1676df8354c5dd88ff5cbbe029dab955d6",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "spike_45678_grabber.py",
+      "set": 45678,
+      "source": "sets/spike-prime/core-set/hand-controlled-grabber/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "0b8ea5c5f41c770351749c622d7fa86a610b2be7ab2ab673cd59507d0663608a",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "beginner activity / advanced details",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

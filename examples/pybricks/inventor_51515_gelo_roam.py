@@ -17,7 +17,7 @@ with Gelo() as gelo:
         # randomly turn left or right to avoid the obstruction
         direction = choice(["left", "right"])
 
-        if choice == "left":
+        if direction == "left":
             gelo.hub.display.icon(Icon.ARROW_LEFT)
             gelo.walk(steer=90, time=4000)
         else:

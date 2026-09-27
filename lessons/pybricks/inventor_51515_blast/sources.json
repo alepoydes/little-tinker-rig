@@ -1,0 +1,36 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "The Lương-Phạm Family"
+  ],
+  "materials": [
+    {
+      "path": "sets/mindstorms-robot-inventor/main-models/blast/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/mindstorms-robot-inventor/main-models/blast/index.md",
+      "sha256": "dcd94f04d5828de1b90c22675ff5feae885c689bdd9c3e7ee9d677b64c359011",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "inventor_51515_blast.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/main-models/blast/blast-basic.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "886acacbf9e1cab3889bec9a9fbbb3e940fb217bdae367bb70121285d9695371",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

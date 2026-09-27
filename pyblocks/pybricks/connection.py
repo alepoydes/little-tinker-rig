@@ -163,6 +163,12 @@ class Connection:
         async with self._write_lock:
             await self._connected().write(state.encode())
 
+    async def write_input(self, data: bytes) -> None:
+        async with self._write_lock:
+            if self.info.monitoring or self._monitor_requested:
+                raise ValueError("Stop the port monitor before sending program input")
+            await self._connected().write(data)
+
     async def disconnect(self) -> None:
         hub, self.hub = self.hub, None
         monitoring = self._monitor_requested

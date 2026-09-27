@@ -1,0 +1,36 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "The Pybricks Authors"
+  ],
+  "materials": [
+    {
+      "path": "sets/spike-prime/core-set/kiki_dog/README.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/spike-prime/core-set/kiki_dog/README.md",
+      "sha256": "3fbf554531a0ca8b53658d6eed784056ddf8a4fd8add4780d10e55c096dee265",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "spike_45678_kiki.py",
+      "set": 45678,
+      "source": "sets/spike-prime/core-set/kiki_dog/kiki_seeing_colors.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "a0a2bf629b43cbc21a47bcbc57b88af236ef3bbd2fce0f624b60896fd91d80ea",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "beginner activity / advanced details",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

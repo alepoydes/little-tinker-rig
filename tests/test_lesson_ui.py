@@ -318,3 +318,44 @@ def test_close_keeps_working_files_when_recovery_update_fails(
     finally:
         window.recovery.close()
         window.deleteLater()
+
+
+def test_named_program_links_preserve_drafts_and_stage_navigation(tmp_path, qt_app):
+    from PySide6.QtCore import QUrl
+
+    from pyblocks.qt.app import Studio
+
+    root = make_lesson(tmp_path)
+    (root / "first.py").write_text("first = 1\n")
+    (root / "second.py").write_text("second = 2\n")
+    (root / "LICENSE.txt").write_text("Lesson license")
+    data = json.loads((root / "lesson.json").read_text())
+    data.update(programs={n: n for n in ("first.py", "second.py")}, main="first.py")
+    data["stages"][0]["program"] = "first.py"
+    data["stages"][1]["program"] = "second.py"
+    (root / "lesson.json").write_text(json.dumps(data))
+    window = Studio(tmp_path / "plain.py")
+    try:
+        first = window.lessons.open(root)
+        lesson = window.lessons
+        first.change_mode(1)
+        first.code.setPlainText("if unfinished >\n")
+        lesson.select_stage(1)
+        assert window.document_page is first
+        lesson.follow_link(QUrl("program:second.py"))
+        assert window.document_page is not first
+        assert window.document_page.text == "second = 2\n"
+        assert window.document_page.lesson_project is first.lesson_project
+        lesson.select_stage(0)
+        assert lesson.actions["start"].isVisible()
+        lesson.start_stage()
+        assert window.document_page is first
+        assert first.text == "if unfinished >\n"
+        assert not lesson.actions["start"].isVisible()
+        lesson.follow_link(QUrl("LICENSE.txt"))
+        assert "Lesson license" in lesson.description.toPlainText()
+        lesson.follow_link(QUrl("lesson:"))
+        assert "Make the robot move." in lesson.description.toPlainText()
+    finally:
+        window.recovery.close()
+        window.deleteLater()

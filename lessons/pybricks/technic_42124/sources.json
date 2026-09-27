@@ -1,0 +1,38 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "Jorge Pereira"
+  ],
+  "materials": [
+    {
+      "path": "sets/technic/42124-off-road-buggy/powered-up-remote/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/technic/42124-off-road-buggy/powered-up-remote/index.md",
+      "sha256": "d3f2e94bc7734ba7692cd6aa5a6ea7fb0f9f9614581376bd8e6428de5eb1e23e",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "technic_42124_buggy.py",
+      "set": 42124,
+      "source": "sets/technic/42124-off-road-buggy/powered-up-remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "9653440debe4299b9171837bfe92bd0e8425789870014db0084edf0660a25f47",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "beginner activity / advanced details",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

@@ -1,0 +1,137 @@
+{
+  "format": 1,
+  "id": "pybricks-inventor-51515-blast",
+  "group": {
+    "en": "Pybricks · Robot Inventor",
+    "ru": "Pybricks · Robot Inventor"
+  },
+  "title": {
+    "en": "51515 · Blast",
+    "ru": "51515 · Blast"
+  },
+  "examples": {
+    "code/inventor_51515_blast.py": "pybricks/inventor_51515_blast.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "inventor_51515_blast.py": "code/inventor_51515_blast.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "inventor_51515_blast.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Follow Blast’s movement sequence and identify its sensor inputs.",
+        "ru": "Проследи последовательность движений Blast и найди используемые датчики."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "inventor_51515_blast.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try the program",
+        "ru": "Попробуй: программа"
+      },
+      "goal": {
+        "en": "Follow Blast’s movement sequence and identify its sensor inputs.",
+        "ru": "Проследи последовательность движений Blast и найди используемые датчики."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/hub_display/hub_display_orientation_up",
+        "pybricks/hubs/display_off",
+        "pybricks/hubs/display_pattern",
+        "pybricks/hubs/light",
+        "pybricks/hubs/light_off",
+        "pybricks/motor_motion/motor_run_angle_speed_rotation_angle_then_wait",
+        "pybricks/motors/stall_hold",
+        "pybricks/sensors/distance_lights",
+        "pybricks/sensors/distance_lights_off",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/call_function",
+        "python/basics/define_function",
+        "python/basics/repeat",
+        "python/data/store",
+        "python/objects/define_class"
+      ],
+      "program": "inventor_51515_blast.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/hub_display/hub_display_orientation_up",
+        "pybricks/hubs/display_off",
+        "pybricks/hubs/display_pattern",
+        "pybricks/hubs/light",
+        "pybricks/hubs/light_off",
+        "pybricks/motor_motion/motor_run_angle_speed_rotation_angle_then_wait",
+        "pybricks/motors/stall_hold",
+        "pybricks/sensors/distance_lights",
+        "pybricks/sensors/distance_lights_off",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/call_function",
+        "python/basics/define_function",
+        "python/basics/repeat",
+        "python/data/store",
+        "python/objects/define_class"
+      ],
+      "program": "inventor_51515_blast.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "Geoff Stearns"
+  ],
+  "materials": [
+    {
+      "path": "sets/technic/42140-app-controlled-transformation-vehicle/powered-up-remote/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/technic/42140-app-controlled-transformation-vehicle/powered-up-remote/index.md",
+      "sha256": "84f92d53c8e29fbe4bf827e894d06cd6fe3e7b29ce5751233941dda1e5ed91ab",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "technic_42140_transformation.py",
+      "set": 42140,
+      "source": "sets/technic/42140-app-controlled-transformation-vehicle/powered-up-remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "4bf161b675af31f2943d3a258693bf3ebf3cbf5f28ef7098cafd9695a8148e82",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "technic_42140_transformation_flipped.py",
+      "set": 42140,
+      "source": "sets/technic/42140-app-controlled-transformation-vehicle/powered-up-remote/main2.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "045e826c3374a1c8724a5b7d4b574efadce28393e2deaef4ee2746f61053ee1b",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

@@ -1,0 +1,171 @@
+{
+  "format": 1,
+  "id": "pybricks-technic-42114",
+  "group": {
+    "en": "Pybricks · Technic",
+    "ru": "Pybricks · Technic"
+  },
+  "title": {
+    "en": "42114 · Volvo articulated hauler",
+    "ru": "42114 · Самосвал Volvo"
+  },
+  "examples": {
+    "code/technic_42114_hauler.py": "pybricks/technic_42114_hauler.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "technic_42114_hauler.py": "code/technic_42114_hauler.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "technic_42114_hauler.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Explore steering, dumping and automatic/manual gear changes.",
+        "ru": "Исследуй руление, разгрузку и автоматическое/ручное переключение передач."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "technic_42114_hauler.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try hauler",
+        "ru": "Попробуй: самосвал"
+      },
+      "goal": {
+        "en": "Explore steering, dumping and automatic/manual gear changes.",
+        "ru": "Исследуй руление, разгрузку и автоматическое/ручное переключение передач."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive_options/coast_drive",
+        "pybricks/hub_feedback/hub_light_blink_color_durations",
+        "pybricks/hubs/light",
+        "pybricks/hubs/technic_hub",
+        "pybricks/motor_control/motor_control_limits_speed",
+        "pybricks/motor_control/motor_control_pid_kp_ki",
+        "pybricks/motors/coast_motor",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/motor_power",
+        "pybricks/motors/target_background",
+        "pybricks/motors/turn_motor",
+        "pybricks/motors/until_stalled",
+        "pybricks/remote/create_remote",
+        "pybricks/sensors/wait_ms",
+        "python/basics/add_to",
+        "python/basics/assign",
+        "python/basics/both",
+        "python/basics/call_function",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/define_function",
+        "python/basics/difference",
+        "python/basics/display",
+        "python/basics/equal",
+        "python/basics/forever",
+        "python/basics/opposite",
+        "python/basics/product",
+        "python/basics/return_value",
+        "python/basics/sum_values",
+        "python/basics/while_condition",
+        "python/data/contains",
+        "python/data/store",
+        "python/objects/define_class"
+      ],
+      "program": "technic_42114_hauler.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive_options/coast_drive",
+        "pybricks/hub_feedback/hub_light_blink_color_durations",
+        "pybricks/hubs/light",
+        "pybricks/hubs/technic_hub",
+        "pybricks/motor_control/motor_control_limits_speed",
+        "pybricks/motor_control/motor_control_pid_kp_ki",
+        "pybricks/motors/coast_motor",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/motor_power",
+        "pybricks/motors/target_background",
+        "pybricks/motors/turn_motor",
+        "pybricks/motors/until_stalled",
+        "pybricks/remote/create_remote",
+        "pybricks/sensors/wait_ms",
+        "python/basics/add_to",
+        "python/basics/assign",
+        "python/basics/both",
+        "python/basics/call_function",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/define_function",
+        "python/basics/difference",
+        "python/basics/display",
+        "python/basics/equal",
+        "python/basics/forever",
+        "python/basics/opposite",
+        "python/basics/product",
+        "python/basics/return_value",
+        "python/basics/sum_values",
+        "python/basics/while_condition",
+        "python/data/contains",
+        "python/data/store",
+        "python/objects/define_class"
+      ],
+      "program": "technic_42114_hauler.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

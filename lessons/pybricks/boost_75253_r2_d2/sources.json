@@ -1,0 +1,35 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "The Pybricks Team"
+  ],
+  "materials": [
+    {
+      "path": "sets/boost/droid-commander/r2-d2/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/boost/droid-commander/r2-d2/index.md",
+      "sha256": "7757ea2001319cb06401db91c18b9ba903f37a8d13477ee1236fcd00e42e1a74",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "boost_75253_r2_d2.py",
+      "set": 75253,
+      "source": "sets/boost/droid-commander/r2-d2/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "7caa9b221b0414f414ad2bc25ce31c629627167d07b63398d48dabd991c15ea4",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

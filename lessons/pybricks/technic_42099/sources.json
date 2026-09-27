@@ -1,0 +1,129 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "The Pybricks Team"
+  ],
+  "materials": [
+    {
+      "path": "sets/technic/42099-off-roader/driving/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/technic/42099-off-roader/driving/index.md",
+      "sha256": "ed00d1c4996dc30fdf291b32b13f5bebe8d80fc0b00426ec14181263c557a0a9",
+      "license": "MIT"
+    },
+    {
+      "path": "sets/technic/42099-off-roader/keyboard-remote/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/technic/42099-off-roader/keyboard-remote/index.md",
+      "sha256": "0975919e6a905f396d7e2b43c04321920819d29f8f05723325e8b1a97cda919d",
+      "license": "MIT"
+    },
+    {
+      "path": "sets/technic/42099-off-roader/obstacle-avoidance/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/technic/42099-off-roader/obstacle-avoidance/index.md",
+      "sha256": "514a3ba04cf3967b62084e17744cb9ea3d45ebe9e65c8f91f4a55882eabe3524",
+      "license": "MIT"
+    },
+    {
+      "path": "sets/technic/42099-off-roader/powered-up-remote/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/technic/42099-off-roader/powered-up-remote/index.md",
+      "sha256": "78f26f00c9c93db3b913da5cfaa14276fe9a1f71c863c814bd5b2c29d30f85fc",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "technic_42099_off_roader.py",
+      "set": 42099,
+      "source": "sets/technic/42099-off-roader/driving/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "a90d99de782578ddadc1eb80d25d18b29e4250aead22ecf4128b9e1c73ca3722",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "beginner activity / advanced details",
+      "notes": []
+    },
+    {
+      "file": "technic_42099_keyboard.py",
+      "set": 42099,
+      "source": "sets/technic/42099-off-roader/keyboard-remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "connected computer keyboard"
+      ],
+      "sha256": "31afbea8302aa608e715754663d145c1813d0aa1d2930e3f11259c7823f850fe",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "technic_42099_keyboard_monitor.py",
+      "set": 42099,
+      "source": "sets/technic/42099-off-roader/keyboard-remote/remote.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "connected computer keyboard"
+      ],
+      "sha256": "3ee041a449d03ad68c78524048a74c8819d54c22a0e2089910c7a04078b80b58",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "technic_42099_obstacle_avoidance.py",
+      "set": 42099,
+      "source": "sets/technic/42099-off-roader/obstacle-avoidance/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "a100590ba5b4f3a17801292e905afb817929ac848aa5def7be53733f44a71afc",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    },
+    {
+      "file": "technic_42099_off_roader_remote.py",
+      "set": 42099,
+      "source": "sets/technic/42099-off-roader/powered-up-remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "882342ec95ee036b2e5fb0098df49ca8e6f2313a18eb8a44d741227d2aa24aca",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "beginner activity / advanced details",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

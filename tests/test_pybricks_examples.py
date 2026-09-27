@@ -851,3 +851,38 @@ def test_hardware_operations_have_specific_palette_blocks():
             assert any(
                 m.span.start <= span.start and span.end <= m.span.end for m in matches
             ), (path.name, ast.unparse(node))
+
+
+@pytest.mark.parametrize("direction, steering", [("left", 90), ("right", -90)])
+def test_gelo_obstacle_turn_follows_the_sampled_direction(
+    monkeypatch, direction, steering
+):
+    from contextlib import nullcontext
+
+    movements = []
+
+    def walk(**values):
+        movements.append(values)
+        raise EndInputs
+
+    gelo = SimpleNamespace(
+        hub=SimpleNamespace(display=SimpleNamespace(icon=lambda value: None)),
+        walk_until=lambda condition: None,
+        walk=walk,
+    )
+    monkeypatch.setitem(
+        sys.modules,
+        "inventor_51515_gelo",
+        SimpleNamespace(Gelo=lambda: nullcontext(gelo)),
+    )
+    monkeypatch.setitem(
+        sys.modules, "urandom", SimpleNamespace(choice=lambda choices: direction)
+    )
+    monkeypatch.setitem(
+        sys.modules,
+        "pybricks.parameters",
+        SimpleNamespace(Icon=SimpleNamespace(ARROW_UP=0, ARROW_LEFT=1, ARROW_RIGHT=2)),
+    )
+    with pytest.raises(EndInputs):
+        exec((EXAMPLES / "inventor_51515_gelo_roam.py").read_text(), {})
+    assert movements == [{"steer": steering, "time": 4000}]

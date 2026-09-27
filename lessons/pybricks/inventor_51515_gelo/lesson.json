@@ -1,0 +1,382 @@
+{
+  "format": 1,
+  "id": "pybricks-inventor-51515-gelo",
+  "group": {
+    "en": "Pybricks · Robot Inventor",
+    "ru": "Pybricks · Robot Inventor"
+  },
+  "title": {
+    "en": "51515 · Gelo activities",
+    "ru": "51515 · Задания для Gelo"
+  },
+  "examples": {
+    "code/inventor_51515_gelo.py": "pybricks/inventor_51515_gelo.py",
+    "code/inventor_51515_gelo_basic.py": "pybricks/inventor_51515_gelo_basic.py",
+    "code/inventor_51515_gelo_remote.py": "pybricks/inventor_51515_gelo_remote.py",
+    "code/inventor_51515_gelo_repl.py": "pybricks/inventor_51515_gelo_repl.py",
+    "code/inventor_51515_gelo_roam.py": "pybricks/inventor_51515_gelo_roam.py",
+    "code/inventor_51515_gelo_template.py": "pybricks/inventor_51515_gelo_template.py",
+    "code/inventor_51515_gelo_tricks.py": "pybricks/inventor_51515_gelo_tricks.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "inventor_51515_gelo.py": "code/inventor_51515_gelo.py",
+    "inventor_51515_gelo_basic.py": "code/inventor_51515_gelo_basic.py",
+    "inventor_51515_gelo_remote.py": "code/inventor_51515_gelo_remote.py",
+    "inventor_51515_gelo_repl.py": "code/inventor_51515_gelo_repl.py",
+    "inventor_51515_gelo_roam.py": "code/inventor_51515_gelo_roam.py",
+    "inventor_51515_gelo_template.py": "code/inventor_51515_gelo_template.py",
+    "inventor_51515_gelo_tricks.py": "code/inventor_51515_gelo_tricks.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "inventor_51515_gelo_basic.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Explore walking, obstacle avoidance, tricks and remote control.",
+        "ru": "Исследуй ходьбу, обход препятствий, трюки и управление пультом."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "inventor_51515_gelo_basic.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try basic",
+        "ru": "Попробуй: основная программа"
+      },
+      "goal": {
+        "en": "Explore walking, obstacle avoidance, tricks and remote control.",
+        "ru": "Исследуй ходьбу, обход препятствий, трюки и управление пультом."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/hub_display/hub_display_orientation_up",
+        "pybricks/hubs/display_off",
+        "pybricks/hubs/display_pattern",
+        "pybricks/motor_motion/motor_run_time_speed_time_wait",
+        "pybricks/motors/motor_time",
+        "pybricks/motors/target_background",
+        "pybricks/sensors/distance_lights",
+        "pybricks/sensors/distance_lights_off",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/call_function",
+        "python/basics/define_function",
+        "python/basics/repeat",
+        "python/data/store",
+        "python/flow/for_each",
+        "python/objects/define_class"
+      ],
+      "program": "inventor_51515_gelo_basic.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "run-2",
+      "title": {
+        "en": "Try remote",
+        "ru": "Попробуй: пульт"
+      },
+      "goal": {
+        "en": "Explore walking, obstacle avoidance, tricks and remote control.",
+        "ru": "Исследуй ходьбу, обход препятствий, трюки и управление пультом."
+      },
+      "description": {
+        "en": "en.md#run-2",
+        "ru": "ru.md#run-2"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/hub_display/hub_display_pixel_row_column_brightness",
+        "pybricks/hubs/light",
+        "pybricks/remote/create_remote",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/both",
+        "python/basics/call_function",
+        "python/basics/call_value",
+        "python/basics/compare",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/define_function",
+        "python/basics/either",
+        "python/basics/equal",
+        "python/basics/forever",
+        "python/basics/return_value",
+        "python/data/append",
+        "python/data/contains",
+        "python/data/store",
+        "python/flow/for_each",
+        "python/objects/define_class",
+        "python/objects/next_value",
+        "python/objects/use_named_context",
+        "python/objects/yield_control",
+        "python/objects/yield_value"
+      ],
+      "program": "inventor_51515_gelo_remote.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "run-3",
+      "title": {
+        "en": "Try repl",
+        "ru": "Попробуй: командная строка"
+      },
+      "goal": {
+        "en": "Explore walking, obstacle avoidance, tricks and remote control.",
+        "ru": "Исследуй ходьбу, обход препятствий, трюки и управление пультом."
+      },
+      "description": {
+        "en": "en.md#run-3",
+        "ru": "ru.md#run-3"
+      },
+      "mode": "program",
+      "blocks": [
+        "python/basics/assign",
+        "python/basics/call_function"
+      ],
+      "program": "inventor_51515_gelo_repl.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "run-4",
+      "title": {
+        "en": "Try roam",
+        "ru": "Попробуй: обход препятствий"
+      },
+      "goal": {
+        "en": "Explore walking, obstacle avoidance, tricks and remote control.",
+        "ru": "Исследуй ходьбу, обход препятствий, трюки и управление пультом."
+      },
+      "description": {
+        "en": "en.md#run-4",
+        "ru": "ru.md#run-4"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/hubs/icon",
+        "python/basics/assign",
+        "python/basics/call_value",
+        "python/basics/condition_else",
+        "python/basics/define_function",
+        "python/basics/equal",
+        "python/basics/forever",
+        "python/basics/return_value",
+        "python/objects/use_named_context"
+      ],
+      "program": "inventor_51515_gelo_roam.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "run-5",
+      "title": {
+        "en": "Try template",
+        "ru": "Попробуй: своя программа"
+      },
+      "goal": {
+        "en": "Explore walking, obstacle avoidance, tricks and remote control.",
+        "ru": "Исследуй ходьбу, обход препятствий, трюки и управление пультом."
+      },
+      "description": {
+        "en": "en.md#run-5",
+        "ru": "ru.md#run-5"
+      },
+      "mode": "program",
+      "blocks": [
+        "python/basics/call_function",
+        "python/basics/call_value",
+        "python/objects/use_named_context"
+      ],
+      "program": "inventor_51515_gelo_template.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "run-6",
+      "title": {
+        "en": "Try tricks",
+        "ru": "Попробуй: трюки"
+      },
+      "goal": {
+        "en": "Explore walking, obstacle avoidance, tricks and remote control.",
+        "ru": "Исследуй ходьбу, обход препятствий, трюки и управление пультом."
+      },
+      "description": {
+        "en": "en.md#run-6",
+        "ru": "ru.md#run-6"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_clock",
+        "pybricks/hub_feedback/hub_speaker_beep",
+        "pybricks/hub_feedback/hub_speaker_beep_frequency",
+        "pybricks/hub_measurements/hub_imu_up",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/call_function",
+        "python/basics/call_value",
+        "python/basics/define_function",
+        "python/basics/forever",
+        "python/basics/return_value",
+        "python/basics/while_condition",
+        "python/data/set_item",
+        "python/objects/use_named_context"
+      ],
+      "program": "inventor_51515_gelo_tricks.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_clock",
+        "pybricks/hub_display/hub_display_orientation_up",
+        "pybricks/hub_display/hub_display_pixel_row_column_brightness",
+        "pybricks/hub_feedback/hub_speaker_beep",
+        "pybricks/hub_feedback/hub_speaker_beep_frequency",
+        "pybricks/hub_measurements/hub_imu_up",
+        "pybricks/hubs/display_off",
+        "pybricks/hubs/display_pattern",
+        "pybricks/hubs/icon",
+        "pybricks/hubs/light",
+        "pybricks/motor_motion/motor_run_time_speed_time_wait",
+        "pybricks/motors/motor_time",
+        "pybricks/motors/target_background",
+        "pybricks/remote/create_remote",
+        "pybricks/sensors/distance_lights",
+        "pybricks/sensors/distance_lights_off",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/both",
+        "python/basics/call_function",
+        "python/basics/call_value",
+        "python/basics/compare",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/define_function",
+        "python/basics/either",
+        "python/basics/equal",
+        "python/basics/forever",
+        "python/basics/repeat",
+        "python/basics/return_value",
+        "python/basics/while_condition",
+        "python/data/append",
+        "python/data/contains",
+        "python/data/set_item",
+        "python/data/store",
+        "python/flow/for_each",
+        "python/objects/define_class",
+        "python/objects/next_value",
+        "python/objects/use_named_context",
+        "python/objects/yield_control",
+        "python/objects/yield_value"
+      ],
+      "program": "inventor_51515_gelo_basic.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

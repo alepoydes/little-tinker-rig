@@ -1,0 +1,113 @@
+{
+  "format": 1,
+  "id": "pybricks-spike-45678-grabber",
+  "group": {
+    "en": "Pybricks · SPIKE Prime",
+    "ru": "Pybricks · SPIKE Prime"
+  },
+  "title": {
+    "en": "45678 · Hand-controlled grabber",
+    "ru": "45678 · Захват с ручным управлением"
+  },
+  "examples": {
+    "code/spike_45678_grabber.py": "pybricks/spike_45678_grabber.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "spike_45678_grabber.py": "code/spike_45678_grabber.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "spike_45678_grabber.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Use the force sensor to control a grabber.",
+        "ru": "Управляй захватом с помощью датчика силы."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "spike_45678_grabber.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try the program",
+        "ru": "Попробуй: программа"
+      },
+      "goal": {
+        "en": "Use the force sensor to control a grabber.",
+        "ru": "Управляй захватом с помощью датчика силы."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/hubs/prime_hub",
+        "pybricks/lessons/force_gripper",
+        "pybricks/motors/create_motor",
+        "pybricks/sensors/create_force_sensor"
+      ],
+      "program": "spike_45678_grabber.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/hubs/prime_hub",
+        "pybricks/lessons/force_gripper",
+        "pybricks/motors/create_motor",
+        "pybricks/sensors/create_force_sensor"
+      ],
+      "program": "spike_45678_grabber.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

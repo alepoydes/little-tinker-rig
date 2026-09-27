@@ -195,6 +195,11 @@ class Robot(QObject):
         if isinstance(self.connection, VirtualConnection):
             self.submit(self.connection.configure(port, kind, value))
 
+    def write_input(self, data):
+        if isinstance(self.connection, Connection) and self.info.connected:
+            if not self.operation or self.operation.done():
+                return self.submit(self.connection.write_input(data))
+
     def disconnect_hub(self):
         async def disconnect():
             if self.connection:

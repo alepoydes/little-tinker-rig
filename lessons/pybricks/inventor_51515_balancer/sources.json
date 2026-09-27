@@ -1,0 +1,37 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "The Pybricks Authors"
+  ],
+  "materials": [
+    {
+      "path": "sets/mindstorms-robot-inventor/other-models/balancer/README.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/mindstorms-robot-inventor/other-models/balancer/README.md",
+      "sha256": "01d4736416cd8913e537592103c61a39877b9d20deb8e216746010b9109ee57f",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "inventor_51515_balancer.py",
+      "set": 51515,
+      "source": "sets/mindstorms-robot-inventor/other-models/balancer/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "upright robot; physical balance calibration"
+      ],
+      "sha256": "7f70abf9671d599536e66434fb7cbf1e07c11028b8b437797ebe4df7b4ab0c71",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "expert",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

@@ -427,3 +427,36 @@ def test_qt_interrupts_pending_connection_before_disconnect(qt_app, monkeypatch)
     finally:
         robot.close()
     assert not robot.thread.is_alive()
+
+
+def test_console_line_and_immediate_keyboard_input(qt_app):
+    from PySide6.QtCore import Qt
+    from PySide6.QtGui import QKeySequence, QShortcut
+    from PySide6.QtTest import QTest
+
+    from pyblocks.qt.console import HubInput
+
+    widget = HubInput()
+    received, cancelled = [], []
+    widget.sent.connect(received.append)
+    shortcut = QShortcut(QKeySequence("Escape"), widget)
+    shortcut.activated.connect(lambda: cancelled.append(True))
+    widget.show()
+    widget.activateWindow()
+    widget.field.setFocus()
+    qt_app.processEvents()
+    try:
+        widget.field.setText("hello")
+        QTest.keyClick(widget.field, Qt.Key.Key_Return)
+        assert received == [b"hello\r"]
+        assert not widget.field.text()
+        widget.immediate.setChecked(True)
+        QTest.keyClicks(widget.field, "qa")
+        QTest.keyClick(widget.field, Qt.Key.Key_C, Qt.KeyboardModifier.ControlModifier)
+        assert received == [b"hello\r", b"q", b"a", b"\x03"]
+        QTest.keyClick(widget.field, Qt.Key.Key_Escape)
+        assert not widget.immediate.isChecked()
+        assert not cancelled
+        assert not widget.field.text()
+    finally:
+        widget.close()

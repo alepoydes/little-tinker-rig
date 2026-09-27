@@ -1,0 +1,37 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "Repkovsky"
+  ],
+  "materials": [
+    {
+      "path": "sets/technic/42114-volvo-articulated-hauler/powered-up-remote/index.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/technic/42114-volvo-articulated-hauler/powered-up-remote/index.md",
+      "sha256": "252919067724e6f52b223044d1fcca239c4daf54091723c21d69a57966c2e03a",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "technic_42114_hauler.py",
+      "set": 42114,
+      "source": "sets/technic/42114-volvo-articulated-hauler/powered-up-remote/main.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ],
+      "sha256": "eaf9a42ac5f99eb0dbf7a10c4249f22c9061eb51e2ef8d72f3af0e6ea76e8501",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6"
+      ],
+      "status": "adapted",
+      "level": "advanced",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

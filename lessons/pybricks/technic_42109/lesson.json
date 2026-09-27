@@ -1,0 +1,181 @@
+{
+  "format": 1,
+  "id": "pybricks-technic-42109",
+  "group": {
+    "en": "Pybricks · Technic",
+    "ru": "Pybricks · Technic"
+  },
+  "title": {
+    "en": "42109 · Top Gear Rally Car",
+    "ru": "42109 · Раллийная машина Top Gear"
+  },
+  "examples": {
+    "code/technic_42109_keyboard.py": "pybricks/technic_42109_keyboard.py",
+    "code/technic_42109_xbox.py": "pybricks/technic_42109_xbox.py",
+    "LICENSE.txt": "pybricks/LICENSE.txt"
+  },
+  "programs": {
+    "technic_42109_keyboard.py": "code/technic_42109_keyboard.py",
+    "technic_42109_xbox.py": "code/technic_42109_xbox.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "catalog.json": "sources.json",
+    "README.md": "en.md"
+  },
+  "main": "technic_42109_keyboard.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Prepare the model",
+        "ru": "Подготовь модель"
+      },
+      "goal": {
+        "en": "Control the car from the keyboard or an Xbox controller.",
+        "ru": "Управляй машиной с клавиатуры или Xbox-контроллера."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "program",
+      "blocks": [],
+      "program": "technic_42109_keyboard.py"
+    },
+    {
+      "id": "run-1",
+      "title": {
+        "en": "Try keyboard",
+        "ru": "Попробуй: клавиатура"
+      },
+      "goal": {
+        "en": "Control the car from the keyboard or an Xbox controller.",
+        "ru": "Управляй машиной с клавиатуры или Xbox-контроллера."
+      },
+      "description": {
+        "en": "en.md#run-1",
+        "ru": "ru.md#run-1"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/hubs/technic_hub",
+        "pybricks/motor_motion/motor_reset_angle",
+        "pybricks/motor_motion/motor_run_angle_speed_rotation_angle_then",
+        "pybricks/motor_motion/motor_run_target_speed_target_angle_then",
+        "pybricks/motors/coast_motor",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/motor_angle",
+        "pybricks/motors/motor_power",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/compare",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/either",
+        "python/basics/equal",
+        "python/basics/forever"
+      ],
+      "program": "technic_42109_keyboard.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "run-2",
+      "title": {
+        "en": "Try xbox",
+        "ru": "Попробуй: Xbox"
+      },
+      "goal": {
+        "en": "Control the car from the keyboard or an Xbox controller.",
+        "ru": "Управляй машиной с клавиатуры или Xbox-контроллера."
+      },
+      "description": {
+        "en": "en.md#run-2",
+        "ru": "ru.md#run-2"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_car",
+        "pybricks/drive/power_car",
+        "pybricks/drive/steer_car",
+        "pybricks/motors/create_oriented_motor",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/forever"
+      ],
+      "program": "technic_42109_xbox.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Predict, change, explain",
+        "ru": "Предскажи, измени, объясни"
+      },
+      "goal": {
+        "en": "Make one controlled change and explain its effect.",
+        "ru": "Сделай одно изменение и объясни его результат."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/create_car",
+        "pybricks/drive/power_car",
+        "pybricks/drive/steer_car",
+        "pybricks/hubs/technic_hub",
+        "pybricks/motor_motion/motor_reset_angle",
+        "pybricks/motor_motion/motor_run_angle_speed_rotation_angle_then",
+        "pybricks/motor_motion/motor_run_target_speed_target_angle_then",
+        "pybricks/motors/coast_motor",
+        "pybricks/motors/create_motor",
+        "pybricks/motors/create_oriented_motor",
+        "pybricks/motors/motor_angle",
+        "pybricks/motors/motor_power",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/compare",
+        "python/basics/condition",
+        "python/basics/condition_else",
+        "python/basics/either",
+        "python/basics/equal",
+        "python/basics/forever"
+      ],
+      "program": "technic_42109_keyboard.py",
+      "operations": [
+        "$ + ...",
+        "$ - ...",
+        "$ * ...",
+        "$ / ...",
+        "$ < ...",
+        "$ == ...",
+        "$ and ...",
+        "$ or ...",
+        "$(...)",
+        "$[...]"
+      ]
+    }
+  ]
+}

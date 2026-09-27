@@ -1,0 +1,36 @@
+{
+  "repository": "https://github.com/pybricks/pybricks-projects",
+  "revision": "faaacce09ffe1d865fd1db241bcacb056234d597",
+  "authors": [
+    "The Pybricks Authors"
+  ],
+  "materials": [
+    {
+      "path": "sets/spike-prime/core-set/cnc_machine/README.md",
+      "url": "https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/spike-prime/core-set/cnc_machine/README.md",
+      "sha256": "fb86caf7185fb06218188d8006b827c3d55ce690a3c28e8df844187cdaee70c2",
+      "license": "MIT"
+    }
+  ],
+  "programs": [
+    {
+      "file": "spike_45678_cnc.py",
+      "set": 45678,
+      "source": "sets/spike-prime/core-set/cnc_machine/basic_cnc_machine.py",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [],
+      "sha256": "affb49b2844a55062a36ff9e102f7f2562560994d03598d5a223df52e84e3948",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-motion"
+      ],
+      "status": "adapted",
+      "level": "beginner activity / advanced details",
+      "notes": []
+    }
+  ],
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+}

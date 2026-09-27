@@ -49,7 +49,7 @@ from pyblocks.pybricks.control import ControlState
 from pyblocks.pybricks.devices import HubInfo
 
 from .authoring import BlockEditor
-from .console import capture_output
+from .console import HubInput, capture_output
 from .controls import ControlsPage
 from .device import ConnectDialog, DevicePanel
 from .dialogs import EditDialog
@@ -265,6 +265,12 @@ class Studio(QMainWindow):
         self.runtime_panel = RuntimePanel(self)
         layout.addWidget(self.runtime_panel)
         layout.addWidget(self.console)
+        self.hub_input = HubInput()
+        self.hub_input.sent.connect(
+            lambda data: self.robot and self.robot.write_input(data)
+        )
+        self.hub_input.setEnabled(False)
+        layout.addWidget(self.hub_input)
         self.console_dock = self.dock(
             N_("Console"), console_page, Qt.DockWidgetArea.BottomDockWidgetArea
         )
@@ -1395,6 +1401,8 @@ class Studio(QMainWindow):
 
     def hub_busy(self, busy):
         self.hub_is_busy = busy
+        if busy:
+            self.hub_input.setEnabled(False)
         self.hub_progress.setVisible(busy)
         self.hub_button.setEnabled(not busy)
         self.run_action.setEnabled(
@@ -1414,6 +1422,12 @@ class Studio(QMainWindow):
         if info.error and info.error != self.hub_info.error:
             self.error(info.error)
         self.hub_info = info
+        self.hub_input.setEnabled(
+            info.connected
+            and info.transport in ("ble", "usb")
+            and not info.monitoring
+            and not self.hub_is_busy
+        )
         if hasattr(self, "lessons"):
             self.lessons.update_check()
         self.hub_button.setText(
