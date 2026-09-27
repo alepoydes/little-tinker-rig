@@ -46,7 +46,24 @@ uncached building resources need a connection.
 - **English and Russian:** switch the interface and its offline documentation
   together through **View → Language**.
 
+Switch to ordinary Python to edit the same program as text, with code completion
+and contextual help for function arguments.
+
+![The Python editor showing the arguments and documentation for Motor.run_angle](doc/en/images/python-editor.png)
+
+Inspect how a block works, or write your own definition with a live preview.
+
 ![A Python block definition with its live preview](doc/en/images/block-editor.png)
+
+Follow a robot's assembly in 3D, with instructions and a parts list for the
+current step. Here the SPIKE Prime rolling base is still under construction.
+
+![A partly assembled SPIKE Prime robot with step instructions and the required parts](doc/en/images/assembly.png)
+
+Assign motors to sticks and triggers in **Manual control**. The virtual hub shown
+here lets you explore the controls and port monitor without connected hardware.
+
+![Manual control with motor assignments and the virtual hub's port monitor](doc/en/images/controls.png)
 
 Hardware support varies by model and firmware. The virtual hub is a programming
 simulator, not a simulation of the robot's mechanics. Some examples require
