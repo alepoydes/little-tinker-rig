@@ -434,9 +434,6 @@ def test_catalog_has_unique_set_names_and_local_dependencies():
         ("technic_42160_audi_xbox_blocks.py", ("D", ("A", "B")), [6, 22], []),
         ("technic_42160_audi_xbox_python.py", ("D", ("A", "B")), [8, 16, 24, 32], []),
         ("technic_42109_xbox.py", ("B", ("D",)), [6, 22], [50, 50]),
-        ("website/technic_42099_xbox.py", ("C", ("A", "B")), [6, 22], [50, 50]),
-        ("website/technic_42124_xbox.py", ("B", ("A",)), [6, 22], [50, 50]),
-        ("website/technic_42160_xbox.py", ("D", ("B", "A")), [6, 22], [50, 50]),
     ],
 )
 def test_xbox_examples_preserve_input_sampling_and_commands(
@@ -487,59 +484,6 @@ def test_xbox_examples_preserve_input_sampling_and_commands(
     assert [
         dict(value)["milliseconds"] for label, value in trace if label == "wait"
     ] == waits
-
-
-def test_crane_coasts_when_radio_messages_disappear():
-    path = EXAMPLES / "website/technic_42146_crane.py"
-
-    def run(source):
-        with virtual_activity(path.stem) as (_, trace):
-            from pybricks import pupdevices
-
-            class Motor(pupdevices.Motor):
-                def stop(self):
-                    trace.append(("coast", self.port))
-                    super().stop()
-
-            class Radio:
-                def __init__(self, broadcast_channel, observe_channels):
-                    assert observe_channels == [5]
-                    self.values = iter((None, (10, -20, 30), None))
-
-                def observe(self, channel):
-                    assert channel == 5
-                    try:
-                        return next(self.values)
-                    except StopIteration:
-                        raise EndInputs from None
-
-            pupdevices.Motor = Motor
-            messaging = ModuleType("pybricks.messaging")
-            messaging.BLERadio = Radio
-            sys.modules["pybricks.messaging"] = messaging
-            with pytest.raises(EndInputs):
-                exec(source, {})
-            return trace
-
-    source = path.read_text()
-    trace = run(source)
-    assert run(rebuild(source, builtin_snippets())) == trace
-    commands = [
-        (label, dict(value)["speed"]) if label.endswith(".run") else (label, value)
-        for label, value in trace
-        if label.endswith(".run") or label == "coast"
-    ]
-    assert commands == [
-        ("coast", "A"),
-        ("coast", "D"),
-        ("coast", "B"),
-        ("A.run", 80),
-        ("D.run", -160),
-        ("B.run", 300),
-        ("coast", "A"),
-        ("coast", "D"),
-        ("coast", "B"),
-    ]
 
 
 @pytest.mark.parametrize("disconnect", [False, True], ids=["stop-button", "xbox-loss"])
@@ -718,26 +662,23 @@ def test_excavator_upper_rejects_stale_and_invalid_commands():
     assert snapshots[16:] == [stopped] * 8
 
 
-def test_website_inventory_accounts_for_sources_and_exclusions():
+def test_website_inventory_links_and_local_alternatives():
     inventory = json.loads((EXAMPLES / "website/catalog.json").read_text())
-    files = {item["file"]: item for item in CATALOG["examples"]}
-    included = set()
+    files = {item["file"] for item in CATALOG["examples"]}
     sources = set()
     for item in inventory["sources"]:
+        assert item["source"].startswith("https://pybricks.com/")
         assert item["source"] not in sources
         sources.add(item["source"])
-        if item["status"] == "included":
-            assert item["file"] in files
-            included.add(item["file"])
-            entry = files[item["file"]]
-            if entry["source"].startswith("https://"):
-                assert (entry["source"], entry["sha256"]) == (
-                    item["source"],
-                    item["sha256"],
-                )
-        else:
-            assert item["status"] == "excluded" and item["reason"]
-    assert {name for name in files if name.startswith("website/")} <= included
+        assert item["pages"]
+        assert all(
+            page.startswith("https://pybricks.com/project/") for page in item["pages"]
+        )
+        assert item["status"] in {"external", "excluded"}
+        if item["status"] == "excluded":
+            assert item["reason"]
+        if "local_alternative" in item:
+            assert item["local_alternative"] in files
 
 
 def test_keyboard_block_is_nonblocking_and_reads_one_character():

@@ -1,117 +1,131 @@
 # PyBlocks Studio
 
-A structural editor for ordinary Python, built for learning and robotics.
-The `.py` file remains the program; blocks and editing hints are derived from it.
+**Learn Python by building real programs with blocks.**
 
-One core serves the command-line interface, Textual terminal editor, and PySide6
-desktop application. The library provides Python and Pybricks templates, Scratch
-keeps unfinished fragments, and undo restores whole operations. Robotics and the
-graphical interfaces are optional dependencies.
+PyBlocks Studio is a desktop editor for learning Python and programming LEGO robots
+running [Pybricks](https://pybricks.com/). Blocks are an editable view of ordinary
+Python: the program stays a `.py` file, and you can switch between blocks and text
+as you learn. Your code, documentation and downloaded building resources stay on
+your computer.
 
-The desktop editor supports document tabs, Blocks / Python views, inline parameter
-editing, and a visible Scratch ribbon with drag-and-drop. English is the default
-language; **View → Language → Русский** switches both the interface and its offline
-guide to Russian. Existing language preferences are preserved. Block reference
-pages collect all templates in a group, with direct links from the editor. Library
-levels grow from 20 Beginner blocks through Intermediate, Advanced and Expert.
-Groups above Beginner start collapsed; All includes the full catalog. Prepared
-activities cover line following and LEGO remote control. See the [learning paths](doc/en/learning.md).
-The [adapted Pybricks examples](examples/pybricks/README.md) cover BOOST,
-Robot Inventor, SPIKE Prime and Technic, with reusable activities in the library.
-Focus and hover increase saturation and moderately darken colors. Drags keep a four-line
-colored preview, an origin marker and an insertion row; Escape cancels the gesture.
-Expressions expose their operands and operators. Function parameters, call arguments
-and logical operands support variable-length lists; user functions appear in the
-library, and known call errors are marked in place.
+> **Early alpha — a personal project used with my own children.**
+> I am sharing it early to find out whether this approach is useful to other
+> families and educators. Expect bugs, changing interfaces and incomplete hardware
+> coverage. Public use is at your own risk; keep copies of your programs and
+> supervise children when running real robots.
 
-**File → Examples** opens programs directly from the bundled directory tree. Unfinished
-Python can be saved and reopened; crash recovery restores open documents and
-Scratch. Runtime errors explain common failures and locate their blocks using
-the executed source snapshot, with a read-only view when the file has changed.
+![Python blocks, the library and Scratch in PyBlocks Studio](doc/en/images/editor.png)
 
-The [Block Editor](doc/en/block-editor.md) shows a live preview above Python
-definitions. Inspect built-in blocks, copy them into your personal collection, or
-create your own. Decorators define inline blocks or calls to shared helpers, with
-levels, icons, colors and editable names in the source. String annotations describe
-types and units. Invalid drafts stay separate from the working library.
+## Why this project exists
 
-Virtual Inventor/Prime, BOOST, and Technic profiles support learning without a
-robot. Physical connections target hubs running Pybricks firmware. The window
-also includes a console and an Xbox-style controller with motor assignments. Upload
-without running, run stored programs, and install Pybricks or restore compatible
-LEGO firmware through the desktop [firmware dialog](doc/en/robotics.md#installing-and-restoring-firmware).
+I want children to start with Python while getting the help that makes block
+editors approachable: discoverable actions, editable parameters and fewer syntax
+mistakes. The Beginner library starts small. Intermediate, Advanced and Expert
+levels gradually expose more control, and useful robot actions can be explored
+through their Python definitions.
 
-## Quick start
+The goals are a smooth path from blocks to text, a comfortable desktop workspace,
+and useful offline operation. Editing, bundled help, virtual hubs and saved
+projects work without an internet connection. External videos, downloads and
+uncached building resources need a connection.
 
-```sh
-uv sync --extra qt
-uv run --extra qt pyblocks-qt
-```
+## What you can try today
 
-Start with an empty document, or open **File → Examples → first.py**. The first
-Save of a new document asks for its name and folder. The
-[first lesson](doc/en/tutorial/first.md#from-an-empty-document) builds a repeating
-greeting from library blocks and runs it without a physical robot.
+- **Blocks and Python:** drag blocks, edit expressions and parameters, use code
+  completion, keep unfinished fragments in Scratch, and undo whole operations.
+- **Your own blocks:** inspect built-in definitions or write Python definitions
+  with a live preview, editable arguments, icons, colors and learning levels.
+- **Robots:** connect to Pybricks hubs over Bluetooth or supported USB connections,
+  upload and run programs, read console output, inspect ports, and install or
+  restore supported firmware. Target families are SPIKE Prime / Robot Inventor,
+  BOOST and Technic. Virtual hubs are available for trying basic programs.
+- **Optional lessons:** open activities, track progress, and use 3D building views
+  where a model is available. Source credits and links to original building
+  instructions are retained. Downloaded models and parts are cached outside the
+  repository.
+- **English and Russian:** switch the interface and its offline documentation
+  together through **View → Language**.
 
-Terminal editor: `uv run --extra tui pyblocks-tui examples/first.py`.
-Command line: `uv run pyblocks inspect examples/first.py`.
+![A Python block definition with its live preview](doc/en/images/block-editor.png)
 
-![PyBlocks Studio: library, program, and Scratch](doc/en/images/editor.png)
+Hardware support varies by model and firmware. The virtual hub is a programming
+simulator, not a simulation of the robot's mechanics. Some examples require
+controllers, multiple hubs or devices that it cannot simulate. See the
+[robotics guide](doc/en/robotics.md) and [example requirements](doc/en/examples.md).
 
-To run a program, choose **Connect hub → Virtual hub**, select a model, and press
-**F5**. From the terminal:
+## Try it from source
+
+Clone or download this repository and open a terminal in its directory. Install
+[uv](https://docs.astral.sh/uv/getting-started/installation/), then run:
 
 ```sh
-uv run pyblocks run examples/motor.py --transport virtual --model boost
+uv sync --locked --extra qt --extra pybricks --extra gamepad
+uv run --locked --extra qt --extra pybricks --extra gamepad pyblocks-qt
 ```
 
-The [delivery robot](doc/en/robotics.md#delivery-robot) example combines line
-following, obstacle detection, a gripper, and an emergency button. Open
-`examples/courier.py`, connect a virtual Inventor, and assign a gripper motor to F.
+For the editor and virtual hubs alone, use `--extra qt` in both commands. Keep the
+same extras when launching: `uv run` synchronizes the selected dependencies.
+Python 3.11+ is supported; uv uses the development version in `.python-version`.
+See [installation](doc/en/INSTALL.md) for a regular virtual environment and
+connection requirements.
 
-## Documentation
+1. Open **File → Examples → first.py**, or start an empty document.
+2. Add blocks from the library and edit their parameters. Switch to **Python** to
+   edit the same program as text.
+3. Choose **Connect hub → Virtual hub** to try a program without hardware, then
+   press **F5** to run. For a real robot, select a matching example and connect a
+   hub running Pybricks firmware.
 
-- [English guide](doc/en/index.md) · [Руководство на русском](doc/ru/index.md)
-- [Installation](doc/en/INSTALL.md)
-- [First steps](doc/en/tutorial/first.md)
-- [Editing and command-line tools](doc/en/usage.md)
+The [first steps guide](doc/en/tutorial/first.md) walks through a small program.
+The terminal interface is also available with
+`uv run --extra tui pyblocks-tui examples/first.py`; the command-line tools start
+with `uv run pyblocks inspect examples/first.py`.
+
+## Documentation and feedback
+
+[English guide](doc/en/index.md) · [Руководство на русском](doc/ru/index.md)
+
+- [Editing programs](doc/en/usage.md) and [learning levels](doc/en/learning.md)
 - [Robots and controls](doc/en/robotics.md)
-- [Optional lessons, student projects and 3D assembly](doc/en/lessons.md)
-- [Authoring snippet libraries](doc/en/snippets.md)
-- [Block Editor and live preview](doc/en/block-editor.md)
-- [Developer API](doc/en/api.md)
-- [Architecture](doc/en/architecture.md)
-- [Development and invariants](doc/en/development.md)
-- [Design specification](devs/PYBLOCKS_DESIGN_SPEC.md)
-- [Studio interaction design](devs/UX_DESIGN.md)
+- [Lessons, student projects and assembly](doc/en/lessons.md)
+- [Creating blocks](doc/en/block-editor.md)
+- [Bundled examples and credits](examples/pybricks/README.md)
+- [Additional Pybricks projects — external links](examples/pybricks/website/README.md)
+
+Feedback about learning and editing is especially useful: where a child gets
+stuck, which action is hard to find, and where blocks make a program harder to
+understand. Bug reports should include your operating system, hub and firmware
+when relevant, the steps to reproduce, and a small example program.
 
 ## Development
 
-Install [uv](https://docs.astral.sh/uv/), then:
-
 ```sh
 uv sync --all-extras --locked
-uv run --all-extras pytest
-uv run ruff check pyblocks tests tools build_support.py
-uv run black --check pyblocks tests tools build_support.py
-uv run python tools/translations.py check
-uv run python tools/check_docs.py
+uv run --all-extras --locked pytest
+uv run --all-extras --locked ruff check pyblocks tests tools build_support.py
+uv run --all-extras --locked black --check pyblocks tests tools build_support.py
+uv run --all-extras --locked python tools/translations.py check
+uv run --all-extras --locked python tools/check_docs.py
 uv build
 ```
 
-Lint and format the application, tests and tools. Example programs retain upstream
-conventions and are validated by the example tests.
+The [GitHub Actions workflow](.github/workflows/checks.yml) runs these checks on
+GitHub's Ubuntu runner, with Qt in offscreen mode and simulated devices. Physical
+Bluetooth/USB, flashing and native 3D rendering still need local checks.
 
-`uv.lock` pins dependencies. For the core alone, use `uv sync`. Select interfaces
-with `--extra tui` or `--extra qt`, physical connections with `--extra pybricks`,
-and gamepads with `--extra gamepad`.
+See the [architecture](doc/en/architecture.md), [development invariants](doc/en/development.md)
+and [design specification](devs/PYBLOCKS_DESIGN_SPEC.md). Examples retain upstream
+formatting; lint and formatting checks target the application, tests and tools.
 
-Source is in `pyblocks/`, localized documentation in `doc/en/` and `doc/ru/`,
-examples in `examples/`, and tests in `tests/`. Code comments, docstrings, design
-notes, and commit descriptions use English. Russian UI translations are maintained
-in gettext catalogs; the runtime needs only the Python standard library for them.
+## License and credits
 
-The Studio software uses the [MIT license](LICENSE.txt). Bundled community LDraw
-models use CC BY 2.0 with separate attribution and license texts; see the
-[lesson model catalog](lessons/pybricks/README.md#ldraw-assembly-instructions).
-The LDraw parts library stays in external user storage.
+Studio's software is [MIT licensed](LICENSE.txt). Bundled examples retain their
+sources and license notices. Website-only Pybricks programs are linked instead
+of redistributed. Small community LDraw models use CC BY 2.0 with separate
+[attribution and license texts](lessons/pybricks/README.md#ldraw-assembly-instructions).
+The LDraw parts library is downloaded into external user storage.
+
+This is an independent project, not an official LEGO or Pybricks product.
+[Pybricks](https://pybricks.com/) provides the firmware and robotics APIs that make
+it possible; please support their work. LEGO and its product names belong to
+their respective owners.

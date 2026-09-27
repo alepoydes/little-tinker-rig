@@ -122,5 +122,4 @@ General event scheduling, gait libraries, cloud and media services are deferred.
 Shared helper definitions are managed automatically;
 the bundled activities keep their existing inline behavior. New behaviors use short
 ordinary Python templates and the existing automatic imports, with no new runtime
-dependency. The research catalog in `AI/LEGO_CURRICULUM_AND_BLOCK_CATALOG.md`
-describes the broader proposal, not only shipped capabilities.
+dependency.

@@ -1,6 +1,6 @@
 """Audit a pinned Pybricks checkout and adapt its source without running it.
 
-Usage: python tools/adapt_pybricks_examples.py [UPSTREAM_DIRECTORY] [--website DIRECTORY] [--community DIRECTORY] [--write]
+Usage: python tools/adapt_pybricks_examples.py [UPSTREAM_DIRECTORY] [--community DIRECTORY] [--write]
 The catalog hashes guard the input; this tool performs only explicit API and
 call-spelling migrations. Manual adaptations have separate behavior tests.
 """
@@ -52,7 +52,7 @@ MANUAL_ADAPTATIONS = {
 }
 
 
-def adapt(source, filename, *, website=False, credit=None):
+def adapt(source, filename, *, credit=None):
     if source.startswith("# pybricks blocks file:"):
         source = source.split("\n", 1)[1]
     syntax = Syntax(source)
@@ -171,9 +171,7 @@ def adapt(source, filename, *, website=False, credit=None):
         )
         source, _ = manage_helpers(source, {f.name: f for f in snippet.helpers})
     credit = credit or (
-        "# From the Pybricks project website; see website/NOTICE.md and catalog.json.\n"
-        if website
-        else "# Adapted from Pybricks Projects (MIT); see LICENSE.txt and catalog.json.\n"
+        "# Adapted from Pybricks Projects (MIT); see LICENSE.txt and catalog.json.\n"
     )
     return format_source(credit + source)
 
@@ -182,15 +180,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("upstream", type=Path, nargs="?")
     parser.add_argument(
-        "--website", type=Path, help="Downloaded/extracted website Python sources"
-    )
-    parser.add_argument(
         "--community", type=Path, help="Downloaded community reference Python sources"
     )
     parser.add_argument("--write", action="store_true")
     args = parser.parse_args()
-    if args.upstream is None and args.website is None and args.community is None:
-        parser.error("Provide a repository checkout, --website or --community sources")
+    if args.upstream is None and args.community is None:
+        parser.error("Provide a repository checkout or --community sources")
     catalog = json.loads((EXAMPLES / "catalog.json").read_text())
     found = (
         {
@@ -207,18 +202,14 @@ def main():
         if not item["source"].startswith("https://")
     }, "Incomplete upstream inventory"
     for item in catalog["examples"]:
-        website = item["source"].startswith("https://")
-        directory = (
-            args.community
-            if item["file"].startswith("community/")
-            else args.website if website else args.upstream
-        )
+        community = item["file"].startswith("community/")
+        directory = args.community if community else args.upstream
         if directory is None:
             continue
         path = (
             directory
             / item.get("source_file", Path(urlsplit(item["source"]).path).name)
-            if website
+            if community
             else directory / item["source"]
         )
         raw = path.read_bytes()
@@ -226,14 +217,14 @@ def main():
         if item["file"] in MANUAL_ADAPTATIONS or item.get("adaptation") == "manual":
             continue
         credit = None
-        if item["file"].startswith("community/"):
+        if community:
             credit = (
                 f"# Adapted from {item['author']} (MIT).\n"
                 f"# Source: {item['reference']}\n"
                 f"# License: {item['license_file'].removeprefix('community/')}\n"
                 "# Changes and hardware: README.md and ../catalog.json.\n"
             )
-        adapted = adapt(raw.decode(), item["file"], website=website, credit=credit)
+        adapted = adapt(raw.decode(), item["file"], credit=credit)
         path = EXAMPLES / item["file"]
         if args.write:
             path.write_text(adapted)
@@ -241,11 +232,6 @@ def main():
             # Compare managed helpers in the same order the editor now uses.
             current, _ = manage_helpers(path.read_text(), {})
             assert ast.dump(ast.parse(adapted)) == ast.dump(ast.parse(current)), path
-    website_count = sum(
-        item["source"].startswith("https://")
-        and not item["file"].startswith("community/")
-        for item in catalog["examples"]
-    )
     community_count = sum(
         item["file"].startswith("community/") for item in catalog["examples"]
     )
@@ -253,9 +239,6 @@ def main():
         f"Verified {len(found)} pinned repository sources."
         if args.upstream
         else "Repository sources not checked (provide a checkout)."
-    )
-    print(
-        f"Website sources: {website_count} {'verified' if args.website else 'not checked (provide --website)'}. "
     )
     print(
         f"Community references: {community_count} {'verified' if args.community else 'not checked (provide --community)'}. "

@@ -2,8 +2,8 @@
 
 The repository includes all 37 Python files for the supported hub families from the official
 [Pybricks Projects repository](https://github.com/pybricks/pybricks-projects).
-Together with the 42109 Xbox adaptation, 31 programs from project pages and 15
-community programs, the catalog contains 84 Python files.
+Together with the 42109 Xbox adaptation and 15 community programs, the catalog
+contains 53 Python files. Website-only programs remain external links.
 Open a file using **File → Examples → pybricks** or **File → Open**. Select **All** in the
 library to find every component used by a program. The level filter limits new
 choices, never the blocks already in the document.
@@ -87,12 +87,12 @@ not been verified. See the [complete guide and credits](../../examples/pybricks/
 
 ## Useful actions at each level
 
-The [website examples](../../examples/pybricks/website/README.md) add modern
+The [website link inventory](../../examples/pybricks/website/README.md) points to external
 remote/Xbox programs for 42099, 42109, 42124, 42129, 42131, 42146 and 42160,
 the Inventor/SPIKE ball balancer, hub menus, and small input/motor tutorials.
 The crane needs two Technic hubs and Pybricks 4; its base and crane files run on
 different hubs. Camera projects require the external Pybricks Code vision host;
-Studio does not process camera data. These requirements are recorded per file.
+Studio does not process camera data. These programs are not bundled; requirements are recorded alongside their links.
 SPIKE Essential, Duplo and EV3 examples remain outside the supported hub scope.
 The beginner palette stays unchanged; task, radio and external-app blocks are Expert.
 

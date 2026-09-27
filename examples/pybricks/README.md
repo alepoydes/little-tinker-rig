@@ -1,9 +1,9 @@
 # LEGO set examples from Pybricks
 
-The catalog contains **84 Python files**: all 37 files in the BOOST, Robot Inventor,
+The catalog contains **53 Python files**: all 37 files in the BOOST, Robot Inventor,
 SPIKE Prime and Technic families of the pinned Pybricks Projects revision, plus
-a 42109 Xbox adaptation, 31 [website programs](website/README.md), and 15
-[community programs](community/README.md).
+a 42109 Xbox adaptation and 15 [community programs](community/README.md).
+Website-only programs are listed as [external links](website/README.md).
 The Projects repository does not include every example
 published on the Pybricks website. EV3 and City hubs are outside this import.
 Filenames include the LEGO set number, not just
@@ -19,7 +19,7 @@ Sources: [Pybricks Projects](https://github.com/pybricks/pybricks-projects), rev
 `faaacce09ffe1d865fd1db241bcacb056234d597`, retrieved 2026-09-25.
 Copyright (c) 2018-2023 The Pybricks Authors. Original comments and author credits
 are retained under the [upstream MIT license](LICENSE.txt) for repository imports.
-Website downloads have their own [source notice](website/NOTICE.md).
+Website-only downloads are not redistributed; see their [source notice](website/NOTICE.md).
 The Xbox 42100 pair consists of new implementations of a community control scheme; its
 [credits and changes](community/README.md#sources-and-validation) distinguish them
 from behavior-preserving imports.
@@ -33,7 +33,7 @@ Its catalog entry distinguishes that guide from the code's upstream source.
 
 ## Repository inventory
 
-The website additions and their equipment are listed in the [website inventory](website/README.md).
+Additional external projects and their equipment are listed in the [website link inventory](website/README.md).
 The [community guide](community/README.md) covers sensor lessons, asynchronous
 tasks, custom Xbox robots and both Xbox/radio and dual-remote 42100 controls.
 The [community source review](community/SOURCES.md) records included programs,

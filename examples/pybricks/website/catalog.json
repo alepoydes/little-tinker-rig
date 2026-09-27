@@ -8,8 +8,10 @@
       "pages": [
         "https://pybricks.com/project/disable-motor-detect/"
       ],
-      "status": "included",
-      "file": "website/tutorials/allow_missing_motors.py"
+      "status": "external",
+      "sets": [],
+      "firmware": "3.5",
+      "extra_hardware": []
     },
     {
       "source": "https://pybricks.com/assets/programs/ball_balancer_blocks.py",
@@ -18,8 +20,15 @@
         "https://pybricks.com/project/lego-mindstorms-ball-balancer/",
         "https://pybricks.com/project/lego-spike-ball-balancer/"
       ],
-      "status": "included",
-      "file": "website/inventor_51515_spike_45678_ball_balancer.py"
+      "status": "external",
+      "sets": [
+        51515,
+        45678
+      ],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "Ball and the exact published mechanism; SPIKE version also uses expansion elements"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/block_comment.py",
@@ -27,8 +36,10 @@
       "pages": [
         "https://pybricks.com/project/pybricks-3-5-released/"
       ],
-      "status": "included",
-      "file": "website/tutorials/block_comment.py"
+      "status": "external",
+      "sets": [],
+      "firmware": "3.5",
+      "extra_hardware": []
     },
     {
       "source": "https://pybricks.com/assets/programs/block_drivebase_reset.py",
@@ -36,8 +47,10 @@
       "pages": [
         "https://pybricks.com/project/pybricks-3-5-released/"
       ],
-      "status": "included",
-      "file": "website/tutorials/block_drivebase_reset.py"
+      "status": "external",
+      "sets": [],
+      "firmware": "3.5",
+      "extra_hardware": []
     },
     {
       "source": "https://pybricks.com/assets/programs/block_keyboard.py",
@@ -45,8 +58,12 @@
       "pages": [
         "https://pybricks.com/project/pybricks-3-5-released/"
       ],
-      "status": "included",
-      "file": "website/tutorials/block_keyboard.py"
+      "status": "external",
+      "sets": [],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "Host console forwarding keyboard input to hub stdin"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/block_rumble.py",
@@ -55,8 +72,12 @@
         "https://pybricks.com/project/pybricks-3-5-released/",
         "https://pybricks.com/project/xbox-rumble/"
       ],
-      "status": "included",
-      "file": "website/tutorials/block_rumble.py"
+      "status": "external",
+      "sets": [],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "Compatible Bluetooth Xbox controller; motor A"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/block_stop_button.py",
@@ -73,8 +94,10 @@
       "pages": [
         "https://pybricks.com/project/disable-motor-detect/"
       ],
-      "status": "included",
-      "file": "website/tutorials/check_battery_box.py"
+      "status": "external",
+      "sets": [],
+      "firmware": "3.5",
+      "extra_hardware": []
     },
     {
       "source": "https://pybricks.com/assets/programs/check_motor.py",
@@ -82,8 +105,10 @@
       "pages": [
         "https://pybricks.com/project/disable-motor-detect/"
       ],
-      "status": "included",
-      "file": "website/tutorials/check_motor.py"
+      "status": "external",
+      "sets": [],
+      "firmware": "3.5",
+      "extra_hardware": []
     },
     {
       "source": "https://pybricks.com/assets/programs/check_override.py",
@@ -91,8 +116,10 @@
       "pages": [
         "https://pybricks.com/project/disable-motor-detect/"
       ],
-      "status": "included",
-      "file": "website/tutorials/check_override.py"
+      "status": "external",
+      "sets": [],
+      "firmware": "3.5",
+      "extra_hardware": []
     },
     {
       "source": "https://pybricks.com/assets/programs/duplo.py",
@@ -136,8 +163,13 @@
       "pages": [
         "https://pybricks.com/project/spike-hub-menu/"
       ],
-      "status": "included",
-      "file": "website/tutorials/hello_world.py"
+      "status": "external",
+      "sets": [
+        45678,
+        51515
+      ],
+      "firmware": "3.5",
+      "extra_hardware": []
     },
     {
       "source": "https://pybricks.com/assets/programs/light.py",
@@ -145,8 +177,15 @@
       "pages": [
         "https://pybricks.com/project/spike-hub-menu/"
       ],
-      "status": "included",
-      "file": "website/tutorials/light.py"
+      "status": "external",
+      "sets": [
+        45678,
+        51515
+      ],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "Prime/Inventor hub"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/sensor_start.py",
@@ -154,8 +193,12 @@
       "pages": [
         "https://pybricks.com/project/spike-hub-menu/"
       ],
-      "status": "included",
-      "file": "website/tutorials/sensor_start.py"
+      "status": "external",
+      "sets": [],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "BOOST ColorDistanceSensor on A and a DC motor on B, or menu motor on A"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/set_42099_pup_remote.py",
@@ -163,8 +206,14 @@
       "pages": [
         "https://pybricks.com/project/technic-42099-powered-up-remote/"
       ],
-      "status": "included",
-      "file": "website/technic_42099_remote.py"
+      "status": "external",
+      "sets": [
+        42099
+      ],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/set_42099_xbox.py",
@@ -172,8 +221,14 @@
       "pages": [
         "https://pybricks.com/project/technic-42099-xbox/"
       ],
-      "status": "included",
-      "file": "website/technic_42099_xbox.py"
+      "status": "external",
+      "sets": [
+        42099
+      ],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "Bluetooth Xbox controller"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/set_42109_pup_remote.py",
@@ -181,8 +236,14 @@
       "pages": [
         "https://pybricks.com/project/technic-42109-powered-up-remote/"
       ],
-      "status": "included",
-      "file": "website/technic_42109_remote.py"
+      "status": "external",
+      "sets": [
+        42109
+      ],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/set_42109_xbox.py",
@@ -190,11 +251,11 @@
       "pages": [
         "https://pybricks.com/project/technic-42109-xbox/"
       ],
-      "status": "included",
-      "file": "technic_42109_xbox.py",
+      "status": "external",
       "notes": [
         "Existing MIT adaptation has the same motor configuration and loop, with controller renamed."
-      ]
+      ],
+      "local_alternative": "technic_42109_xbox.py"
     },
     {
       "source": "https://pybricks.com/assets/programs/set_42124_pup_remote.py",
@@ -202,8 +263,14 @@
       "pages": [
         "https://pybricks.com/project/technic-42124-powered-up-remote/"
       ],
-      "status": "included",
-      "file": "website/technic_42124_remote.py"
+      "status": "external",
+      "sets": [
+        42124
+      ],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/set_42124_xbox.py",
@@ -211,8 +278,14 @@
       "pages": [
         "https://pybricks.com/project/technic-42124-xbox/"
       ],
-      "status": "included",
-      "file": "website/technic_42124_xbox.py"
+      "status": "external",
+      "sets": [
+        42124
+      ],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "Bluetooth Xbox controller"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/set_42129_pup_remote.py",
@@ -220,8 +293,14 @@
       "pages": [
         "https://pybricks.com/project/technic-42129-powered-up-remote/"
       ],
-      "status": "included",
-      "file": "website/technic_42129_remote.py"
+      "status": "external",
+      "sets": [
+        42129
+      ],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/set_42129_xbox.py",
@@ -229,8 +308,14 @@
       "pages": [
         "https://pybricks.com/project/technic-42129-xbox/"
       ],
-      "status": "included",
-      "file": "website/technic_42129_xbox.py"
+      "status": "external",
+      "sets": [
+        42129
+      ],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "Bluetooth Xbox controller"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/set_42131_pup_remote.py",
@@ -238,8 +323,14 @@
       "pages": [
         "https://pybricks.com/project/technic-42131-powered-up-remote/"
       ],
-      "status": "included",
-      "file": "website/technic_42131_remote.py"
+      "status": "external",
+      "sets": [
+        42131
+      ],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/set_42131_xbox.py",
@@ -247,8 +338,14 @@
       "pages": [
         "https://pybricks.com/project/technic-42131-xbox/"
       ],
-      "status": "included",
-      "file": "website/technic_42131_xbox.py"
+      "status": "external",
+      "sets": [
+        42131
+      ],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "Bluetooth Xbox controller"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/set_42146_base_pup_remote.py",
@@ -256,8 +353,15 @@
       "pages": [
         "https://pybricks.com/project/technic-42146-powered-up-remote/"
       ],
-      "status": "included",
-      "file": "website/technic_42146_base_remote.py"
+      "status": "external",
+      "sets": [
+        42146
+      ],
+      "firmware": "4.0",
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010",
+        "Two Technic hubs; channel 5; run the crane program on the second hub"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/set_42146_base_xbox.py",
@@ -265,8 +369,15 @@
       "pages": [
         "https://pybricks.com/project/technic-42146-xbox/"
       ],
-      "status": "included",
-      "file": "website/technic_42146_base_xbox.py"
+      "status": "external",
+      "sets": [
+        42146
+      ],
+      "firmware": "4.0",
+      "extra_hardware": [
+        "Bluetooth Xbox controller",
+        "Two Technic hubs; channel 5; run the crane program on the second hub"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/set_42146_crane.py",
@@ -275,8 +386,14 @@
         "https://pybricks.com/project/technic-42146-powered-up-remote/",
         "https://pybricks.com/project/technic-42146-xbox/"
       ],
-      "status": "included",
-      "file": "website/technic_42146_crane.py"
+      "status": "external",
+      "sets": [
+        42146
+      ],
+      "firmware": "4.0",
+      "extra_hardware": [
+        "Two Technic hubs; channel 5; run the crane program on the second hub"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/set_42160_pup_remote.py",
@@ -284,8 +401,14 @@
       "pages": [
         "https://pybricks.com/project/technic-42160-powered-up-remote/"
       ],
-      "status": "included",
-      "file": "website/technic_42160_remote.py"
+      "status": "external",
+      "sets": [
+        42160
+      ],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "LEGO Powered Up remote 88010"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/set_42160_xbox.py",
@@ -293,8 +416,14 @@
       "pages": [
         "https://pybricks.com/project/technic-42160-xbox/"
       ],
-      "status": "included",
-      "file": "website/technic_42160_xbox.py"
+      "status": "external",
+      "sets": [
+        42160
+      ],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "Bluetooth Xbox controller"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/sound.py",
@@ -302,8 +431,15 @@
       "pages": [
         "https://pybricks.com/project/spike-hub-menu/"
       ],
-      "status": "included",
-      "file": "website/tutorials/sound.py"
+      "status": "external",
+      "sets": [
+        45678,
+        51515
+      ],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "Prime/Inventor hub"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/spike_arm_camera.py",
@@ -311,8 +447,14 @@
       "pages": [
         "https://pybricks.com/project/robot-arm-camera-tracker/"
       ],
-      "status": "included",
-      "file": "website/spike_45678_arm_camera.py"
+      "status": "external",
+      "sets": [
+        45678
+      ],
+      "firmware": "4.1",
+      "extra_hardware": [
+        "Pybricks Code camera/vision host and the published model; Studio does not provide AppData camera processing"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/spike_groceries.py",
@@ -320,8 +462,14 @@
       "pages": [
         "https://pybricks.com/project/machine-learning-groceries/"
       ],
-      "status": "included",
-      "file": "website/spike_45678_groceries.py"
+      "status": "external",
+      "sets": [
+        45678
+      ],
+      "firmware": "4.1",
+      "extra_hardware": [
+        "Pybricks Code camera/vision host and the published model; Studio does not provide AppData camera processing"
+      ]
     },
     {
       "source": "https://pybricks.com/assets/programs/tic_tac_toe.py",
@@ -338,8 +486,15 @@
       "pages": [
         "https://pybricks.com/project/spike-hub-menu/"
       ],
-      "status": "included",
-      "file": "website/tutorials/spike_45678_menu.py"
+      "status": "external",
+      "sets": [
+        45678,
+        51515
+      ],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "Prime/Inventor hub"
+      ]
     },
     {
       "source": "https://pybricks.com/project/spike-hub-menu/#spike_45678_choose_program",
@@ -347,8 +502,16 @@
       "pages": [
         "https://pybricks.com/project/spike-hub-menu/"
       ],
-      "status": "included",
-      "file": "website/tutorials/spike_45678_choose_program.py"
+      "status": "external",
+      "sets": [
+        45678,
+        51515
+      ],
+      "firmware": "3.5",
+      "extra_hardware": [
+        "BOOST ColorDistanceSensor on A and a DC motor on B, or menu motor on A",
+        "Prime/Inventor hub"
+      ]
     }
   ]
 }

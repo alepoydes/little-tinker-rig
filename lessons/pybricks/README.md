@@ -83,8 +83,8 @@ The [current website project catalog](https://pybricks.com/project/) contains
 additional projects. Its [content terms](https://pybricks.com/legal/#pybricks-website-site-content)
 require written permission for reproduction. Website-only downloads and text are
 not included in these lesson packages. A link to a page does not grant permission
-to redistribute its contents. Existing `examples/pybricks/website` materials are
-outside the scope of this lesson catalog and retain their separate notice.
+to redistribute its contents. The [website example inventory](../../examples/pybricks/website/README.md)
+likewise provides external links without bundling those programs.
 
 ## Storage and offline use
 

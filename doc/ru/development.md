@@ -1,5 +1,17 @@
 # Разработка
 
+GitHub Actions использует предоставленный GitHub Ubuntu-воркер с Qt в режиме
+offscreen. Проверяются код, документация, переводы, тесты и сборка дистрибутивов.
+Проверки оборудования и нативного OpenGL остаются локальными; собственный воркер
+для обычного CI не нужен.
+
+Перед включением стороннего кода или модели проверяйте лицензию конкретного
+источника и сохраняйте авторство. Лицензия репозитория не распространяется
+автоматически на загрузки с сайта автора. Материалы без разрешения на
+распространение оставляйте внешними ссылками: их содержимое не должно попадать
+в исходники, дистрибутивы и публикуемую историю Git. Инструменты загрузки и
+адаптации должны соблюдать ту же границу.
+
 Среда разработки uv закреплена на Python 3.13 для использования готовых бинарных
 пакетов зафиксированных зависимостей рендера. Минимальная версия Python для
 приложения остаётся 3.11.
@@ -65,9 +77,9 @@ Save As переносит кодировку исходного докумен�
 
 ```sh
 uv sync --all-extras --locked
-uv run --all-extras pytest
-uv run ruff check pyblocks tests tools build_support.py
-uv run black --check pyblocks tests tools build_support.py
+uv run --all-extras --locked pytest
+uv run --all-extras --locked ruff check pyblocks tests tools build_support.py
+uv run --all-extras --locked black --check pyblocks tests tools build_support.py
 uv build
 ```
 

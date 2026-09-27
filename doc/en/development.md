@@ -2,11 +2,11 @@
 
 ```sh
 uv sync --all-extras --locked
-uv run --all-extras pytest
-uv run ruff check pyblocks tests tools build_support.py
-uv run black --check pyblocks tests tools build_support.py
-uv run python tools/translations.py check
-uv run python tools/check_docs.py
+uv run --all-extras --locked pytest
+uv run --all-extras --locked ruff check pyblocks tests tools build_support.py
+uv run --all-extras --locked black --check pyblocks tests tools build_support.py
+uv run --all-extras --locked python tools/translations.py check
+uv run --all-extras --locked python tools/check_docs.py
 uv build
 ```
 
@@ -23,7 +23,17 @@ Qt tests run offscreen. Tests covering asyncio worker threads require local
 socketpair communication; a sandbox that denies socketpair writes cannot run
 those tests correctly. No test requires a physical robot.
 
+The GitHub Actions workflow uses a GitHub-hosted Ubuntu runner with offscreen Qt.
+It checks code, documentation, translations, tests and distribution builds.
+Hardware and native OpenGL checks remain local; CI does not need a self-hosted runner.
+
 ## Invariants
+
+Before importing an external program or asset, verify the license for that specific
+source and retain attribution. A repository license does not automatically cover
+its author's website downloads. Keep unlicensed materials as external links;
+exclude their contents from source trees, distribution archives and published Git
+history. Download/adaptation tools must not bypass this boundary.
 
 Window geometry uses Qt's save/restore API, including maximized/full-screen state
 and screen-bound adjustment. Save only after close confirmation and recovery
@@ -145,10 +155,10 @@ Use the development translation tool to extract/update catalogs, validate covera
 and compile. Babel is a development dependency, not a runtime dependency.
 
 ```sh
-uv run python tools/translations.py update
+uv run --all-extras --locked python tools/translations.py update
 # Translate new msgstr entries in the PO files.
-uv run python tools/translations.py compile
-uv run python tools/translations.py check
+uv run --all-extras --locked python tools/translations.py compile
+uv run --all-extras --locked python tools/translations.py check
 ```
 
 The check rejects missing or unreviewed translations, changed format fields and
