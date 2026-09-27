@@ -93,14 +93,20 @@ Its mounting geometry is checked digitally; physical fit and calibration need
 verification on a real set.
 
 - Left drag rotates, Shift+left drag or right/middle drag pans, and the wheel zooms.
+  Zooming in holds the outer edges of the selected parts near the viewport boundary,
+  gradually bringing their center into view. Without a selection it protects the
+  current construction or isolated subassembly; future parts are ignored.
+  Once the selection grows larger than the window its edges can extend outside.
+  Zooming out preserves the resulting center, and manual panning remains unrestricted.
 - Previous parts are muted, current parts keep their colors, future parts are
   hidden unless their outlines are enabled.
 - Click a part to identify it. The step's parts list includes quantity, color
   swatches and authored lengths; tooltips retain LDraw part names and numbers.
   Selecting a row highlights all copies added in that step, in their actual
-  positions, including through other parts. Selection centers and zooms the camera
-  to the chosen part or all chosen copies while preserving the viewing angle;
-  rotation then happens around this new center. Click the row again, press Escape,
+  positions, including through other parts. Selecting and clearing a selection
+  preserve the camera. Ctrl+click a part or list row to center it without changing
+  the zoom or viewing angle; rotation then uses this new center.
+  Click the row again, press Escape,
   click the model background or change step to clear selection.
 - **Recommended view** frames the current assembly. A subassembly selector can
   isolate an assembled group in imported models; **View: Whole robot** restores

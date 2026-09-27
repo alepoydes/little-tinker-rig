@@ -1937,11 +1937,17 @@ steps or selectable parts. Models without step divisions open as whole models;
 unavailable instructions are not invented. Authored MPD steps may differ from
 official PDF page numbers and do not imply physical validation.
 Assembly uses its own workspace and supports orbit/pan/zoom, picking, current-step
-parts, previous-step muting, optional future outlines and camera hints. Inspection
-centers and frames the selected part or all selected copies without changing the
-viewing angle. Orbit uses this new center; Shift+left drag and right/middle drag
-pan it freely. Clearing selection preserves the camera; Recommended view returns
-to the current construction. Camera changes are retained in assembly progress.
+parts, previous-step muting, optional future outlines and camera hints. Selection
+and clearing it leave the camera unchanged. Ctrl+click in the model or parts list
+centers the selection without changing scale or viewing angle. Shift+left drag and
+right/middle drag pan freely. Zoom-in applies only the pan needed to hold selected
+outer edges inside a 5% viewport margin, stopping correction at the selection center.
+With no visible selection, the target is the built portion of the active group;
+future outlines never affect navigation. If already outside after panning, correction
+holds the existing outer edge rather than jumping to the margin. Correction is
+continuous in scale, independent of wheel event subdivision, and absent on zoom-out.
+Geometry clipping depends on scene depth rather than zoom. Recommended view frames
+the current construction. Camera changes are retained in assembly progress.
 The renderer uses a contained native OpenGL surface: opening, replacing or closing
 it must not recreate or hide the Studio window's native surface. Native rendering
 checks cover this lifecycle as well as rendered pixels and resource cleanup.

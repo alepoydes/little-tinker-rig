@@ -235,13 +235,23 @@ def test_qt_views_render_with_independent_native_contexts(model, qt_app):
                 x = int((projected[0] + 1) * frame.width() / 2)
                 y = int((1 - projected[1]) * frame.height() / 2)
                 assert np.max(np.abs(image[y, x] - [242, 245, 250])) > 20
-            scale = view.devicePixelRatioF()
+            scale = view.devicePixelRatio()
+            camera_before = view.camera.state()
             QTest.mouseClick(
                 view,
                 Qt.MouseButton.LeftButton,
                 pos=QPoint(round(x / scale), round(y / scale)),
             )
             assert view.selection
+            assert view.camera.state() == camera_before
+            QTest.mouseClick(
+                view,
+                Qt.MouseButton.LeftButton,
+                Qt.KeyboardModifier.ControlModifier,
+                pos=QPoint(round(x / scale), round(y / scale)),
+            )
+            assert view.camera.extent == camera_before["extent"]
+            assert view.camera.state() != camera_before
             QTest.keyClick(view, Qt.Key.Key_Escape)
             assert not view.selection
             assert not view.failure
@@ -256,7 +266,7 @@ def test_qt_views_render_with_independent_native_contexts(model, qt_app):
         qt_app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
 
 
-def test_selection_frames_all_instances_and_pan_moves_the_rotation_center(
+def test_selection_preserves_camera_and_explicit_centering_preserves_zoom(
     model, qt_app
 ):
     from PySide6.QtCore import QEvent, QPointF, Qt
@@ -269,20 +279,16 @@ def test_selection_frames_all_instances_and_pan_moves_the_rotation_center(
     view.resize(640, 240)
     try:
         view.camera.yaw, view.camera.pitch = -65, 40
+        view.step = scene.step_count - 1
+        original = view.camera.state()
         view.select([scene.instances[i].identity for i in (0, 2)])
-        bounds = scene.bounds([scene.instances[i] for i in (0, 2)])
-        np.testing.assert_allclose(view.camera.center, bounds.mean(axis=0))
+        assert view.camera.state() == original
+        view.select([scene.instances[i].identity for i in (0, 2)], center=True)
+        assert view.camera.extent == original["extent"]
         assert (view.camera.yaw, view.camera.pitch) == (-65, 40)
-        corners = np.array(
-            [
-                [bounds[x, 0], bounds[y, 1], bounds[z, 2], 1]
-                for x in (0, 1)
-                for y in (0, 1)
-                for z in (0, 1)
-            ]
-        )
-        projected = corners @ view.camera.matrix(640, 240).T
-        assert np.max(np.abs(projected[:, :2])) < 0.9
+        points = scene.corners([scene.instances[i] for i in (0, 2)]).reshape(-1, 3)
+        projected = (points - view.camera.center) @ np.array(view.camera.basis()).T
+        np.testing.assert_allclose(projected.min(0) + projected.max(0), 0, atol=1e-12)
         point = np.array([*view.camera.center, 1])
         extent = view.camera.extent
         for kind, position, button, buttons in (
@@ -328,6 +334,39 @@ def test_selection_frames_all_instances_and_pan_moves_the_rotation_center(
         before = view.camera.state()
         view.select(())
         assert view.camera.state() == before
+    finally:
+        view.deleteLater()
+        qt_app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+
+
+def test_zoom_interest_follows_selection_step_and_isolated_group(model, qt_app):
+    from PySide6.QtCore import QEvent
+
+    from pyblocks.qt.lego_view import LegoView
+
+    scene = LDraw(model).scene()
+    view = LegoView(scene)
+    try:
+
+        def check(indices):
+            expected = scene.corners([scene.instances[i] for i in indices])
+            np.testing.assert_array_equal(
+                view.interest_points(), expected.reshape(-1, 3)
+            )
+
+        view.future = True
+        view.select([scene.instances[3].identity])
+        check([0])  # A future selection cannot redirect navigation.
+        view.step = 2
+        check([0, 1, 2])
+        view.select([scene.instances[i].identity for i in (0, 2)])
+        check([0, 2])
+        view.group = (3, 4)
+        check([2])
+        view.select(())
+        check([2])
+        view.step = 3
+        check([2, 3])
     finally:
         view.deleteLater()
         qt_app.sendPostedEvents(None, QEvent.Type.DeferredDelete)

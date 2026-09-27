@@ -16,6 +16,17 @@ from .ldraw_parts import PartLibrary, read_file
 from .paths import resource
 
 
+def box_corners(bounds):
+    return np.array(
+        [
+            [bounds[x, 0], bounds[y, 1], bounds[z, 2]]
+            for x in (0, 1)
+            for y in (0, 1)
+            for z in (0, 1)
+        ]
+    )
+
+
 @dataclass(frozen=True)
 class Mesh:
     title: str
@@ -53,22 +64,18 @@ class Scene:
     colors: dict[int, tuple]
     step_count: int
 
-    def bounds(self, instances=None):
+    def corners(self, instances=None):
         points = []
         for item in self.instances if instances is None else instances:
-            bounds = self.meshes[item.part].bounds
-            corners = np.array(
-                [
-                    [bounds[x, 0], bounds[y, 1], bounds[z, 2]]
-                    for x in (0, 1)
-                    for y in (0, 1)
-                    for z in (0, 1)
-                ]
-            )
-            points.extend(corners @ item.transform[:3, :3].T + item.transform[:3, 3])
+            corners = box_corners(self.meshes[item.part].bounds)
+            points.append(corners @ item.transform[:3, :3].T + item.transform[:3, 3])
+        return np.array(points).reshape(-1, 8, 3)
+
+    def bounds(self, instances=None):
+        points = self.corners(instances).reshape(-1, 3)
         return (
             np.array([np.min(points, axis=0), np.max(points, axis=0)])
-            if points
+            if len(points)
             else np.array([[-1.0, -1.0, -1.0], [1.0, 1.0, 1.0]])
         )
 

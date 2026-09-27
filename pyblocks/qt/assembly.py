@@ -31,9 +31,19 @@ from .resources import ResourceJob
 
 
 class PartsList(QListWidget):
+    center_requested = Signal()
+
     def mousePressEvent(self, event):
         item = self.itemAt(event.position().toPoint())
-        if event.button() == Qt.MouseButton.LeftButton and (
+        if (
+            item is not None
+            and event.button() == Qt.MouseButton.LeftButton
+            and event.modifiers() & Qt.KeyboardModifier.ControlModifier
+        ):
+            self.setCurrentItem(item)
+            self.center_requested.emit()
+            event.accept()
+        elif event.button() == Qt.MouseButton.LeftButton and (
             item is None or (item is self.currentItem() and item.isSelected())
         ):
             self.setCurrentRow(-1)
@@ -77,10 +87,11 @@ class AssemblyPage(QWidget):
         self.parts.setWordWrap(True)
         self.parts.setToolTip(
             N_(
-                "Select all copies added in this step. Click again or press Escape to clear."
+                "Select all copies added in this step. Ctrl+click to center without zooming. Click again or press Escape to clear."
             )
         )
         self.parts.currentRowChanged.connect(self.select_part)
+        self.parts.center_requested.connect(self.center_selection)
         sidebar.addWidget(self.parts, 1)
         self.devices = QComboBox()
         self.devices.setToolTip(
@@ -430,7 +441,9 @@ class AssemblyPage(QWidget):
             )
         else:
             self.selection.setText(
-                tr("Drag to rotate · Shift+drag to pan · Scroll to zoom")
+                tr(
+                    "Drag to rotate · Shift+drag to pan · Scroll to zoom · Ctrl+click to center"
+                )
             )
         if self.view:
             self.view.marker = None
@@ -438,6 +451,10 @@ class AssemblyPage(QWidget):
 
     def select_instance(self, identity):
         self.set_selection([i for i in self.scene.instances if i.identity == identity])
+
+    def center_selection(self):
+        if self.view:
+            self.view.select((i.identity for i in self.selected_items), center=True)
 
     def select_part(self, row):
         if row < 0:

@@ -8,7 +8,7 @@ from PySide6.QtCore import QPointF, QSize, Qt, Signal
 from PySide6.QtGui import QColor, QPainter, QPen, QSurfaceFormat
 from PySide6.QtOpenGL import QOpenGLWindow
 
-from pyblocks.core.ldraw import rgba
+from pyblocks.core.ldraw import box_corners, rgba
 from pyblocks.core.lessons import camera_values
 
 VERTEX = """
@@ -115,21 +115,14 @@ void main() { if (visible == 0) discard; pixel = shade; }
 
 class Camera:
     def __init__(self, bounds):
+        self.clip_center = np.mean(bounds, axis=0)
+        self.clip_radius = max(float(np.linalg.norm(bounds[1] - bounds[0])) / 2, 1.0)
         self.fit(bounds)
 
-    def fit(self, bounds, aspect=1.0, *, preserve_rotation=False):
+    def fit(self, bounds, aspect=1.0):
         self.center = np.mean(bounds, axis=0).astype(float)
-        if not preserve_rotation:
-            self.yaw, self.pitch = 35.0, 25.0
-        corners = np.array(
-            [
-                [bounds[x, 0], bounds[y, 1], bounds[z, 2]]
-                for x in (0, 1)
-                for y in (0, 1)
-                for z in (0, 1)
-            ]
-        )
-        projected = corners @ np.array(self.basis()).T
+        self.yaw, self.pitch = 35.0, 25.0
+        projected = box_corners(bounds) @ np.array(self.basis()).T
         self.extent = (
             max(
                 float(np.ptp(projected[:, 0])) / aspect,
@@ -138,6 +131,35 @@ class Camera:
             )
             * 0.58
         )
+
+    def center_on(self, points):
+        basis = np.array(self.basis())
+        projected = points @ basis.T
+        self.center = (projected.min(axis=0) + projected.max(axis=0)) / 2 @ basis
+
+    def zoom(self, factor, points, aspect=1.0):
+        """Zoom about the current center, holding endangered outer edges in place.
+
+        Correction is bounded by zoom motion, including after a manual pan outside
+        the viewport. It stops at the selection center and never runs on zoom-out.
+        """
+        extent = max(0.5, min(1e6, self.extent / factor))
+        if extent < self.extent and len(points):
+            basis = np.array(self.basis())[:2]
+            projected = (points - self.center) @ basis.T
+            low, high = projected.min(axis=0), projected.max(axis=0)
+            middle = (low + high) / 2
+            far = np.abs(middle) + (high - low) / 2
+            limit = 0.9 * extent * np.array([aspect, 1.0])
+            shift = np.minimum(
+                np.abs(middle),
+                np.minimum(
+                    np.maximum(far - limit, 0),
+                    (1 - extent / self.extent) * far,
+                ),
+            )
+            self.center += (np.sign(middle) * shift) @ basis
+        self.extent = extent
 
     def basis(self):
         yaw, pitch = np.radians([self.yaw, self.pitch])
@@ -156,11 +178,13 @@ class Camera:
         view = np.eye(4)
         view[:3, :3] = self.basis()
         view[:3, 3] = -view[:3, :3] @ self.center
+        # Close-up zoom must not clip parts far from the orbit plane.
+        depth = abs((self.clip_center - self.center) @ view[2, :3]) + self.clip_radius
         projection = np.diag(
             [
                 height / max(width, 1) / self.extent,
                 1 / self.extent,
-                -1 / (self.extent * 20),
+                -1 / (depth * 1.01),
                 1,
             ]
         )
@@ -397,6 +421,7 @@ class LegoView(QOpenGLWindow):
         fmt.setDepthBufferSize(24)
         self.setFormat(fmt)
         self.scene = scene
+        self.corners = scene.corners()
         self.camera = Camera(scene.bounds())
         if state:
             self.camera.restore(state)
@@ -480,22 +505,30 @@ class LegoView(QOpenGLWindow):
         scale = self.devicePixelRatio()
         return round(self.width() * scale), round(self.height() * scale)
 
-    def select(self, identities):
+    def interest_points(self):
+        first, last = self.group or (1, len(self.scene.instances))
+        indices = [
+            i
+            for i in range(first - 1, last)
+            if self.scene.instances[i].step <= self.step
+        ]
+        selected = [i for i in indices if i + 1 in self.selection]
+        return self.corners[selected or indices].reshape(-1, 3)
+
+    def select(self, identities, *, center=False):
         identities = set(identities)
         selection = frozenset(
             i + 1
             for i, item in enumerate(self.scene.instances)
             if item.identity in identities
         )
-        if selection and selection != self.selection:
-            self.camera.fit(
-                self.scene.bounds([self.scene.instances[i - 1] for i in selection]),
-                self.width() / max(self.height(), 1),
-                preserve_rotation=True,
-            )
-            self.fitted = True
-            self.changed.emit()
         self.selection = selection
+        if selection and center:
+            points = self.interest_points()
+            if len(points):
+                self.camera.center_on(points)
+                self.fitted = True
+                self.changed.emit()
         self.update()
 
     def mousePressEvent(self, event):
@@ -542,7 +575,10 @@ class LegoView(QOpenGLWindow):
             )
             self.doneCurrent()
             identity = self.scene.instances[selected - 1].identity if selected else ""
-            self.select((identity,))
+            self.select(
+                (identity,),
+                center=bool(event.modifiers() & Qt.KeyboardModifier.ControlModifier),
+            )
             self.selected.emit(identity)
         self.update()
         self.changed.emit()
@@ -555,8 +591,11 @@ class LegoView(QOpenGLWindow):
             super().keyPressEvent(event)
 
     def wheelEvent(self, event):
-        self.camera.extent = max(
-            0.5, min(1e6, self.camera.extent * math.exp(-event.angleDelta().y() / 1200))
+        delta = event.pixelDelta().y() or event.angleDelta().y()
+        self.camera.zoom(
+            math.exp(delta / 1200),
+            self.interest_points(),
+            self.width() / max(self.height(), 1),
         )
         self.update()
         self.changed.emit()

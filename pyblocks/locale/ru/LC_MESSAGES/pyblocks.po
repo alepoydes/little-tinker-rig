@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PyBlocks Studio 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-27 10:16+0300\n"
+"POT-Creation-Date: 2026-09-27 11:31+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -38,11 +38,11 @@ msgstr " · отпустите для возврата к нулю"
 msgid " · {p0:.2f} V"
 msgstr " · {p0:.2f} В"
 
-#: pyblocks/qt/assembly.py:280
+#: pyblocks/qt/assembly.py:302
 msgid "3D is unavailable on this display. Step descriptions and parts are still available."
 msgstr "На этом экране 3D недоступно. Описание шагов и список деталей доступны."
 
-#: pyblocks/qt/assembly.py:289
+#: pyblocks/qt/assembly.py:311
 #, python-brace-format
 msgid "3D unavailable: {detail}"
 msgstr "3D недоступно: {detail}"
@@ -181,7 +181,7 @@ msgstr "Аргументы: {name}"
 msgid "Assembly"
 msgstr "Сборка"
 
-#: pyblocks/qt/assembly.py:312
+#: pyblocks/qt/assembly.py:336
 #, python-brace-format
 msgid "Assembly · step {current} of {total}"
 msgstr "Сборка · шаг {current} из {total}"
@@ -226,7 +226,7 @@ msgstr "Цвет / расстояние BOOST"
 msgid "BOOST distance, %"
 msgstr "Расстояние BOOST, %"
 
-#: pyblocks/qt/lessons.py:216
+#: pyblocks/qt/lessons.py:218
 msgid "Back to task"
 msgstr "Назад к заданию"
 
@@ -349,11 +349,11 @@ msgstr ""
 msgid "Call: …(…)"
 msgstr "Вызов: …(…)"
 
-#: pyblocks/qt/lessons.py:699
+#: pyblocks/qt/lessons.py:710
 msgid "Cancel"
 msgstr "Отмена"
 
-#: pyblocks/qt/assembly.py:159
+#: pyblocks/qt/assembly.py:171
 msgid "Cancel download"
 msgstr "Отменить загрузку"
 
@@ -393,7 +393,7 @@ msgstr "Проверить условие"
 msgid "Check an exception or class hierarchy."
 msgstr "Проверить принадлежность к иерархии исключений или классов."
 
-#: pyblocks/qt/lessons.py:523
+#: pyblocks/qt/lessons.py:534
 #, python-brace-format
 msgid "Check connections: {devices}"
 msgstr "Проверь подключения: {devices}"
@@ -532,7 +532,7 @@ msgstr ""
 msgid "Choose between two actions using a condition."
 msgstr "Выбрать одно из двух действий по условию."
 
-#: pyblocks/qt/assembly.py:520
+#: pyblocks/qt/assembly.py:554
 msgid "Choose one of the open robot models."
 msgstr "Выбери одну из открытых моделей роботов."
 
@@ -620,11 +620,11 @@ msgstr "Датчик цвета"
 msgid "Comparison operands"
 msgstr "Операнды сравнения"
 
-#: pyblocks/qt/lessons.py:531
+#: pyblocks/qt/lessons.py:542
 msgid "Complete the task, then mark it complete."
 msgstr "Выполни задание, затем отметь выполнение."
 
-#: pyblocks/qt/lessons.py:340 pyblocks/qt/lessons.py:497
+#: pyblocks/qt/lessons.py:342 pyblocks/qt/lessons.py:508
 msgid "Completed"
 msgstr "Выполнено"
 
@@ -672,7 +672,7 @@ msgstr "Подключить датчик расстояния. Параметр
 msgid "Connect a force sensor to measure presses."
 msgstr "Подключить датчик силы для измерения нажатий."
 
-#: pyblocks/qt/device.py:170 pyblocks/qt/lessons.py:514
+#: pyblocks/qt/device.py:170 pyblocks/qt/lessons.py:525
 msgid "Connect a hub at the top right of the window."
 msgstr "Подключение — в правом верхнем углу окна."
 
@@ -749,7 +749,7 @@ msgstr "Подключение к хабу…"
 msgid "Connection"
 msgstr "Подключение"
 
-#: pyblocks/qt/lessons.py:518
+#: pyblocks/qt/lessons.py:529
 msgid "Connections match the lesson."
 msgstr "Подключения соответствуют уроку."
 
@@ -1134,9 +1134,9 @@ msgstr "Перетаскивайте стик; отпустите для воз�
 msgid "Drag the whole fragment into the program or another cell"
 msgstr "Перетащите весь фрагмент в программу или другую ячейку"
 
-#: pyblocks/qt/assembly.py:431
-msgid "Drag to rotate · Shift+drag to pan · Scroll to zoom"
-msgstr "Мышь: вращение · Shift + мышь: сдвиг · Колесо: масштаб"
+#: pyblocks/qt/assembly.py:445
+msgid "Drag to rotate · Shift+drag to pan · Scroll to zoom · Ctrl+click to center"
+msgstr "Мышь: вращение · Shift + мышь: сдвиг · Колесо: масштаб · Ctrl+щелчок: центрирование"
 
 #: pyblocks/snippets/pybricks/lessons.py:107
 msgid ""
@@ -1358,7 +1358,7 @@ msgstr "Ожидается {expected}, получено {actual}"
 msgid "Expert"
 msgstr "Эксперт"
 
-#: pyblocks/qt/lessons.py:679 pyblocks/qt/lessons.py:701
+#: pyblocks/qt/lessons.py:690 pyblocks/qt/lessons.py:712
 msgid "Export lesson project with resources"
 msgstr "Экспортировать проект урока с ресурсами"
 
@@ -1366,11 +1366,11 @@ msgstr "Экспортировать проект урока с ресурсам
 msgid "Export lesson project with resources…"
 msgstr "Экспортировать проект урока с ресурсами…"
 
-#: pyblocks/qt/lessons.py:690
+#: pyblocks/qt/lessons.py:701
 msgid "Export to a separate project file"
 msgstr "Экспортируйте в отдельный файл проекта"
 
-#: pyblocks/qt/lessons.py:730
+#: pyblocks/qt/lessons.py:741
 #, python-brace-format
 msgid "Exported {path}"
 msgstr "Экспортировано: {path}"
@@ -1403,7 +1403,7 @@ msgstr "Найти блок…"
 msgid "Find a definition…"
 msgstr "Найти определение…"
 
-#: pyblocks/qt/assembly.py:87
+#: pyblocks/qt/assembly.py:99
 msgid ""
 "Find a device already installed at this assembly step. This does not check its "
 "connection to the hub."
@@ -1814,12 +1814,12 @@ msgstr "Левый стик · WASD"
 msgid "Lesson"
 msgstr "Урок"
 
-#: pyblocks/qt/lessons.py:272
+#: pyblocks/qt/lessons.py:274
 #, python-brace-format
 msgid "Lesson blocks are unavailable: {blocks}"
 msgstr "Блоки урока недоступны: {blocks}"
 
-#: pyblocks/qt/lessons.py:505
+#: pyblocks/qt/lessons.py:516
 msgid "Lesson complete. Save your project to keep the program and progress."
 msgstr "Урок завершён. Сохрани проект, чтобы сохранить программу и результаты."
 
@@ -1854,16 +1854,16 @@ msgstr ""
 "\n"
 "Списки, строки и словари как обычные данные Python."
 
-#: pyblocks/qt/assembly.py:228
+#: pyblocks/qt/assembly.py:246
 #, python-brace-format
 msgid "Loading parts: {current} / {total} MiB"
 msgstr "Загрузка деталей: {current} / {total} МиБ"
 
-#: pyblocks/qt/assembly.py:62 pyblocks/qt/assembly.py:210
+#: pyblocks/qt/assembly.py:73 pyblocks/qt/assembly.py:228
 msgid "Loading robot model…"
 msgstr "Загрузка модели робота…"
 
-#: pyblocks/qt/assembly.py:355
+#: pyblocks/qt/assembly.py:380
 msgid "Locate a device"
 msgstr "Найти устройство"
 
@@ -1883,7 +1883,7 @@ msgstr "Ручное управление"
 msgid "Manual control stops the running program and opens the port monitor."
 msgstr "Ручной режим остановит текущую программу и откроет монитор портов."
 
-#: pyblocks/qt/lessons.py:70 pyblocks/qt/lessons.py:497
+#: pyblocks/qt/lessons.py:70 pyblocks/qt/lessons.py:508
 msgid "Mark complete"
 msgstr "Отметить выполнение"
 
@@ -2071,7 +2071,7 @@ msgstr "Следующий узел / цель"
 msgid "Next stage →"
 msgstr "Следующий этап →"
 
-#: pyblocks/qt/assembly.py:139
+#: pyblocks/qt/assembly.py:151
 msgid "Next step"
 msgstr "Следующий шаг"
 
@@ -2117,15 +2117,15 @@ msgstr ""
 msgid "Open"
 msgstr "Открыть"
 
-#: pyblocks/qt/assembly.py:530
-msgid "Open a robot.json file to follow assembly steps without a lesson."
-msgstr "Открой файл robot.json, чтобы пройти шаги сборки без урока."
-
 #: pyblocks/qt/lessons.py:349
 msgid "Open 3D building instructions"
 msgstr "Открыть пошаговую 3D-инструкцию"
 
-#: pyblocks/qt/lessons.py:377
+#: pyblocks/qt/assembly.py:564
+msgid "Open a robot.json file to follow assembly steps without a lesson."
+msgstr "Открой файл robot.json, чтобы пройти шаги сборки без урока."
+
+#: pyblocks/qt/lessons.py:382
 msgid "Open assembly"
 msgstr "Открыть сборку"
 
@@ -2133,7 +2133,7 @@ msgstr "Открыть сборку"
 msgid "Open blocks folder"
 msgstr "Открыть папку блоков"
 
-#: pyblocks/qt/lessons.py:378
+#: pyblocks/qt/lessons.py:383
 msgid "Open controls"
 msgstr "Открыть управление"
 
@@ -2149,7 +2149,7 @@ msgstr "Открыть прошивку"
 msgid "Open lesson"
 msgstr "Открыть урок"
 
-#: pyblocks/qt/lessons.py:228
+#: pyblocks/qt/lessons.py:230
 msgid "Open lesson or project"
 msgstr "Открыть урок или проект"
 
@@ -2161,11 +2161,11 @@ msgstr "Открыть урок или проект…"
 msgid "Open local firmware…"
 msgstr "Открыть файл прошивки…"
 
-#: pyblocks/qt/assembly.py:177
+#: pyblocks/qt/assembly.py:189
 msgid "Open parts ZIP"
 msgstr "Открыть ZIP с деталями"
 
-#: pyblocks/qt/assembly.py:156
+#: pyblocks/qt/assembly.py:168
 msgid "Open parts ZIP…"
 msgstr "Открыть ZIP с деталями…"
 
@@ -2173,7 +2173,7 @@ msgstr "Открыть ZIP с деталями…"
 msgid "Open port monitor"
 msgstr "Открыть монитор портов"
 
-#: pyblocks/qt/lessons.py:379
+#: pyblocks/qt/lessons.py:384
 msgid "Open program"
 msgstr "Открыть программу"
 
@@ -2185,11 +2185,11 @@ msgstr "Открыть программу или урок"
 msgid "Open recent"
 msgstr "Открыть недавние"
 
-#: pyblocks/qt/assembly.py:601
+#: pyblocks/qt/assembly.py:635
 msgid "Open robot instructions"
 msgstr "Открыть инструкцию сборки"
 
-#: pyblocks/qt/assembly.py:536 pyblocks/qt/lessons.py:161
+#: pyblocks/qt/assembly.py:570 pyblocks/qt/lessons.py:161
 msgid "Open robot instructions…"
 msgstr "Открыть инструкцию сборки…"
 
@@ -2197,7 +2197,7 @@ msgstr "Открыть инструкцию сборки…"
 msgid "Open starter program"
 msgstr "Открыть стартовую программу"
 
-#: pyblocks/qt/lessons.py:516
+#: pyblocks/qt/lessons.py:527
 msgid "Open the port monitor to check the expected connections."
 msgstr "Открой монитор портов для проверки подключений."
 
@@ -2231,11 +2231,11 @@ msgstr "Параметры: {name}"
 msgid "Parent"
 msgstr "Родитель"
 
-#: pyblocks/qt/assembly.py:305
+#: pyblocks/qt/assembly.py:328
 msgid "Parts"
 msgstr "Детали"
 
-#: pyblocks/qt/assembly.py:73 pyblocks/qt/assembly.py:305
+#: pyblocks/qt/assembly.py:84 pyblocks/qt/assembly.py:328
 msgid "Parts for this step"
 msgstr "Детали для этого шага"
 
@@ -2311,7 +2311,7 @@ msgstr "Монитор портов"
 msgid "Prepare download"
 msgstr "Загрузить и проверить"
 
-#: pyblocks/qt/lessons.py:699
+#: pyblocks/qt/lessons.py:710
 msgid "Preparing offline resources…"
 msgstr "Подготовка ресурсов для работы без сети…"
 
@@ -2331,7 +2331,7 @@ msgstr "Предыдущий узел / цель"
 msgid "Previous position"
 msgstr "Прежнее положение"
 
-#: pyblocks/qt/assembly.py:132
+#: pyblocks/qt/assembly.py:144
 msgid "Previous step"
 msgstr "Предыдущий шаг"
 
@@ -2649,7 +2649,7 @@ msgstr "Прочитать, какая сторона хаба направле�
 msgid "Read-only"
 msgstr "Только чтение"
 
-#: pyblocks/qt/assembly.py:142
+#: pyblocks/qt/assembly.py:154
 msgid "Recommended view"
 msgstr "Рекомендуемый вид"
 
@@ -2808,7 +2808,7 @@ msgstr "Восстановить прошивку LEGO"
 msgid "Result"
 msgstr "Результат"
 
-#: pyblocks/qt/assembly.py:153
+#: pyblocks/qt/assembly.py:165
 msgid "Retry loading parts"
 msgstr "Повторить загрузку деталей"
 
@@ -2850,11 +2850,11 @@ msgstr ""
 "\n"
 "Короткие законченные действия в виде обычных функций Python."
 
-#: pyblocks/qt/assembly.py:250
+#: pyblocks/qt/assembly.py:268
 msgid "Robot instructions"
 msgstr "Инструкция сборки робота"
 
-#: pyblocks/qt/assembly.py:316
+#: pyblocks/qt/assembly.py:341
 msgid "Robot model"
 msgstr "Модель робота"
 
@@ -2974,7 +2974,7 @@ msgstr "Сохранить и применить"
 msgid "Save as…"
 msgstr "Сохранить как…"
 
-#: pyblocks/qt/lessons.py:628
+#: pyblocks/qt/lessons.py:639
 msgid "Save lesson project"
 msgstr "Сохранить проект урока"
 
@@ -3032,11 +3032,13 @@ msgstr ""
 "type должно иметь значение lego. Автоматическая загрузка LEGO доступна только для "
 "Inventor / SPIKE Prime."
 
-#: pyblocks/qt/assembly.py:79
-msgid "Select all copies added in this step. Click again or press Escape to clear."
+#: pyblocks/qt/assembly.py:90
+msgid ""
+"Select all copies added in this step. Ctrl+click to center without zooming. Click "
+"again or press Escape to clear."
 msgstr ""
-"Выдели все копии, добавляемые на этом шаге. Повторный щелчок или Escape снимает "
-"выделение."
+"Выдели все копии, добавляемые на этом шаге. Ctrl+щелчок центрирует без изменения "
+"масштаба. Повторный щелчок или Escape снимает выделение."
 
 #: pyblocks/qt/controls.py:257
 msgid "Send controller input to my program"
@@ -3192,7 +3194,7 @@ msgstr "Показать значок на дисплее Prime или Inventor.
 msgid "Show block"
 msgstr "Показать блок"
 
-#: pyblocks/qt/assembly.py:124
+#: pyblocks/qt/assembly.py:136
 msgid "Show future parts as outlines"
 msgstr "Показать контуры будущих деталей"
 
@@ -3218,11 +3220,11 @@ msgstr ""
 "\n"
 "Отдельные операции с устройствами для изучения полных программ роботов."
 
-#: pyblocks/qt/lessons.py:509
+#: pyblocks/qt/lessons.py:520
 msgid "Stage complete. Continue with Next stage, or keep experimenting."
 msgstr "Этап выполнен. Перейди к следующему этапу или продолжай опыты."
 
-#: pyblocks/qt/lessons.py:363
+#: pyblocks/qt/lessons.py:368
 #, python-brace-format
 msgid "Stage {current} of {total} · {title}"
 msgstr "Этап {current} из {total} · {title}"
@@ -3387,11 +3389,11 @@ msgstr "У объекта нет такого метода или свойств
 msgid "This operation is not implemented by the current execution environment."
 msgstr "Эта операция не реализована в текущей среде выполнения."
 
-#: pyblocks/qt/lessons.py:641
+#: pyblocks/qt/lessons.py:652
 msgid "This project is already open. Choose another file."
 msgstr "Этот проект уже открыт. Выбери другой файл."
 
-#: pyblocks/qt/lessons.py:457
+#: pyblocks/qt/lessons.py:468
 msgid "This stage has no starter program."
 msgstr "На этом этапе нет стартовой программы."
 
@@ -3605,11 +3607,11 @@ msgstr "Включить вибрацию Xbox для обратной связ�
 msgid "View"
 msgstr "Вид"
 
-#: pyblocks/qt/assembly.py:99
+#: pyblocks/qt/assembly.py:111
 msgid "View the whole robot or isolate an assembled section without changing the step."
 msgstr "Покажи всего робота или отдельно собранную часть, не меняя шаг."
 
-#: pyblocks/qt/assembly.py:109
+#: pyblocks/qt/assembly.py:121
 msgid "View:"
 msgstr "Вид:"
 
@@ -3665,7 +3667,7 @@ msgstr ""
 msgid "Warnings"
 msgstr "Предупреждения"
 
-#: pyblocks/qt/assembly.py:367
+#: pyblocks/qt/assembly.py:392
 msgid "Whole robot"
 msgstr "Весь робот"
 
@@ -3787,6 +3789,9 @@ msgstr "＋ Подключить хаб"
 #~ msgid "Definition"
 #~ msgstr "Определение"
 
+#~ msgid "Drag to rotate · Shift+drag to pan · Scroll to zoom"
+#~ msgstr "Мышь: вращение · Shift + мышь: сдвиг · Колесо: масштаб"
+
 #~ msgid "Drive bases and clocks"
 #~ msgstr "Движение и секундомеры"
 
@@ -3879,6 +3884,11 @@ msgstr "＋ Подключить хаб"
 #~ "\n"
 #~ "Короткие законченные действия, распознаваемые как "
 #~ "блоки и разбираемые на обычный Python."
+
+#~ msgid "Select all copies added in this step. Click again or press Escape to clear."
+#~ msgstr ""
+#~ "Выдели все копии, добавляемые на этом шаге."
+#~ " Повторный щелчок или Escape снимает выделение."
 
 #~ msgid "Sensors and timing"
 #~ msgstr "Датчики и ожидание"
