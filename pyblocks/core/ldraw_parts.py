@@ -45,6 +45,12 @@ def digest(path):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
+def read_file(path, dependencies):
+    data = path.read_bytes() if path.is_file() else None
+    dependencies[path] = hashlib.sha256(data).hexdigest() if data is not None else None
+    return data
+
+
 def resolve_library(
     root, reference, *, download=False, local=None, progress=None, cancelled=None
 ):
@@ -121,11 +127,12 @@ def member_name(name):
 
 
 class PartLibrary(AbstractContextManager):
-    def __init__(self, path):
+    def __init__(self, path, *, dependencies=None):
         self.path = Path(path)
         self.archive = None
         self.members = {}
         self.used = {}
+        self.dependencies = dependencies if dependencies is not None else {}
         if self.path.is_dir():
             return
         try:
@@ -163,9 +170,9 @@ class PartLibrary(AbstractContextManager):
             data = self.archive.read(self.members[name])
         else:
             path = resource(self.path, original)
-            if not path.is_file():
+            data = read_file(path, self.dependencies)
+            if data is None:
                 return None
-            data = path.read_bytes()
         self.used[name] = data
         return data
 

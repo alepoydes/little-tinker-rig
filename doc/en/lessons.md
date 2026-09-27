@@ -128,6 +128,17 @@ before use, and installed atomically. The viewer reads only referenced ZIP membe
 into memory without extracting thousands of files. No geometry is downloaded
 during rendering, camera movement or step changes.
 
+Prepared model geometry is cached in the `scenes/` subdirectory and reused after
+restarting Studio, including across working copies of the same lesson. The first
+open builds this cache; subsequent opens read it directly. Changes to the model,
+referenced parts, colors or geometry converter trigger a rebuild. Camera settings
+and lesson progress remain separate. The graphics card still receives the geometry
+when the viewer opens.
+
+Deleting only `scenes/` rebuilds geometry from the model and cached parts without
+downloading them again. An unreadable or unwritable scene cache does not prevent
+opening a valid model.
+
 The official `complete.zip` URL changes with library releases. A checksum mismatch
 never substitutes new geometry silently: use the matching local archive or an
 offline export. Future pinned release archives can use the same library reference

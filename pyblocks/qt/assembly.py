@@ -190,7 +190,7 @@ class AssemblyPage(QWidget):
         reference = self.robot.get("library", ".")
 
         def action(*, progress, cancelled):
-            from pyblocks.core.ldraw import LDraw
+            from pyblocks.core.ldraw_cache import load_scene
 
             library = resolve_library(
                 root,
@@ -200,8 +200,14 @@ class AssemblyPage(QWidget):
                 progress=progress,
                 cancelled=cancelled,
             )
-            with LDraw(path, library) as reader:
-                scene = reader.scene()
+            scene = load_scene(
+                path,
+                library,
+                library_digest=(
+                    reference["sha256"] if isinstance(reference, dict) else None
+                ),
+                cancelled=cancelled,
+            )
             check_cancelled(cancelled)
             return scene
 

@@ -1912,6 +1912,15 @@ needed members into memory, without extracting the library. Updates are explicit
 a changed remote archive fails verification instead of silently changing geometry.
 Local project-owned libraries may also be ZIP files or directories.
 
+Prepared scenes persist in the user cache as numeric NumPy arrays and JSON metadata,
+without pickle. Keys include model content, the verified library archive digest
+and converter revision; working-copy paths do not distinguish identical models.
+Directory libraries and local overrides are validated by content, including missing
+lookup candidates so adding a higher-priority file invalidates old geometry.
+Atomic cache writes, cancellation and rebuilding corrupt entries keep source
+models authoritative; unavailable cache storage must not block viewing. Shared
+meshes compute their bounds once rather than scanning vertices for every instance.
+
 Normal project saves retain external references. Export with resources creates a
 separate offline project containing only the model's transitive dependencies,
 colors, attribution and licenses. It includes current drafts, Scratch and progress

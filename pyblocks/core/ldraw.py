@@ -7,11 +7,12 @@ or physical simulation is performed.
 
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 
 import numpy as np
 
-from .ldraw_parts import PartLibrary
+from .ldraw_parts import PartLibrary, read_file
 from .paths import resource
 
 
@@ -23,7 +24,7 @@ class Mesh:
     lines: np.ndarray  # (n, 4, 3); controls coincide for unconditional edges
     line_colors: np.ndarray
 
-    @property
+    @cached_property
     def bounds(self):
         points = np.concatenate(
             (self.triangles.reshape(-1, 3), self.lines[:, :2].reshape(-1, 3))
@@ -105,14 +106,19 @@ def reference(tokens):
 
 class LDraw(AbstractContextManager):
     def __init__(self, path: Path, library: Path | None = None):
-        self.root = path.resolve().parent
+        path = path.resolve()
+        self.root = path.parent
+        self.dependencies = {}
         self.files = {}
         self.parts = set()
         self.meshes = {}
         self.colors = {}
         self.loading = set()
-        self.main = self.add_file(path.name, path.read_text(encoding="utf-8-sig"))
-        self.library = PartLibrary(library or self.root)
+        data = read_file(path, self.dependencies)
+        if data is None:
+            raise FileNotFoundError(path)
+        self.main = self.add_file(path.name, data.decode("utf-8-sig"))
+        self.library = PartLibrary(library or self.root, dependencies=self.dependencies)
         try:
             if config := self.library.read("LDConfig.ldr"):
                 self.add_file("ldconfig.ldr", config.decode("utf-8-sig"))
@@ -184,7 +190,7 @@ class LDraw(AbstractContextManager):
     def records(self, name):
         if name not in self.files:
             path = resource(self.root, name)
-            data = path.read_bytes() if path.is_file() else None
+            data = read_file(path, self.dependencies)
             if data is None:
                 for prefix in ("parts/", "p/", ""):
                     data = self.library.read(prefix + name)
