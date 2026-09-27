@@ -3,12 +3,17 @@
 ```sh
 uv sync --all-extras --locked
 uv run --all-extras pytest
-uv run ruff check .
-uv run black --check .
+uv run ruff check pyblocks tests tools build_support.py
+uv run black --check pyblocks tests tools build_support.py
 uv run python tools/translations.py check
 uv run python tools/check_docs.py
 uv build
 ```
+
+Lint and format the application, tests and tools. Example programs retain upstream
+conventions and are validated by the example tests. Pytest includes the repository
+root on its import path so command-line and module invocations resolve the same
+development tools.
 
 The uv development environment pins Python 3.13 to use binary wheels for the
 locked renderer dependencies. The application's minimum remains Python 3.11.
@@ -24,11 +29,23 @@ Window geometry uses Qt's save/restore API, including maximized/full-screen stat
 and screen-bound adjustment. Save only after close confirmation and recovery
 cleanup succeed. Reopening must remain visible even after closing while minimized.
 
+Save As carries the source document's encoding, including its BOM, independently
+of the destination's previous contents. Verify the decoded text after reopening,
+not only the text still held by the editor.
+
+Close confirmations have the same scope as saves. A lesson archive owns all its
+programs: when closing a window, ask once per project and consider drafts in every
+tab. Discard must not be undone by saving another tab of the same archive; Cancel
+preserves the working copy and open documents.
+
 Hub firmware modules are registered by full name and need not be attributes of
 their parent module. Load modules directly when inspecting available classes;
 do not assume `import pybricks.hubs as hubs` has CPython package semantics.
 Monitor tests must exercise this import boundary as well as port telemetry and
 motor cleanup. Compilation alone cannot detect missing module attributes.
+Unknown devices have no telemetry reads that could detect removal. Rescan them
+periodically, remove unplugged entries and preserve active supported devices.
+Test both immediate replacement and replacement after an empty-port interval.
 
 Inline block display has a per-instance Auto/Source/Definition choice. Auto considers
 owned comments, never blank lines. Definition text is a source-mapped projection;

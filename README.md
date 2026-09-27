@@ -92,12 +92,15 @@ Install [uv](https://docs.astral.sh/uv/), then:
 ```sh
 uv sync --all-extras --locked
 uv run --all-extras pytest
-uv run ruff check .
-uv run black --check .
+uv run ruff check pyblocks tests tools build_support.py
+uv run black --check pyblocks tests tools build_support.py
 uv run python tools/translations.py check
 uv run python tools/check_docs.py
 uv build
 ```
+
+Lint and format the application, tests and tools. Example programs retain upstream
+conventions and are validated by the example tests.
 
 `uv.lock` pins dependencies. For the core alone, use `uv sync`. Select interfaces
 with `--extra tui` or `--extra qt`, physical connections with `--extra pybricks`,

@@ -51,6 +51,7 @@ pyblocks = ["snippets/**/*.py", "snippets/**/*.toml", "core/formatting.toml", "l
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 asyncio_mode = "auto"
 
 [tool.ruff]

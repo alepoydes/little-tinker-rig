@@ -40,6 +40,7 @@ from PySide6.QtWidgets import (
 from pyblocks.core.authoring import template_from_source, user_collection
 from pyblocks.core.edit import target_position
 from pyblocks.core.expressions import navigate as navigate_expression
+from pyblocks.core.lessons import localized
 from pyblocks.core.parameters import default_bindings
 from pyblocks.core.snippets import LEVELS, load_collection
 from pyblocks.core.transfer import Transfer
@@ -851,12 +852,34 @@ class Studio(QMainWindow):
         super().mouseMoveEvent(event)
 
     def confirm_close(self, page):
-        if not page.dirty and not (page.lesson_project and page.lesson_project.dirty):
+        project = page.lesson_project
+        pages = (
+            [
+                self.documents.widget(i)
+                for i in range(self.documents.count())
+                if self.documents.widget(i).lesson_project is project
+            ]
+            if project
+            else [page]
+        )
+        if not any(p.dirty for p in pages) and not (project and project.dirty):
             return True
+        message = (
+            tr(
+                "Save lesson project {name} before closing? Saving includes all open programs in this project.",
+                name=(
+                    project.path.name
+                    if project.path
+                    else localized(project.lesson.data["title"], language())
+                ),
+            )
+            if project
+            else tr("Save {p0} before closing?", p0=page.session.project.path.name)
+        )
         result = QMessageBox.question(
             self,
             tr("Unsaved changes"),
-            tr("Save {p0} before closing?", p0=page.session.project.path.name),
+            message,
             QMessageBox.StandardButton.Save
             | QMessageBox.StandardButton.Discard
             | QMessageBox.StandardButton.Cancel,
@@ -1374,6 +1397,7 @@ class Studio(QMainWindow):
                 project = Project(destination, allow_draft=True)
                 project.document = session.document
                 project.draft = session.project.draft
+                project.encoding = session.project.encoding
                 project.collections = session.project.collections
                 project.pins = session.project.pins
                 project.save()
@@ -1523,10 +1547,17 @@ class Studio(QMainWindow):
             self.error(str(error))
             event.ignore()
             return
+        # A lesson archive is saved as a whole; one close decision owns all its tabs.
+        confirmed = set()
         for index in range(self.documents.count()):
-            if not self.confirm_close(self.documents.widget(index)):
+            page = self.documents.widget(index)
+            owner = page.lesson_project or page
+            if owner in confirmed:
+                continue
+            if not self.confirm_close(page):
                 event.ignore()
                 return
+            confirmed.add(owner)
         self.controls.close()
         if self.robot:
             self.robot.close()

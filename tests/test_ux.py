@@ -319,6 +319,49 @@ def test_insertion_destinations_respect_declarations_and_loop_context():
     assert not tuple(edit.insertion_targets(syntax, "break"))
 
 
+@pytest.mark.parametrize(
+    "encoding, cookie, text, existing",
+    [
+        ("latin-1", "latin-1", "café", False),
+        ("cp1251", "cp1251", "Привет", True),
+        ("utf-8-sig", "utf-8", "Привет", False),
+    ],
+)
+def test_save_as_preserves_source_encoding(
+    tmp_path, qt_app, monkeypatch, encoding, cookie, text, existing
+):
+    from PySide6.QtWidgets import QFileDialog
+
+    from pyblocks.core.project import Project
+    from pyblocks.qt.app import Studio
+
+    path, destination = tmp_path / "original.py", tmp_path / "copy.py"
+    source = f'# coding: {cookie}\nmessage = "{text}"\n'
+    original = source.encode(encoding)
+    path.write_bytes(original)
+    if existing:
+        destination.write_bytes(
+            '# coding: latin-1\nmessage = "old"\n'.encode("latin-1")
+        )
+    window = Studio(path)
+    try:
+        monkeypatch.setattr(
+            QFileDialog, "getSaveFileName", lambda *args: (str(destination), "")
+        )
+        assert window.save_as()
+        assert destination.read_bytes() == original
+        assert Project(destination).document.state.source == source
+        assert path.read_bytes() == original
+        # The newly selected file also retains its encoding on subsequent saves.
+        window.session.editor.commit(source.replace(text, text + "!"))
+        window.save()
+        assert Project(destination).document.state.source == source.replace(
+            text, text + "!"
+        )
+    finally:
+        discard_window(window)
+
+
 def test_closing_invalid_draft_and_save_as_preserve_other_documents(
     tmp_path, qt_app, monkeypatch
 ):

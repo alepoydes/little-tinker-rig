@@ -330,6 +330,55 @@ def test_monitor_imports_firmware_modules_and_reports_ports(model, ports, capsys
     assert reports[0]["monitoring"] is True
 
 
+def test_monitor_redetects_unknown_devices_and_unplugged_ports(monkeypatch, capsys):
+    import queue
+    import runpy
+    from unittest.mock import patch
+
+    from pyblocks.pybricks.sim_runtime import install_modules
+
+    class Finished(BaseException):
+        pass
+
+    now = 0
+    with patch.dict(sys.modules):
+        install_modules(World(), queue.Queue())
+        from pybricks import tools
+        from pybricks.iodevices import PUPDevice
+
+        info = PUPDevice.info
+
+        def identify(device):
+            if device.port == "A":
+                if now == 0:
+                    return {"id": 999}
+                if now == 2000:
+                    raise OSError("Device unplugged")
+            if device.port == "B" and now == 0:
+                return {"id": 999}
+            return info(device)
+
+        def advance(milliseconds):
+            nonlocal now
+            now += 2000
+            if now > 4000:
+                raise Finished()
+
+        monkeypatch.setattr(PUPDevice, "info", identify)
+        monkeypatch.setattr(tools.StopWatch, "time", lambda self: now)
+        monkeypatch.setattr(tools, "wait", advance)
+        monitor = Path(__file__).parents[1] / "pyblocks/pybricks/hub_monitor.py"
+        with pytest.raises(Finished):
+            runpy.run_path(str(monitor), run_name="__main__")
+
+    reports = []
+    TelemetryStream(lambda text: None, reports.append).feed(
+        capsys.readouterr().out.encode()
+    )
+    assert [r["ports"]["A"]["type"] for r in reports] == ["unknown", "empty", "motor"]
+    assert [r["ports"]["B"]["type"] for r in reports] == ["unknown", "motor", "motor"]
+
+
 def test_monitor_brakes_started_motors_if_later_device_fails(monkeypatch):
     import queue
     import runpy

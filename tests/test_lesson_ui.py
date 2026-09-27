@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from pyblocks.core.lessons import StudentProject
 
 
@@ -31,6 +33,67 @@ def make_lesson(tmp_path):
         )
     )
     return root
+
+
+@pytest.mark.parametrize("decision", ["Discard", "Save", "Cancel"])
+def test_window_close_decides_once_for_whole_lesson_project(
+    tmp_path, qt_app, monkeypatch, decision
+):
+    from zipfile import ZipFile
+
+    from PySide6.QtWidgets import QMessageBox
+
+    from pyblocks.qt.app import Studio
+
+    window = Studio(tmp_path / "plain.py")
+    try:
+        first = window.lessons.open(make_lesson(tmp_path))
+        project = first.lesson_project
+        project.path = tmp_path / "lesson.pyblocks"
+        first.session.editor.commit("first = 1\n")
+        window.lessons.new_program()
+        second = window.document_page
+        second.session.editor.commit("second = 2\n")
+        window.lessons.save(project)
+        saved = project.path.read_bytes()
+        # A clean first tab must not hide changes in a later tab of its archive.
+        if decision != "Save":
+            first.session.editor.commit("first = 10\n")
+        second.change_mode(1)
+        second.code.setPlainText("second = 20\n")
+        texts = [first.text, second.text]
+        names = [
+            p.session.project.path.relative_to(project.root).as_posix()
+            for p in (first, second)
+        ]
+        prompts = []
+
+        def answer(parent, title, message, *args):
+            prompts.append(message)
+            return (
+                getattr(QMessageBox.StandardButton, decision)
+                if len(prompts) == 1
+                else QMessageBox.StandardButton.Save
+            )
+
+        monkeypatch.setattr(QMessageBox, "question", answer)
+        assert window.close() == (decision != "Cancel")
+        assert len(prompts) == 1
+        assert "lesson.pyblocks" in prompts[0] and "all open programs" in prompts[0]
+        if decision == "Save":
+            with ZipFile(project.path) as archive:
+                assert [archive.read(name).decode() for name in names] == texts
+        else:
+            assert project.path.read_bytes() == saved
+        if decision == "Cancel":
+            assert project.root.is_dir()
+            assert [first.text, second.text] == texts
+            assert window.documents.count() == 3
+    finally:
+        monkeypatch.setattr(
+            QMessageBox, "question", lambda *args: QMessageBox.StandardButton.Discard
+        )
+        window.close()
 
 
 def test_stage_palette_preserves_source_and_free_exploration(tmp_path, qt_app):

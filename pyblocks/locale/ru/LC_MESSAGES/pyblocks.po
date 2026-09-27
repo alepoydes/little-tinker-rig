@@ -2978,6 +2978,11 @@ msgstr "Сохранить как…"
 msgid "Save lesson project"
 msgstr "Сохранить проект урока"
 
+#: pyblocks/qt/app.py
+#, python-brace-format
+msgid "Save lesson project {name} before closing? Saving includes all open programs in this project."
+msgstr "Сохранить проект урока {name} перед закрытием? Будут сохранены все открытые программы этого проекта."
+
 #: pyblocks/qt/app.py:859
 #, python-brace-format
 msgid "Save {p0} before closing?"

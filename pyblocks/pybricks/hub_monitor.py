@@ -101,12 +101,13 @@ def main():
             if now - last_scan >= 2000:
                 last_scan = now
                 for port, value in ports.items():
-                    if port in devices:
+                    # Unknown devices have no telemetry reads to detect unplugging.
+                    if port in devices and devices[port][0] != "unknown":
                         continue
                     try:
                         devices[port] = probe(value)
                     except OSError:
-                        pass
+                        devices.pop(port, None)
 
             for _ in range(256):
                 value = read_input_byte()
