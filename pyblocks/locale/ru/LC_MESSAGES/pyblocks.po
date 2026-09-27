@@ -1134,6 +1134,10 @@ msgstr "Перетаскивайте стик; отпустите для воз�
 msgid "Drag the whole fragment into the program or another cell"
 msgstr "Перетащите весь фрагмент в программу или другую ячейку"
 
+#: pyblocks/qt/assembly.py:431
+msgid "Drag to rotate · Shift+drag to pan · Scroll to zoom"
+msgstr "Мышь: вращение · Shift + мышь: сдвиг · Колесо: масштаб"
+
 #: pyblocks/snippets/pybricks/lessons.py:107
 msgid ""
 "Draw a rectangle with two motor axes and return to the start.\n"

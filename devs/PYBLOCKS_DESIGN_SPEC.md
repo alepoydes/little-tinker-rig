@@ -1929,7 +1929,15 @@ unavailable instructions are not invented. Authored MPD steps may differ from
 official PDF page numbers and do not imply physical validation.
 Assembly uses its own workspace and supports orbit/pan/zoom, picking, current-step
 parts, previous-step muting, optional future outlines and camera hints. Inspection
-never changes construction progress: devices and subassemblies are limited to
+centers and frames the selected part or all selected copies without changing the
+viewing angle. Orbit uses this new center; Shift+left drag and right/middle drag
+pan it freely. Clearing selection preserves the camera; Recommended view returns
+to the current construction. Camera changes are retained in assembly progress.
+The renderer uses a contained native OpenGL surface: opening, replacing or closing
+it must not recreate or hide the Studio window's native surface. Native rendering
+checks cover this lifecycle as well as rendered pixels and resource cleanup.
+Rendering and picking use the same physical viewport size, including fractional
+display scaling. Inspection never changes construction progress: devices and subassemblies are limited to
 what is built at the current step. A part-list row selects every matching instance
 added in that step. Repeat click, Escape, background click or changing step clears
 selection. Hidden selected surfaces are translucent and selected edges are drawn

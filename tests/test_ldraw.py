@@ -164,20 +164,46 @@ def test_renderer_draws_and_picks_visible_instance(model):
 
 def test_qt_views_render_with_independent_native_contexts(model, qt_app):
     pytest.importorskip("moderngl")
-    from PySide6.QtGui import QImage
+    from PySide6.QtCore import QEvent, QObject, QPoint, Qt
+    from PySide6.QtGui import QImage, QPlatformSurfaceEvent
+    from PySide6.QtWidgets import QVBoxLayout, QWidget
 
     from pyblocks.qt.lego_view import LegoView
 
     if qt_app.platformName().startswith(("offscreen", "minimal")):
         pytest.skip("Run with QT_QPA_PLATFORM=wayland or xcb to check native Qt GL")
+
+    class SurfaceWatch(QObject):
+        destroyed_surface = False
+
+        def eventFilter(self, obj, event):
+            if (
+                event.type() == QEvent.Type.PlatformSurface
+                and event.surfaceEventType()
+                == QPlatformSurfaceEvent.SurfaceEventType.SurfaceAboutToBeDestroyed
+            ):
+                self.destroyed_surface = True
+            return False
+
     scene = LDraw(model).scene()
     views = [LegoView(scene), LegoView(scene)]
+    hosts, watches = [], []
     try:
         for view in views:
-            view.resize(320, 240)
+            host = QWidget()
+            layout = QVBoxLayout(host)
+            host.resize(360, 280)
+            host.show()
+            qt_app.processEvents()
+            watch = SurfaceWatch(host)
+            host.windowHandle().installEventFilter(watch)
+            hosts.append(host)
+            watches.append(watch)
             view.step = scene.step_count - 1
-            view.show()
-        qt_app.processEvents()
+            layout.addWidget(QWidget.createWindowContainer(view))
+        from PySide6.QtTest import QTest
+
+        QTest.qWait(100)
         for view in views:
             assert view.context() is not None and view.context().isValid()
             assert not view.failure
@@ -185,24 +211,126 @@ def test_qt_views_render_with_independent_native_contexts(model, qt_app):
         assert views[0].renderer.ctx is not views[1].renderer.ctx
         # Revisit the first context after initializing the second, then replace
         # Qt's framebuffer by resizing. A valid context must produce real pixels.
-        for view in views:
-            view.resize(384, 256)
-            qt_app.processEvents()
+        for view, host, watch in zip(views, hosts, watches, strict=True):
+            host.resize(440, 340)
+            QTest.qWait(100)
+            # Capture the freshly drawn back buffer before it is swapped.
+            view.makeCurrent()
+            view.paintGL()
             frame = view.grabFramebuffer().convertToFormat(QImage.Format.Format_RGB888)
+            view.doneCurrent()
             assert not frame.isNull()
             pixels = np.frombuffer(frame.constBits(), dtype=np.uint8).reshape(
                 frame.height(), frame.bytesPerLine()
             )[:, : frame.width() * 3]
             assert np.ptp(pixels) > 50
+            image = pixels.reshape(frame.height(), frame.width(), 3).astype(int)
+            for item in scene.instances:
+                center = scene.meshes[item.part].triangles[0].mean(axis=0)
+                projected = (
+                    view.camera.matrix(frame.width(), frame.height())
+                    @ item.transform
+                    @ np.array([*center, 1])
+                )
+                x = int((projected[0] + 1) * frame.width() / 2)
+                y = int((1 - projected[1]) * frame.height() / 2)
+                assert np.max(np.abs(image[y, x] - [242, 245, 250])) > 20
+            scale = view.devicePixelRatioF()
+            QTest.mouseClick(
+                view,
+                Qt.MouseButton.LeftButton,
+                pos=QPoint(round(x / scale), round(y / scale)),
+            )
+            assert view.selection
+            QTest.keyClick(view, Qt.Key.Key_Escape)
+            assert not view.selection
             assert not view.failure
+            assert not watch.destroyed_surface
             view.cleanup()
             assert view.context().isValid()  # The native context still belongs to Qt.
     finally:
-        for view in views:
+        for view, host in zip(views, hosts, strict=False):
             view.cleanup()
-            view.close()
-            view.deleteLater()
-        qt_app.processEvents()
+            host.close()
+            host.deleteLater()
+        qt_app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+
+
+def test_selection_frames_all_instances_and_pan_moves_the_rotation_center(
+    model, qt_app
+):
+    from PySide6.QtCore import QEvent, QPointF, Qt
+    from PySide6.QtGui import QMouseEvent
+
+    from pyblocks.qt.lego_view import LegoView
+
+    scene = LDraw(model).scene()
+    view = LegoView(scene)
+    view.resize(640, 240)
+    try:
+        view.camera.yaw, view.camera.pitch = -65, 40
+        view.select([scene.instances[i].identity for i in (0, 2)])
+        bounds = scene.bounds([scene.instances[i] for i in (0, 2)])
+        np.testing.assert_allclose(view.camera.center, bounds.mean(axis=0))
+        assert (view.camera.yaw, view.camera.pitch) == (-65, 40)
+        corners = np.array(
+            [
+                [bounds[x, 0], bounds[y, 1], bounds[z, 2], 1]
+                for x in (0, 1)
+                for y in (0, 1)
+                for z in (0, 1)
+            ]
+        )
+        projected = corners @ view.camera.matrix(640, 240).T
+        assert np.max(np.abs(projected[:, :2])) < 0.9
+        point = np.array([*view.camera.center, 1])
+        extent = view.camera.extent
+        for kind, position, button, buttons in (
+            (
+                QEvent.Type.MouseButtonPress,
+                (100, 100),
+                Qt.MouseButton.LeftButton,
+                Qt.MouseButton.LeftButton,
+            ),
+            (
+                QEvent.Type.MouseMove,
+                (160, 130),
+                Qt.MouseButton.NoButton,
+                Qt.MouseButton.LeftButton,
+            ),
+            (
+                QEvent.Type.MouseButtonRelease,
+                (160, 130),
+                Qt.MouseButton.LeftButton,
+                Qt.MouseButton.NoButton,
+            ),
+            (
+                QEvent.Type.MouseMove,
+                (200, 150),
+                Qt.MouseButton.NoButton,
+                Qt.MouseButton.NoButton,
+            ),
+        ):
+            event = QMouseEvent(
+                kind,
+                QPointF(*position),
+                QPointF(*position),
+                button,
+                buttons,
+                Qt.KeyboardModifier.ShiftModifier,
+            )
+            qt_app.sendEvent(view, event)
+        assert view.camera.extent == extent
+        assert (view.camera.yaw, view.camera.pitch) == (-65, 40)
+        np.testing.assert_allclose(
+            (view.camera.matrix(640, 240) @ point)[:2], [120 / 640, -60 / 240]
+        )
+        before = view.camera.state()
+        view.select(())
+        assert view.camera.state() == before
+    finally:
+        view.deleteLater()
+        qt_app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
 
 
 def test_selected_copies_are_visible_through_geometry_but_not_future_parts(tmp_path):
@@ -271,7 +399,7 @@ def test_selected_copies_are_visible_through_geometry_but_not_future_parts(tmp_p
 def test_assembly_inspection_preserves_step_and_selects_all_copies(model, qt_app):
     import json
 
-    from PySide6.QtCore import Qt
+    from PySide6.QtCore import QEvent, Qt
     from PySide6.QtTest import QTest
 
     from pyblocks.qt.assembly import AssemblyPage
@@ -324,7 +452,7 @@ def test_assembly_inspection_preserves_step_and_selects_all_copies(model, qt_app
         assert [i.identity for i in page.selected_items] == ["left"]
         assert page.step == 0
         page.set_step(2)
-        assert not page.selected_items and not page.selection.text()
+        assert not page.selected_items
         assert page.devices.findData("right") > 0
         page.groups.setCurrentIndex(page.groups.findData("subassembly"))
         assert page.step == 2  # This subassembly also has a future step 3.
@@ -338,6 +466,7 @@ def test_assembly_inspection_preserves_step_and_selects_all_copies(model, qt_app
             page.view.cleanup()
         page.close()
         page.deleteLater()
+        qt_app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
 
 
 def test_pilot_mating_points_track_and_ground_plane():

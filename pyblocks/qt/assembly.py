@@ -55,6 +55,7 @@ class AssemblyPage(QWidget):
         self.selected_items = ()
         self.scene = None
         self.view = None
+        self.view_container = None
         self.job = None
         self.attempted = False
         self.step = max(0, self.state.get("step", 0))
@@ -259,9 +260,10 @@ class AssemblyPage(QWidget):
         self.scene = scene
         if self.view:
             self.view.cleanup()
-            self.view_host.layout().removeWidget(self.view)
-            self.view.deleteLater()
+            self.view_host.layout().removeWidget(self.view_container)
+            self.view_container.deleteLater()
             self.view = None
+            self.view_container = None
         self.slider.setRange(0, scene.step_count - 1)
         if not QApplication.platformName().startswith(("offscreen", "minimal")):
             try:
@@ -271,7 +273,10 @@ class AssemblyPage(QWidget):
                 self.view.failed.connect(self.show_error)
                 self.view.changed.connect(self.remember_camera)
                 self.view.selected.connect(self.select_instance)
-                self.view_host.layout().addWidget(self.view)
+                self.view_container = QWidget.createWindowContainer(self.view)
+                self.view_container.setMinimumSize(240, 200)
+                self.view_container.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+                self.view_host.layout().addWidget(self.view_container)
             except (ImportError, ValueError) as error:
                 self.show_error(str(error))
         else:
@@ -418,7 +423,9 @@ class AssemblyPage(QWidget):
                 else title + " · " + item.identity
             )
         else:
-            self.selection.clear()
+            self.selection.setText(
+                tr("Drag to rotate · Shift+drag to pan · Scroll to zoom")
+            )
         if self.view:
             self.view.marker = None
             self.view.select(i.identity for i in items)

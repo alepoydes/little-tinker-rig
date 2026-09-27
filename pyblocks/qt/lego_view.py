@@ -4,9 +4,9 @@ import math
 
 import moderngl
 import numpy as np
-from PySide6.QtCore import QPointF, Qt, Signal
+from PySide6.QtCore import QPointF, QSize, Qt, Signal
 from PySide6.QtGui import QColor, QPainter, QPen, QSurfaceFormat
-from PySide6.QtOpenGLWidgets import QOpenGLWidget
+from PySide6.QtOpenGL import QOpenGLWindow
 
 from pyblocks.core.ldraw import rgba
 from pyblocks.core.lessons import camera_values
@@ -117,9 +117,10 @@ class Camera:
     def __init__(self, bounds):
         self.fit(bounds)
 
-    def fit(self, bounds, aspect=1.0):
+    def fit(self, bounds, aspect=1.0, *, preserve_rotation=False):
         self.center = np.mean(bounds, axis=0).astype(float)
-        self.yaw, self.pitch = 35.0, 25.0
+        if not preserve_rotation:
+            self.yaw, self.pitch = 35.0, 25.0
         corners = np.array(
             [
                 [bounds[x, 0], bounds[y, 1], bounds[z, 2]]
@@ -287,6 +288,7 @@ class Renderer:
         future=False,
         picking=False,
         group=None,
+        size=None,
     ):
         selected = frozenset(selected)
         if selected != self.selection:
@@ -299,10 +301,11 @@ class Renderer:
         target.use()
         target.depth_mask = True
         ctx.depth_func = "<"
-        ctx.viewport = (0, 0, *target.size)
+        size = size or target.size
+        ctx.viewport = (0, 0, *size)
         ctx.enable_only(moderngl.DEPTH_TEST)
         target.clear(*((0.0, 0.0, 0.0, 0.0) if picking else (0.95, 0.96, 0.98, 1.0)))
-        matrix = camera.matrix(*target.size).T.astype("f4").tobytes()
+        matrix = camera.matrix(*size).T.astype("f4").tobytes()
         for program in (self.faces, self.edges):
             program["camera"].write(matrix)
             program["step"].value = float(step)
@@ -379,12 +382,14 @@ class QtContextLoader:
         pass
 
 
-class LegoView(QOpenGLWidget):
+class LegoView(QOpenGLWindow):
     changed = Signal()
     selected = Signal(str)
     failed = Signal(str)
 
     def __init__(self, scene, state=None):
+        # A contained native surface leaves the Studio window's surface intact
+        # when 3D is first opened. Every frame is drawn in full.
         super().__init__()
         fmt = QSurfaceFormat()
         fmt.setVersion(3, 3)
@@ -403,8 +408,7 @@ class LegoView(QOpenGLWidget):
         self.group = None
         self.marker = None
         self.failure = ""
-        self.setMinimumSize(240, 200)
-        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.setMinimumSize(QSize(240, 200))
 
     def initializeGL(self):
         try:
@@ -432,7 +436,8 @@ class LegoView(QOpenGLWidget):
     def paintGL(self):
         if self.renderer:
             try:
-                # Qt owns and replaces this framebuffer on resize/reparent.
+                # The native framebuffer has no texture attachment to query its
+                # current size. Qt owns its size, including fractional scaling.
                 target = self.renderer.ctx.detect_framebuffer(
                     self.defaultFramebufferObject()
                 )
@@ -443,6 +448,7 @@ class LegoView(QOpenGLWidget):
                     selected=self.selection,
                     future=self.future,
                     group=self.group,
+                    size=self.pixel_size(),
                 )
                 if self.marker:
                     point, label = self.marker
@@ -470,27 +476,41 @@ class LegoView(QOpenGLWidget):
             self.camera.fit(self.scene.bounds(), width / height)
             self.fitted = True
 
+    def pixel_size(self):
+        scale = self.devicePixelRatio()
+        return round(self.width() * scale), round(self.height() * scale)
+
     def select(self, identities):
         identities = set(identities)
-        self.selection = frozenset(
+        selection = frozenset(
             i + 1
             for i, item in enumerate(self.scene.instances)
             if item.identity in identities
         )
+        if selection and selection != self.selection:
+            self.camera.fit(
+                self.scene.bounds([self.scene.instances[i - 1] for i in selection]),
+                self.width() / max(self.height(), 1),
+                preserve_rotation=True,
+            )
+            self.fitted = True
+            self.changed.emit()
+        self.selection = selection
         self.update()
 
     def mousePressEvent(self, event):
         self.origin = self.previous = event.position()
+        self.panning = bool(
+            event.button() in (Qt.MouseButton.MiddleButton, Qt.MouseButton.RightButton)
+            or event.modifiers() & Qt.KeyboardModifier.ShiftModifier
+        )
 
     def mouseMoveEvent(self, event):
+        if not event.buttons():
+            return
         delta = event.position() - self.previous
         self.previous = event.position()
-        if event.buttons() & Qt.MouseButton.LeftButton:
-            self.camera.yaw += delta.x() * 0.5
-            self.camera.pitch = max(-85, min(85, self.camera.pitch + delta.y() * 0.5))
-        elif event.buttons() & (
-            Qt.MouseButton.MiddleButton | Qt.MouseButton.RightButton
-        ):
+        if self.panning:
             right, up, _ = self.camera.basis()
             self.camera.center -= (
                 (delta.x() * right - delta.y() * up)
@@ -498,17 +518,21 @@ class LegoView(QOpenGLWidget):
                 * self.camera.extent
                 / max(self.height(), 1)
             )
+        elif event.buttons() & Qt.MouseButton.LeftButton:
+            self.camera.yaw += delta.x() * 0.5
+            self.camera.pitch = max(-85, min(85, self.camera.pitch + delta.y() * 0.5))
         self.update()
 
     def mouseReleaseEvent(self, event):
         if (
             event.button() == Qt.MouseButton.LeftButton
+            and not self.panning
             and (event.position() - self.origin).manhattanLength() < 4
             and self.renderer
         ):
             self.makeCurrent()
-            scale = self.devicePixelRatioF()
-            size = (round(self.width() * scale), round(self.height() * scale))
+            scale = self.devicePixelRatio()
+            size = self.pixel_size()
             x = max(0, min(size[0] - 1, round(event.position().x() * scale)))
             y = max(
                 0, min(size[1] - 1, size[1] - 1 - round(event.position().y() * scale))
@@ -522,6 +546,13 @@ class LegoView(QOpenGLWidget):
             self.selected.emit(identity)
         self.update()
         self.changed.emit()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Escape:
+            self.select(())
+            self.selected.emit("")
+        else:
+            super().keyPressEvent(event)
 
     def wheelEvent(self, event):
         self.camera.extent = max(
