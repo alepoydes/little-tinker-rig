@@ -3,14 +3,14 @@
 from pathlib import Path
 
 from PySide6.QtCore import QObject, Qt, QThreadPool, QUrl
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
     QCheckBox,
     QFileDialog,
     QHBoxLayout,
     QLabel,
     QListWidget,
-    QMessageBox,
+    QListWidgetItem,
     QProgressDialog,
     QPushButton,
     QSplitter,
@@ -59,40 +59,45 @@ class Lessons(QObject):
         layout.addWidget(split, 1)
         self.status = QLabel()
         self.status.setWordWrap(True)
-        layout.addWidget(self.status)
         self.actions = {}
         for name, label, callback in (
             ("start", "", self.start_stage),
             ("hint", N_("Next hint"), self.hint),
-            ("starter", N_("Apply starter program…"), self.apply_starter),
+            ("starter", N_("Open starter program"), self.open_starter),
             ("complete", N_("Mark complete"), self.complete),
-            ("next", N_("Next stage →"), self.next_stage),
+            ("previous", N_("← Previous stage"), lambda: self.navigate_stage(-1)),
+            ("next", N_("Next stage →"), lambda: self.navigate_stage(1)),
         ):
             action = QAction(label, self)
+            action.setToolTip(label)
             action.triggered.connect(
                 lambda checked=False, fn=callback: window.perform(fn)
             )
             self.actions[name] = action
+        for name, theme, fallback in (
+            ("hint", "help-hint", "SP_MessageBoxQuestion"),
+            ("starter", "document-new", "SP_FileIcon"),
+        ):
+            self.actions[name].setIcon(window._icon(theme, fallback))
 
         def add_actions(row, names):
             for name in names:
                 button = QToolButton()
                 action = self.actions[name]
                 button.setDefaultAction(action)
+                if name in ("hint", "starter"):
+                    button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
+                    button.setAccessibleName(action.text())
                 # QToolButton shares text/enabled state, but not action visibility.
                 action.changed.connect(
                     lambda a=action, b=button: b.setVisible(a.isVisible())
                 )
                 row.addWidget(button)
 
-        row = QHBoxLayout()
-        add_actions(row, ("start", "hint", "starter"))
-        row.addStretch()
-        add_actions(row, ("complete", "next"))
-        layout.addLayout(row)
         self.explore = QCheckBox(N_("Show all blocks"))
         self.explore.toggled.connect(self.set_explore)
-        layout.addWidget(self.explore)
+        window.library_pane.layout().insertWidget(3, self.explore)
+        self.explore.hide()
         self.guidance = window._action(
             window.view_menu, N_("Current task"), None, self.toggle_guidance
         )
@@ -106,18 +111,19 @@ class Lessons(QObject):
         self.task.setTextFormat(self.task.textFormat().PlainText)
         card_layout.addWidget(self.task)
         row = QHBoxLayout()
-        button = QPushButton(N_("Open lesson"))
-        button.clicked.connect(lambda: window.set_mode(4))
-        row.addWidget(button)
-        add_actions(row, ("start",))
+        self.open_lesson = QPushButton(N_("Open lesson"))
+        self.open_lesson.clicked.connect(lambda: window.set_mode(4))
+        row.addWidget(self.open_lesson)
+        add_actions(row, ("start", "hint", "starter"))
         row.addStretch()
-        add_actions(row, ("complete", "next"))
+        add_actions(row, ("previous", "complete", "next"))
         hide = QToolButton()
         hide.setText("×")
         hide.setToolTip(N_("Hide task"))
         hide.clicked.connect(lambda: self.guidance.trigger())
         row.addWidget(hide)
         card_layout.addLayout(row)
+        card_layout.addWidget(self.status)
         window.workspace_body.insertWidget(0, self.card)
         window.pages.addWidget(self.page)
         window.modes.add_mode("lesson", N_("Lesson"))
@@ -273,9 +279,17 @@ class Lessons(QObject):
         self.stages.clear()
         for stage in project.lesson.stages:
             done = stage["id"] in project.progress["completed"]
-            self.stages.addItem(
-                ("✓ " if done else "") + localized(stage["title"], language())
-            )
+            item = QListWidgetItem(localized(stage["title"], language()))
+            if done:
+                icon = QIcon(str(Path(__file__).with_name("icons") / "completed.svg"))
+                # Preserve green even when Qt paints the selected row's icon.
+                icon.addFile(
+                    str(Path(__file__).with_name("icons") / "completed.svg"),
+                    mode=QIcon.Mode.Selected,
+                )
+                item.setIcon(icon)
+                item.setToolTip(tr("Completed"))
+            self.stages.addItem(item)
         self.stages.setCurrentRow(project.lesson.stages.index(project.stage))
         self.stages.blockSignals(False)
         stage = project.stage
@@ -314,15 +328,21 @@ class Lessons(QObject):
         self.actions["hint"].setEnabled(shown < len(stage.get("hints", [])))
         self.actions["starter"].setVisible(bool(stage.get("starter")))
         self.update_check()
+        self.update_card()
 
     def update_card(self):
         mode = self.window.pages.currentIndex()
         self.card.setVisible(
             self.current is not None
             and self.guidance.isChecked()
-            and mode in (0, 1, 5)
             and (mode != 5 or self.assembly_host.showing_lesson)
         )
+        self.open_lesson.setVisible(mode != 4)
+        if self.current:
+            target = {"program": 0, "control": 1, "assembly": 5}[
+                self.current.stage.get("mode", "program")
+            ]
+            self.actions["start"].setVisible(mode != target)
 
     def toggle_guidance(self):
         if self.current:
@@ -330,10 +350,10 @@ class Lessons(QObject):
             self.update_card()
             self.changed()
 
-    def next_stage(self):
+    def navigate_stage(self, offset):
         if self.current:
-            index = self.current.lesson.stages.index(self.current.stage) + 1
-            if index < len(self.current.lesson.stages):
+            index = self.current.lesson.stages.index(self.current.stage) + offset
+            if 0 <= index < len(self.current.lesson.stages):
                 self.select_stage(index)
                 self.window.set_mode(4)
 
@@ -363,35 +383,21 @@ class Lessons(QObject):
             )
             self.refresh()
             self.changed()
+            self.window.set_mode(4)
 
-    def apply_starter(self):
+    def open_starter(self):
         if self.current is None:
             return
         name = self.current.stage.get("starter")
         if name is None:
             self.status.setText(tr("This stage has no starter program."))
             return
-        if (
-            QMessageBox.question(
-                self.window,
-                tr("Apply starter program"),
-                tr(
-                    "Replace this program with the stage starter? You can undo this change."
-                ),
-            )
-            != QMessageBox.StandardButton.Yes
-        ):
-            return
-        page = self.window.document_page
         source = resource(self.current.lesson.root, name).read_text(encoding="utf-8")
-        if page.code_active:
-            cursor = page.code.textCursor()
-            cursor.select(cursor.SelectionType.Document)
-            cursor.insertText(source)
-        else:
-            page.session.editor.commit(source, focus=0)
-            page.source.refresh_source()
-            page.changed.emit()
+        self.new_program()
+        page = self.window.document_page
+        page.session.editor.commit(source, focus=0)
+        page.source.refresh_source()
+        page.changed.emit()
 
     def connections(self):
         if self.current is None or "robot" not in self.current.lesson.data:
@@ -427,8 +433,9 @@ class Lessons(QObject):
             tr("Completed") if done else tr("Mark complete")
         )
         self.actions["complete"].setEnabled(not done and ready)
-        self.actions["next"].setVisible(project.stage is not project.lesson.stages[-1])
-        self.actions["next"].setEnabled(done)
+        index = project.lesson.stages.index(project.stage)
+        self.actions["previous"].setEnabled(index > 0)
+        self.actions["next"].setEnabled(index + 1 < len(project.lesson.stages))
         if len(project.progress["completed"]) == len(project.lesson.stages):
             text = tr(
                 "Lesson complete. Save your project to keep the program and progress."
@@ -482,6 +489,7 @@ class Lessons(QObject):
     def palette(self):
         window = self.window
         project = self.current
+        self.explore.setVisible(project is not None)
         restricted = project is not None and not project.progress.get("explore", False)
         ids = frozenset(project.stage.get("blocks", [])) if restricted else None
         level = "all" if project else window.block_level

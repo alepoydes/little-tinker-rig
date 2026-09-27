@@ -84,13 +84,30 @@ def test_lesson_navigation_is_explicit_and_restores_workspace(tmp_path, qt_app):
         page = window.lessons.open(make_lesson(tmp_path))
         lesson = window.lessons
         assert window.pages.currentIndex() == 4
+        assert lesson.card.isVisible()
+        assert not lesson.explore.isVisible()
+        window.set_mode(2)
+        assert lesson.card.isVisible()
+        window.set_mode(4)
+        assert not lesson.actions["previous"].isEnabled()
+        assert lesson.actions["next"].isEnabled()
+        lesson.actions["next"].trigger()
+        assert lesson.current.stage["id"] == "stop"
+        assert not lesson.current.progress["completed"]
+        assert not lesson.actions["next"].isEnabled()
+        lesson.actions["previous"].trigger()
+        assert lesson.current.stage["id"] == "drive"
         assert not lesson.actions["hint"].isVisible()
         assert not lesson.actions["starter"].isVisible()
         lesson.actions["start"].trigger()
         assert window.pages.currentIndex() == 0
         assert lesson.card.isVisible()
+        assert lesson.explore.isVisible()
+        assert not lesson.actions["start"].isVisible()
         page.session.editor.commit("drive.straight(200)\n")
         lesson.actions["complete"].trigger()
+        assert not lesson.stages.item(0).icon().isNull()
+        assert lesson.stages.item(1).icon().isNull()
         assert window.pages.currentIndex() == 0
         assert lesson.actions["next"].isEnabled()
         lesson.actions["next"].trigger()
@@ -154,11 +171,7 @@ def test_independent_assembly_survives_lesson_and_document_changes(tmp_path, qt_
         window.deleteLater()
 
 
-def test_starter_is_undoable_and_device_check_uses_stage_ports(
-    tmp_path, qt_app, monkeypatch
-):
-    from PySide6.QtWidgets import QMessageBox
-
+def test_starter_preserves_draft_and_device_check_uses_stage_ports(tmp_path, qt_app):
     from pyblocks.pybricks.devices import HubInfo
     from pyblocks.qt.app import Studio
 
@@ -180,15 +193,27 @@ def test_starter_is_undoable_and_device_check_uses_stage_ports(
         project = page.lesson_project
         project.stage["starter"] = "starter.py"
         page.session.editor.commit("old_value = 1\n")
-        monkeypatch.setattr(
-            QMessageBox, "question", lambda *a: QMessageBox.StandardButton.Yes
-        )
-        window.lessons.apply_starter()
-        assert "new_value = 2" in page.text
-        page.session.editor.undo()
-        assert page.text == "old_value = 1\n"
+        page.change_mode(1)
+        page.code.setPlainText("unfinished(\n")
+        window.lessons.actions["starter"].trigger()
+        starter = window.document_page
+        assert starter is not page
+        assert starter.lesson_project is project
+        assert "new_value = 2" in starter.text
+        assert not starter.session.project.path.exists()
+        assert page.text == "unfinished(\n"
+        assert (root / "starter.py").read_text() == "new_value = 2\n"
+        window.lessons.open_starter()
+        assert window.document_page is not starter
+        assert window.document_page.session.project.path != starter.session.project.path
         project.lesson.data["robot"] = "robot.json"
         project.stage.update(check="devices", devices=["left"])
+        window.lessons.update_check()
+        assert not window.lessons.actions["complete"].isEnabled()
+        assert window.lessons.actions["next"].isEnabled()
+        window.lessons.complete()
+        assert not project.progress["completed"]
+        assert window.lessons.status.text()
         window.update_hub(
             HubInfo(connected=True, monitoring=True, ports={"A": {"type": "motor"}})
         )
@@ -197,6 +222,16 @@ def test_starter_is_undoable_and_device_check_uses_stage_ports(
         assert project.progress["completed"] == ["drive"]
         window.update_hub(HubInfo(connected=False, ports={"A": {"type": "motor"}}))
         assert not window.lessons.check_ready()
+        project.path = tmp_path / "work.pyblocks"
+        assert window.lessons.save(project)
+        saved = StudentProject.open(project.path)
+        try:
+            assert saved.main.read_text() == "unfinished(\n"
+            assert (
+                saved.main.parent / starter.session.project.path.name
+            ).read_text() == starter.text
+        finally:
+            saved.discard_working_copy()
     finally:
         window.recovery.close()
         window.deleteLater()

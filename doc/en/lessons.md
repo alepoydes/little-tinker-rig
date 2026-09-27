@@ -5,18 +5,21 @@ an independent student project. Ordinary Python editing works as before.
 
 The **Lesson** workspace presents the goal, stages and progressive hints.
 **Open program**, **Open controls** or **Open assembly** opens the stage's workspace.
-The current task stays visible while programming, controlling or assembling the
-lesson robot. **Mark complete** records the result without changing workspace;
-**Next stage →** opens the next task's description. **Open lesson** returns to the
-overview at any time. Hide the task card with **×** and restore it with **View →
-Current task**. Visiting a stage never completes it or replaces your code.
-**Apply starter program** asks before replacement and supports
-Undo. Physical assembly and experiments are marked complete by the learner;
-a connection-check stage requires live readings from the port monitor.
+The task and its controls stay together at the top, including in the Lesson
+workspace. **Mark complete** records the result without changing workspace;
+completed stages get green checkmarks in the list. **← Previous stage** and
+**Next stage →** open neighboring descriptions, even before completion.
+**Open lesson** returns to the overview. Hide the task card with **×** and restore
+it with **View → Current task**. Visiting a stage never completes it or replaces
+code. **Open starter program** opens a new unsaved program tab in this lesson
+project, preserving the current program. Physical assembly and experiments are
+marked complete by the learner; a connection-check stage requires live readings
+from the port monitor. Its status explains any missing connection or device.
 
 Each stage shows a small palette, including its permitted contextual expression
 operations. Existing code still uses the full library for recognition and editing.
-**Show all blocks** enables free experiments while retaining lesson progress.
+**Show all blocks**, in the block library, enables free experiments while retaining
+lesson progress.
 When an input is selected, the library offers suitable expressions. **← Back to
 whole blocks** (or Escape in the editor) returns to adding complete actions.
 Ordinary **File → New** creates a program outside the lesson, with the normal library.
@@ -46,7 +49,8 @@ available for recovery. Archive contents can also be extracted with a ZIP tool.
 
 **File → Open robot instructions…** opens a `robot.json` description independently
 of a lesson. Assembly remains available from the left sidebar. The model selector
-switches between independently opened instructions and the active lesson's robot.
+appears only when both independent instructions and the lesson robot are open.
+It uses the model names; a single model needs no selector.
 Standalone assembly remembers its last model, step and camera in application
 settings; each lesson keeps its own assembly progress inside its project.
 
@@ -61,10 +65,15 @@ verification on a real set.
   hidden unless their outlines are enabled.
 - Click a part to identify it. The step's parts list includes quantity, color
   swatches and authored lengths; tooltips retain LDraw part names and numbers.
+  Selecting a row highlights all copies added in that step, in their actual
+  positions, including through other parts. Click the row again, press Escape,
+  click the model background or change step to clear selection.
 - **Recommended view** frames the current assembly. A subassembly selector can
-  isolate a group in imported models; **Whole robot** shows its destination.
+  isolate an assembled group in imported models; **View: Whole robot** restores
+  the full construction. Inspection never advances the assembly step.
 - **Locate a device** highlights the device and marks its expected hub port.
-  Expected wiring is instructional; the Python program remains authoritative.
+  Only devices installed by the current step are listed. Expected wiring is
+  instructional; the Python program remains authoritative.
 
 The viewer loads local LDraw/MPD files in a worker, shares repeated part meshes,
 and uses Qt OpenGL with ModernGL. No TopoVEC dependency is required. An unavailable
@@ -116,8 +125,8 @@ Use stable stage and block identities:
 
 English is the fallback. Descriptions are Markdown files; titles, goals and hints
 are localized strings. Optional `starter` names a Python file (at the lesson level
-it initializes a new project; at stage level it is applied explicitly). Optional
-`collection` names a normal block collection included in the lesson.
+it initializes a new project; at stage level it opens a new program explicitly).
+Optional `collection` names a normal block collection included in the lesson.
 
 Stage `mode` is `program`, `control` or `assembly`; `assembly: [1, 7]` names an
 inclusive range of model steps. `check` is `manual` (default) or `devices`; a stage's
@@ -125,8 +134,9 @@ inclusive range of model steps. `check` is `manual` (default) or `devices`; a st
 optionally lists expression templates, such as `"$ + ..."` and `"$ < ..."`;
 names and literals remain editable. It is empty by default in a restricted lesson.
 
-`robot.json` uses `format: 1` and gives `model`, optional `library`, localized `description`, optional
-`parts` descriptions, `steps` keyed by one-based step number, and `devices` with
+`robot.json` uses `format: 1` and gives `model`, optional `library`, localized
+`title` and `description`, optional `parts` descriptions, `steps` keyed by one-based
+step number, and `devices` with
 `instance`, localized `name`, `port` and `type`. `ports` maps letters to model-space
 LDraw coordinates. A step can provide `text` and a recommended `camera` containing
 `center`, `extent`, `yaw`, `pitch`. No 3D metadata is inserted into program source.

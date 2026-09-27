@@ -151,6 +151,141 @@ def test_qt_views_render_with_independent_native_contexts(model, qt_app):
         qt_app.processEvents()
 
 
+def test_selected_copies_are_visible_through_geometry_but_not_future_parts(tmp_path):
+    moderngl = pytest.importorskip("moderngl")
+    from pyblocks.qt.lego_view import Camera, Renderer
+
+    try:
+        context = moderngl.create_standalone_context(backend="egl")
+    except Exception as error:
+        pytest.skip(f"No headless OpenGL: {error}")
+    (tmp_path / "part.dat").write_text(
+        "4 16 -8 -8 0 8 -8 0 8 8 0 -8 8 0\n" "2 24 -8 -8 0 8 -8 0\n"
+    )
+    (tmp_path / "cover.dat").write_text("4 16 -50 -30 0 50 -30 0 50 30 0 -50 30 0\n")
+    path = tmp_path / "robot.ldr"
+    path.write_text(
+        "1 4 -25 0 0 1 0 0 0 1 0 0 0 1 part.dat\n"
+        "1 4 25 0 0 1 0 0 0 1 0 0 0 1 part.dat\n"
+        "1 1 0 0 10 1 0 0 0 1 0 0 0 1 cover.dat\n"
+        "0 STEP\n1 4 0 0 20 1 0 0 0 1 0 0 0 1 part.dat\n"
+    )
+    with LDraw(path) as reader:
+        scene = reader.scene()
+    camera = Camera(scene.bounds())
+    camera.yaw = camera.pitch = 0
+    try:
+        with context:
+            renderer = Renderer(context, scene)
+            target = context.simple_framebuffer((128, 128), components=4)
+
+            def draw(**options):
+                renderer.draw(target, camera, 0, **options)
+                return np.frombuffer(target.read(components=3), dtype=np.uint8).reshape(
+                    128, 128, 3
+                )
+
+            try:
+                original = draw()
+                highlighted = draw(selected=(1, 2, 4))
+                # Qt composites the result; overlays must keep opaque alpha.
+                rgba_pixels = np.frombuffer(
+                    target.read(components=4), dtype=np.uint8
+                ).reshape(-1, 4)
+                assert np.all(rgba_pixels[:, 3] == 255)
+                for point in ((-25, 0, 0, 1), (25, 0, 0, 1)):
+                    x, y = ((camera.matrix(128, 128) @ point)[:2] + 1) * 64
+                    x, y = int(x), int(y)
+                    assert (
+                        np.max(np.abs(highlighted[y, x].astype(int) - original[y, x]))
+                        > 20
+                    )
+                    assert renderer.pick((128, 128), x, y, camera, 0) == 3
+                # Future geometry stays hidden, even when requested in a selection.
+                np.testing.assert_array_equal(highlighted[64, 64], original[64, 64])
+                np.testing.assert_array_equal(draw(), original)
+                np.testing.assert_array_equal(
+                    draw(selected=(1, 2), group=(3, 3)), draw(group=(3, 3))
+                )
+            finally:
+                renderer.release()
+                target.release()
+    finally:
+        context.release()
+
+
+def test_assembly_inspection_preserves_step_and_selects_all_copies(model, qt_app):
+    import json
+
+    from PySide6.QtCore import Qt
+    from PySide6.QtTest import QTest
+
+    from pyblocks.qt.assembly import AssemblyPage
+
+    model.write_text(
+        model.read_text().replace(
+            "0 STEP\n0 !PYBLOCKS ID right",
+            "0 !PYBLOCKS ID copy\n1 4 40 0 0 1 0 0 0 1 0 0 0 1 part.dat\n0 STEP\n0 !PYBLOCKS ID right",
+        )
+    )
+    path = model.parent / "robot.json"
+    path.write_text(
+        json.dumps(
+            {
+                "format": 1,
+                "model": model.name,
+                "devices": [
+                    {"instance": "left", "name": "Motor", "port": "A", "type": "motor"},
+                    {
+                        "instance": "right",
+                        "name": "Sensor",
+                        "port": "B",
+                        "type": "color",
+                    },
+                ],
+            }
+        )
+    )
+    page = AssemblyPage(path)
+    page.attempted = True
+    with LDraw(model) as reader:
+        page.loaded(reader.scene(), None)
+    page.show()
+    page.activateWindow()
+    assert QTest.qWaitForWindowActive(page)
+    qt_app.processEvents()
+    try:
+        assert page.devices.count() == 2
+        assert page.devices.findData("right") == -1
+        assert page.group_controls.isHidden()
+        point = page.parts.visualItemRect(page.parts.item(0)).center()
+        QTest.mouseClick(page.parts.viewport(), Qt.MouseButton.LeftButton, pos=point)
+        assert {i.identity for i in page.selected_items} == {"left", "copy"}
+        QTest.mouseClick(page.parts.viewport(), Qt.MouseButton.LeftButton, pos=point)
+        assert not page.selected_items
+        QTest.mouseClick(page.parts.viewport(), Qt.MouseButton.LeftButton, pos=point)
+        QTest.keyClick(page.parts, Qt.Key.Key_Escape)
+        assert not page.selected_items
+        page.devices.setCurrentIndex(1)
+        assert [i.identity for i in page.selected_items] == ["left"]
+        assert page.step == 0
+        page.set_step(2)
+        assert not page.selected_items and not page.selection.text()
+        assert page.devices.findData("right") > 0
+        page.groups.setCurrentIndex(page.groups.findData("subassembly"))
+        assert page.step == 2  # This subassembly also has a future step 3.
+        page.set_step(3)
+        assert page.future.isHidden()
+        page.set_step(0)
+        assert page.groups.currentData() is None
+        assert page.devices.findData("right") == -1
+    finally:
+        if page.view:
+            page.view.cleanup()
+        page.close()
+        page.deleteLater()
+
+
 def test_pilot_mating_points_track_and_ground_plane():
     import os
     from pathlib import Path

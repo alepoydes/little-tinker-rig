@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QThreadPool, Signal
-from PySide6.QtGui import QColor, QIcon, QPixmap
+from PySide6.QtGui import QColor, QIcon, QPixmap, QShortcut
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -30,6 +30,19 @@ from .localization import localize
 from .resources import ResourceJob
 
 
+class PartsList(QListWidget):
+    def mousePressEvent(self, event):
+        item = self.itemAt(event.position().toPoint())
+        if event.button() == Qt.MouseButton.LeftButton and (
+            item is None or (item is self.currentItem() and item.isSelected())
+        ):
+            self.setCurrentRow(-1)
+            self.clearSelection()
+            event.accept()
+        else:
+            super().mousePressEvent(event)
+
+
 class AssemblyPage(QWidget):
     changed = Signal()
 
@@ -39,6 +52,7 @@ class AssemblyPage(QWidget):
         path = Path(path)
         self.robot = robot_description(path)
         self.root = path.parent
+        self.selected_items = ()
         self.scene = None
         self.view = None
         self.job = None
@@ -57,32 +71,62 @@ class AssemblyPage(QWidget):
         self.notes.setOpenExternalLinks(True)
         sidebar.addWidget(self.notes, 1)
         sidebar.addWidget(QLabel(N_("Parts for this step")))
-        self.parts = QListWidget()
+        self.parts = PartsList()
         self.parts.setWordWrap(True)
+        self.parts.setToolTip(
+            N_(
+                "Select all copies added in this step. Click again or press Escape to clear."
+            )
+        )
         self.parts.currentRowChanged.connect(self.select_part)
         sidebar.addWidget(self.parts, 1)
         self.devices = QComboBox()
-        self.devices.addItem(N_("Locate a device"), None)
-        for device in self.robot.get("devices", []):
-            self.devices.addItem(
-                localized(device["name"], language()) + " · " + device["port"],
-                device["instance"],
+        self.devices.setToolTip(
+            N_(
+                "Find a device already installed at this assembly step. This does not check its connection to the hub."
             )
+        )
+        self.devices.setProperty(
+            "translationSources", {"toolTip": self.devices.toolTip()}
+        )
+        self.devices.hide()
         self.devices.currentIndexChanged.connect(self.select_device)
         sidebar.addWidget(self.devices)
         self.groups = QComboBox()
-        self.groups.addItem(N_("Whole robot"), None)
+        self.groups.setToolTip(
+            N_(
+                "View the whole robot or isolate an assembled section without changing the step."
+            )
+        )
+        self.groups.setProperty(
+            "translationSources", {"toolTip": self.groups.toolTip()}
+        )
         self.groups.currentIndexChanged.connect(self.focus_group)
-        sidebar.addWidget(self.groups)
+        self.group_controls = QWidget()
+        group_row = QHBoxLayout(self.group_controls)
+        group_row.setContentsMargins(0, 0, 0, 0)
+        group_row.addWidget(QLabel(N_("View:")))
+        group_row.addWidget(self.groups, 1)
+        sidebar.addWidget(self.group_controls)
+        self.group_controls.hide()
         split.addWidget(side)
         split.setSizes([900, 340])
         layout.addWidget(split, 1)
         self.error = QLabel()
         self.error.setWordWrap(True)
+        self.error.hide()
         layout.addWidget(self.error)
         self.selection = QLabel()
         self.selection.setWordWrap(True)
-        layout.addWidget(self.selection)
+        row = QHBoxLayout()
+        row.addWidget(self.selection, 1)
+        self.future = QCheckBox(N_("Show future parts as outlines"))
+        self.future.toggled.connect(self.show_future)
+        row.addWidget(self.future, 0, Qt.AlignmentFlag.AlignRight)
+        layout.addLayout(row)
+        clear = QShortcut("Escape", self)
+        clear.setContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
+        clear.activated.connect(self.clear_selection)
         row = QHBoxLayout()
         self.back = QPushButton(N_("Previous step"))
         self.back.clicked.connect(lambda: self.set_step(self.step - 1))
@@ -98,10 +142,8 @@ class AssemblyPage(QWidget):
         reset.clicked.connect(self.reset_camera)
         row.addWidget(reset)
         layout.addLayout(row)
-        self.future = QCheckBox(N_("Show future parts as outlines"))
-        self.future.toggled.connect(self.show_future)
-        layout.addWidget(self.future)
         self.download_status = QLabel()
+        self.download_status.hide()
         layout.addWidget(self.download_status)
         self.progress = QProgressBar()
         self.progress.hide()
@@ -163,7 +205,9 @@ class AssemblyPage(QWidget):
 
         self.attempted = True
         self.error.clear()
+        self.error.hide()
         self.download_status.setText(tr("Loading robot model…"))
+        self.download_status.show()
         self.progress.setRange(0, 0)
         self.progress.show()
         self.retry.hide()
@@ -190,6 +234,7 @@ class AssemblyPage(QWidget):
         self.job = None
         self.progress.hide()
         self.download_status.clear()
+        self.download_status.hide()
         self.cancel.hide()
         if scene is not None:
             identities = {i.identity for i in scene.instances}
@@ -202,7 +247,7 @@ class AssemblyPage(QWidget):
             self.retry.show()
             self.local.setVisible(isinstance(self.robot.get("library"), dict))
             self.caption.setText(tr("Robot instructions"))
-            self.error.setText(tr("3D unavailable: {detail}", detail=error))
+            self.show_error(error)
             self.notes.setMarkdown(
                 localized(self.robot.get("description", ""), language())
             )
@@ -216,35 +261,30 @@ class AssemblyPage(QWidget):
             self.view_host.layout().removeWidget(self.view)
             self.view.deleteLater()
             self.view = None
-        self.groups.blockSignals(True)
-        while self.groups.count() > 1:
-            self.groups.removeItem(1)
-        self.groups.blockSignals(False)
         self.slider.setRange(0, scene.step_count - 1)
-        for group in sorted({"/".join(i.groups) for i in scene.instances if i.groups}):
-            self.groups.addItem(group, group)
         if not QApplication.platformName().startswith(("offscreen", "minimal")):
             try:
                 from .lego_view import LegoView
 
                 self.view = LegoView(scene, self.state.get("camera"))
-                self.view.failed.connect(
-                    lambda error: self.error.setText(
-                        tr("3D unavailable: {detail}", detail=error)
-                    )
-                )
+                self.view.failed.connect(self.show_error)
                 self.view.changed.connect(self.remember_camera)
-                self.view.selected.connect(self.identify)
+                self.view.selected.connect(self.select_instance)
                 self.view_host.layout().addWidget(self.view)
             except (ImportError, ValueError) as error:
-                self.error.setText(tr("3D unavailable: {detail}", detail=str(error)))
+                self.show_error(str(error))
         else:
             self.error.setText(
                 tr(
                     "3D is unavailable on this display. Step descriptions and parts are still available."
                 )
             )
+            self.error.show()
         self.set_step(min(self.step, scene.step_count - 1))
+
+    def show_error(self, error):
+        self.error.setText(tr("3D unavailable: {detail}", detail=error))
+        self.error.show()
 
     def set_step(self, step):
         count = (
@@ -253,9 +293,11 @@ class AssemblyPage(QWidget):
             else max((int(s) for s in self.robot.get("steps", {})), default=1)
         )
         self.step = max(0, min(step, count - 1))
+        self.clear_selection()
         self.state["step"] = self.step
         self.back.setEnabled(self.step > 0)
         self.next_step.setEnabled(self.step < count - 1)
+        self.future.setVisible(self.step < count - 1)
         self.slider.blockSignals(True)
         self.slider.setValue(self.step)
         self.slider.blockSignals(False)
@@ -275,6 +317,7 @@ class AssemblyPage(QWidget):
         self.changed.emit()
         if self.scene is None:
             return
+        self.refresh_choices()
         self.items = [item for item in self.scene.instances if item.step == self.step]
         self.part_groups = {}
         for item in self.items:
@@ -295,59 +338,127 @@ class AssemblyPage(QWidget):
             row.setIcon(QIcon(swatch))
         if self.view:
             self.view.step = self.step
-            self.view.update()
+        self.show_future(self.future.isChecked())
 
-    def identify(self, identity):
-        item = next(i for i in self.scene.instances if i.identity == identity)
-        title = localized(
-            self.robot.get("parts", {}).get(
-                item.part, self.scene.meshes[item.part].title
-            ),
-            language(),
-        )
-        self.selection.setText(title + " · " + identity)
+    def refresh_choices(self):
+        # Inspection is restricted to the current construction, never navigation.
+        built = {i.identity for i in self.scene.instances if i.step <= self.step}
+        self.devices.blockSignals(True)
+        self.devices.clear()
+        self.devices.addItem(tr("Locate a device"), None)
+        for device in self.robot.get("devices", []):
+            if device["instance"] in built:
+                self.devices.addItem(
+                    localized(device["name"], language()) + " · " + device["port"],
+                    device["instance"],
+                )
+        self.devices.blockSignals(False)
+        self.devices.setVisible(self.devices.count() > 1)
+        selected = self.groups.currentData()
+        self.groups.blockSignals(True)
+        self.groups.clear()
+        self.groups.addItem(tr("Whole robot"), None)
+        for group in sorted(
+            {
+                "/".join(i.groups)
+                for i in self.scene.instances
+                if i.groups and i.step <= self.step
+            }
+        ):
+            self.groups.addItem(group, group)
+        self.groups.setCurrentIndex(max(0, self.groups.findData(selected)))
+        self.groups.blockSignals(False)
+        self.group_controls.setVisible(self.groups.count() > 1)
+        if self.view and self.groups.currentData() != selected:
+            self.view.group = None
+
+    def clear_selection(self):
+        self.set_selection(())
+
+    def set_selection(self, items, *, source=None):
+        self.selected_items = tuple(items)
+        if items and source is not None:
+            self.groups.blockSignals(True)
+            self.groups.setCurrentIndex(0)
+            self.groups.blockSignals(False)
+            if self.view:
+                self.view.group = None
+            self.show_future(self.future.isChecked())
+        for widget in (self.parts, self.devices):
+            if widget is source:
+                continue
+            widget.blockSignals(True)
+            if widget is self.parts:
+                widget.setCurrentRow(-1)
+                widget.clearSelection()
+            else:
+                widget.setCurrentIndex(0)
+            widget.blockSignals(False)
+        if items:
+            item = items[0]
+            title = localized(
+                self.robot.get("parts", {}).get(
+                    item.part, self.scene.meshes[item.part].title
+                ),
+                language(),
+            )
+            self.selection.setText(
+                f"{len(items)} × {title}"
+                if len(items) > 1
+                else title + " · " + item.identity
+            )
+        else:
+            self.selection.clear()
+        if self.view:
+            self.view.marker = None
+            self.view.select(i.identity for i in items)
+
+    def select_instance(self, identity):
+        self.set_selection([i for i in self.scene.instances if i.identity == identity])
 
     def select_part(self, row):
-        if self.view and row >= 0:
-            items = list(self.part_groups.values())[row]
-            self.view.select(items[0].identity)
+        if row < 0:
+            self.clear_selection()
+        else:
+            self.set_selection(list(self.part_groups.values())[row], source=self.parts)
 
     def select_device(self):
         identity = self.devices.currentData()
         if identity and self.scene:
-            item = next(
-                (i for i in self.scene.instances if i.identity == identity), None
+            self.set_selection(
+                [
+                    i
+                    for i in self.scene.instances
+                    if i.identity == identity and i.step <= self.step
+                ],
+                source=self.devices,
             )
-            if item:
-                self.set_step(max(self.step, item.step))
-                if self.view:
-                    self.groups.setCurrentIndex(0)
-                    self.view.select(identity)
-                    device = next(
-                        d for d in self.robot["devices"] if d["instance"] == identity
-                    )
-                    point = self.robot.get("ports", {}).get(device["port"])
-                    self.view.marker = (point, device["port"]) if point else None
-                self.identify(identity)
+            if self.view:
+                device = next(
+                    d for d in self.robot["devices"] if d["instance"] == identity
+                )
+                point = self.robot.get("ports", {}).get(device["port"])
+                self.view.marker = (point, device["port"]) if point else None
+        else:
+            self.clear_selection()
 
     def focus_group(self):
+        self.clear_selection()
+        self.show_future(self.future.isChecked())
         if not self.view:
             return
         group = self.groups.currentData()
-        items = [
-            i
-            for i in self.scene.instances
-            if not group or i.identity.startswith(group + "/")
-        ]
         indices = [
             i + 1
             for i, item in enumerate(self.scene.instances)
             if not group or item.identity.startswith(group + "/")
         ]
+        items = [
+            self.scene.instances[i - 1]
+            for i in indices
+            if self.scene.instances[i - 1].step <= self.step
+        ]
         self.view.group = (min(indices), max(indices)) if group and indices else None
-        self.view.marker = None
-        if group and items:
-            self.set_step(max(self.step, max(i.step for i in items)))
         self.view.camera.fit(
             self.scene.bounds(items), self.view.width() / max(self.view.height(), 1)
         )
@@ -373,17 +484,14 @@ class AssemblyPage(QWidget):
             self.changed.emit()
 
     def show_future(self, enabled):
+        self.future.setVisible(
+            self.next_step.isEnabled() and self.groups.currentData() is None
+        )
         if self.view:
-            self.view.future = enabled
+            self.view.future = enabled and self.groups.currentData() is None
             self.view.update()
 
     def retranslate(self):
-        self.devices.setItemText(0, tr("Locate a device"))
-        self.groups.setItemText(0, tr("Whole robot"))
-        for index, device in enumerate(self.robot.get("devices", []), 1):
-            self.devices.setItemText(
-                index, localized(device["name"], language()) + " · " + device["port"]
-            )
         self.set_step(self.step)
 
 
@@ -401,21 +509,27 @@ class AssemblyWorkspace(QWidget):
         self.free_path = None
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        row = QHBoxLayout()
         self.models = QComboBox()
-        self.models.setProperty("translationSources", {})
+        self.models.setToolTip(N_("Choose one of the open robot models."))
+        self.models.setProperty(
+            "translationSources", {"toolTip": self.models.toolTip()}
+        )
         self.models.currentIndexChanged.connect(self.select_model)
-        row.addWidget(self.models, 1)
-        button = QPushButton(N_("Open robot instructions…"))
-        button.clicked.connect(self.choose)
-        row.addWidget(button)
-        layout.addLayout(row)
+        layout.addWidget(self.models)
         self.pages = QStackedWidget()
-        self.empty = QLabel(
+        self.empty = QWidget()
+        empty_layout = QVBoxLayout(self.empty)
+        label = QLabel(
             N_("Open a robot.json file to follow assembly steps without a lesson.")
         )
-        self.empty.setWordWrap(True)
-        self.empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label.setWordWrap(True)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        empty_layout.addStretch()
+        empty_layout.addWidget(label)
+        button = QPushButton(N_("Open robot instructions…"))
+        button.clicked.connect(self.choose)
+        empty_layout.addWidget(button, 0, Qt.AlignmentFlag.AlignHCenter)
+        empty_layout.addStretch()
         self.pages.addWidget(self.empty)
         layout.addWidget(self.pages, 1)
         self.refresh_models()
@@ -440,16 +554,18 @@ class AssemblyWorkspace(QWidget):
         selected = self.models.currentData()
         self.models.blockSignals(True)
         self.models.clear()
-        self.models.addItem(
-            self.free_path.name if self.free_path else tr("Independent assembly"),
-            "free",
-        )
-        if self.free_path:
-            self.models.setItemData(0, str(self.free_path), Qt.ItemDataRole.ToolTipRole)
-        if self.lesson_page:
-            self.models.addItem(tr("Lesson robot"), "lesson")
+        for key, page in (("free", self.free_page), ("lesson", self.lesson_page)):
+            if page:
+                title = localized(
+                    page.robot.get("title", Path(page.robot["model"]).stem), language()
+                )
+                self.models.addItem(title, key)
+                self.models.setItemData(
+                    self.models.count() - 1, str(page.root), Qt.ItemDataRole.ToolTipRole
+                )
         self.models.setCurrentIndex(max(0, self.models.findData(selected)))
         self.models.blockSignals(False)
+        self.models.setVisible(self.models.count() > 1)
         self.select_model(self.models.currentIndex())
 
     def select_lesson(self):
@@ -492,7 +608,7 @@ class AssemblyWorkspace(QWidget):
         self.free_page, self.free_path = page, path
         page.changed.connect(self.remember)
         self.refresh_models()
-        self.models.setCurrentIndex(0)
+        self.models.setCurrentIndex(self.models.findData("free"))
         self.remember()
 
     def remember(self):

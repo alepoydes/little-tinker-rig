@@ -1,5 +1,9 @@
 {
   "format": 1,
+  "title": {
+    "en": "First drive · SPIKE Prime 45678",
+    "ru": "Первая поездка · SPIKE Prime 45678"
+  },
   "model": "car.mpd",
   "library": {
     "id": "ldraw",

@@ -66,6 +66,7 @@ def robot_description(path):
         validate_reference(library)
     elif not resource(path.parent, library).exists():
         raise ValueError("Missing robot parts library")
+    localized(data.get("title", ""))
     localized(data.get("description", ""))
     for key in ("parts", "steps", "ports"):
         if not isinstance(data.get(key, {}), dict):

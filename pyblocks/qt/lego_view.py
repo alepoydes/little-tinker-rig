@@ -15,7 +15,7 @@ VERTEX = """
 #version 330
 uniform mat4 camera;
 uniform float step;
-uniform int selected;
+uniform bool overlay;
 uniform bool future;
 uniform ivec2 group;
 in vec3 position;
@@ -24,31 +24,37 @@ in mat4 model;
 in vec4 tint;
 in float added;
 in float identity;
+in float highlighted;
 out vec4 shade;
 out vec3 world;
 flat out int object_id;
 flat out int state;
+flat out int selected;
 void main() {
     world = (model * vec4(position, 1)).xyz;
     gl_Position = camera * vec4(world, 1);
     object_id = int(identity);
+    selected = int(highlighted);
     state = added > step ? 2 : (added < step ? 0 : 1);
-    if (object_id < group.x || object_id > group.y) gl_Position = vec4(2,2,2,1);
+    if (object_id < group.x || object_id > group.y || (overlay && selected == 0))
+        gl_Position = vec4(2,2,2,1);
     shade = color.a < 0 ? tint : color;
     if (state == 0) shade.rgb = mix(shade.rgb, vec3(.88, .90, .93), .35);
-    if (object_id == selected) shade.rgb = mix(shade.rgb, vec3(1, .64, .04), .6);
+    if (selected != 0) shade.rgb = mix(shade.rgb, vec3(1, .64, .04), .6);
 }
 """
 FRAGMENT = """
 #version 330
 uniform bool picking;
+uniform bool overlay;
 in vec4 shade;
 in vec3 world;
 flat in int object_id;
 flat in int state;
+flat in int selected;
 out vec4 pixel;
 void main() {
-    if (state == 2) discard;
+    if (state == 2 || (overlay && selected == 0)) discard;
     if (picking) {
         pixel = vec4(float(object_id & 255), float((object_id >> 8) & 255),
                      float((object_id >> 16) & 255), 255) / 255;
@@ -56,7 +62,7 @@ void main() {
         vec3 normal = cross(dFdx(world), dFdy(world));
         float length2 = dot(normal, normal);
         float light = length2 > 0 ? .65 + .35 * abs(dot(normal * inversesqrt(length2), normalize(vec3(1,-2,3)))) : 1;
-        pixel = vec4(shade.rgb * light, 1);
+        pixel = vec4(shade.rgb * light, overlay ? .35 : 1);
     }
 }
 """
@@ -64,7 +70,7 @@ EDGE_VERTEX = """
 #version 330
 uniform mat4 camera;
 uniform float step;
-uniform int selected;
+uniform bool overlay;
 uniform bool future;
 uniform ivec2 group;
 in vec3 a;
@@ -76,6 +82,7 @@ in mat4 model;
 in vec4 tint;
 in float added;
 in float identity;
+in float highlighted;
 out vec4 shade;
 flat out int visible;
 void main() {
@@ -91,7 +98,8 @@ void main() {
     shade = color.a < 0 ? vec4(tint.rgb * .3, 1) : color;
     if (added > step) shade = vec4(.77,.79,.82,1);
     else if (added == step) shade.rgb = mix(shade.rgb, vec3(.06,.32,.7), .35);
-    if (int(identity) == selected) shade = vec4(.8,.35,0,1);
+    if (overlay && (highlighted == 0 || added > step)) visible = 0;
+    if (highlighted != 0) shade = vec4(.85,.32,0,1);
     gl_Position = gl_VertexID % 2 == 0 ? pa : pb;
     gl_Position.z -= .00015 * gl_Position.w;
 }
@@ -180,6 +188,8 @@ class Renderer:
         )
         self.resources = [self.faces, self.edges]
         self.batches = []
+        self.selection_buffers = []
+        self.selection = frozenset()
         for name, mesh in scene.meshes.items():
             objects = [
                 (i + 1, item)
@@ -199,7 +209,10 @@ class Renderer:
                 dtype="f4",
             )
             instances = ctx.buffer(instance_data.tobytes())
-            self.resources.append(instances)
+            selected = ctx.buffer(np.zeros(len(objects), dtype="f4").tobytes())
+            self.selection_buffers.append((selected, [index for index, _ in objects]))
+            self.resources.extend([instances, selected])
+            selection_format = (selected, "1f /i", "highlighted")
             instance_format = (
                 instances,
                 "16f 4f 1f 1f /i",
@@ -227,7 +240,11 @@ class Renderer:
                 buffer = ctx.buffer(vertices.tobytes())
                 vao = ctx.vertex_array(
                     self.faces,
-                    [(buffer, "3f 4f", "position", "color"), instance_format],
+                    [
+                        (buffer, "3f 4f", "position", "color"),
+                        instance_format,
+                        selection_format,
+                    ],
                 )
                 self.resources.extend([buffer, vao])
                 self.batches.append((vao, len(objects), False))
@@ -254,6 +271,7 @@ class Renderer:
                     [
                         (buffer, "3f 3f 3f 3f 4f", "a", "b", "c", "d", "color"),
                         instance_format,
+                        selection_format,
                     ],
                 )
                 self.resources.extend([buffer, vao])
@@ -265,13 +283,22 @@ class Renderer:
         camera,
         step,
         *,
-        selected=0,
+        selected=(),
         future=False,
         picking=False,
         group=None,
     ):
+        selected = frozenset(selected)
+        if selected != self.selection:
+            for buffer, indices in self.selection_buffers:
+                buffer.write(
+                    np.array([i in selected for i in indices], dtype="f4").tobytes()
+                )
+            self.selection = selected
         ctx = self.ctx
         target.use()
+        target.depth_mask = True
+        ctx.depth_func = "<"
         ctx.viewport = (0, 0, *target.size)
         ctx.enable_only(moderngl.DEPTH_TEST)
         target.clear(*((0.0, 0.0, 0.0, 0.0) if picking else (0.95, 0.96, 0.98, 1.0)))
@@ -279,7 +306,7 @@ class Renderer:
         for program in (self.faces, self.edges):
             program["camera"].write(matrix)
             program["step"].value = float(step)
-            program["selected"].value = selected
+            program["overlay"].value = False
             program["group"].value = group or (1, len(self.scene.instances))
             if "future" in program:
                 program["future"].value = future
@@ -289,6 +316,34 @@ class Renderer:
                 vao.render(
                     moderngl.LINES if edge else moderngl.TRIANGLES, instances=count
                 )
+
+        if selected and not picking:
+            # Hidden selected surfaces are translucent; visible surfaces retain
+            # lighting. Edges are then drawn on top, including occluded copies.
+            target.depth_mask = False
+            ctx.enable(moderngl.BLEND)
+            # Qt composites this framebuffer as premultiplied alpha. Preserve
+            # its opaque alpha while blending RGB, including under QPainter.
+            ctx.blend_func = (
+                moderngl.SRC_ALPHA,
+                moderngl.ONE_MINUS_SRC_ALPHA,
+                moderngl.ZERO,
+                moderngl.ONE,
+            )
+            ctx.blend_equation = moderngl.FUNC_ADD
+            ctx.depth_func = ">"
+            self.faces["overlay"].value = True
+            for vao, count, edge in self.batches:
+                if not edge:
+                    vao.render(moderngl.TRIANGLES, instances=count)
+            ctx.disable(moderngl.DEPTH_TEST | moderngl.BLEND)
+            self.edges["overlay"].value = True
+            for vao, count, edge in self.batches:
+                if edge:
+                    vao.render(moderngl.LINES, instances=count)
+            target.depth_mask = True
+            ctx.depth_func = "<"
+            ctx.enable(moderngl.DEPTH_TEST)
 
     def pick(self, size, x, y, camera, step, group=None):
         target = self.ctx.simple_framebuffer(size, components=4)
@@ -343,7 +398,7 @@ class LegoView(QOpenGLWidget):
         self.renderer = None
         self.fitted = bool(state)
         self.step = 0
-        self.selection = 0
+        self.selection = frozenset()
         self.future = False
         self.group = None
         self.marker = None
@@ -415,14 +470,12 @@ class LegoView(QOpenGLWidget):
             self.camera.fit(self.scene.bounds(), width / height)
             self.fitted = True
 
-    def select(self, identity):
-        self.selection = next(
-            (
-                i + 1
-                for i, item in enumerate(self.scene.instances)
-                if item.identity == identity
-            ),
-            0,
+    def select(self, identities):
+        identities = set(identities)
+        self.selection = frozenset(
+            i + 1
+            for i, item in enumerate(self.scene.instances)
+            if item.identity in identities
         )
         self.update()
 
@@ -460,12 +513,13 @@ class LegoView(QOpenGLWidget):
             y = max(
                 0, min(size[1] - 1, size[1] - 1 - round(event.position().y() * scale))
             )
-            self.selection = self.renderer.pick(
+            selected = self.renderer.pick(
                 size, x, y, self.camera, self.step, self.group
             )
             self.doneCurrent()
-            if 0 < self.selection <= len(self.scene.instances):
-                self.selected.emit(self.scene.instances[self.selection - 1].identity)
+            identity = self.scene.instances[selected - 1].identity if selected else ""
+            self.select((identity,))
+            self.selected.emit(identity)
         self.update()
         self.changed.emit()
 

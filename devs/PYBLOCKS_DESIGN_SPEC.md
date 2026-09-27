@@ -1842,14 +1842,16 @@ working directory belongs to the user data directory. Archives are atomic, detec
 external modifications and retain unfinished Python. Recovery retains archive
 save baselines; normal close removes private working copies.
 
-Stage navigation never edits program source. Applying a starter is explicit and
-undoable through the editor's normal commit operation, which also remaps selection.
+Stage navigation never edits program source or depends on completion. Previous
+and Next open neighboring descriptions whenever they exist. Opening a starter
+creates a new unsaved document in the current project; it never replaces another
+document, including unfinished Python drafts.
 Visiting an assembly step, changing a camera or viewing a hint never completes a
 physical task. Manual completion and observable device checks remain distinct.
-The task card accompanies programming, control and assembly, can be hidden, and
-shares completion actions with the overview. Completion does not navigate;
-Next stage explicitly opens the next description. Hints and starter actions are
-available only where authored. Opening a saved project restores its workspace,
+A single task card stays above the workspaces, including the lesson overview,
+with completion status and actions in one place. Completion does not navigate;
+completed stages have green check icons, including in the selected list row.
+Hints and starter actions are available only where authored. Opening a saved project restores its workspace,
 including when its document is already open. Hub callbacks after closing must not
 read removed project resources.
 
@@ -1857,12 +1859,16 @@ The assembly viewer consumes a robot description and progress state, not a stude
 project. Independent instructions and the active lesson have separate viewers and
 state; only the lesson viewer updates lesson progress. Independent assembly stores
 its last model, step and camera in user settings and loads resources lazily.
+Robot descriptions may declare a localized title. The model chooser appears only
+for multiple open models; opening instructions belongs to File and the empty viewer.
 
 The lesson palette restricts library search and contextual expression proposals,
 without removing recognition definitions. A stage may expose a block above the
 global learning level. Free exploration lifts the palette constraint and preserves
-progress. Multiple programs can belong to one project; saving any of them saves
-the project's open programs and progress together.
+progress. This option belongs to the block library, not the lesson overview.
+The main toolbar uses 24-pixel icons with localized tooltips and shortcuts;
+hub name and connection status retain text. Multiple programs can belong to one
+project; saving any of them saves the project's open programs and progress together.
 Contextual filtering exposes a return to whole-block selection, so editing a
 parameter cannot leave a learner facing an unexplained empty palette. Inline
 fields consume their commit key: Return must not also invoke the parent editor's
@@ -1893,8 +1899,15 @@ contains shared meshes, transformed instances, stable identities, submodel group
 and authored steps. Device metadata binds instance IDs to expected ports. This is
 instructional wiring; the Python program remains the runtime source of truth.
 Assembly uses its own workspace and supports orbit/pan/zoom, picking, current-step
-parts, previous-step muting, optional future outlines and camera hints. OpenGL
-failure must leave instructional text and part information usable. No physics,
+parts, previous-step muting, optional future outlines and camera hints. Inspection
+never changes construction progress: devices and subassemblies are limited to
+what is built at the current step. A part-list row selects every matching instance
+added in that step. Repeat click, Escape, background click or changing step clears
+selection. Hidden selected surfaces are translucent and selected edges are drawn
+on top; filled faces and picking still exclude future parts and isolated-out groups.
+Device and subassembly controls appear only when they offer a choice. Future
+outlines share a row with the selection caption and disappear at the last step.
+OpenGL failure must leave instructional text and part information usable. No physics,
 automatic assembly planning or proprietary asset extraction is implied.
 
 The first complete lesson teaches a two-wheel SPIKE Prime base: assemble, check

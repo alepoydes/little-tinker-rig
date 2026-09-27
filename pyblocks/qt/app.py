@@ -31,6 +31,7 @@ from PySide6.QtWidgets import (
     QStackedWidget,
     QStyle,
     QTabWidget,
+    QToolBar,
     QToolButton,
     QVBoxLayout,
     QWidget,
@@ -95,7 +96,7 @@ class Studio(QMainWindow):
         self.unread = 0
         self.setStyleSheet("""
             QMainWindow { background: #f3f6fa; }
-            QToolBar { border: 0; spacing: 5px; padding: 5px; background: #f3f6fa; }
+            QToolBar { border: 0; spacing: 5px; padding: 2px; background: #f3f6fa; }
             QToolButton { padding: 5px 8px; border-radius: 6px; }
             QToolButton:hover { background: #dfe8f2; }
             QToolButton:checked { background: transparent; border-bottom: 2px solid #303944; border-radius: 0; }
@@ -313,8 +314,8 @@ class Studio(QMainWindow):
         toolbar = self.addToolBar(N_("Program"))
         toolbar.setObjectName("programTools")
         toolbar.setMovable(False)
-        toolbar.setIconSize(QSize(23, 23))
-        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+        toolbar.setIconSize(QSize(24, 24))
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
         file = self.menuBar().addMenu(N_("File"))
         self.file_menu = file
         self._action(
@@ -658,6 +659,11 @@ class Studio(QMainWindow):
     def retranslate(self):
         translate_standard_dialogs()
         localize(self)
+        for action in self.findChild(QToolBar, "programTools").actions():
+            shortcut = action.shortcut().toString(
+                QKeySequence.SequenceFormat.NativeText
+            )
+            action.setToolTip(action.text() + (f" ({shortcut})" if shortcut else ""))
         self.title_bar.update_state()
         for index in range(self.documents.count()):
             self.documents.widget(index).update_mode()
