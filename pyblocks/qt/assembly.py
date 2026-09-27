@@ -1,5 +1,6 @@
 """Assembly steps and part inspection share the model used by the 3D viewport."""
 
+import json
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QThreadPool, Signal
@@ -16,6 +17,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QSlider,
     QSplitter,
+    QStackedWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -31,11 +33,10 @@ from .resources import ResourceJob
 class AssemblyPage(QWidget):
     changed = Signal()
 
-    def __init__(self, project):
+    def __init__(self, path, state=None):
         super().__init__()
-        self.project = project
-        self.state = project.progress.setdefault("assembly", {})
-        path = resource(project.lesson.root, project.lesson.data["robot"])
+        self.state = state if state is not None else {}
+        path = Path(path)
         self.robot = robot_description(path)
         self.root = path.parent
         self.scene = None
@@ -83,16 +84,16 @@ class AssemblyPage(QWidget):
         self.selection.setWordWrap(True)
         layout.addWidget(self.selection)
         row = QHBoxLayout()
-        back = QPushButton(N_("Previous step"))
-        back.clicked.connect(lambda: self.set_step(self.step - 1))
-        row.addWidget(back)
+        self.back = QPushButton(N_("Previous step"))
+        self.back.clicked.connect(lambda: self.set_step(self.step - 1))
+        row.addWidget(self.back)
         self.slider = QSlider(Qt.Orientation.Horizontal)
         self.slider.setRange(0, 0)
         self.slider.valueChanged.connect(self.set_step)
         row.addWidget(self.slider, 1)
-        next_step = QPushButton(N_("Next step"))
-        next_step.clicked.connect(lambda: self.set_step(self.step + 1))
-        row.addWidget(next_step)
+        self.next_step = QPushButton(N_("Next step"))
+        self.next_step.clicked.connect(lambda: self.set_step(self.step + 1))
+        row.addWidget(self.next_step)
         reset = QPushButton(N_("Recommended view"))
         reset.clicked.connect(self.reset_camera)
         row.addWidget(reset)
@@ -253,6 +254,8 @@ class AssemblyPage(QWidget):
         )
         self.step = max(0, min(step, count - 1))
         self.state["step"] = self.step
+        self.back.setEnabled(self.step > 0)
+        self.next_step.setEnabled(self.step < count - 1)
         self.slider.blockSignals(True)
         self.slider.setValue(self.step)
         self.slider.blockSignals(False)
@@ -382,3 +385,135 @@ class AssemblyPage(QWidget):
                 index, localized(device["name"], language()) + " · " + device["port"]
             )
         self.set_step(self.step)
+
+
+class AssemblyWorkspace(QWidget):
+    """One viewer for lesson models and independently opened instructions."""
+
+    changed = Signal()
+    selection_changed = Signal()
+    failed = Signal(str)
+
+    def __init__(self, settings):
+        super().__init__()
+        self.settings = settings
+        self.lesson_page = self.free_page = None
+        self.free_path = None
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        row = QHBoxLayout()
+        self.models = QComboBox()
+        self.models.setProperty("translationSources", {})
+        self.models.currentIndexChanged.connect(self.select_model)
+        row.addWidget(self.models, 1)
+        button = QPushButton(N_("Open robot instructions…"))
+        button.clicked.connect(self.choose)
+        row.addWidget(button)
+        layout.addLayout(row)
+        self.pages = QStackedWidget()
+        self.empty = QLabel(
+            N_("Open a robot.json file to follow assembly steps without a lesson.")
+        )
+        self.empty.setWordWrap(True)
+        self.empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.pages.addWidget(self.empty)
+        layout.addWidget(self.pages, 1)
+        self.refresh_models()
+
+    @property
+    def showing_lesson(self):
+        return (
+            self.lesson_page is not None
+            and self.pages.currentWidget() is self.lesson_page
+        )
+
+    def select_model(self, index):
+        page = (
+            self.lesson_page
+            if self.models.itemData(index) == "lesson"
+            else self.free_page
+        )
+        self.pages.setCurrentWidget(page or self.empty)
+        self.selection_changed.emit()
+
+    def refresh_models(self):
+        selected = self.models.currentData()
+        self.models.blockSignals(True)
+        self.models.clear()
+        self.models.addItem(
+            self.free_path.name if self.free_path else tr("Independent assembly"),
+            "free",
+        )
+        if self.free_path:
+            self.models.setItemData(0, str(self.free_path), Qt.ItemDataRole.ToolTipRole)
+        if self.lesson_page:
+            self.models.addItem(tr("Lesson robot"), "lesson")
+        self.models.setCurrentIndex(max(0, self.models.findData(selected)))
+        self.models.blockSignals(False)
+        self.select_model(self.models.currentIndex())
+
+    def select_lesson(self):
+        if self.lesson_page:
+            self.models.setCurrentIndex(self.models.findData("lesson"))
+
+    def replace_page(self, previous, page):
+        if previous:
+            self.pages.removeWidget(previous)
+            previous.deleteLater()
+        if page:
+            self.pages.addWidget(page)
+
+    def set_lesson(self, path, state=None):
+        page = AssemblyPage(path, state) if path else None
+        self.replace_page(self.lesson_page, page)
+        self.lesson_page = page
+        if page:
+            page.changed.connect(self.changed)
+        self.refresh_models()
+        self.select_lesson()
+
+    def choose(self):
+        name, _ = QFileDialog.getOpenFileName(
+            self,
+            tr("Open robot instructions"),
+            str(self.free_path.parent) if self.free_path else "",
+            "Robot instructions (*.json)",
+        )
+        if name:
+            self.open(Path(name))
+
+    def open(self, path, state=None):
+        try:
+            page = AssemblyPage(path, state)
+        except (ValueError, OSError) as error:
+            self.failed.emit(str(error))
+            return
+        self.replace_page(self.free_page, page)
+        self.free_page, self.free_path = page, path
+        page.changed.connect(self.remember)
+        self.refresh_models()
+        self.models.setCurrentIndex(0)
+        self.remember()
+
+    def remember(self):
+        if self.free_page:
+            self.settings.setValue("assembly/path", str(self.free_path))
+            self.settings.setValue("assembly/state", json.dumps(self.free_page.state))
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        # Restore lazily; programming and hub control need no model or parts cache.
+        if self.free_page is None and not self.showing_lesson:
+            path = self.settings.value("assembly/path")
+            if path and Path(path).is_file():
+                try:
+                    state = json.loads(self.settings.value("assembly/state", "{}"))
+                except ValueError:
+                    state = {}
+                self.open(Path(path), state)
+
+    def retranslate(self):
+        self.refresh_models()
+        for page in (self.free_page, self.lesson_page):
+            if page:
+                page.retranslate()

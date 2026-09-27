@@ -4,15 +4,22 @@ Lessons are optional. **File → Lessons → First drive · SPIKE Prime 45678** 
 an independent student project. Ordinary Python editing works as before.
 
 The **Lesson** workspace presents the goal, stages and progressive hints.
-**Start this stage** opens Program, Control or Assembly. A collapsible current-task
-card stays above the program. Visiting a stage does not mark it complete and never
-replaces your code. **Apply starter program** asks before replacement and supports
+**Open program**, **Open controls** or **Open assembly** opens the stage's workspace.
+The current task stays visible while programming, controlling or assembling the
+lesson robot. **Mark complete** records the result without changing workspace;
+**Next stage →** opens the next task's description. **Open lesson** returns to the
+overview at any time. Hide the task card with **×** and restore it with **View →
+Current task**. Visiting a stage never completes it or replaces your code.
+**Apply starter program** asks before replacement and supports
 Undo. Physical assembly and experiments are marked complete by the learner;
 a connection-check stage requires live readings from the port monitor.
 
 Each stage shows a small palette, including its permitted contextual expression
 operations. Existing code still uses the full library for recognition and editing.
 **Show all blocks** enables free experiments while retaining lesson progress.
+When an input is selected, the library offers suitable expressions. **← Back to
+whole blocks** (or Escape in the editor) returns to adding complete actions.
+Ordinary **File → New** creates a program outside the lesson, with the normal library.
 
 ## Save and resume
 
@@ -36,6 +43,12 @@ The working copy is removed after a normal close; an abnormal close leaves it
 available for recovery. Archive contents can also be extracted with a ZIP tool.
 
 ## Assembly
+
+**File → Open robot instructions…** opens a `robot.json` description independently
+of a lesson. Assembly remains available from the left sidebar. The model selector
+switches between independently opened instructions and the active lesson's robot.
+Standalone assembly remembers its last model, step and camera in application
+settings; each lesson keeps its own assembly progress inside its project.
 
 The bundled training base contains 20 parts and 11 assembly steps. Steps 1–7 build
 the rolling base; 8–11 add its distance sensor. Left motor: **A**, right motor: **B**,

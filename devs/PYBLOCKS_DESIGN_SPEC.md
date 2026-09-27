@@ -1830,7 +1830,8 @@ Workspace navigation stays on the left in a 48-pixel strip with centered 24-pixe
 SVG icons and 48-pixel rows. Names appear only in localized tooltips and remain
 available to assistive technology. Language and font changes do not widen the
 strip. When height is limited, the list scrolls without changing the current
-workspace. Lesson modes are shown only when relevant; hidden modes cannot be
+workspace. Lesson is shown only for a student project; Assembly is also available
+independently. Hidden modes cannot be
 selected from the keyboard. Dimensions use logical pixels for display scaling.
 
 Lessons (`.pylesson`) are immutable, localized materials with goals, stages,
@@ -1845,12 +1846,32 @@ Stage navigation never edits program source. Applying a starter is explicit and
 undoable through the editor's normal commit operation, which also remaps selection.
 Visiting an assembly step, changing a camera or viewing a hint never completes a
 physical task. Manual completion and observable device checks remain distinct.
+The task card accompanies programming, control and assembly, can be hidden, and
+shares completion actions with the overview. Completion does not navigate;
+Next stage explicitly opens the next description. Hints and starter actions are
+available only where authored. Opening a saved project restores its workspace,
+including when its document is already open. Hub callbacks after closing must not
+read removed project resources.
+
+The assembly viewer consumes a robot description and progress state, not a student
+project. Independent instructions and the active lesson have separate viewers and
+state; only the lesson viewer updates lesson progress. Independent assembly stores
+its last model, step and camera in user settings and loads resources lazily.
 
 The lesson palette restricts library search and contextual expression proposals,
 without removing recognition definitions. A stage may expose a block above the
 global learning level. Free exploration lifts the palette constraint and preserves
 progress. Multiple programs can belong to one project; saving any of them saves
 the project's open programs and progress together.
+Contextual filtering exposes a return to whole-block selection, so editing a
+parameter cannot leave a learner facing an unexplained empty palette. Inline
+fields consume their commit key: Return must not also invoke the parent editor's
+expression chooser.
+Qt's automatic focus traversal when a child field closes is not structural
+navigation; it must preserve the edited argument selection. Delete and the block
+context menu share the same extraction operation and Undo transaction.
+Window shortcuts and the focused editor route Escape through the same cancellation
+and whole-block selection handler.
 
 Robot models use LDraw/MPD geometry. Original models and instructional materials
 belong to the lesson; third-party libraries stay outside the repository. A library

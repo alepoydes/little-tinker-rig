@@ -282,10 +282,11 @@ def test_route_lesson_lists_iteration_and_measured_results(tmp_path, qt_app):
         )
         assert not window.session.analysis.diagnostics()
         run(window)
-        wait_until(lambda: len(window.console.toPlainText().splitlines()) >= 2)
+        wait_until(lambda: not window.hub_is_busy and not window.hub_info.running)
         # Simulated motor completion has a one-degree tolerance, as on the hub.
+        # Connection and upload messages precede the program's two results.
         assert [
-            float(s) for s in window.console.toPlainText().splitlines()
+            float(s) for s in window.console.toPlainText().splitlines()[-2:]
         ] == pytest.approx([60, 270], abs=2)
         assert not window.runtime_panel.problem
     finally:

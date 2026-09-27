@@ -3,10 +3,10 @@
 from pathlib import Path
 
 from PySide6.QtCore import QObject, Qt, QThreadPool, QUrl
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QCheckBox,
     QFileDialog,
-    QGroupBox,
     QHBoxLayout,
     QLabel,
     QListWidget,
@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QProgressDialog,
     QPushButton,
     QSplitter,
+    QToolButton,
     QVBoxLayout,
     QWidget,
 )
@@ -47,6 +48,8 @@ class Lessons(QObject):
         layout.addWidget(self.title)
         split = QSplitter()
         self.stages = QListWidget()
+        self.stages.setWordWrap(True)
+        self.stages.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.stages.currentRowChanged.connect(self.select_stage)
         self.description = HelpBrowser()
         self.description.setOpenExternalLinks(True)
@@ -57,45 +60,76 @@ class Lessons(QObject):
         self.status = QLabel()
         self.status.setWordWrap(True)
         layout.addWidget(self.status)
-        row = QHBoxLayout()
-        for label, callback in (
-            (N_("Start this stage"), self.start_stage),
-            (N_("Next hint"), self.hint),
-            (N_("Apply starter program…"), self.apply_starter),
-            (N_("Mark complete"), self.complete),
+        self.actions = {}
+        for name, label, callback in (
+            ("start", "", self.start_stage),
+            ("hint", N_("Next hint"), self.hint),
+            ("starter", N_("Apply starter program…"), self.apply_starter),
+            ("complete", N_("Mark complete"), self.complete),
+            ("next", N_("Next stage →"), self.next_stage),
         ):
-            button = QPushButton(label)
-            button.clicked.connect(
+            action = QAction(label, self)
+            action.triggered.connect(
                 lambda checked=False, fn=callback: window.perform(fn)
             )
-            row.addWidget(button)
+            self.actions[name] = action
+
+        def add_actions(row, names):
+            for name in names:
+                button = QToolButton()
+                action = self.actions[name]
+                button.setDefaultAction(action)
+                # QToolButton shares text/enabled state, but not action visibility.
+                action.changed.connect(
+                    lambda a=action, b=button: b.setVisible(a.isVisible())
+                )
+                row.addWidget(button)
+
+        row = QHBoxLayout()
+        add_actions(row, ("start", "hint", "starter"))
+        row.addStretch()
+        add_actions(row, ("complete", "next"))
         layout.addLayout(row)
         self.explore = QCheckBox(N_("Show all blocks"))
         self.explore.toggled.connect(self.set_explore)
         layout.addWidget(self.explore)
-        self.card = QGroupBox(N_("Current task"))
-        self.card.setCheckable(True)
-        self.card.setChecked(True)
+        self.guidance = window._action(
+            window.view_menu, N_("Current task"), None, self.toggle_guidance
+        )
+        self.guidance.setCheckable(True)
+        self.guidance.setEnabled(False)
+        self.card = QWidget()
         card_layout = QVBoxLayout(self.card)
+        card_layout.setContentsMargins(8, 4, 8, 4)
         self.task = QLabel()
         self.task.setWordWrap(True)
         self.task.setTextFormat(self.task.textFormat().PlainText)
-        self.card.toggled.connect(self.task.setVisible)
         card_layout.addWidget(self.task)
+        row = QHBoxLayout()
         button = QPushButton(N_("Open lesson"))
         button.clicked.connect(lambda: window.set_mode(4))
-        card_layout.addWidget(button)
-        window.program_documents.layout().insertWidget(0, self.card)
+        row.addWidget(button)
+        add_actions(row, ("start",))
+        row.addStretch()
+        add_actions(row, ("complete", "next"))
+        hide = QToolButton()
+        hide.setText("×")
+        hide.setToolTip(N_("Hide task"))
+        hide.clicked.connect(lambda: self.guidance.trigger())
+        row.addWidget(hide)
+        card_layout.addLayout(row)
+        window.workspace_body.insertWidget(0, self.card)
         window.pages.addWidget(self.page)
         window.modes.add_mode("lesson", N_("Lesson"))
-        # The assembly widget is loaded only when a lesson uses a robot model.
-        self.assembly_host = QWidget()
-        self.assembly_host.setLayout(QVBoxLayout())
-        self.assembly = None
+        from .assembly import AssemblyWorkspace
+
+        self.assembly_host = AssemblyWorkspace(window.settings)
+        self.assembly_host.changed.connect(self.changed)
+        self.assembly_host.selection_changed.connect(self.update_card)
+        self.assembly_host.failed.connect(window.error)
         window.pages.addWidget(self.assembly_host)
         window.modes.add_mode("assembly", N_("Assembly"))
         window.modes.set_mode_visible(4, False)
-        window.modes.set_mode_visible(5, False)
         self.card.hide()
         self.menu = window.file_menu.addMenu(N_("Lessons"))
         self.menu.aboutToShow.connect(self.populate)
@@ -114,6 +148,9 @@ class Lessons(QObject):
             self.export,
         )
         self.export_action.setEnabled(False)
+        window._action(
+            window.file_menu, N_("Open robot instructions…"), None, self.open_robot
+        )
 
     def populate(self):
         self.menu.clear()
@@ -155,6 +192,7 @@ class Lessons(QObject):
             )
             if page is not None:
                 pages.setCurrentWidget(page)
+                self.window.set_mode(project.progress.get("mode", 4))
                 return page
         if project is None:
             project = (
@@ -163,6 +201,8 @@ class Lessons(QObject):
                 else StudentProject.create(path)
             )
             self.projects[project.root] = project
+        # Activating documents may update workspace widgets; preserve the saved mode.
+        mode = project.progress.get("mode", 4)
         page = self.window.open_document(project.main)
         page.lesson_project = project
         available = {s.identity for s in page.session.available_snippets}
@@ -191,7 +231,7 @@ class Lessons(QObject):
             if active.is_file():
                 page = self.window.open_document(active)
         self.activate()
-        self.window.set_mode(project.progress.get("mode", 4))
+        self.window.set_mode(mode)
         if project.path:
             self.window.remember_file(project.path)
         self.changed()
@@ -209,25 +249,25 @@ class Lessons(QObject):
         self.current = project
         self.new_program_action.setEnabled(project is not None)
         self.export_action.setEnabled(project is not None and self.export_job is None)
-        self.card.setVisible(project is not None)
-        self.window.modes.set_mode_visible(4, project is not None)
-        self.window.modes.set_mode_visible(
-            5, project is not None and "robot" in project.lesson.data
+        self.guidance.setEnabled(project is not None)
+        self.guidance.setChecked(
+            project is not None and project.progress.get("guidance", True)
         )
+        self.window.modes.set_mode_visible(4, project is not None)
         if project is None:
-            if self.window.pages.currentIndex() >= 4:
+            if self.window.pages.currentIndex() == 4:
                 self.window.set_mode(0)
         else:
             self.refresh()
-            if different:
-                self.load_robot()
+        if different:
+            self.load_robot()
+        self.update_card()
         self.palette()
 
     def refresh(self):
         project = self.current
         if project is None:
             return
-        self.card.setTitle(tr("Current task"))
         self.title.setText(localized(project.lesson.data["title"], language()))
         self.stages.blockSignals(True)
         self.stages.clear()
@@ -249,14 +289,53 @@ class Lessons(QObject):
         self.description.setMarkdown(text)
         self.description.style_document()
         self.task.setText(
-            localized(stage["title"], language())
+            tr(
+                "Stage {current} of {total} · {title}",
+                current=project.lesson.stages.index(stage) + 1,
+                total=len(project.lesson.stages),
+                title=localized(stage["title"], language()),
+            )
             + "\n"
             + localized(stage.get("goal", stage["title"]), language())
         )
         self.explore.blockSignals(True)
         self.explore.setChecked(project.progress.get("explore", False))
         self.explore.blockSignals(False)
+        self.actions["start"].setText(
+            tr(
+                {
+                    "assembly": N_("Open assembly"),
+                    "control": N_("Open controls"),
+                    "program": N_("Open program"),
+                }[stage.get("mode", "program")]
+            )
+        )
+        self.actions["hint"].setVisible(bool(stage.get("hints")))
+        self.actions["hint"].setEnabled(shown < len(stage.get("hints", [])))
+        self.actions["starter"].setVisible(bool(stage.get("starter")))
         self.update_check()
+
+    def update_card(self):
+        mode = self.window.pages.currentIndex()
+        self.card.setVisible(
+            self.current is not None
+            and self.guidance.isChecked()
+            and mode in (0, 1, 5)
+            and (mode != 5 or self.assembly_host.showing_lesson)
+        )
+
+    def toggle_guidance(self):
+        if self.current:
+            self.current.progress["guidance"] = self.guidance.isChecked()
+            self.update_card()
+            self.changed()
+
+    def next_stage(self):
+        if self.current:
+            index = self.current.lesson.stages.index(self.current.stage) + 1
+            if index < len(self.current.lesson.stages):
+                self.select_stage(index)
+                self.window.set_mode(4)
 
     def select_stage(self, index):
         if self.current is None or index < 0:
@@ -269,6 +348,7 @@ class Lessons(QObject):
         if self.current:
             mode = self.current.stage.get("mode", "program")
             if mode == "assembly" and self.assembly:
+                self.assembly_host.select_lesson()
                 steps = self.current.stage.get("assembly")
                 if steps and not steps[0] - 1 <= self.assembly.step < steps[1]:
                     self.assembly.set_step(steps[0] - 1)
@@ -338,14 +418,48 @@ class Lessons(QObject):
         )
 
     def update_check(self):
-        if self.current and self.current.stage.get("check") == "devices":
-            self.status.setText(
-                tr("Connections match the lesson.")
-                if self.check_ready()
-                else tr("Open the port monitor to check the expected connections.")
+        if self.current is None:
+            return
+        project = self.current
+        done = project.stage["id"] in project.progress["completed"]
+        ready = project.stage.get("check") != "devices" or self.check_ready()
+        self.actions["complete"].setText(
+            tr("Completed") if done else tr("Mark complete")
+        )
+        self.actions["complete"].setEnabled(not done and ready)
+        self.actions["next"].setVisible(project.stage is not project.lesson.stages[-1])
+        self.actions["next"].setEnabled(done)
+        if len(project.progress["completed"]) == len(project.lesson.stages):
+            text = tr(
+                "Lesson complete. Save your project to keep the program and progress."
             )
+        elif done:
+            text = tr(
+                "Stage complete. Continue with Next stage, or keep experimenting."
+            )
+        elif project.stage.get("check") == "devices":
+            info = self.window.hub_info
+            if not info.connected:
+                text = tr("Connect a hub at the top right of the window.")
+            elif not info.monitoring:
+                text = tr("Open the port monitor to check the expected connections.")
+            elif ready:
+                text = tr("Connections match the lesson.")
+            else:
+                from .device import KINDS
+
+                text = tr(
+                    "Check connections: {devices}",
+                    devices=", ".join(
+                        f'{d["port"]} · {tr(KINDS.get(d["type"], "Device"))}'
+                        for d in self.connections()
+                        if info.ports.get(d["port"], {}).get("type") != d["type"]
+                    ),
+                )
         else:
-            self.status.setText(tr("Complete the task, then mark it complete."))
+            text = tr("Complete the task, then mark it complete.")
+        self.status.setText(text)
+        self.actions["complete"].setToolTip(text)
 
     def complete(self):
         if self.current is None:
@@ -370,15 +484,16 @@ class Lessons(QObject):
         project = self.current
         restricted = project is not None and not project.progress.get("explore", False)
         ids = frozenset(project.stage.get("blocks", [])) if restricted else None
-        level = (
-            "all"
-            if restricted or project is not None
-            else window.level_filter.currentData()
-        )
+        level = "all" if project else window.block_level
+        window.level_filter.blockSignals(True)
+        window.level_filter.setCurrentIndex(window.level_filter.findData(level))
+        window.level_filter.blockSignals(False)
         window.level_filter.setEnabled(project is None)
         if window.library.lesson_ids != ids or window.library.level != level:
             window.library.lesson_ids = ids
             window.library.filter(window.search.text(), level)
+            if restricted:
+                window.library.expandAll()
         view = window.editing_source
         view.expression_level = level
         view.expression_ids = ids
@@ -393,16 +508,21 @@ class Lessons(QObject):
             self.window.recovery.schedule()
 
     def load_robot(self):
-        if self.assembly:
-            self.assembly_host.layout().removeWidget(self.assembly)
-            self.assembly.deleteLater()
-            self.assembly = None
         if self.current and "robot" in self.current.lesson.data:
-            from .assembly import AssemblyPage
+            self.assembly_host.set_lesson(
+                resource(self.current.lesson.root, self.current.lesson.data["robot"]),
+                self.current.progress.setdefault("assembly", {}),
+            )
+        else:
+            self.assembly_host.set_lesson(None)
 
-            self.assembly = AssemblyPage(self.current)
-            self.assembly.changed.connect(self.changed)
-            self.assembly_host.layout().addWidget(self.assembly)
+    @property
+    def assembly(self):
+        return self.assembly_host.lesson_page
+
+    def open_robot(self):
+        self.window.set_mode(5)
+        self.assembly_host.choose()
 
     def new_program(self):
         if self.current:
@@ -413,6 +533,9 @@ class Lessons(QObject):
             self.window.set_mode(0)
 
     def release_unused(self, *, all_projects=False):
+        if all_projects:
+            # Queued hub updates may arrive after the working copies are removed.
+            self.current = None
         active = (
             {
                 self.window.documents.widget(i).lesson_project.root

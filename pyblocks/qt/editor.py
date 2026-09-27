@@ -1254,15 +1254,35 @@ class SourceView(QTextEdit):
         popup.move(point)
         popup.show()
 
+    def select_statement(self):
+        if self.parameter_editor:
+            self.parameter_editor.close()
+        if self.expression_popup:
+            self.expression_popup.close()
+        try:
+            self.session.editor.selection = self.session.editor.statement()
+        except ValueError:
+            self.session.editor.selection = self.session.document.syntax.tree
+        self.setFocus()
+        self.reveal_selection()
+
+    def delete_selection(self):
+        if self.session.editor.selection is self.session.document.syntax.tree:
+            return
+        try:
+            self.session.editor.commit(self.session.extract_selection()[1])
+            self.refresh_source()
+            self.changed.emit()
+        except (ValueError, SyntaxError, OSError) as error:
+            self.failed.emit(str(error))
+
     def keyPressEvent(self, event):
         key, modifiers = event.key(), event.modifiers()
         if key == Qt.Key.Key_Escape:
-            self.cancel_pointer_move()
-            try:
-                self.session.editor.selection = self.session.editor.statement()
-            except ValueError:
-                self.session.editor.selection = self.session.document.syntax.tree
-            self.reveal_selection()
+            self.cancel_interaction()
+            return
+        if key == Qt.Key.Key_Delete and not modifiers:
+            self.delete_selection()
             return
         if (
             modifiers & Qt.KeyboardModifier.ControlModifier
@@ -1323,6 +1343,10 @@ class SourceView(QTextEdit):
         super().keyPressEvent(event)
 
     def focusNextPrevChild(self, next):
+        # Qt also traverses focus when an inline field closes. Only keyboard
+        # traversal from this view should move the structural selection.
+        if not self.hasFocus():
+            return super().focusNextPrevChild(next)
         navigate(self.session, "next" if next else "previous")
         self.reveal_selection()
         return True
@@ -1478,11 +1502,12 @@ class SourceView(QTextEdit):
             except (ValueError, SyntaxError) as error:
                 self.failed.emit(str(error))
 
-    def cancel_pointer_move(self):
+    def cancel_interaction(self):
         cancel_drag()
         self.press_position = self.pending_parameter = None
         self.session.editor.cancel_move()
         self.dragLeaveEvent(None)
+        self.select_statement()
 
     def dragEnterEvent(self, event):
         self.structure_bar.hide()

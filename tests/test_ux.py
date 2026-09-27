@@ -267,9 +267,23 @@ def test_parameter_combo_opens_in_place_and_validates_before_commit(tmp_path, qt
         assert popup.isVisible() and popup.error
         assert window.session.document.state.source.endswith("motor.run(500)\n")
         popup.line_edit.setText("300")
-        popup.apply()
+        QTest.keyClick(popup.line_edit, Qt.Key.Key_Return)
+        qt_app.processEvents()
         assert window.session.document.state.source.endswith("motor.run(300)\n")
+        assert window.source.expression_popup is None
+        assert (
+            window.session.document.syntax.text(window.session.editor.selection)
+            == "300"
+        )
+        assert window.whole_blocks.isVisible()
+        QTest.mouseClick(window.whole_blocks, Qt.MouseButton.LeftButton)
+        assert not isinstance(window.session.editor.selection, ast.expr)
+        assert not window.whole_blocks.isVisible()
         assert window.source.viewport().cursor().shape() != Qt.CursorShape.IBeamCursor
+        QTest.keyClick(window.source, Qt.Key.Key_Delete)
+        assert "motor.run" not in window.session.document.state.source
+        window.session.editor.undo()
+        assert window.session.document.state.source.endswith("motor.run(300)\n")
         window.session.editor.undo()
         window.refresh_views()
     finally:

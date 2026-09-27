@@ -132,12 +132,24 @@ class Studio(QMainWindow):
                 saved_level if saved_level in (*LEVELS, "all") else "beginner"
             )
         )
+        self.block_level = self.level_filter.currentData()
         self.level_filter.currentIndexChanged.connect(self.filter_level)
         library = QWidget()
         layout = QVBoxLayout(library)
         layout.addWidget(QLabel(N_("Library · drag a block into the program")))
         layout.addWidget(self.search)
         layout.addWidget(self.level_filter)
+        self.whole_blocks = QPushButton(N_("← Back to whole blocks"))
+        self.whole_blocks.setToolTip(
+            N_(
+                "The library is showing blocks for the selected input. Select its containing block to add the next action."
+            )
+        )
+        self.whole_blocks.clicked.connect(
+            lambda: self.editing_source.select_statement()
+        )
+        self.whole_blocks.hide()
+        layout.addWidget(self.whole_blocks)
         layout.addWidget(self.library, 1)
         insert = QPushButton(N_("＋ Add selected block"))
         insert.clicked.connect(self.insert_selected)
@@ -180,7 +192,10 @@ class Studio(QMainWindow):
         workspace_layout.setContentsMargins(0, 0, 0, 0)
         workspace_layout.setSpacing(4)
         workspace_layout.addWidget(self.modes)
-        workspace_layout.addWidget(self.pages, 1)
+        self.workspace_body = QVBoxLayout()
+        self.workspace_body.setContentsMargins(0, 0, 0, 0)
+        self.workspace_body.addWidget(self.pages, 1)
+        workspace_layout.addLayout(self.workspace_body, 1)
         self.setCentralWidget(workspace)
         self._docks()
         self._menus()
@@ -417,7 +432,7 @@ class Studio(QMainWindow):
             (
                 N_("Cancel move"),
                 "Escape",
-                lambda: self.editing_source.cancel_pointer_move(),
+                lambda: self.editing_source.cancel_interaction(),
             ),
             (
                 N_("Upgrade block"),
@@ -442,7 +457,7 @@ class Studio(QMainWindow):
             None,
             self.create_block_from_selection,
         )
-        view = self.menuBar().addMenu(N_("View"))
+        self.view_menu = view = self.menuBar().addMenu(N_("View"))
         group = QActionGroup(self)
         self.editor_actions = []
         for index, label in enumerate((N_("Blocks"), "Python")):
@@ -600,6 +615,7 @@ class Studio(QMainWindow):
 
     def filter_level(self):
         level = self.level_filter.currentData()
+        self.block_level = level
         self.settings.setValue("blockLevel", level)
         self.library.filter(self.search.text(), level)
         if hasattr(self, "scratch"):
@@ -653,8 +669,7 @@ class Studio(QMainWindow):
         self.help_page.retranslate()
         self.block_editor.retranslate()
         self.lessons.refresh()
-        if self.lessons.assembly:
-            self.lessons.assembly.retranslate()
+        self.lessons.assembly_host.retranslate()
         self.runtime_panel.retranslate()
         self.update_hub(self.hub_info)
         self.refresh_status()
@@ -864,12 +879,18 @@ class Studio(QMainWindow):
             self.scratch_visible = not self.scratch_dock.isHidden()
 
     def set_mode(self, index):
+        if index < 0 or self.modes.item(index).isHidden():
+            return
         self.pages.setCurrentIndex(index)
         if self.document_page.lesson_project:
             self.document_page.lesson_project.progress["mode"] = index
             if hasattr(self, "recovery"):
                 self.recovery.schedule()
+        self.modes.blockSignals(True)
         self.modes.setCurrentRow(index)
+        self.modes.blockSignals(False)
+        if hasattr(self, "lessons"):
+            self.lessons.update_card()
         self.scratch_dock.setVisible(index == 0 and self.scratch_visible)
         self.scratch_dock.toggleViewAction().setEnabled(index == 0)
         self.scratch_button.setEnabled(index == 0)
@@ -917,6 +938,9 @@ class Studio(QMainWindow):
         if hasattr(self, "lessons"):
             self.lessons.palette()
         self.library.set_context(self.editing_session)
+        self.whole_blocks.setVisible(
+            isinstance(self.editing_session.editor.selection, ast.expr)
+        )
         match = self.session.selected_match()
         selection = (
             tr(match.snippet.help).splitlines()[0]

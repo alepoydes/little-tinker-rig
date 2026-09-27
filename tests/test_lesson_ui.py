@@ -75,6 +75,85 @@ def test_stage_palette_preserves_source_and_free_exploration(tmp_path, qt_app):
         window.deleteLater()
 
 
+def test_lesson_navigation_is_explicit_and_restores_workspace(tmp_path, qt_app):
+    from pyblocks.qt.app import Studio
+
+    window = Studio(tmp_path / "plain.py")
+    window.show()
+    try:
+        page = window.lessons.open(make_lesson(tmp_path))
+        lesson = window.lessons
+        assert window.pages.currentIndex() == 4
+        assert not lesson.actions["hint"].isVisible()
+        assert not lesson.actions["starter"].isVisible()
+        lesson.actions["start"].trigger()
+        assert window.pages.currentIndex() == 0
+        assert lesson.card.isVisible()
+        page.session.editor.commit("drive.straight(200)\n")
+        lesson.actions["complete"].trigger()
+        assert window.pages.currentIndex() == 0
+        assert lesson.actions["next"].isEnabled()
+        lesson.actions["next"].trigger()
+        assert window.pages.currentIndex() == 4
+        assert lesson.current.stage["id"] == "stop"
+        assert page.text == "drive.straight(200)\n"
+        lesson.actions["start"].trigger()
+        lesson.guidance.trigger()
+        assert not lesson.card.isVisible()
+        window.set_mode(1)
+        project = lesson.current
+        project.path = tmp_path / "work.pyblocks"
+        lesson.save(project)
+        window.open_document(tmp_path / "plain.py")
+        assert not lesson.card.isVisible()
+        lesson.open(project.path)
+        assert window.pages.currentIndex() == 1
+        assert not lesson.guidance.isChecked()
+        lesson.guidance.trigger()
+        assert lesson.card.isVisible()
+        window.confirm_close = lambda *_: True
+        window.close_document(window.documents.currentIndex())
+        page = lesson.open(project.path)
+        assert window.pages.currentIndex() == 1
+        assert page.text == "drive.straight(200)\n"
+        assert not lesson.guidance.isChecked()
+    finally:
+        window.confirm_close = lambda *_: True
+        window.close()
+        window.deleteLater()
+
+
+def test_independent_assembly_survives_lesson_and_document_changes(tmp_path, qt_app):
+    from pyblocks.qt.app import Studio
+
+    (tmp_path / "robot.ldr").write_text("0 Original model\n")
+    path = tmp_path / "robot.json"
+    path.write_text(
+        json.dumps({"format": 1, "model": "robot.ldr", "steps": {"1": {}, "2": {}}})
+    )
+    window = Studio(tmp_path / "plain.py")
+    try:
+        assembly = window.lessons.assembly_host
+        assembly.open(path)
+        viewer = assembly.free_page
+        viewer.set_step(1)
+        assert not viewer.attempted  # Loading stays lazy until Assembly is shown.
+        page = window.lessons.open(make_lesson(tmp_path))
+        window.open_document(tmp_path / "plain.py")
+        assert window.lessons.current is None
+        assert not window.modes.item(5).isHidden()
+        assert assembly.free_page is viewer and viewer.step == 1
+        assert assembly.pages.currentWidget() is viewer
+        before = page.lesson_project.progress.copy()
+        viewer.set_step(0)
+        assert page.lesson_project.progress == before
+        assert json.loads(window.settings.value("assembly/state"))["step"] == 0
+    finally:
+        window.confirm_close = lambda *_: True
+        window.close()
+        window.deleteLater()
+
+
 def test_starter_is_undoable_and_device_check_uses_stage_ports(
     tmp_path, qt_app, monkeypatch
 ):

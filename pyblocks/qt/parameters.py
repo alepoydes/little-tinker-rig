@@ -82,7 +82,6 @@ class ParameterEditor(QWidget):
             1, 0, self.unit.width() + 5 if self.unit.text() else 1, 0
         )
         self.line_edit.installEventFilter(self)
-        self.line_edit.returnPressed.connect(self.apply)
         self.setStyleSheet(
             "ParameterEditor { background: white; color: #203040; border: 1px solid #4e8192; border-radius: 3px; padding: 0; } QLineEdit, QToolButton { border: 0; padding: 0; background: white; color: #203040; }"
         )
@@ -117,9 +116,18 @@ class ParameterEditor(QWidget):
             return False
         self.applied.emit()
         self.close()
+        self.view.setFocus()
         return True
 
     def eventFilter(self, watched, event):
+        if event.type() == QEvent.Type.KeyPress and event.key() in (
+            Qt.Key.Key_Return,
+            Qt.Key.Key_Enter,
+        ):
+            # Closing the field during Return must not forward the same key to
+            # the source view, where it would open the expression chooser.
+            self.apply()
+            return True
         if event.type() == QEvent.Type.KeyPress and event.key() in (
             Qt.Key.Key_Tab,
             Qt.Key.Key_Backtab,
