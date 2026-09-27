@@ -29,6 +29,10 @@ def parts_cache():
     return _user_directory(user_cache_path) / "ldraw"
 
 
+def firmware_cache():
+    return _user_directory(user_cache_path) / "firmware"
+
+
 def personal_collection():
     directory = _user_directory(user_data_path)
     if not directory.is_absolute():

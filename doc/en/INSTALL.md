@@ -24,6 +24,9 @@ For just the desktop editor and virtual hubs, use `--extra qt`. Other extras are
 `gamepad` for SDL controllers. `uv run` synchronizes the selected extras, so keep
 the extras you need in the command. `--no-dev` omits development tools.
 
+For a terminal editor with hub tools, see the [TUI guide](tui.md). It requires
+`--extra tui --extra pybricks`, without Qt or 3D dependencies.
+
 With a regular virtual environment:
 
 ```sh

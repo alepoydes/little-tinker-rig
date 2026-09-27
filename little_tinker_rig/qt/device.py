@@ -17,19 +17,11 @@ from PySide6.QtWidgets import (
 )
 
 from little_tinker_rig.i18n import N_, tr
+from little_tinker_rig.pybricks.devices import DEVICE_KINDS as KINDS
+from little_tinker_rig.pybricks.devices import describe_device
 from little_tinker_rig.pybricks.simulation import SENSOR_VALUES
 
 from .localization import localize
-
-KINDS = {
-    "empty": N_("Empty"),
-    "motor": N_("Motor"),
-    "color": N_("Color sensor"),
-    "color_distance": N_("BOOST color / distance"),
-    "ultrasonic": N_("Distance"),
-    "force": N_("Force sensor"),
-    "unknown": N_("Device"),
-}
 
 
 class ConnectDialog(QDialog):
@@ -185,28 +177,7 @@ class DevicePanel(QWidget):
             kind.blockSignals(False)
             kind.setEnabled(virtual and not (info.model == "boost" and port in "AB"))
             kind.parentWidget().setVisible(not info.ports or port in info.ports)
-            if key == "motor":
-                text = tr(
-                    "{p0:g}°    {p1:g} °/s",
-                    p0=data.get("angle", 0),
-                    p1=data.get("speed", 0),
-                )
-            elif key in {"color", "color_distance"}:
-                text = tr("Reflection: {p0:g} %", p0=data.get("reflection", 0))
-                if key == "color_distance":
-                    text += tr(
-                        " · Distance: {p0:g} %", p0=data.get("distance_percent", 0)
-                    )
-            elif key == "ultrasonic":
-                text = tr("Distance: {p0:g} mm", p0=data.get("distance", 0))
-            elif key == "force":
-                text = tr("Force: {p0:g} N", p0=data.get("force", 0))
-            else:
-                text = (
-                    tr("No device")
-                    if key == "empty"
-                    else tr("Device ID {p0}", p0=data.get("id", "?"))
-                )
+            text = describe_device(data)
             fresh = info.monitoring or virtual
             label.setText(
                 text + (tr(" · previous reading") if data and not fresh else "")

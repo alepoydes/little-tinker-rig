@@ -5,7 +5,7 @@
 данные живут только до следующего изменения исходника.
 
 ```text
-Qt / Textual / CLI
+Qt / CLI
         ↓
 Session: сниппеты, зависимости, Scratch, файлы
         ↓
@@ -15,6 +15,13 @@ edit: преобразование текста → Document: проверка �
                                     ↓
                          Syntax → анализ и отображение
 ```
+
+Textual TUI использует `core/source_file.py` для обычного редактирования текста,
+не создаёт структурную Session и не меняет метаданные блоков. Qt и TUI используют
+`pybricks/worker.py` для последовательных операций с хабом, `pybricks/firmware.py`
+для прошивки и `core/completion.py` для статического анализа Jedi. Qt переводит
+сообщения рабочего потока в сигналы, TUI — в события Textual.
+
 
 `Document` публикует новое состояние только после форматирования и компиляции.
 Компиляция проверяет контекст (`break` внутри цикла, `return` внутри функции),
@@ -95,7 +102,7 @@ AST не сохраняет комментарии. Поэтому перено�
 | Индекс, преобразования, история, перенос | `core/syntax.py`, `edit.py`, `document.py`, `interaction.py` | `test_core.py`, `test_regressions.py` |
 | Scratch, файлы, общие операции | `core/project.py`, `session.py` | `test_project.py`, `test_regressions.py` |
 | Шаблоны, версии, импорты, имена | `core/snippets.py`, `imports.py`, `analysis.py` | `test_snippets.py`, `test_project.py` |
-| Library, помощь, выделение, отображение | `core/presentation.py`, `qt/`, `tui/`, `cli/` | `test_frontends.py`, CLI-проверки в `test_project.py` |
+| Library, помощь, выделение, отображение | `core/presentation.py`, `qt/`, `cli/` | `test_frontends.py`, CLI-проверки в `test_project.py` |
 | Pybricks, симулятор и контроллеры | `pybricks/`, `qt/robot.py`, `examples/` | `test_connection.py`, `test_control.py`, `test_virtual.py`, `test_frontends.py` |
 
 Команды воспроизведения проверок и инварианты: [разработка](development.md).

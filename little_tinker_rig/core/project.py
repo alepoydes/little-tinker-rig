@@ -4,37 +4,11 @@ import hashlib
 import io
 import json
 import os
-import tempfile
 import tokenize
 from pathlib import Path
 
 from .document import Document, State
-
-
-def atomic_write(path: Path, text: str | bytes, encoding: str = "utf-8") -> None:
-    """Replace one file atomically, preserving its permission bits."""
-    path = path.resolve()
-    mode = path.stat().st_mode & 0o777 if path.exists() else None
-    temporary = None
-    try:
-        options = (
-            {"mode": "wb"}
-            if isinstance(text, bytes)
-            else {"mode": "w", "encoding": encoding, "newline": ""}
-        )
-        with tempfile.NamedTemporaryFile(
-            **options, dir=path.parent, delete=False
-        ) as stream:
-            temporary = Path(stream.name)
-            stream.write(text)
-            stream.flush()
-            os.fsync(stream.fileno())
-        if mode is not None:
-            temporary.chmod(mode)
-        temporary.replace(path)
-    finally:
-        if temporary is not None:
-            temporary.unlink(missing_ok=True)
+from .source_file import atomic_write as atomic_write
 
 
 class Project:

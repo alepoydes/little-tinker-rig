@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LittleTinker Rig 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-27 20:18+0300\n"
+"POT-Creation-Date: 2026-09-27 22:33+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -20,12 +20,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: little_tinker_rig/qt/device.py:198
+#: little_tinker_rig/pybricks/devices.py:34
 #, python-brace-format
 msgid " · Distance: {p0:g} %"
 msgstr " · Дальность: {p0:g} %"
 
-#: little_tinker_rig/qt/device.py:212
+#: little_tinker_rig/qt/device.py:183
 msgid " · previous reading"
 msgstr " · прошлое показание"
 
@@ -33,7 +33,7 @@ msgstr " · прошлое показание"
 msgid " · release to return to zero"
 msgstr " · отпустите для возврата к нулю"
 
-#: little_tinker_rig/qt/device.py:165
+#: little_tinker_rig/qt/device.py:157
 #, python-brace-format
 msgid " · {p0:.2f} V"
 msgstr " · {p0:.2f} В"
@@ -47,7 +47,7 @@ msgstr "На этом экране 3D недоступно. Описание ш�
 msgid "3D unavailable: {detail}"
 msgstr "3D недоступно: {detail}"
 
-#: little_tinker_rig/qt/firmware.py:289
+#: little_tinker_rig/pybricks/firmware.py:295
 msgid ""
 "A blinking blue light means the hub is ready to connect. No manual restart is needed."
 " If the hub is off, press its main button briefly to turn it on. Close this window "
@@ -150,6 +150,10 @@ msgstr "Менять цвет индикатора по последовател
 msgid "Append a value to a list."
 msgstr "Добавить значение в конец списка."
 
+#: little_tinker_rig/tui/dialogs.py:29
+msgid "Apply"
+msgstr "Применить"
+
 #: little_tinker_rig/snippets/python/objects.py:63
 msgid "Apply a function lazily as each item is consumed."
 msgstr "Применять функцию к каждому элементу по мере его чтения."
@@ -218,11 +222,11 @@ msgstr "Атрибут: ….name"
 msgid "Auto: {mode}"
 msgstr "Авто: {mode}"
 
-#: little_tinker_rig/qt/device.py:28
+#: little_tinker_rig/pybricks/devices.py:16
 msgid "BOOST color / distance"
 msgstr "Цвет / расстояние BOOST"
 
-#: little_tinker_rig/qt/device.py:134
+#: little_tinker_rig/qt/device.py:126
 msgid "BOOST distance, %"
 msgstr "Расстояние BOOST, %"
 
@@ -269,7 +273,7 @@ msgstr "Библиотека блоков"
 msgid "Blocks"
 msgstr "Блоки"
 
-#: little_tinker_rig/qt/firmware.py:166
+#: little_tinker_rig/pybricks/firmware.py:281
 msgid ""
 "Bluetooth bootloader: turn the hub off. Hold its green button until the light flashes"
 " purple, then release it. Keep the hub near the computer and close other Bluetooth "
@@ -279,7 +283,7 @@ msgstr ""
 " затем отпустите. Держите хаб рядом с компьютером и закройте другие подключения "
 "Bluetooth."
 
-#: little_tinker_rig/qt/device.py:72
+#: little_tinker_rig/qt/device.py:64
 msgid "Bluetooth name"
 msgstr "Имя Bluetooth"
 
@@ -350,7 +354,8 @@ msgstr ""
 msgid "Call: …(…)"
 msgstr "Вызов: …(…)"
 
-#: little_tinker_rig/qt/lessons.py:710
+#: little_tinker_rig/qt/lessons.py:710 little_tinker_rig/tui/dialogs.py:45
+#: little_tinker_rig/tui/dialogs.py:81
 msgid "Cancel"
 msgstr "Отмена"
 
@@ -381,6 +386,10 @@ msgstr "Изменить значение"
 #: little_tinker_rig/snippets/pybricks/hubs.py:30
 msgid "Change the hub status light."
 msgstr "Изменить цвет индикатора хаба."
+
+#: little_tinker_rig/tui/app.py:167
+msgid "Check Python syntax"
+msgstr "Проверить синтаксис Python"
 
 #: little_tinker_rig/snippets/pybricks/remote.py:50
 msgid "Check a LEGO remote button in your own control loop."
@@ -489,9 +498,17 @@ msgstr "Потомок"
 msgid "Choose a block to inspect its definition."
 msgstr "Выберите блок, чтобы изучить его определение."
 
+#: little_tinker_rig/core/source_file.py:57
+msgid "Choose a file name first"
+msgstr "Сначала выберите имя файла"
+
 #: little_tinker_rig/pybricks/firmware.py:176
 msgid "Choose a firmware ZIP package for this hub"
 msgstr "Выберите ZIP-пакет прошивки для этого хаба"
+
+#: little_tinker_rig/tui/firmware.py:208
+msgid "Choose a firmware version first"
+msgstr "Сначала выберите версию прошивки"
 
 #: little_tinker_rig/snippets/pybricks/randomness.py:6
 msgid ""
@@ -528,6 +545,10 @@ msgstr ""
 "Выбрать значение по условию.\n"
 "\n"
 "Вычисляется только выбранное выражение."
+
+#: little_tinker_rig/tui/app.py:296
+msgid "Choose an existing Python file"
+msgstr "Выберите существующий файл Python"
 
 #: little_tinker_rig/snippets/python/basics.py:56
 msgid "Choose between two actions using a condition."
@@ -575,7 +596,8 @@ msgstr "Очистить список"
 msgid "Clear the hub display."
 msgstr "Очистить экран хаба."
 
-#: little_tinker_rig/qt/firmware.py:102 little_tinker_rig/qt/window.py:39
+#: little_tinker_rig/qt/firmware.py:96 little_tinker_rig/qt/window.py:39
+#: little_tinker_rig/tui/editor.py:117 little_tinker_rig/tui/firmware.py:100
 msgid "Close"
 msgstr "Закрыть"
 
@@ -613,9 +635,13 @@ msgstr ""
 "\n"
 "Отдельные операции с устройствами для изучения полных программ роботов."
 
-#: little_tinker_rig/qt/device.py:27
+#: little_tinker_rig/pybricks/devices.py:15
 msgid "Color sensor"
 msgstr "Датчик цвета"
+
+#: little_tinker_rig/tui/app.py:67
+msgid "Commands"
+msgstr "Команды"
 
 #: little_tinker_rig/qt/structure.py:128
 msgid "Comparison operands"
@@ -645,7 +671,8 @@ msgstr ""
 "Настроить обработчик внешнего приложения; LittleTinker Rig не обрабатывает "
 "изображения камеры."
 
-#: little_tinker_rig/qt/device.py:78
+#: little_tinker_rig/qt/device.py:70 little_tinker_rig/tui/app.py:64
+#: little_tinker_rig/tui/app.py:490
 msgid "Connect"
 msgstr "Подключить"
 
@@ -677,12 +704,13 @@ msgstr "Подключить датчик расстояния. Параметр
 msgid "Connect a force sensor to measure presses."
 msgstr "Подключить датчик силы для измерения нажатий."
 
-#: little_tinker_rig/qt/device.py:170 little_tinker_rig/qt/lessons.py:525
+#: little_tinker_rig/qt/device.py:162 little_tinker_rig/qt/lessons.py:525
 msgid "Connect a hub at the top right of the window."
 msgstr "Подключение — в правом верхнем углу окна."
 
-#: little_tinker_rig/qt/robot.py:121 little_tinker_rig/qt/robot.py:126
-#: little_tinker_rig/qt/robot.py:138 little_tinker_rig/qt/robot.py:151
+#: little_tinker_rig/pybricks/worker.py:119 little_tinker_rig/pybricks/worker.py:124
+#: little_tinker_rig/pybricks/worker.py:136 little_tinker_rig/pybricks/worker.py:149
+#: little_tinker_rig/tui/app.py:508 little_tinker_rig/tui/app.py:547
 msgid "Connect a hub first"
 msgstr "Сначала подключите хаб"
 
@@ -730,7 +758,8 @@ msgstr "Подключить ультразвуковой датчик расс�
 msgid "Connect exactly one matching hub in USB DFU mode"
 msgstr "Подключите ровно один хаб нужной модели в режиме USB DFU"
 
-#: little_tinker_rig/qt/device.py:38
+#: little_tinker_rig/qt/device.py:30 little_tinker_rig/tui/app.py:170
+#: little_tinker_rig/tui/app.py:470
 msgid "Connect hub"
 msgstr "Подключить хаб"
 
@@ -746,11 +775,11 @@ msgstr "Подключиться к хабу SPIKE Prime или Robot Inventor."
 msgid "Connect to the Technic Hub."
 msgstr "Подключиться к хабу Technic."
 
-#: little_tinker_rig/qt/robot.py:93
+#: little_tinker_rig/pybricks/worker.py:91
 msgid "Connecting to hub…"
 msgstr "Подключение к хабу…"
 
-#: little_tinker_rig/qt/device.py:71
+#: little_tinker_rig/qt/device.py:63 little_tinker_rig/tui/app.py:474
 msgid "Connection"
 msgstr "Подключение"
 
@@ -764,6 +793,7 @@ msgstr "Подключить…"
 
 #: little_tinker_rig/qt/app.py:292 little_tinker_rig/qt/app.py:581
 #: little_tinker_rig/qt/app.py:706 little_tinker_rig/qt/app.py:1092
+#: little_tinker_rig/tui/app.py:65 little_tinker_rig/tui/app.py:178
 msgid "Console"
 msgstr "Консоль"
 
@@ -998,11 +1028,11 @@ msgstr "Определения"
 msgid "Delete"
 msgstr "Удалить"
 
-#: little_tinker_rig/qt/device.py:31
+#: little_tinker_rig/pybricks/devices.py:19 little_tinker_rig/tui/app.py:155
 msgid "Device"
 msgstr "Устройство"
 
-#: little_tinker_rig/qt/device.py:208
+#: little_tinker_rig/pybricks/devices.py:43
 #, python-brace-format
 msgid "Device ID {p0}"
 msgstr "Устройство ID {p0}"
@@ -1020,6 +1050,10 @@ msgstr "Генератор словаря"
 msgid "Dictionary: {key: value}"
 msgstr "Словарь: {key: value}"
 
+#: little_tinker_rig/tui/dialogs.py:80
+msgid "Discard"
+msgstr "Не сохранять"
+
 #: little_tinker_rig/qt/authoring.py:1123
 msgid "Discard draft"
 msgstr "Отбросить черновик"
@@ -1036,9 +1070,13 @@ msgstr "Отбросить изменения этого модуля и отк�
 msgid "Disconnect"
 msgstr "Отключить"
 
-#: little_tinker_rig/qt/device.py:143
+#: little_tinker_rig/qt/device.py:135 little_tinker_rig/tui/app.py:171
 msgid "Disconnect hub"
 msgstr "Отключить хаб"
+
+#: little_tinker_rig/tui/app.py:211
+msgid "Disconnected"
+msgstr "Отключён"
 
 #: little_tinker_rig/snippets/pybricks/hubs.py:115
 msgid ""
@@ -1078,11 +1116,11 @@ msgstr ""
 "\n"
 "Отдельные операции с устройствами для изучения полных программ роботов."
 
-#: little_tinker_rig/qt/device.py:29
+#: little_tinker_rig/pybricks/devices.py:17
 msgid "Distance"
 msgstr "Расстояние"
 
-#: little_tinker_rig/qt/device.py:201
+#: little_tinker_rig/pybricks/devices.py:36
 #, python-brace-format
 msgid "Distance: {p0:g} mm"
 msgstr "Расстояние: {p0:g} мм"
@@ -1299,7 +1337,7 @@ msgstr "Изменить тип результата"
 msgid "Editable names"
 msgstr "Редактируемые имена"
 
-#: little_tinker_rig/qt/device.py:25
+#: little_tinker_rig/pybricks/devices.py:13
 msgid "Empty"
 msgstr "Пусто"
 
@@ -1307,7 +1345,7 @@ msgstr "Пусто"
 msgid "Empty fields"
 msgstr "Пустые поля"
 
-#: little_tinker_rig/qt/device.py:53
+#: little_tinker_rig/qt/device.py:45
 msgid "Empty — first available hub"
 msgstr "Пусто — первый найденный хаб"
 
@@ -1389,6 +1427,10 @@ msgstr "Выражение"
 msgid "File"
 msgstr "Файл"
 
+#: little_tinker_rig/core/source_file.py:64
+msgid "File changed outside LittleTinker Rig; reopen it or save to another path"
+msgstr "Файл изменён вне LittleTinker Rig; откройте его заново или сохраните под другим именем"
+
 #: little_tinker_rig/core/analysis.py:554 little_tinker_rig/pybricks/program.py:36
 msgid "Fill this input before running the program"
 msgstr "Заполните это поле перед запуском программы"
@@ -1397,9 +1439,14 @@ msgstr "Заполните это поле перед запуском прог�
 msgid "Filtered list comprehension"
 msgstr "Генератор списка с условием"
 
-#: little_tinker_rig/qt/app.py:477
+#: little_tinker_rig/qt/app.py:477 little_tinker_rig/tui/app.py:86
+#: little_tinker_rig/tui/app.py:142
 msgid "Find"
 msgstr "Найти"
+
+#: little_tinker_rig/tui/app.py:59 little_tinker_rig/tui/app.py:166
+msgid "Find / replace"
+msgstr "Поиск и замена"
 
 #: little_tinker_rig/qt/app.py:137
 msgid "Find a block…"
@@ -1445,6 +1492,10 @@ msgstr ""
 msgid "Find in program · Enter — next match"
 msgstr "Найти в программе · Enter — следующее совпадение"
 
+#: little_tinker_rig/tui/app.py:60
+msgid "Find next"
+msgstr "Найти далее"
+
 #: little_tinker_rig/snippets/python/numbers.py:18
 msgid ""
 "Find the remainder after division.\n"
@@ -1463,7 +1514,7 @@ msgstr "Завершить перенос"
 msgid "Finish when one operation completes and cancel the other, for example a timeout."
 msgstr "Завершиться после первой операции и отменить другую, например по тайм-ауту."
 
-#: little_tinker_rig/qt/firmware.py:74
+#: little_tinker_rig/qt/firmware.py:68
 msgid "Firmware"
 msgstr "Прошивка"
 
@@ -1483,15 +1534,15 @@ msgstr "Прошивка не соответствует выбранной мо
 msgid "Firmware download is too large"
 msgstr "Загружаемая прошивка слишком велика"
 
-#: little_tinker_rig/pybricks/firmware.py:287
+#: little_tinker_rig/pybricks/firmware.py:328
 msgid "Firmware file changed after review; prepare it again"
 msgstr "Файл прошивки изменился после проверки; подготовьте его заново"
 
-#: little_tinker_rig/qt/firmware.py:286
+#: little_tinker_rig/pybricks/firmware.py:292
 msgid "Firmware installation completed."
 msgstr "Установка прошивки завершена."
 
-#: little_tinker_rig/qt/firmware.py:300
+#: little_tinker_rig/pybricks/firmware.py:306
 msgid ""
 "Firmware installation failed. Check the log, return the hub to bootloader mode and "
 "try again."
@@ -1537,11 +1588,11 @@ msgstr ""
 "target — отражение на границе светлого и тёмного, gain — сила коррекции.\n"
 "Цикл продолжается до остановки программы."
 
-#: little_tinker_rig/qt/device.py:30
+#: little_tinker_rig/pybricks/devices.py:18
 msgid "Force sensor"
 msgstr "Датчик силы"
 
-#: little_tinker_rig/qt/device.py:203
+#: little_tinker_rig/pybricks/devices.py:38
 #, python-brace-format
 msgid "Force: {p0:g} N"
 msgstr "Сила: {p0:g} Н"
@@ -1557,6 +1608,11 @@ msgstr "Полный экран"
 #: little_tinker_rig/core/expressions.py:77
 msgid "Generator"
 msgstr "Генератор"
+
+#: little_tinker_rig/tui/app.py:102 little_tinker_rig/tui/app.py:148
+#: little_tinker_rig/tui/app.py:179
+msgid "Go to error"
+msgstr "Перейти к ошибке"
 
 #: little_tinker_rig/qt/authoring.py:229
 msgid "Group / module"
@@ -1613,11 +1669,12 @@ msgstr ""
 msgid "Hub and devices"
 msgstr "Хаб и устройства"
 
-#: little_tinker_rig/qt/robot.py:113
+#: little_tinker_rig/pybricks/worker.py:111
 msgid "Hub connected."
 msgstr "Хаб подключён."
 
-#: little_tinker_rig/qt/firmware.py:47
+#: little_tinker_rig/qt/firmware.py:48 little_tinker_rig/tui/app.py:177
+#: little_tinker_rig/tui/firmware.py:56
 msgid "Hub firmware"
 msgstr "Прошивка хаба"
 
@@ -1625,7 +1682,8 @@ msgstr "Прошивка хаба"
 msgid "Hub information and port readings"
 msgstr "Информация о хабе и показания портов"
 
-#: little_tinker_rig/qt/console.py:19
+#: little_tinker_rig/qt/console.py:19 little_tinker_rig/tui/app.py:109
+#: little_tinker_rig/tui/app.py:151
 msgid "Hub input · Enter sends a line"
 msgstr "Ввод для хаба · Enter отправляет строку"
 
@@ -1649,9 +1707,13 @@ msgstr ""
 "\n"
 "Отдельные операции с устройствами для изучения полных программ роботов."
 
-#: little_tinker_rig/qt/firmware.py:73
+#: little_tinker_rig/qt/firmware.py:67
 msgid "Hub model"
 msgstr "Модель хаба"
+
+#: little_tinker_rig/tui/app.py:482
+msgid "Hub name (empty: first available)"
+msgstr "Имя хаба (пусто: первый доступный)"
 
 #: little_tinker_rig/qt/app.py:588
 msgid "Hub operation in progress"
@@ -1661,11 +1723,11 @@ msgstr "Выполняется операция с хабом"
 msgid "Hz"
 msgstr "Гц"
 
-#: little_tinker_rig/qt/firmware.py:97
+#: little_tinker_rig/qt/firmware.py:91 little_tinker_rig/tui/firmware.py:89
 msgid "I agree to the firmware license and replacing the current firmware and stored program"
 msgstr "Я принимаю лицензию прошивки и замену текущей прошивки и сохранённой программы"
 
-#: little_tinker_rig/qt/device.py:162
+#: little_tinker_rig/qt/device.py:154
 msgid "Idle"
 msgstr "Ожидание"
 
@@ -1711,11 +1773,11 @@ msgstr "Вставить перед выбранным элементом"
 msgid "Insert here"
 msgstr "Вставить здесь"
 
-#: little_tinker_rig/qt/firmware.py:71
+#: little_tinker_rig/qt/firmware.py:65 little_tinker_rig/tui/firmware.py:67
 msgid "Install Pybricks"
 msgstr "Установить Pybricks"
 
-#: little_tinker_rig/qt/firmware.py:101
+#: little_tinker_rig/qt/firmware.py:95 little_tinker_rig/tui/firmware.py:95
 msgid "Install firmware"
 msgstr "Установить прошивку"
 
@@ -1784,7 +1846,8 @@ msgstr "В пакете восстановления LEGO поле firmware-type
 msgid "Lambda"
 msgstr "Лямбда-функция"
 
-#: little_tinker_rig/qt/app.py:499
+#: little_tinker_rig/qt/app.py:499 little_tinker_rig/tui/app.py:180
+#: little_tinker_rig/tui/app.py:602 little_tinker_rig/tui/app.py:606
 msgid "Language"
 msgstr "Язык"
 
@@ -1871,6 +1934,10 @@ msgstr "Загрузка деталей: {current} / {total} МиБ"
 msgid "Loading robot model…"
 msgstr "Загрузка модели робота…"
 
+#: little_tinker_rig/tui/firmware.py:80
+msgid "Local firmware ZIP / BIN path"
+msgstr "Путь к локальной прошивке ZIP / BIN"
+
 #: little_tinker_rig/qt/assembly.py:380
 msgid "Locate a device"
 msgstr "Найти устройство"
@@ -1931,7 +1998,19 @@ msgstr "Модуль"
 msgid "Module in your collection; its functions form one block group."
 msgstr "Модуль вашей коллекции; его функции образуют одну группу блоков."
 
-#: little_tinker_rig/qt/device.py:26
+#: little_tinker_rig/tui/app.py:217
+msgid "Monitoring"
+msgstr "Мониторинг"
+
+#: little_tinker_rig/tui/app.py:553
+msgid ""
+"Monitoring stops the current program and may replace the program stored on the hub. "
+"Upload your program again when finished."
+msgstr ""
+"Мониторинг остановит текущую программу и может заменить программу, сохранённую на "
+"хабе. После завершения загрузите свою программу заново."
+
+#: little_tinker_rig/pybricks/devices.py:14
 msgid "Motor"
 msgstr "Мотор"
 
@@ -2051,7 +2130,7 @@ msgstr "Имена (оставьте пустым для импорта моду
 msgid "Negate a condition."
 msgstr "Изменить условие на противоположное."
 
-#: little_tinker_rig/qt/app.py:346
+#: little_tinker_rig/qt/app.py:346 little_tinker_rig/tui/app.py:56
 msgid "New"
 msgstr "Новый"
 
@@ -2059,9 +2138,21 @@ msgstr "Новый"
 msgid "New block"
 msgstr "Новый блок"
 
+#: little_tinker_rig/tui/app.py:225
+msgid "New console output · F8"
+msgstr "Новый вывод в консоли · F8"
+
+#: little_tinker_rig/tui/app.py:162
+msgid "New program"
+msgstr "Новая программа"
+
 #: little_tinker_rig/qt/lessons.py:148
 msgid "New program in lesson project"
 msgstr "Новая программа в проекте урока"
+
+#: little_tinker_rig/tui/app.py:88 little_tinker_rig/tui/app.py:145
+msgid "Next"
+msgstr "Далее"
 
 #: little_tinker_rig/qt/lessons.py:68
 msgid "Next hint"
@@ -2083,11 +2174,11 @@ msgstr "Следующий этап →"
 msgid "Next step"
 msgstr "Следующий шаг"
 
-#: little_tinker_rig/qt/completion.py:209
+#: little_tinker_rig/qt/completion.py:159 little_tinker_rig/tui/editor.py:116
 msgid "No Python suggestions here"
 msgstr "Здесь нет подсказок Python"
 
-#: little_tinker_rig/qt/device.py:206
+#: little_tinker_rig/pybricks/devices.py:41
 msgid "No device"
 msgstr "Нет устройства"
 
@@ -2095,7 +2186,7 @@ msgstr "Нет устройства"
 msgid "No examples found"
 msgstr "Примеры не найдены"
 
-#: little_tinker_rig/qt/device.py:94 little_tinker_rig/qt/device.py:157
+#: little_tinker_rig/qt/device.py:86 little_tinker_rig/qt/device.py:149
 msgid "No hub connected"
 msgstr "Хаб не подключён"
 
@@ -2121,7 +2212,8 @@ msgstr ""
 "\n"
 "Полезные операции в дополнение к блокам с редактируемыми арифметическими операторами."
 
-#: little_tinker_rig/qt/app.py:354
+#: little_tinker_rig/qt/app.py:354 little_tinker_rig/tui/app.py:55
+#: little_tinker_rig/tui/app.py:288
 msgid "Open"
 msgstr "Открыть"
 
@@ -2150,7 +2242,7 @@ msgstr "Открыть управление"
 msgid "Open definition"
 msgstr "Открыть определение"
 
-#: little_tinker_rig/qt/firmware.py:207
+#: little_tinker_rig/qt/firmware.py:185
 msgid "Open firmware"
 msgstr "Открыть прошивку"
 
@@ -2166,7 +2258,7 @@ msgstr "Открыть урок или проект"
 msgid "Open lesson or project…"
 msgstr "Открыть урок или проект…"
 
-#: little_tinker_rig/qt/firmware.py:80
+#: little_tinker_rig/qt/firmware.py:74
 msgid "Open local firmware…"
 msgstr "Открыть файл прошивки…"
 
@@ -2178,11 +2270,12 @@ msgstr "Открыть ZIP с деталями"
 msgid "Open parts ZIP…"
 msgstr "Открыть ZIP с деталями…"
 
-#: little_tinker_rig/qt/device.py:101 little_tinker_rig/qt/device.py:176
+#: little_tinker_rig/qt/device.py:93 little_tinker_rig/qt/device.py:168
 msgid "Open port monitor"
 msgstr "Открыть монитор портов"
 
-#: little_tinker_rig/qt/lessons.py:384
+#: little_tinker_rig/qt/lessons.py:384 little_tinker_rig/tui/app.py:163
+#: little_tinker_rig/tui/app.py:286
 msgid "Open program"
 msgstr "Открыть программу"
 
@@ -2308,17 +2401,27 @@ msgstr "Воспроизвести ноты в заданном темпе. Па
 msgid "Please wait…"
 msgstr "Подождите…"
 
-#: little_tinker_rig/qt/controls.py:265
+#: little_tinker_rig/qt/controls.py:265 little_tinker_rig/tui/app.py:155
 msgid "Port"
 msgstr "Порт"
 
-#: little_tinker_rig/qt/device.py:162
+#: little_tinker_rig/qt/device.py:154 little_tinker_rig/tui/app.py:95
+#: little_tinker_rig/tui/app.py:152 little_tinker_rig/tui/app.py:176
+#: little_tinker_rig/tui/app.py:551
 msgid "Port monitor"
 msgstr "Монитор портов"
 
-#: little_tinker_rig/qt/firmware.py:79
+#: little_tinker_rig/tui/app.py:66
+msgid "Ports"
+msgstr "Порты"
+
+#: little_tinker_rig/qt/firmware.py:73 little_tinker_rig/tui/firmware.py:77
 msgid "Prepare download"
 msgstr "Загрузить и проверить"
+
+#: little_tinker_rig/tui/firmware.py:82
+msgid "Prepare local file"
+msgstr "Подготовить файл"
 
 #: little_tinker_rig/qt/lessons.py:710
 msgid "Preparing offline resources…"
@@ -2361,19 +2464,19 @@ msgstr "Ввод для программы на хабе Bluetooth или USB. �
 msgid "Program output and messages"
 msgstr "Вывод программы и сообщения"
 
-#: little_tinker_rig/qt/device.py:160
+#: little_tinker_rig/qt/device.py:152
 msgid "Program running"
 msgstr "Программа работает"
 
-#: little_tinker_rig/qt/robot.py:135 little_tinker_rig/qt/robot.py:172
+#: little_tinker_rig/pybricks/worker.py:133 little_tinker_rig/pybricks/worker.py:170
 msgid "Program started."
 msgstr "Программа запущена."
 
-#: little_tinker_rig/qt/robot.py:172
+#: little_tinker_rig/pybricks/worker.py:170
 msgid "Program uploaded."
 msgstr "Программа загружена."
 
-#: little_tinker_rig/qt/completion.py:206
+#: little_tinker_rig/qt/completion.py:156 little_tinker_rig/tui/editor.py:80
 #, python-brace-format
 msgid "Python assistance failed: {error}"
 msgstr "Не удалось получить подсказки Python: {error}"
@@ -2388,19 +2491,39 @@ msgstr ""
 "\n"
 "Простые блоки Python. Функции служат статическими шаблонами."
 
+#: little_tinker_rig/tui/app.py:168 little_tinker_rig/tui/editor.py:32
+msgid "Python completion"
+msgstr "Автодополнение Python"
+
 #: little_tinker_rig/qt/structure.py:402
 msgid "Python expression"
 msgstr "Выражение Python"
 
+#: little_tinker_rig/tui/app.py:238 little_tinker_rig/tui/app.py:287
+msgid "Python file"
+msgstr "Файл Python"
+
 #: little_tinker_rig/qt/app.py:407
 msgid "Python fragment"
 msgstr "Фрагмент Python"
+
+#: little_tinker_rig/tui/app.py:169 little_tinker_rig/tui/editor.py:115
+msgid "Python help"
+msgstr "Подсказка Python"
+
+#: little_tinker_rig/tui/app.py:375
+msgid "Python syntax is valid"
+msgstr "Синтаксис Python верен"
 
 #: little_tinker_rig/qt/document.py:161
 msgid "Python · Ctrl+Space — complete · Ctrl+Shift+Space — hint · Ctrl+Alt+L — format"
 msgstr ""
 "Python · Ctrl+Space — дополнение · Ctrl+Shift+Space — подсказка · Ctrl+Alt+L — "
 "форматировать"
+
+#: little_tinker_rig/tui/app.py:68 little_tinker_rig/tui/app.py:181
+msgid "Quit"
+msgstr "Выход"
 
 #: little_tinker_rig/snippets/python/flow.py:63
 msgid "Raise a ValueError with an explanation."
@@ -2671,12 +2794,12 @@ msgstr "Восстановить работу"
 msgid "Redo"
 msgstr "Повторить"
 
-#: little_tinker_rig/qt/device.py:195
+#: little_tinker_rig/pybricks/devices.py:32
 #, python-brace-format
 msgid "Reflection: {p0:g} %"
 msgstr "Отражение: {p0:g} %"
 
-#: little_tinker_rig/qt/firmware.py:78
+#: little_tinker_rig/qt/firmware.py:72 little_tinker_rig/tui/firmware.py:76
 msgid "Refresh versions"
 msgstr "Обновить список версий"
 
@@ -2776,6 +2899,15 @@ msgstr ""
 msgid "Repeat while the condition is true"
 msgstr "Повторять, пока условие истинно"
 
+#: little_tinker_rig/tui/app.py:89 little_tinker_rig/tui/app.py:146
+#: little_tinker_rig/tui/app.py:257
+msgid "Replace"
+msgstr "Заменить"
+
+#: little_tinker_rig/tui/app.py:90 little_tinker_rig/tui/app.py:147
+msgid "Replace all"
+msgstr "Заменить все"
+
 #: little_tinker_rig/snippets/python/data.py:39
 msgid ""
 "Replace an item by index or key.\n"
@@ -2790,7 +2922,11 @@ msgstr ""
 msgid "Replace expression"
 msgstr "Заменить выражение"
 
-#: little_tinker_rig/qt/device.py:104
+#: little_tinker_rig/tui/app.py:87 little_tinker_rig/tui/app.py:143
+msgid "Replace with"
+msgstr "Заменить на"
+
+#: little_tinker_rig/qt/device.py:96
 msgid "Replaces the running program with the port monitor. Motors remain stopped."
 msgstr "Запустит монитор вместо текущей программы. Моторы останутся остановленными."
 
@@ -2810,7 +2946,7 @@ msgstr "Начать отсчёт времени заново."
 msgid "Restore"
 msgstr "Восстановить"
 
-#: little_tinker_rig/qt/firmware.py:72
+#: little_tinker_rig/qt/firmware.py:66 little_tinker_rig/tui/firmware.py:68
 msgid "Restore LEGO firmware"
 msgstr "Восстановить прошивку LEGO"
 
@@ -2880,7 +3016,7 @@ msgstr "Вращение, °/с"
 msgid "Round a number to the nearest integer."
 msgstr "Округлить число до ближайшего целого."
 
-#: little_tinker_rig/qt/app.py:536
+#: little_tinker_rig/qt/app.py:536 little_tinker_rig/tui/app.py:62
 msgid "Run"
 msgstr "Запустить"
 
@@ -2964,11 +3100,21 @@ msgstr ""
 "Нужен механизм с физическим упором. Действует обычное ограничение мощности\n"
 "мотора; для более бережного движения используйте калибровку с ограничением мощности."
 
+#: little_tinker_rig/tui/app.py:174
+msgid "Run uploaded program"
+msgstr "Запустить загруженную программу"
+
 #: little_tinker_rig/qt/annotations.py:16
 msgid "Run with error handling"
 msgstr "Выполнить с обработкой ошибок"
 
-#: little_tinker_rig/qt/app.py:366
+#: little_tinker_rig/tui/app.py:219
+msgid "Running"
+msgstr "Выполняется программа"
+
+#: little_tinker_rig/qt/app.py:366 little_tinker_rig/tui/app.py:57
+#: little_tinker_rig/tui/app.py:164 little_tinker_rig/tui/app.py:243
+#: little_tinker_rig/tui/dialogs.py:79
 msgid "Save"
 msgstr "Сохранить"
 
@@ -2980,9 +3126,18 @@ msgstr "Сохранить Python"
 msgid "Save and apply"
 msgstr "Сохранить и применить"
 
+#: little_tinker_rig/tui/app.py:58 little_tinker_rig/tui/app.py:165
+#: little_tinker_rig/tui/app.py:234 little_tinker_rig/tui/app.py:253
+msgid "Save as"
+msgstr "Сохранить как"
+
 #: little_tinker_rig/qt/app.py:372
 msgid "Save as…"
 msgstr "Сохранить как…"
+
+#: little_tinker_rig/tui/dialogs.py:77
+msgid "Save changes before continuing?"
+msgstr "Сохранить изменения перед продолжением?"
 
 #: little_tinker_rig/qt/lessons.py:639
 msgid "Save lesson project"
@@ -3022,6 +3177,10 @@ msgstr "Показать бегущий текст на дисплее хаба.
 msgid "Scroll text across the hub display. Options: text."
 msgstr "Показать бегущий текст на дисплее хаба. Параметры: text."
 
+#: little_tinker_rig/tui/app.py:187
+msgid "Search commands…"
+msgstr "Поиск команд…"
+
 #: little_tinker_rig/qt/expressions.py:34
 msgid "Search operations, names and blocks…"
 msgstr "Поиск операций, имён и блоков…"
@@ -3042,7 +3201,7 @@ msgstr "Выделите исходник Python для создания бло�
 msgid "Select a block"
 msgstr "Выберите блок"
 
-#: little_tinker_rig/qt/firmware.py:170
+#: little_tinker_rig/pybricks/firmware.py:285
 msgid ""
 "Select a local LEGO recovery ZIP for this model. Its metadata must declare firmware-"
 "type as lego. Automatic LEGO downloads are available only for Inventor / SPIKE Prime."
@@ -3252,6 +3411,10 @@ msgstr "Этап {current} из {total} · {title}"
 msgid "Start manual control"
 msgstr "Включить ручной режим"
 
+#: little_tinker_rig/tui/app.py:555
+msgid "Start monitor"
+msgstr "Запустить монитор"
+
 #: little_tinker_rig/qt/app.py:440
 msgid "Start move"
 msgstr "Начать перенос"
@@ -3276,11 +3439,11 @@ msgstr "Начать следующую версию"
 msgid "Start next version…"
 msgstr "Начать следующую версию…"
 
-#: little_tinker_rig/qt/device.py:41
+#: little_tinker_rig/qt/device.py:33
 msgid "Start with a virtual hub or connect your robot."
 msgstr "Начните с виртуального хаба или подключите свой робот."
 
-#: little_tinker_rig/qt/app.py:544
+#: little_tinker_rig/qt/app.py:544 little_tinker_rig/tui/app.py:63
 msgid "Stop"
 msgstr "Стоп"
 
@@ -3292,7 +3455,11 @@ msgstr "Остановить мотор с торможением."
 msgid "Stop and reset the robot's distance and angle readings."
 msgstr "Остановить робота и обнулить показания пути и угла."
 
-#: little_tinker_rig/qt/device.py:174
+#: little_tinker_rig/tui/app.py:175
+msgid "Stop program"
+msgstr "Остановить программу"
+
+#: little_tinker_rig/qt/device.py:166
 msgid "Stop program and inspect ports"
 msgstr "Остановить программу и открыть порты"
 
@@ -3342,6 +3509,14 @@ msgstr "Получить модуль числа."
 msgid "Test values"
 msgstr "Проверочные значения"
 
+#: little_tinker_rig/tui/app.py:331
+msgid "Text not found"
+msgstr "Текст не найден"
+
+#: little_tinker_rig/core/source_file.py:68 little_tinker_rig/tui/app.py:254
+msgid "The file already exists. Replace it?"
+msgstr "Файл уже существует. Заменить его?"
+
 #: little_tinker_rig/qt/app.py:163
 msgid ""
 "The library is showing blocks for the selected input. Select its containing block to "
@@ -3362,11 +3537,17 @@ msgstr ""
 "После запуска программа изменилась. Здесь показан запущенный текст; текущий файл "
 "остаётся без изменений."
 
-#: little_tinker_rig/qt/firmware.py:162
+#: little_tinker_rig/pybricks/firmware.py:277
 msgid "The recovery image restores LEGO firmware 1.3. The LEGO app may offer a later update."
 msgstr ""
 "Образ восстановления устанавливает прошивку LEGO 1.3. Приложение LEGO может "
 "предложить более новую версию."
+
+#: little_tinker_rig/tui/app.py:585
+msgid ""
+"The source has changed since this program ran. The error refers to the uploaded "
+"version."
+msgstr "Исходник изменён после запуска. Ошибка относится к загруженной версии."
 
 #: little_tinker_rig/qt/editor.py:1191
 msgid "This block has no editable parameters"
@@ -3428,7 +3609,7 @@ msgstr "Время"
 msgid "To Scratch"
 msgstr "В черновики"
 
-#: little_tinker_rig/qt/firmware.py:292
+#: little_tinker_rig/pybricks/firmware.py:298
 msgid ""
 "To restart if needed, hold the hub's main button for about 3 seconds until it "
 "switches off. Release the button, then press it briefly to turn the hub on again."
@@ -3480,7 +3661,7 @@ msgstr "Выключить глаза ультразвукового датчи�
 msgid "Turn one way and back, like Tricky's dance."
 msgstr "Повернуться в одну сторону и обратно, как в танце Tricky."
 
-#: little_tinker_rig/qt/firmware.py:296
+#: little_tinker_rig/pybricks/firmware.py:302
 msgid "Turn the hub on if it is off, then connect using the LEGO app."
 msgstr "Включите хаб, если он выключен, затем подключитесь через приложение LEGO."
 
@@ -3504,7 +3685,7 @@ msgstr ""
 msgid "Turn to an absolute heading; requires firmware with absolute turns."
 msgstr "Повернуть к абсолютному курсу; нужна прошивка с поддержкой абсолютных поворотов."
 
-#: little_tinker_rig/qt/firmware.py:158
+#: little_tinker_rig/pybricks/firmware.py:273
 msgid ""
 "USB DFU: turn the hub off and unplug USB. Hold the Bluetooth button while "
 "reconnecting USB; release it when the light flashes red, green and blue. Connect only"
@@ -3548,6 +3729,10 @@ msgstr "Неподдерживаемый адрес загрузки проши�
 msgid "Unsupported firmware target"
 msgstr "Неподдерживаемая модель или тип прошивки"
 
+#: little_tinker_rig/tui/app.py:209
+msgid "Untitled"
+msgstr "Без имени"
+
 #: little_tinker_rig/qt/structure.py:472
 msgid "Unwrap: keep an operand"
 msgstr "Оставить один операнд"
@@ -3556,11 +3741,19 @@ msgstr "Оставить один операнд"
 msgid "Upgrade block"
 msgstr "Обновить блок"
 
-#: little_tinker_rig/qt/app.py:528
+#: little_tinker_rig/qt/app.py:528 little_tinker_rig/tui/app.py:61
 msgid "Upload"
 msgstr "Отправить на хаб"
 
-#: little_tinker_rig/qt/robot.py:158
+#: little_tinker_rig/tui/app.py:173
+msgid "Upload and run"
+msgstr "Загрузить и запустить"
+
+#: little_tinker_rig/tui/app.py:172
+msgid "Upload program"
+msgstr "Загрузить программу"
+
+#: little_tinker_rig/pybricks/worker.py:156
 #, python-brace-format
 msgid "Uploading {name}…"
 msgstr "Загрузка {name}…"
@@ -3598,6 +3791,10 @@ msgstr "Использовать переменные модуля"
 msgid "Use the hub gyro to maintain the driving heading."
 msgstr "Использовать гироскоп хаба для поддержания курса движения."
 
+#: little_tinker_rig/tui/app.py:155
+msgid "Value"
+msgstr "Значение"
+
 #: little_tinker_rig/qt/appearance.py:14
 msgid "Values"
 msgstr "Значения"
@@ -3614,7 +3811,7 @@ msgstr "Область видимости переменной"
 msgid "Variables and state"
 msgstr "Переменные и состояние"
 
-#: little_tinker_rig/qt/firmware.py:75
+#: little_tinker_rig/qt/firmware.py:69 little_tinker_rig/tui/firmware.py:74
 msgid "Version"
 msgstr "Версия"
 
@@ -3634,15 +3831,16 @@ msgstr "Покажи всего робота или отдельно собра�
 msgid "View:"
 msgstr "Вид:"
 
-#: little_tinker_rig/qt/app.py:1481 little_tinker_rig/qt/device.py:155
+#: little_tinker_rig/qt/app.py:1481 little_tinker_rig/qt/device.py:147
+#: little_tinker_rig/tui/app.py:479
 msgid "Virtual hub"
 msgstr "Виртуальный хаб"
 
-#: little_tinker_rig/qt/device.py:73
+#: little_tinker_rig/qt/device.py:65 little_tinker_rig/tui/app.py:485
 msgid "Virtual hub model"
 msgstr "Модель виртуального хаба"
 
-#: little_tinker_rig/qt/device.py:47
+#: little_tinker_rig/qt/device.py:39
 msgid "Virtual hub · no hardware needed"
 msgstr "Виртуальный хаб · без оборудования"
 
@@ -3654,7 +3852,7 @@ msgstr "Подождать указанное число миллисекунд.
 msgid "Wait for an operation inside an async function, allowing other tasks to run."
 msgstr "Дождаться операции внутри асинхронной функции, позволяя выполняться другим задачам."
 
-#: little_tinker_rig/qt/robot.py:58
+#: little_tinker_rig/pybricks/worker.py:56 little_tinker_rig/tui/app.py:505
 msgid "Wait for the hub operation to finish"
 msgstr "Дождитесь завершения операции с хабом"
 
@@ -3689,6 +3887,10 @@ msgstr "Предупреждения"
 #: little_tinker_rig/qt/assembly.py:392
 msgid "Whole robot"
 msgstr "Весь робот"
+
+#: little_tinker_rig/tui/app.py:223
+msgid "Working…"
+msgstr "Выполняется…"
 
 #: little_tinker_rig/qt/navigation.py:73
 msgid "Workspaces"
@@ -3741,7 +3943,7 @@ msgstr "с"
 msgid "{name} · {count} uses"
 msgstr "{name} · вхождений: {count}"
 
-#: little_tinker_rig/qt/device.py:190
+#: little_tinker_rig/pybricks/devices.py:27
 #, python-brace-format
 msgid "{p0:g}°    {p1:g} °/s"
 msgstr "{p0:g}°    {p1:g} °/с"

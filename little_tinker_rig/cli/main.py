@@ -188,6 +188,8 @@ def main(argv: list[str] | None = None) -> int:
                 from little_tinker_rig.qt.app import launch
             else:
                 from little_tinker_rig.tui.app import launch
+
+                return launch(arguments.file)
             return launch(arguments.file, tuple(arguments.collection))
         if arguments.command == "run":
             import asyncio

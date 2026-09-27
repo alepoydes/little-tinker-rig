@@ -6,7 +6,7 @@ import re
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QProcess, QStandardPaths, QThread, Signal
+from PySide6.QtCore import QProcess, QThread, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+from little_tinker_rig.core.paths import firmware_cache
 from little_tinker_rig.i18n import language, tr
 from little_tinker_rig.pybricks import firmware
 from little_tinker_rig.pybricks.simulation import PROFILES
@@ -46,14 +47,7 @@ class FirmwareDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle(tr("Hub firmware"))
         self.resize(760, 680)
-        self.cache = (
-            Path(
-                QStandardPaths.writableLocation(
-                    QStandardPaths.StandardLocation.CacheLocation
-                )
-            )
-            / "firmware"
-        )
+        self.cache = firmware_cache()
         self.job = None
         self.package = None
         self.decoder = codecs.getincrementaldecoder("utf-8")("replace")
@@ -153,23 +147,7 @@ class FirmwareDialog(QDialog):
         for image in self.images:
             if (image.model, image.kind) == (model, kind):
                 self.version.addItem(image.version, image)
-        if model == "inventor":
-            instructions = tr(
-                "USB DFU: turn the hub off and unplug USB. Hold the Bluetooth button while reconnecting USB; release it when the light flashes red, green and blue. Connect only one hub. On Linux, USB access requires libusb/udev permissions; dfu-util is the fallback."
-            )
-            if kind == "lego":
-                instructions += "\n" + tr(
-                    "The recovery image restores LEGO firmware 1.3. The LEGO app may offer a later update."
-                )
-        else:
-            instructions = tr(
-                "Bluetooth bootloader: turn the hub off. Hold its green button until the light flashes purple, then release it. Keep the hub near the computer and close other Bluetooth connections."
-            )
-            if kind == "lego":
-                instructions += "\n" + tr(
-                    "Select a local LEGO recovery ZIP for this model. Its metadata must declare firmware-type as lego. Automatic LEGO downloads are available only for Inventor / SPIKE Prime."
-                )
-        self.instructions.setText(instructions)
+        self.instructions.setText(firmware.instructions(model, kind))
         self.invalidate()
 
     def start_job(self, action, receiver):
@@ -282,23 +260,7 @@ class FirmwareDialog(QDialog):
         self.progress.setRange(0, 100)
         success = code == 0 and status == QProcess.ExitStatus.NormalExit
         self.progress.setValue(100 if success else 0)
-        if success:
-            message = tr("Firmware installation completed.")
-            if self.package.kind == "pybricks":
-                message += "\n\n" + tr(
-                    "A blinking blue light means the hub is ready to connect. No manual restart is needed. If the hub is off, press its main button briefly to turn it on. Close this window and choose Connect hub."
-                )
-                message += "\n\n" + tr(
-                    "To restart if needed, hold the hub's main button for about 3 seconds until it switches off. Release the button, then press it briefly to turn the hub on again."
-                )
-            else:
-                message += "\n\n" + tr(
-                    "Turn the hub on if it is off, then connect using the LEGO app."
-                )
-        else:
-            message = tr(
-                "Firmware installation failed. Check the log, return the hub to bootloader mode and try again."
-            )
+        message = firmware.result_message(success, self.package.kind)
         self.log.append(message)
         self.consent.setChecked(False)
         self.update_buttons()

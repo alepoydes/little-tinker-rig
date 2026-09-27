@@ -206,7 +206,8 @@ The primary desktop layout should conceptually have three columns:
 +------------------+------------------------------+------------------+
 ```
 
-The exact layout can differ in the TUI, but the same concepts should exist.
+This layout belongs to the Qt structural editor. The TUI edits plain Python source
+and exposes a smaller set of Pybricks tools, as specified in section 33.
 
 The desktop window saves its geometry only after closing is accepted. Restore
 position, normal size and maximized/full-screen state before the next first show,
@@ -390,16 +391,8 @@ does not automatically fold code.
 
 ### 11.2 TUI interaction
 
-The same move state can be controlled by keys, for example conceptually:
-
-```text
-previous / next target
-move outward / inward
-commit
-cancel
-```
-
-The exact key bindings are a frontend decision.
+The terminal frontend uses ordinary text selection and editing. Structural move
+navigation is available in Qt and the headless structural core, not in TUI.
 
 ### 11.3 Other interactions
 
@@ -891,8 +884,8 @@ Frontends adapt these semantics to their capabilities.
 For example:
 
 - Qt can use translucent rounded backgrounds, padding, smooth folding animation, drag previews, and tooltips.
-- A true-color TUI can use ANSI backgrounds, gutters, indentation, and selection emphasis.
-- A limited-color terminal can approximate the palette.
+- The source-only TUI uses syntax highlighting and ordinary text selection;
+  structural region styling does not apply to it.
 
 The core owns the meaning; the frontend owns the rendering technique.
 
@@ -1044,9 +1037,10 @@ A useful rule for new abstractions:
 
 ## 31. Multiple frontends as an architectural test
 
-Qt and TUI implementations should be developed in parallel rather than treating one as a later port.
-
-This is intentional: if a substantial feature can only be implemented through Qt-specific APIs, that is evidence that too much logic has leaked out of the core.
+Qt is the primary teaching interface; TUI focuses on source editing and Pybricks
+operations. Share source-file safety, static Python assistance and hardware
+services. Structural editing remains independent of Qt and is exercised by the
+CLI and core tests; TUI does not need matching structural features.
 
 The desired split is roughly:
 
@@ -1097,29 +1091,30 @@ Qt must be optional. Installing the core/TUI must not require downloading Qt.
 
 ## 33. TUI frontend
 
-The TUI is a first-class frontend, not merely a debugging utility.
+Textual provides a lightweight terminal workspace for Python and Pybricks. Qt,
+OpenGL and gamepad libraries are not required. The optional `tui` dependencies
+include Jedi, Pybricks API descriptions and Python-only Tree-sitter highlighting.
 
-It is important for:
+- Edit ordinary Python with highlighting, indentation, undo/redo, find/replace,
+  completion and signature/documentation help.
+- New, Open, Save and Save As preserve text, including invalid drafts, encoding
+  and line endings. Detect external changes and confirm overwrites; never rebuild
+  imports, helper functions or block workspace metadata while saving source.
+- Connect using Bluetooth by default, supported USB, or a virtual hub.
+- Upload, upload-and-run, run uploaded code, stop and disconnect are distinct
+  actions. Save and check syntax before transferring the current source.
+- Show connection state, operation progress, program output and physical hub
+  input. Runtime error navigation checks against the uploaded source snapshot.
+- Prepare and review cached/downloaded/local firmware, then install it in an
+  isolated process with the same validation and instructions as Qt.
+- Start the port monitor explicitly: on physical hubs it stops the user program
+  and can replace the stored program. Show telemetry in a compact table.
+- Provide keyboard commands and English/Russian captions.
 
-- old or lightweight laptops;
-- remote/terminal workflows;
-- architecture validation;
-- users who prefer keyboard interaction;
-- environments where installing a large GUI toolkit is undesirable.
+TUI does not provide Library, structural block editing, Scratch, lessons or 3D
+assembly. Hub operation serialization and cancellation live in a shared worker;
+frontends adapt its callbacks rather than maintaining separate implementations.
 
-The TUI should implement the same essential concepts:
-
-- Library;
-- main source;
-- Scratch;
-- structural selection;
-- semantic coloring as terminal capabilities permit;
-- move/navigation through structural targets;
-- snippet insertion;
-- help/documentation;
-- run/stop/console where the Pybricks extra is installed.
-
-The exact TUI library has **not yet been chosen**. It should be mature, reliable, cross-platform where practical, and optional.
 
 ---
 
@@ -1279,7 +1274,7 @@ It should support:
 - compact browsing;
 - search/fuzzy search where practical;
 - drag/drop insertion in Qt;
-- keyboard insertion in TUI;
+- keyboard insertion in Qt;
 - concise display rather than large permanent previews.
 
 A snippet should be usable without opening its full documentation.
@@ -1349,7 +1344,8 @@ Python text editors share static Jedi completion and signature/documentation hin
 including installed Pybricks API descriptions. Analysis uses one background queue,
 coalesces pending requests and never executes user source. Suggestions belong to
 one source/cursor/path revision; editing, navigation and cancellation invalidate
-old results. The core and terminal editor do not depend on Jedi.
+old results. Both source editors use the shared analysis module; importing the
+structural core alone does not require Jedi.
 
 Full-document Python editing may contain unfinished text. Save writes that text to
 the ordinary `.py` file, which reopens in Python view. Run, Upload and switching to
@@ -1406,7 +1402,9 @@ Important test targets include:
 - undo/redo snapshots;
 - presentation region generation.
 
-Qt and TUI tests should concentrate on translating frontend events into the same tested core operations, rather than duplicating structural logic tests.
+Qt tests concentrate on translating gestures into structural operations. TUI
+tests protect source preservation, keyboard actions and hub workflows. Shared
+hardware and file operations are checked independently of either frontend.
 
 ---
 
@@ -1451,7 +1449,7 @@ PySide6 / Qt.
 
 ### TUI frontend
 
-One mature terminal UI dependency, choice TBD.
+Textual, Jedi, Pybricks API descriptions and Python-only Tree-sitter highlighting.
 
 ### Pybricks integration
 
@@ -1479,7 +1477,7 @@ The implementation should preserve these invariants:
 8. **Snippet recognition is an enhancement, never a requirement for execution.**
 9. **Unknown/modified code degrades to generic Python blocks.**
 10. **Heavy UI/hardware dependencies are optional.**
-11. **Qt and TUI reuse the same core editing behavior.**
+11. **Qt and TUI share file safety, Python assistance and Pybricks operations.**
 12. **Style semantics are shared; rendering mechanics are frontend-specific.**
 13. **Undo/redo is required.**
 14. **Managed imports are clearly separated from user imports.**
@@ -1507,9 +1505,9 @@ Implement:
 
 Expose through CLI inspection commands.
 
-### Milestone 2: minimal Qt and TUI views
+### Milestone 2: minimal Qt structural view
 
-Implement both frontends in parallel with:
+Implement the desktop structural view with:
 
 - source display;
 - structural highlighting;
@@ -1529,7 +1527,7 @@ Implement:
 - reindentation;
 - formatting and reparse;
 - Qt mouse drag mapping;
-- TUI keyboard mapping.
+- Qt keyboard mapping.
 
 ### Milestone 4: Scratch workspace
 
@@ -1561,11 +1559,11 @@ Implement:
 Implement:
 
 - snippet grouping;
-- compact Library UI in Qt and TUI;
+- compact Library UI in Qt;
 - insertion;
 - tooltip/quick help in Qt;
 - explicit full help view;
-- equivalent help access in TUI.
+- keyboard access to help in Qt.
 
 ### Milestone 7: imports and lightweight analysis
 
@@ -1617,7 +1615,7 @@ Implement:
 The following questions remain intentionally open and should not be guessed during initial implementation unless they become necessary:
 
 1. Which canonical Python formatter to use.
-2. Exact TUI framework/library.
+2. Additional terminal workflows beyond the source-and-hub scope.
 3. Distribution of external collections beyond the directory-based format.
 4. Exact persistence format for Scratch workspace.
 5. Exact project-level mechanism for selecting/pinning snippet collections.
@@ -1652,7 +1650,7 @@ LittleTinker Rig should be built around a very small set of strong ideas:
 - Auto-managed imports and shared helpers have separate sections marked by ordinary comments; their lifecycle follows references in the program and Scratch.
 - Scope analysis provides lightweight completion and undefined-name checking.
 - Style semantics and interaction primitives live in the core; Qt, TUI, and CLI are thin independent frontends.
-- Qt and TUI are developed together to enforce this separation.
+- Qt and TUI share source-file safety and hardware services while keeping different editing scopes.
 - Heavy dependencies are optional.
 - Pybricks is an optional execution/domain integration rather than part of the editor core.
 - Virtual and physical controllers feed a shared normalized control state.

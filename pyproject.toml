@@ -14,7 +14,13 @@ authors = [{ name = "Igor Lobanov", email = "lobanov.igor@gmail.com" }]
 dependencies = ["platformdirs>=4,<5", "ruff>=0.14,<1"]
 
 [project.optional-dependencies]
-tui = ["textual>=8,<9"]
+tui = [
+    "textual>=8,<9",
+    "tree-sitter>=0.25,<0.26",
+    "tree-sitter-python>=0.25,<0.26",
+    "jedi>=0.20,<0.21",
+    "pybricks>=4,<5",
+]
 qt = [
     "jedi>=0.20,<0.21",
     "pybricks>=4,<5",

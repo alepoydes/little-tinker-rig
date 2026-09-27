@@ -5,7 +5,44 @@ import json
 import math
 from dataclasses import dataclass, field
 
+from little_tinker_rig.i18n import N_, tr
+
 from .control import ControlState
+
+DEVICE_KINDS = {
+    "empty": N_("Empty"),
+    "motor": N_("Motor"),
+    "color": N_("Color sensor"),
+    "color_distance": N_("BOOST color / distance"),
+    "ultrasonic": N_("Distance"),
+    "force": N_("Force sensor"),
+    "unknown": N_("Device"),
+}
+
+
+def describe_device(data):
+    key = data.get("type", "empty")
+    if key == "motor":
+        text = tr(
+            "{p0:g}°    {p1:g} °/s",
+            p0=data.get("angle", 0),
+            p1=data.get("speed", 0),
+        )
+    elif key in {"color", "color_distance"}:
+        text = tr("Reflection: {p0:g} %", p0=data.get("reflection", 0))
+        if key == "color_distance":
+            text += tr(" · Distance: {p0:g} %", p0=data.get("distance_percent", 0))
+    elif key == "ultrasonic":
+        text = tr("Distance: {p0:g} mm", p0=data.get("distance", 0))
+    elif key == "force":
+        text = tr("Force: {p0:g} N", p0=data.get("force", 0))
+    else:
+        text = (
+            tr("No device")
+            if key == "empty"
+            else tr("Device ID {p0}", p0=data.get("id", "?"))
+        )
+    return text
 
 
 @dataclass(frozen=True)

@@ -1,0 +1,219 @@
+"""Shared hub operations in one worker, with callbacks for desktop and terminal UIs."""
+
+import asyncio
+import codecs
+from concurrent.futures import CancelledError
+from threading import Event, Thread
+
+from little_tinker_rig.core.runtime_errors import Tracebacks
+from little_tinker_rig.i18n import tr
+from little_tinker_rig.pybricks.connection import Connection
+from little_tinker_rig.pybricks.devices import HubInfo
+from little_tinker_rig.pybricks.program import Program
+from little_tinker_rig.pybricks.virtual import VirtualConnection
+
+
+class HubWorker:
+    def __init__(
+        self, *, output, failed, updated, busy_changed, problem, program_started
+    ):
+        self._output = output
+        self._failed = failed
+        self._updated = updated
+        self._busy_changed = busy_changed
+        self._problem = problem
+        self._program_started = program_started
+        self.info = HubInfo()
+        self.connection = None
+        self.operation = self.pending = None
+        self.tracebacks = None
+        self.stored_program = None
+        self.lock = asyncio.Lock()
+        self.generation = 0
+        ready = Event()
+
+        def run():
+            with asyncio.Runner() as runner:
+                self.loop = runner.get_loop()
+                ready.set()
+                self.loop.run_forever()
+
+        self.thread = Thread(target=run, name="little-tinker-rig-hub", daemon=True)
+        self.thread.start()
+        if not ready.wait(5):
+            raise RuntimeError("Could not start hub event loop")
+
+    def _remember(self, info):
+        self.info = info
+        self._updated(info)
+
+    def submit(self, coroutine, *, operation=False, interrupt=False):
+        if operation and self.operation and not self.operation.done():
+            if interrupt:
+                self.operation.cancel()
+            else:
+                coroutine.close()
+                self._failed(tr("Wait for the hub operation to finish"))
+                return None
+        if operation:
+            self.generation += 1
+            if self.pending:
+                self.pending.cancel()
+            self._busy_changed(True)
+        generation = self.generation
+
+        async def serialized():
+            try:
+                async with self.lock:
+                    return await coroutine
+            finally:
+                coroutine.close()
+
+        future = asyncio.run_coroutine_threadsafe(serialized(), self.loop)
+
+        def finished(result):
+            try:
+                result.result()
+            except CancelledError:
+                pass
+            except Exception as error:
+                self._failed(str(error) or type(error).__name__)
+            finally:
+                if operation and generation == self.generation:
+                    self._busy_changed(False)
+
+        future.add_done_callback(finished)
+        if operation:
+            self.operation = future
+        return future
+
+    async def _connect(self, name, transport, model):
+        self._output(tr("Connecting to hub…") + "\n")
+        self.tracebacks = self.stored_program = None
+        if self.connection:
+            await self.connection.disconnect()
+        decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
+
+        def output(data):
+            text = decoder.decode(data)
+            self._output(text)
+            if self.tracebacks is not None:
+                self.tracebacks.feed(text)
+
+        factory = VirtualConnection if transport == "virtual" else Connection
+        options = {"model": model} if transport == "virtual" else {}
+        self.connection = factory(
+            output,
+            self._remember,
+            **options,
+        )
+        await self.connection.connect(name, transport)
+        self._output(tr("Hub connected.") + "\n")
+
+    def connect_hub(self, name=None, transport="ble", model="inventor"):
+        return self.submit(self._connect(name, transport, model), operation=True)
+
+    def run_file(self, path):
+        if self.connection:
+            return self.submit(self._transfer(Program(path), run=True), operation=True)
+        self._failed(tr("Connect a hub first"))
+
+    def upload_file(self, path):
+        if self.connection:
+            return self.submit(self._transfer(Program(path), run=False), operation=True)
+        self._failed(tr("Connect a hub first"))
+
+    def run_stored(self):
+        if self.connection:
+
+            async def run():
+                await self.connection.stop()
+                self._start_trace(self.stored_program)
+                await self.connection.run()
+                self._output(tr("Program started.") + "\n")
+
+            return self.submit(run(), operation=True)
+        self._failed(tr("Connect a hub first"))
+
+    def start_monitor(self):
+        if self.connection:
+
+            async def monitor():
+                await self.connection.stop()
+                self.tracebacks = None
+                if not isinstance(self.connection, VirtualConnection):
+                    self.stored_program = None
+                await self.connection.start_monitor()
+
+            return self.submit(monitor(), operation=True)
+        self._failed(tr("Connect a hub first"))
+
+    def _start_trace(self, program):
+        self.tracebacks = Tracebacks(program, self._problem)
+        self._program_started(program)
+
+    async def _transfer(self, program, *, run):
+        self._output(tr("Uploading {name}…", name=program.entry.name) + "\n")
+        await self.connection.stop()
+        self.tracebacks = None
+        self.stored_program = None
+        path = (
+            program if isinstance(self.connection, VirtualConnection) else program.entry
+        )
+        if run:
+            self._start_trace(program)
+            await self.connection.run(path)
+        else:
+            await self.connection.upload(path)
+        self.stored_program = program
+        self._output(
+            (tr("Program started.") if run else tr("Program uploaded.")) + "\n"
+        )
+
+    def stop_program(self):
+        async def stop():
+            if self.connection:
+                await self.connection.stop()
+
+        return self.submit(stop(), operation=True, interrupt=True)
+
+    def drive(self, commands):
+        if self.pending and not self.pending.done():
+            return  # Send the latest sample next tick; never queue old controls.
+        if self.connection:
+            self.pending = self.submit(self.connection.drive(commands))
+
+    def send(self, state):
+        if self.pending and not self.pending.done():
+            return
+        if self.connection:
+            self.pending = self.submit(self.connection.send(state))
+
+    def configure(self, port, kind, value=None):
+        if isinstance(self.connection, VirtualConnection):
+            self.submit(self.connection.configure(port, kind, value))
+
+    def write_input(self, data):
+        if isinstance(self.connection, Connection) and self.info.connected:
+            if not self.operation or self.operation.done():
+                return self.submit(self.connection.write_input(data))
+
+    def disconnect_hub(self):
+        async def disconnect():
+            if self.connection:
+                await self.connection.disconnect()
+
+        return self.submit(disconnect(), operation=True, interrupt=True)
+
+    def close(self):
+        async def disconnect():
+            if self.connection:
+                await self.connection.disconnect()
+
+        future = self.submit(disconnect(), operation=True, interrupt=True)
+        try:
+            future.result(timeout=5)
+        except Exception:
+            future.cancel()
+        self.loop.call_soon_threadsafe(self.loop.stop)
+        self.thread.join(timeout=5)

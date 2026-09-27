@@ -1,5 +1,8 @@
 # Editing and command-line tools
 
+This page describes the Qt desktop editor. The [terminal workspace](tui.md) edits
+Python source directly and provides its own hub controls.
+
 ## Documents and views
 
 Files have independent tabs, drafts and undo histories. The hub connection and
@@ -99,19 +102,19 @@ and unit contracts. Unknown types remain available. When a selected block has mo
 than one suitable input, choose the destination from the offered list; hovering
 highlights that input. Levels still limit the catalog.
 
-| Action | Qt | TUI |
-| --- | --- | --- |
-| Parent / child | Alt+Left / Right | Alt+Left / Right |
-| Previous / next node | Alt+Up / Down | Alt+Up / Down |
-| Edit Python fragment | F2 | F2 |
-| Parameters | F3 | F3 |
-| Expand recognized snippet | Ctrl+E | Ctrl+E |
-| Start move | Ctrl+M | Ctrl+M |
-| Previous / next destination | Alt+Up / Down | Alt+Up / Down |
-| Outdent / indent destination | Ctrl+Alt+Left / Right | Alt+Left / Right |
-| Commit / cancel move | Ctrl+Enter / Esc | Ctrl+Enter / Esc |
-| Fold region | Ctrl+Shift+F | Ctrl+F |
-| Upgrade old snippet | Ctrl+U | Ctrl+U |
+| Action | Qt |
+| --- | --- |
+| Parent / child | Alt+Left / Right |
+| Previous / next node | Alt+Up / Down |
+| Edit Python fragment | F2 |
+| Parameters | F3 |
+| Expand recognized snippet | Ctrl+E |
+| Start move | Ctrl+M |
+| Previous / next destination | Alt+Up / Down |
+| Outdent / indent destination | Ctrl+Alt+Left / Right |
+| Commit / cancel move | Ctrl+Enter / Esc |
+| Fold region | Ctrl+Shift+F |
+| Upgrade old snippet | Ctrl+U |
 
 Dragging a block attaches a colored preview of at most four displayed lines to the
 pointer. The source is temporarily replaced by an amber **Previous position** row;
@@ -155,8 +158,7 @@ areas after a transfer.
 Each cell has Blocks / Python icons. Python accepts arbitrary unfinished text;
 parseable fragments can be edited structurally without a complete execution
 context. For example, a detached `break` is allowed in Scratch but can only return
-inside a loop. Invalid drops preserve both areas. In TUI select Scratch with Tab,
-use F2 to edit, Ctrl+N to create, and Ctrl+R to restore.
+inside a loop. Invalid drops preserve both areas.
 
 **View → Name diagnostics** lists unknown names. This lexical analysis does not
 infer every execution path or inspect third-party runtime objects.

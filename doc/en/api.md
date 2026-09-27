@@ -30,7 +30,9 @@ Project detects the Python encoding and external changes. Saving uses atomic
 per-file replacement and protects Scratch across interrupted multi-file saves.
 With `allow_draft=True`, invalid source is returned in `project.draft` while the
 committed document starts empty. Commit corrected source and clear `draft` before
-saving. CLI and TUI use the default strict behavior.
+saving. Structural CLI commands use the default strict behavior. TUI uses
+`SourceFile` independently: it preserves source text and checks disk changes
+without parsing, formatting or rewriting block workspace metadata.
 
 ## Spans and transformations
 

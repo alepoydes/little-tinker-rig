@@ -267,6 +267,47 @@ async def flash(package: Package):
                 pass  # A successful flash reboots and disconnects the device.
 
 
+def instructions(model, kind):
+    if model == "inventor":
+        instructions = tr(
+            "USB DFU: turn the hub off and unplug USB. Hold the Bluetooth button while reconnecting USB; release it when the light flashes red, green and blue. Connect only one hub. On Linux, USB access requires libusb/udev permissions; dfu-util is the fallback."
+        )
+        if kind == "lego":
+            instructions += "\n" + tr(
+                "The recovery image restores LEGO firmware 1.3. The LEGO app may offer a later update."
+            )
+    else:
+        instructions = tr(
+            "Bluetooth bootloader: turn the hub off. Hold its green button until the light flashes purple, then release it. Keep the hub near the computer and close other Bluetooth connections."
+        )
+        if kind == "lego":
+            instructions += "\n" + tr(
+                "Select a local LEGO recovery ZIP for this model. Its metadata must declare firmware-type as lego. Automatic LEGO downloads are available only for Inventor / SPIKE Prime."
+            )
+    return instructions
+
+
+def result_message(success, kind):
+    if success:
+        message = tr("Firmware installation completed.")
+        if kind == "pybricks":
+            message += "\n\n" + tr(
+                "A blinking blue light means the hub is ready to connect. No manual restart is needed. If the hub is off, press its main button briefly to turn it on. Close this window and choose Connect hub."
+            )
+            message += "\n\n" + tr(
+                "To restart if needed, hold the hub's main button for about 3 seconds until it switches off. Release the button, then press it briefly to turn the hub on again."
+            )
+        else:
+            message += "\n\n" + tr(
+                "Turn the hub on if it is off, then connect using the LEGO app."
+            )
+    else:
+        message = tr(
+            "Firmware installation failed. Check the log, return the hub to bootloader mode and try again."
+        )
+    return message
+
+
 def main():
     import argparse
 

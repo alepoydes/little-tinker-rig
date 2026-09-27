@@ -33,7 +33,7 @@ uv sync --extra qt
 uv run --extra qt little-tinker-rig-qt examples/first.py
 ```
 
-Терминальный редактор:
+[Терминальный редактор и инструменты хаба](tui.md):
 
 ```sh
 uv sync --extra tui

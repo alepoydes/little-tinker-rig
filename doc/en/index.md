@@ -15,6 +15,7 @@ on a virtual Inventor / SPIKE Prime hub.
 - [Lessons, projects and robot assembly](lessons.md)
 - [LEGO set programs as blocks](examples.md)
 - [Editing, documents, Scratch, and CLI](usage.md)
+- [Terminal Python editor and Pybricks tools](tui.md)
 - [Hubs, sensors, motors, and controllers](robotics.md)
 - [Create your own block library](snippets.md)
 - [Block Editor and live preview](block-editor.md)

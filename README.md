@@ -136,12 +136,12 @@ See the [architecture](doc/en/architecture.md), [development invariants](doc/en/
 and [design specification](devs/DESIGN_SPEC.md). Examples retain upstream
 formatting; lint and formatting checks target the application, tests and tools.
 
-Qt is the primary interface. An experimental Textual TUI is available with
-`uv run --extra tui little-tinker-rig-tui examples/first.py`, but its capabilities
-are limited compared with the desktop application. Its planned scope is a small
-Pybricks terminal workspace for editing Python source, uploading and running
-programs, installing firmware, and possibly monitoring hub ports. This redesign
-has not been implemented yet; the current TUI still includes block controls.
+Qt is the primary interface. The [Textual terminal workspace](doc/en/tui.md)
+focuses on Python source editing and Pybricks tools: program upload/run, console
+input/output, firmware installation and port monitoring. It has no block editor,
+Scratch or lesson views, and does not require Qt. Start it with
+`uv run --extra tui --extra pybricks little-tinker-rig-tui examples/first.py`;
+omit `--extra pybricks` for editing and virtual hubs alone.
 
 ## License and credits
 

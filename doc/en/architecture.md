@@ -5,7 +5,7 @@ source spans, snippet matches, lexical names and display regions are derived dat
 that can be rebuilt after every committed edit.
 
 ```text
-Qt / Textual / CLI
+Qt / CLI
         ↓
 Session: snippets, imports, Scratch, files
         ↓
@@ -15,6 +15,13 @@ edit: pure source transformations → Document: validate and commit
                                            ↓
                                   Syntax → analysis and display
 ```
+
+The Textual TUI uses `core/source_file.py` for unrestricted text editing. It does
+not create a structural Session or touch block workspace metadata. Both frontends
+use `pybricks/worker.py` for serialized hub operations, `pybricks/firmware.py` for
+firmware validation and installation, and `core/completion.py` for static Jedi
+analysis. Qt adapts worker callbacks to signals; TUI posts Textual messages.
+
 
 Document publishes a revision only after formatting and compilation. Compilation
 checks context but does not execute code. History stores source and Scratch

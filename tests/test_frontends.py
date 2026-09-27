@@ -3,30 +3,6 @@ import ast
 import pytest
 
 
-@pytest.mark.asyncio
-async def test_tui_edit_validation_and_library(tmp_path):
-    pytest.importorskip("textual")
-    from textual.widgets import TextArea
-
-    from little_tinker_rig.tui.app import EditDialog, Studio
-
-    app = Studio(tmp_path / "main.py")
-    async with app.run_test(size=(120, 40)) as pilot:
-        assert app.query_one("#library").option_count >= 10
-        await pilot.press("f2")
-        assert isinstance(app.screen, EditDialog)
-        app.screen.query_one("#text", TextArea).load_text("x =")
-        app.screen.action_apply()
-        assert isinstance(app.screen, EditDialog)
-        assert app.session.document.state.source == ""
-        app.screen.query_one("#text", TextArea).load_text("value = 3")
-        app.screen.action_apply()
-        await pilot.pause()
-        assert app.session.document.state.source == "value = 3\n"
-        app.action_undo()
-        assert app.session.document.state.source == ""
-
-
 def test_qt_selection_unicode_and_draft_validation(tmp_path, qt_app):
     from little_tinker_rig.qt.app import Studio
     from little_tinker_rig.qt.dialogs import EditDialog
@@ -83,48 +59,6 @@ def test_qt_drag_uses_core_move_and_fold_is_reversible(tmp_path, qt_app):
     QTest.qWait(180)
     assert view.document().findBlockByNumber(1).isVisible()
     window.hide()
-
-
-@pytest.mark.asyncio
-async def test_tui_refresh_keeps_selection_and_can_discard_on_quit(tmp_path):
-    pytest.importorskip("textual")
-    from little_tinker_rig.tui.app import QuitDialog, Studio
-
-    path = tmp_path / "main.py"
-    path.write_text("first = 1\nsecond = 2\n")
-    app = Studio(path)
-    async with app.run_test(size=(120, 40)) as pilot:
-        await pilot.press("down")
-        selected = app.session.editor.selection
-        app.refresh_views()
-        await pilot.pause()
-        assert app.session.editor.selection is selected
-        app.session.editor.commit("changed = 3\n")
-        await pilot.press("ctrl+q")
-        assert isinstance(app.screen, QuitDialog)
-        await pilot.click("#discard")
-    assert path.read_text() == "first = 1\nsecond = 2\n"
-
-
-@pytest.mark.asyncio
-async def test_tui_keyboard_can_edit_a_second_operand(tmp_path):
-    pytest.importorskip("textual")
-    from textual.widgets import TextArea
-
-    from little_tinker_rig.tui.app import Studio
-
-    path = tmp_path / "main.py"
-    path.write_text("print(2 + 3)\n")
-    app = Studio(path)
-    async with app.run_test(size=(120, 40)) as pilot:
-        await pilot.press("ctrl+e", "alt+down", "alt+right", "alt+down", "f2")
-        field = app.screen.query_one("#text", TextArea)
-        assert field.text == "3"
-        field.load_text("10")
-        app.screen.action_apply()
-        assert ast.dump(ast.parse(app.session.document.state.source)) == ast.dump(
-            ast.parse("print(2 + 10)")
-        )
 
 
 def test_qt_python_draft_save_format_undo_and_native_cut(tmp_path, qt_app):
@@ -255,7 +189,7 @@ def test_qt_upload_reports_worker_output_progress_and_failure(
         async def disconnect(self):
             pass
 
-    monkeypatch.setattr("little_tinker_rig.qt.robot.Connection", Connection)
+    monkeypatch.setattr("little_tinker_rig.pybricks.worker.Connection", Connection)
     path = tmp_path / "main.py"
     path.write_text('print("Hub: €")\n')
     window = Studio(path)
@@ -414,7 +348,9 @@ def test_qt_interrupts_pending_connection_before_disconnect(qt_app, monkeypatch)
             assert released.is_set()
             self.connected = False
 
-    monkeypatch.setattr("little_tinker_rig.qt.robot.VirtualConnection", Connection)
+    monkeypatch.setattr(
+        "little_tinker_rig.pybricks.worker.VirtualConnection", Connection
+    )
     robot = Robot()
     try:
         future = robot.connect_hub(transport="virtual")
