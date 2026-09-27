@@ -96,9 +96,8 @@ connection requirements.
    hub running Pybricks firmware.
 
 The [first steps guide](doc/en/tutorial/first.md) walks through a small program.
-The terminal interface is also available with
-`uv run --extra tui little-tinker-rig-tui examples/first.py`; the command-line tools start
-with `uv run little-tinker-rig inspect examples/first.py`.
+The command-line tools start with
+`uv run little-tinker-rig inspect examples/first.py`.
 
 ## Documentation and feedback
 
@@ -137,6 +136,13 @@ See the [architecture](doc/en/architecture.md), [development invariants](doc/en/
 and [design specification](devs/DESIGN_SPEC.md). Examples retain upstream
 formatting; lint and formatting checks target the application, tests and tools.
 
+Qt is the primary interface. An experimental Textual TUI is available with
+`uv run --extra tui little-tinker-rig-tui examples/first.py`, but its capabilities
+are limited compared with the desktop application. Its planned scope is a small
+Pybricks terminal workspace for editing Python source, uploading and running
+programs, installing firmware, and possibly monitoring hub ports. This redesign
+has not been implemented yet; the current TUI still includes block controls.
+
 ## License and credits
 
 LittleTinker Rig's software is [MIT licensed](LICENSE.txt). Bundled examples retain their
@@ -146,6 +152,55 @@ of redistributed. Small community LDraw models use CC BY 2.0 with separate
 The LDraw parts library is downloaded into external user storage.
 
 This is an independent project, not an official LEGO or Pybricks product.
-[Pybricks](https://pybricks.com/) provides the firmware and robotics APIs that make
-it possible; please support their work. LEGO and its product names belong to
-their respective owners.
+LEGO and its product names belong to their respective owners.
+
+## With heartfelt thanks
+
+LittleTinker Rig is a small family project made possible by an extraordinary
+amount of work shared by others. Behind every moving motor, helpful completion
+and tiny LEGO pin on screen are people who wrote code, documented hardware,
+created models and patiently helped someone learn. We are deeply grateful.
+
+- **[Pybricks](https://pybricks.com/)** and its team and community: thank you for
+  giving these robots such a wonderful Python home. Your firmware, robotics APIs,
+  documentation, examples and [development tools](https://github.com/pybricks/pybricksdev)
+  are the foundation of our work. You make it possible for us to spend our time
+  helping children explore and create. Please support Pybricks and its continued
+  development.
+- **[LDraw](https://www.ldraw.org/)** and everyone who authors, measures, reviews
+  and maintains its parts: thank you for the remarkable care behind this shared
+  library. A single connector can represent hours of someone's patient work.
+  Our assembly view exists because so many people chose to share that work.
+- **The builders who share models and instructions**, especially
+  **[Philippe “Philo” Hurbain](https://www.philohome.com/)**, whose robot models and
+  assembly steps are included here: thank you for making these builds available
+  for others to study and enjoy. See the
+  [model credits](lessons/pybricks/README.md#ldraw-assembly-instructions) for the
+  original designs, authors and sources. Our thanks also go to the LEGO designers
+  whose creations give children and adults so much to discover.
+- **The teachers, robot builders and programmers sharing their experiments**:
+  thank you for turning working code into something another person can learn
+  from. The [example credits](examples/pybricks/README.md) and
+  [community sources](examples/pybricks/community/SOURCES.md) acknowledge the
+  people whose programs and ideas helped shape this collection.
+- **[Python](https://www.python.org/) and [MicroPython](https://micropython.org/)**:
+  thank you for a language and ecosystem that welcome beginners while leaving
+  room to grow, on a desktop and inside a robot.
+- **[Qt for Python / PySide6](https://doc.qt.io/qtforpython-6/)** and
+  **[Jedi](https://jedi.readthedocs.io/en/latest/)**: thank you for the foundations
+  of our desktop interface and the code assistance that helps learners find
+  their way. **[Textual](https://github.com/Textualize/textual)** provides the
+  interface for our experimental terminal editor.
+- **[ModernGL](https://moderngl.readthedocs.io/en/latest/)** and
+  **[NumPy](https://numpy.org/)**: thank you for making our interactive 3D assembly
+  view possible.
+- **[pygame-ce](https://pyga.me/)** and the **[SDL](https://www.libsdl.org/)**
+  library it builds on: thank you for the gamepad support that helps put robot
+  control into children's hands. **[Bleak](https://github.com/hbldh/bleak)** and
+  **[PyUSB](https://pyusb.github.io/pyusb/)** help us connect to their hubs.
+
+We also thank the maintainers of platformdirs, Babel, uv, Ruff, Black, pytest,
+setuptools and the many dependencies beneath them. Packaging, translations,
+testing and maintenance are often invisible, but this project depends on them
+every day. To everyone sharing code, models, documentation, bug reports or a
+patient answer: thank you for helping make a small family's idea possible.
