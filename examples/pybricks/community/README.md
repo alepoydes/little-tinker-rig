@@ -9,7 +9,7 @@ code being studied. Select **All** to expose every component in the palette.
 Each new import links its pinned original in the first comments. The
 [catalog](../catalog.json) records source hashes, equipment, levels and changes;
 [the source review](SOURCES.md) includes authors, licenses and deferred candidates.
-No example in this folder has been physically validated in PyBlocks.
+No example in this folder has been physically validated in LittleTinker Rig.
 
 ## Sensor and concurrency lessons
 
@@ -164,7 +164,7 @@ Release an input to brake its motor. Pressing both directions of the same
 movement brakes it too. Either hub's green button stops its own program;
 stopping the lower hub also makes the upper hub stop after its timeout.
 Stopping only the upper hub does not stop the base. Stop the lower program before
-reconnecting Studio to edit it. See the [Pybricks pairing instructions](https://docs.pybricks.com/en/latest/iodevices/xboxcontroller.html).
+reconnecting LittleTinker Rig to edit it. See the [Pybricks pairing instructions](https://docs.pybricks.com/en/latest/iodevices/xboxcontroller.html).
 
 ### Timing and tuning
 
@@ -195,7 +195,7 @@ programs are pinned as references in the [catalog](../catalog.json), including
 their original SHA-256 hashes. Upper mechanism names follow the
 [nGeneRobotLab port table](https://ngene.org/nGeneRobotLab.html).
 
-These files are new PyBlocks implementations of that control scheme under the
+These files are new LittleTinker Rig implementations of that control scheme under the
 project's [MIT license](../../../LICENSE.txt), with current `BLERadio`, slower
 motor settings, one sample per input per cycle, opposing-input cancellation,
 slow/stop buttons, cleanup and sequence timeout. They do not reproduce the
@@ -204,7 +204,7 @@ a license when checked; its files are not included or relicensed here.
 
 Tests check motor commands on virtual Technic motors with scripted Xbox/radio
 inputs, timeout/recovery, invalid packets, controller loss, stopping, block
-rebuilding and MPY ABI 5/6 compilation. Interactive Studio simulation does not
+rebuilding and MPY ABI 5/6 compilation. Interactive LittleTinker Rig simulation does not
 provide Xbox pairing or hub-to-hub radio. Mechanical motion, end stops, radio
 performance and the physical model have not been validated.
 

@@ -3,9 +3,9 @@ from unittest.mock import patch
 
 import pytest
 
-from pyblocks.core import edit
-from pyblocks.core.presentation import PALETTE
-from pyblocks.core.syntax import Syntax
+from little_tinker_rig.core import edit
+from little_tinker_rig.core.presentation import PALETTE
+from little_tinker_rig.core.syntax import Syntax
 
 
 def close_window(window):
@@ -20,7 +20,7 @@ def close_window(window):
 def test_recent_files_persist_deduplicate_and_preserve_open_drafts(tmp_path, qt_app):
     from PySide6.QtCore import QSettings
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     first, second = tmp_path / "first.py", tmp_path / "second.py"
     first.write_text("print(1)\n")
@@ -60,7 +60,7 @@ def test_window_buttons_and_title_double_click_work(tmp_path, qt_app):
     from PySide6.QtCore import Qt
     from PySide6.QtTest import QTest
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     window = Studio(tmp_path / "main.py")
     window.show()
@@ -91,7 +91,7 @@ def test_courier_ports_names_and_plain_fields_accept_real_clicks(tmp_path, qt_ap
     from PySide6.QtTest import QTest
     from PySide6.QtWidgets import QLineEdit
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     path = tmp_path / "courier.py"
     path.write_text(Path("examples/courier.py").read_text())
@@ -166,7 +166,7 @@ def test_courier_ports_names_and_plain_fields_accept_real_clicks(tmp_path, qt_ap
 def test_window_geometry_and_state_survive_reopening(tmp_path, qt_app, state):
     from PySide6.QtCore import QSettings
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     path = tmp_path / "main.py"
     path.write_text("print(1)\n")
@@ -204,7 +204,7 @@ def test_window_geometry_and_state_survive_reopening(tmp_path, qt_app, state):
 
 
 def test_cancelled_close_does_not_replace_saved_geometry(tmp_path, qt_app):
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     window = Studio(tmp_path / "main.py")
     window.show()
@@ -224,7 +224,7 @@ def test_cancelled_close_does_not_replace_saved_geometry(tmp_path, qt_app):
 def test_notes_have_owned_colors_rows_and_drop_boundary(tmp_path, qt_app):
     from PySide6.QtGui import QColor
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     path = tmp_path / "robot.py"
     path.write_text(
@@ -302,7 +302,7 @@ def test_wide_syntax_hit_testing_keeps_comments_and_unicode_owners():
 
 
 def test_qt_positions_round_trip_mixed_unicode(qt_app):
-    from pyblocks.qt.editor import qt_offset, source_offset
+    from little_tinker_rig.qt.editor import qt_offset, source_offset
 
     source = 'имя = "😀🚀"\nprint("🦊", имя)\n'
     for offset in range(len(source) + 1):

@@ -35,7 +35,7 @@ Open Console, focus Hub input and enable **Send keys immediately**. Keys go to t
 
 ### Upstream explanation (MIT)
 
-The following licensed notes describe the original workflow. Program links above open the adapted Studio copies; installation and terminal names may refer to Pybricks Code.
+The following licensed notes describe the original workflow. Program links above open the adapted LittleTinker Rig copies; installation and terminal names may refer to Pybricks Code.
 
 Keyboard Remote
 
@@ -89,7 +89,7 @@ Pair the controller using its pairing button after starting the program. Keep th
 
 ### Controller experiment
 
-This Studio adaptation uses the MIT Audi controller example with the 42109 motor ports and steering direction. The building instructions for 42109 are in the preparation stage. Move the left stick to steer; use the right trigger to drive forward and the left trigger to reverse. Release both triggers to stop driving. Trace how `car.steer()` and `car.drive_power()` turn readings into movement.
+This LittleTinker Rig adaptation uses the MIT Audi controller example with the 42109 motor ports and steering direction. The building instructions for 42109 are in the preparation stage. Move the left stick to steer; use the right trigger to drive forward and the left trigger to reverse. Release both triggers to stop driving. Trace how `car.steer()` and `car.drive_power()` turn readings into movement.
 
 
 

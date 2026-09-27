@@ -3,14 +3,14 @@ from unittest.mock import patch
 
 import pytest
 
-from pyblocks.core import edit
-from pyblocks.core.session import Session
-from pyblocks.core.snippets import builtin_snippets
-from pyblocks.core.transfer import Transfer
+from little_tinker_rig.core import edit
+from little_tinker_rig.core.session import Session
+from little_tinker_rig.core.snippets import builtin_snippets
+from little_tinker_rig.core.transfer import Transfer
 
 
 def view_for(qt_app, source):
-    from pyblocks.qt.editor import SourceView
+    from little_tinker_rig.qt.editor import SourceView
 
     view = SourceView(Session.fragment(source, builtin_snippets()))
     view.resize(900, 650)
@@ -24,7 +24,7 @@ def enter(view, name="python/basics/display"):
     from PySide6.QtGui import QDragEnterEvent
 
     data = QMimeData()
-    data.setData("application/x-pyblocks-snippet", name.encode())
+    data.setData("application/x-little-tinker-rig-snippet", name.encode())
     args = (
         Qt.DropAction.CopyAction,
         data,
@@ -84,7 +84,7 @@ def test_escape_removes_projection_and_held_pointer_cannot_restart_or_commit(
     from PySide6.QtCore import QPoint, Qt
     from PySide6.QtTest import QTest
 
-    from pyblocks.qt import drag
+    from little_tinker_rig.qt import drag
 
     view = view_for(qt_app, "while True:\n    print(1)\n    print(2)\nprint(3)\n")
     try:
@@ -117,7 +117,7 @@ def test_return_to_origin_has_no_undo_and_drop_commits_once(qt_app):
     from PySide6.QtCore import QPoint
     from PySide6.QtGui import QCursor
 
-    from pyblocks.qt.drag import drag_block
+    from little_tinker_rig.qt.drag import drag_block
 
     view = view_for(qt_app, "print(1)\nwhile True:\n    print(2)\nprint(3)\n")
     try:
@@ -148,7 +148,7 @@ def test_return_to_origin_has_no_undo_and_drop_commits_once(qt_app):
             and not view.session.document.can_undo
         )
     finally:
-        from pyblocks.qt.drag import cancel_drag
+        from little_tinker_rig.qt.drag import cancel_drag
 
         cancel_drag()
         view.close()
@@ -160,7 +160,7 @@ def test_incompatible_drop_is_not_offered_and_filled_parameter_is_preserved(
     from PySide6.QtCore import QPoint, Qt
     from PySide6.QtGui import QDragEnterEvent
 
-    from pyblocks.qt.drag import BlockMime
+    from little_tinker_rig.qt.drag import BlockMime
 
     view = view_for(qt_app, "print(1)\nif ...:\n    pass\n")
     try:
@@ -225,7 +225,7 @@ def test_expression_and_same_fragment_moves_are_one_atomic_edit(tmp_path):
 
 
 def test_standalone_expression_transfers_the_whole_match_with_comments(tmp_path):
-    from pyblocks.core.snippets import load_module
+    from little_tinker_rig.core.snippets import load_module
 
     snippets = load_module(
         "@inline_block\ndef total(left=1, right=2):\n    return left + right\n",
@@ -271,8 +271,8 @@ def test_old_parenthesized_none_can_be_deleted(tmp_path):
 def test_level_filter_combines_search_and_groups_and_persists(tmp_path, qt_app):
     from PySide6.QtWidgets import QMessageBox
 
-    from pyblocks.qt.app import Studio
-    from pyblocks.qt.library import LEVEL
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.library import LEVEL
 
     window = Studio(tmp_path / "main.py")
     try:
@@ -303,7 +303,7 @@ def test_scratch_insert_marker_preserves_global_pointer_and_cell_geometry(
 ):
     from PySide6.QtCore import QPoint
 
-    from pyblocks.qt.scratch import ScratchPane
+    from little_tinker_rig.qt.scratch import ScratchPane
 
     owner = Session(tmp_path / "main.py")
     owner.set_scratch(None, "print(1)\nwhile True:\n    print(2)\nprint(3)\n")
@@ -383,8 +383,8 @@ def test_escape_from_library_does_not_restart_until_a_new_press(qt_app):
     from PySide6.QtCore import QPoint, Qt
     from PySide6.QtTest import QTest
 
-    from pyblocks.qt import drag
-    from pyblocks.qt.library import Library
+    from little_tinker_rig.qt import drag
+    from little_tinker_rig.qt.library import Library
 
     library = Library(builtin_snippets())
     library.topLevelItem(0).setExpanded(True)
@@ -413,8 +413,8 @@ def test_whole_unfinished_scratch_cell_is_replaced_by_one_origin_marker(
 ):
     from PySide6.QtCore import QPoint
 
-    from pyblocks.qt.drag import drag_block
-    from pyblocks.qt.scratch import ScratchPane
+    from little_tinker_rig.qt.drag import drag_block
+    from little_tinker_rig.qt.scratch import ScratchPane
 
     owner = Session(tmp_path / "main.py")
     owner.set_scratch(None, "value =\n" * 10)
@@ -440,7 +440,7 @@ def test_whole_unfinished_scratch_cell_is_replaced_by_one_origin_marker(
         assert cell.code.toPlainText() == original.scratch[0]
         assert owner.document.state is original
     finally:
-        from pyblocks.qt.drag import cancel_drag
+        from little_tinker_rig.qt.drag import cancel_drag
 
         cancel_drag()
         pane.close()

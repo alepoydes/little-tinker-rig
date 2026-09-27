@@ -9,7 +9,7 @@ published on the Pybricks website. EV3 and City hubs are outside this import.
 Filenames include the LEGO set number, not just
 the hub family. A matching hub alone does not imply a matching mechanism.
 
-Open a program in PyBlocks Studio and select **All** to see its complete palette.
+Open a program in LittleTinker Rig and select **All** to see its complete palette.
 Device operations use bundled templates; classes, functions, loops and expressions
 use the standard Python structures. Custom robot methods use the ordinary function
 call controls. No complete walker or balancer is hidden inside an opaque block.

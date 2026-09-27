@@ -37,7 +37,7 @@ Use Run to start this file and Stop to finish. Compare what you predicted with t
 
 ### Upstream explanation (MIT)
 
-The following licensed notes describe the original workflow. Program links above open the adapted Studio copies; installation and terminal names may refer to Pybricks Code.
+The following licensed notes describe the original workflow. Program links above open the adapted LittleTinker Rig copies; installation and terminal names may refer to Pybricks Code.
 
 #### Program
 
@@ -75,7 +75,7 @@ Shared modules are already included beside this file: [inventor_51515_gelo.py](p
 
 ### Upstream explanation (MIT)
 
-The following licensed notes describe the original workflow. Program links above open the adapted Studio copies; installation and terminal names may refer to Pybricks Code.
+The following licensed notes describe the original workflow. Program links above open the adapted LittleTinker Rig copies; installation and terminal names may refer to Pybricks Code.
 
 #### Instructions
 
@@ -123,13 +123,13 @@ Use the template to combine two existing Gelo actions. Keep the shared Gelo modu
 
 Use Run to start this file and Stop to finish. Compare what you predicted with the robot’s behavior before marking the stage complete.
 
-The original REPL activity requires firmware with an interactive prompt. If a `>>>` prompt appears, send commands from Console in line mode, for example `gelo.walk()`. If the firmware only stops, use the template activity; Studio does not emulate a hub REPL.
+The original REPL activity requires firmware with an interactive prompt. If a `>>>` prompt appears, send commands from Console in line mode, for example `gelo.walk()`. If the firmware only stops, use the template activity; LittleTinker Rig does not emulate a hub REPL.
 
 Shared modules are already included beside this file: [inventor_51515_gelo.py](program:inventor_51515_gelo.py).
 
 ### Upstream explanation (MIT)
 
-The following licensed notes describe the original workflow. Program links above open the adapted Studio copies; installation and terminal names may refer to Pybricks Code.
+The following licensed notes describe the original workflow. Program links above open the adapted LittleTinker Rig copies; installation and terminal names may refer to Pybricks Code.
 
 #### Using the command prompt
 
@@ -193,7 +193,7 @@ Shared modules are already included beside this file: [inventor_51515_gelo.py](p
 
 ### Upstream explanation (MIT)
 
-The following licensed notes describe the original workflow. Program links above open the adapted Studio copies; installation and terminal names may refer to Pybricks Code.
+The following licensed notes describe the original workflow. Program links above open the adapted LittleTinker Rig copies; installation and terminal names may refer to Pybricks Code.
 
 #### Quick start
 
@@ -244,7 +244,7 @@ Shared modules are already included beside this file: [inventor_51515_gelo.py](p
 
 ### Upstream explanation (MIT)
 
-The following licensed notes describe the original workflow. Program links above open the adapted Studio copies; installation and terminal names may refer to Pybricks Code.
+The following licensed notes describe the original workflow. Program links above open the adapted LittleTinker Rig copies; installation and terminal names may refer to Pybricks Code.
 
 #### Program
 
@@ -288,7 +288,7 @@ Shared modules are already included beside this file: [inventor_51515_gelo.py](p
 
 ### Upstream explanation (MIT)
 
-The following licensed notes describe the original workflow. Program links above open the adapted Studio copies; installation and terminal names may refer to Pybricks Code.
+The following licensed notes describe the original workflow. Program links above open the adapted LittleTinker Rig copies; installation and terminal names may refer to Pybricks Code.
 
 #### Instructions
 

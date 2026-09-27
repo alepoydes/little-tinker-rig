@@ -9,9 +9,9 @@ from zipfile import ZipFile
 
 import pytest
 
-from pyblocks.core import ldraw_parts
-from pyblocks.core.ldraw_parts import PartLibrary, resolve_library, subset
-from pyblocks.core.lessons import StudentProject, pack, robot_description
+from little_tinker_rig.core import ldraw_parts
+from little_tinker_rig.core.ldraw_parts import PartLibrary, resolve_library, subset
+from little_tinker_rig.core.lessons import StudentProject, pack, robot_description
 
 
 @pytest.fixture
@@ -107,7 +107,7 @@ def test_archive_members_are_unambiguous_and_local(tmp_path, names):
 
 def test_subset_is_complete_and_preserves_attribution(parts):
     pytest.importorskip("numpy")
-    from pyblocks.core.ldraw import LDraw
+    from little_tinker_rig.core.ldraw import LDraw
 
     archive, spec, model = parts
     small = subset(model, archive, spec)
@@ -130,7 +130,7 @@ def test_model_preparation_preserves_assembly_and_excludes_embedded_part_metadat
     parts,
 ):
     np = pytest.importorskip("numpy")
-    from pyblocks.core.ldraw import LDraw
+    from little_tinker_rig.core.ldraw import LDraw
 
     prepare = runpy.run_path(
         str(Path(__file__).parents[1] / "tools/prepare_ldraw_model.py")
@@ -215,8 +215,8 @@ def test_thin_save_and_offline_export_do_not_depend_on_cache(
     parts, tmp_path, monkeypatch
 ):
     pytest.importorskip("numpy")
-    from pyblocks.core.ldraw import LDraw
-    from pyblocks.core.project import Project
+    from little_tinker_rig.core.ldraw import LDraw
+    from little_tinker_rig.core.project import Project
 
     archive, spec, _ = parts
     project = StudentProject.create(make_lesson(parts))
@@ -224,7 +224,7 @@ def test_thin_save_and_offline_export_do_not_depend_on_cache(
     program.draft = "unfinished(\n"
     program.document.commit("", ("spare = 1\n",))
     program.save()
-    thin = tmp_path / "student.pyblocks"
+    thin = tmp_path / "student.ltr"
     project.save(thin)
     with ZipFile(thin) as z:
         assert not any(name.endswith((".dat", ".zip")) for name in z.namelist())
@@ -235,7 +235,7 @@ def test_thin_save_and_offline_export_do_not_depend_on_cache(
     project.checkpoint()
     snapshot = pack(project.root)
     project.discard_working_copy()  # The export worker owns a snapshot, not GUI files.
-    output = tmp_path / "offline.pyblocks"
+    output = tmp_path / "offline.ltr"
     project.export(output, snapshot=snapshot)
     assert project.path == thin and project.disk_hash == baseline
     cached.unlink()
@@ -267,7 +267,7 @@ def test_lesson_waits_for_assembly_and_can_import_local_zip(
 
     from PySide6.QtWidgets import QFileDialog
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     archive, _, _ = parts
     monkeypatch.setattr(
@@ -302,12 +302,12 @@ def test_gui_export_includes_unsaved_work_without_saving_original(
 
     from PySide6.QtWidgets import QFileDialog
 
-    from pyblocks.core.project import Project
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.core.project import Project
+    from little_tinker_rig.qt.app import Studio
 
     archive, spec, _ = parts
     resolve_library(tmp_path, spec, local=archive)
-    output = tmp_path / "offline.pyblocks"
+    output = tmp_path / "offline.ltr"
     monkeypatch.setattr(
         QFileDialog, "getSaveFileName", lambda *a, **k: (str(output), "")
     )
@@ -315,7 +315,7 @@ def test_gui_export_includes_unsaved_work_without_saving_original(
     try:
         page = window.lessons.open(make_lesson(parts))
         project = page.lesson_project
-        project.path = tmp_path / "original.pyblocks"
+        project.path = tmp_path / "original.ltr"
         window.lessons.save(project)
         baseline = project.path.read_bytes()
         page.session.document.commit("", ("spare = 42\n",))

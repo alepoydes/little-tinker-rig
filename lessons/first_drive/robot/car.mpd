@@ -1,54 +1,54 @@
 0 FILE car.ldr
-0 PyBlocks two-wheel training base
-0 Author: PyBlocks Studio contributors
+0 LittleTinker Rig two-wheel training base
+0 Author: LittleTinker Rig contributors
 0 !LICENSE Licensed under the MIT License : see LICENSE.txt
-0 !PYBLOCKS ID hub
+0 !LITTLE_TINKER_RIG ID hub
 1 15 0 0 0 1 0 0 0 1 0 0 0 1 45601c01.dat
 0 STEP
-0 !PYBLOCKS ID left-mount-front
+0 !LITTLE_TINKER_RIG ID left-mount-front
 1 0 -70 -10 -80 1 0 0 0 1 0 0 0 1 2780.dat
-0 !PYBLOCKS ID left-mount-rear
+0 !LITTLE_TINKER_RIG ID left-mount-rear
 1 0 -70 -10 80 1 0 0 0 1 0 0 0 1 2780.dat
-0 !PYBLOCKS ID right-mount-front
+0 !LITTLE_TINKER_RIG ID right-mount-front
 1 0 70 -10 -80 1 0 0 0 1 0 0 0 1 2780.dat
-0 !PYBLOCKS ID right-mount-rear
+0 !LITTLE_TINKER_RIG ID right-mount-rear
 1 0 70 -10 80 1 0 0 0 1 0 0 0 1 2780.dat
 0 STEP
-0 !PYBLOCKS ID left-motor
+0 !LITTLE_TINKER_RIG ID left-motor
 1 15 -100 -10 60 0 1 0 1 0 0 0 0 -1 54696p01.dat
-0 !PYBLOCKS ID right-motor
+0 !LITTLE_TINKER_RIG ID right-motor
 1 15 100 -10 60 0 -1 0 -1 0 0 0 0 -1 54696p01.dat
 0 STEP
-0 !PYBLOCKS ID left-axle
+0 !LITTLE_TINKER_RIG ID left-axle
 1 71 -160 -10 60 1 0 0 0 1 0 0 0 1 4519.dat
-0 !PYBLOCKS ID right-axle
+0 !LITTLE_TINKER_RIG ID right-axle
 1 71 160 -10 60 1 0 0 0 1 0 0 0 1 4519.dat
 0 STEP
-0 !PYBLOCKS ID left-wheel
+0 !LITTLE_TINKER_RIG ID left-wheel
 1 0 -170 -10 60 0 0 1 0 1 0 -1 0 0 39367p01.dat
-0 !PYBLOCKS ID right-wheel
+0 !LITTLE_TINKER_RIG ID right-wheel
 1 0 170 -10 60 0 0 1 0 1 0 -1 0 0 39367p01.dat
 0 STEP
-0 !PYBLOCKS ID rear-pin-left
+0 !LITTLE_TINKER_RIG ID rear-pin-left
 1 0 -40 -30 -110 0 0 1 0 1 0 -1 0 0 2780.dat
-0 !PYBLOCKS ID rear-pin-right
+0 !LITTLE_TINKER_RIG ID rear-pin-right
 1 0 40 -30 -110 0 0 1 0 1 0 -1 0 0 2780.dat
 0 STEP
-0 !PYBLOCKS ID rear-support
+0 !LITTLE_TINKER_RIG ID rear-support
 1 15 0 -10 -120 0 0 1 0 1 0 -1 0 0 39370c01.dat
 0 STEP
-0 !PYBLOCKS ID front-pin-left
+0 !LITTLE_TINKER_RIG ID front-pin-left
 1 0 -40 -10 110 0 0 1 0 1 0 -1 0 0 2780.dat
-0 !PYBLOCKS ID front-pin-right
+0 !LITTLE_TINKER_RIG ID front-pin-right
 1 0 40 -10 110 0 0 1 0 1 0 -1 0 0 2780.dat
 0 STEP
-0 !PYBLOCKS ID sensor-beam
+0 !LITTLE_TINKER_RIG ID sensor-beam
 1 14 0 -10 120 0 0 1 1 0 0 0 1 0 32524.dat
 0 STEP
-0 !PYBLOCKS ID sensor-pin-left
+0 !LITTLE_TINKER_RIG ID sensor-pin-left
 1 0 -60 -10 130 0 0 1 0 1 0 -1 0 0 2780.dat
-0 !PYBLOCKS ID sensor-pin-right
+0 !LITTLE_TINKER_RIG ID sensor-pin-right
 1 0 60 -10 130 0 0 1 0 1 0 -1 0 0 2780.dat
 0 STEP
-0 !PYBLOCKS ID distance-sensor
+0 !LITTLE_TINKER_RIG ID distance-sensor
 1 15 0 -10 140 -1 0 0 0 1 0 0 0 -1 37316.dat

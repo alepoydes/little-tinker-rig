@@ -9,22 +9,22 @@ from unittest.mock import patch
 
 import pytest
 
-from pyblocks.core import edit
-from pyblocks.core.parameters import choices, default_bindings
-from pyblocks.core.session import Session
-from pyblocks.core.snippets import builtin_snippets, instantiate
-from pyblocks.pybricks.sim_runtime import install_modules
-from pyblocks.pybricks.simulation import World
-from pyblocks.pybricks.virtual import VirtualConnection
+from little_tinker_rig.core import edit
+from little_tinker_rig.core.parameters import choices, default_bindings
+from little_tinker_rig.core.session import Session
+from little_tinker_rig.core.snippets import builtin_snippets, instantiate
+from little_tinker_rig.pybricks.sim_runtime import install_modules
+from little_tinker_rig.pybricks.simulation import World
+from little_tinker_rig.pybricks.virtual import VirtualConnection
 
 
 def test_focus_is_conspicuous_without_recoloring_descendants(qt_app):
     from PySide6.QtCore import QPoint
     from PySide6.QtGui import QColor
 
-    from pyblocks.core.presentation import PALETTE
-    from pyblocks.qt.colors import saturated
-    from pyblocks.qt.editor import SourceView
+    from little_tinker_rig.core.presentation import PALETTE
+    from little_tinker_rig.qt.colors import saturated
+    from little_tinker_rig.qt.editor import SourceView
 
     for original in PALETTE.values():
         base = QColor(original)
@@ -65,8 +65,8 @@ def test_focus_is_conspicuous_without_recoloring_descendants(qt_app):
 
 
 def test_levels_are_cumulative_and_beginner_is_the_initial_view(tmp_path, qt_app):
-    from pyblocks.qt.app import Studio
-    from pyblocks.qt.library import IDENTITY, LEVEL
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.library import IDENTITY, LEVEL
 
     path = tmp_path / "main.py"
     program = Path(__file__).parents[1] / "examples/data_pipeline.py"
@@ -126,7 +126,7 @@ def test_virtual_moves_use_unrounded_positions_and_signed_wheel_geometry(monkeyp
         left = Motor(Port.A)
         # At 88.6°, the displayed 89° must not satisfy a 1° stop tolerance.
         monkeypatch.setattr(
-            "pyblocks.pybricks.sim_runtime.time.sleep",
+            "little_tinker_rig.pybricks.sim_runtime.time.sleep",
             lambda _: world.advance(88.6 / 360),
         )
         left.run_target(360, 90)

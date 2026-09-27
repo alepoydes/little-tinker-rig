@@ -1,11 +1,11 @@
 import ast
 
-from pyblocks.core import edit
-from pyblocks.core.analysis import Analysis
-from pyblocks.core.imports import manage_imports
-from pyblocks.core.session import Session
-from pyblocks.core.snippets import load_module
-from pyblocks.core.syntax import Syntax
+from little_tinker_rig.core import edit
+from little_tinker_rig.core.analysis import Analysis
+from little_tinker_rig.core.imports import manage_imports
+from little_tinker_rig.core.session import Session
+from little_tinker_rig.core.snippets import load_module
+from little_tinker_rig.core.syntax import Syntax
 
 
 def test_source_without_final_newline_has_correct_end_position():

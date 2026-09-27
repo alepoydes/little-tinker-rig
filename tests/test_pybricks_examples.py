@@ -13,11 +13,11 @@ from unittest.mock import patch
 
 import pytest
 
-from pyblocks.core import edit
-from pyblocks.core.session import Session
-from pyblocks.core.snippets import builtin_snippets, instantiate, recognize
-from pyblocks.pybricks.sim_runtime import install_modules
-from pyblocks.pybricks.simulation import World
+from little_tinker_rig.core import edit
+from little_tinker_rig.core.session import Session
+from little_tinker_rig.core.snippets import builtin_snippets, instantiate, recognize
+from little_tinker_rig.pybricks.sim_runtime import install_modules
+from little_tinker_rig.pybricks.simulation import World
 
 EXAMPLES = Path(__file__).parents[1] / "examples/pybricks"
 CATALOG = json.loads((EXAMPLES / "catalog.json").read_text())
@@ -117,8 +117,10 @@ def virtual_activity(name):
 
     with (
         patch.dict(sys.modules),
-        patch("pyblocks.pybricks.sim_runtime.time.sleep", advance),
-        patch("pyblocks.pybricks.sim_runtime.time.monotonic", lambda: elapsed[0]),
+        patch("little_tinker_rig.pybricks.sim_runtime.time.sleep", advance),
+        patch(
+            "little_tinker_rig.pybricks.sim_runtime.time.monotonic", lambda: elapsed[0]
+        ),
     ):
         install_modules(world, Queue())
         from pybricks import hubs, pupdevices, robotics, tools
@@ -351,8 +353,8 @@ def test_pattern_and_named_icon_keep_distinct_fields_and_shared_feedback():
 def test_imported_programs_open_with_their_blocks_available_in_the_panel(
     tmp_path, qt_app
 ):
-    from pyblocks.qt.app import Studio
-    from pyblocks.qt.library import IDENTITY
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.library import IDENTITY
 
     for example in PROGRAMS:
         path = tmp_path / example.name
@@ -771,7 +773,7 @@ def test_hardware_operations_have_specific_palette_blocks():
             if isinstance(n, ast.FunctionDef)
         }
         matches = recognize(syntax, snippets, session.analysis)
-        from pyblocks.core.helpers import helper_section
+        from little_tinker_rig.core.helpers import helper_section
 
         managed = helper_section(source)
         for node in ast.walk(tree):

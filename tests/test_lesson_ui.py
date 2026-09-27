@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from pyblocks.core.lessons import StudentProject
+from little_tinker_rig.core.lessons import StudentProject
 
 
 def make_lesson(tmp_path):
@@ -43,13 +43,13 @@ def test_window_close_decides_once_for_whole_lesson_project(
 
     from PySide6.QtWidgets import QMessageBox
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     window = Studio(tmp_path / "plain.py")
     try:
         first = window.lessons.open(make_lesson(tmp_path))
         project = first.lesson_project
-        project.path = tmp_path / "lesson.pyblocks"
+        project.path = tmp_path / "lesson.ltr"
         first.session.editor.commit("first = 1\n")
         window.lessons.new_program()
         second = window.document_page
@@ -79,7 +79,7 @@ def test_window_close_decides_once_for_whole_lesson_project(
         monkeypatch.setattr(QMessageBox, "question", answer)
         assert window.close() == (decision != "Cancel")
         assert len(prompts) == 1
-        assert "lesson.pyblocks" in prompts[0] and "all open programs" in prompts[0]
+        assert "lesson.ltr" in prompts[0] and "all open programs" in prompts[0]
         if decision == "Save":
             with ZipFile(project.path) as archive:
                 assert [archive.read(name).decode() for name in names] == texts
@@ -97,8 +97,8 @@ def test_window_close_decides_once_for_whole_lesson_project(
 
 
 def test_stage_palette_preserves_source_and_free_exploration(tmp_path, qt_app):
-    from pyblocks.qt.app import Studio
-    from pyblocks.qt.library import IDENTITY
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.library import IDENTITY
 
     window = Studio(tmp_path / "plain.py")
     try:
@@ -128,7 +128,7 @@ def test_stage_palette_preserves_source_and_free_exploration(tmp_path, qt_app):
         )
         page.session.editor.select(0)
         project = page.lesson_project
-        project.path = tmp_path / "work.pyblocks"
+        project.path = tmp_path / "work.ltr"
         assert window.lessons.save(project)
         opened = StudentProject.open(project.path)
         assert opened.main.read_text() == "if distance >\n"
@@ -139,7 +139,7 @@ def test_stage_palette_preserves_source_and_free_exploration(tmp_path, qt_app):
 
 
 def test_lesson_navigation_is_explicit_and_restores_workspace(tmp_path, qt_app):
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     window = Studio(tmp_path / "plain.py")
     window.show()
@@ -182,7 +182,7 @@ def test_lesson_navigation_is_explicit_and_restores_workspace(tmp_path, qt_app):
         assert not lesson.card.isVisible()
         window.set_mode(1)
         project = lesson.current
-        project.path = tmp_path / "work.pyblocks"
+        project.path = tmp_path / "work.ltr"
         lesson.save(project)
         window.open_document(tmp_path / "plain.py")
         assert not lesson.card.isVisible()
@@ -204,7 +204,7 @@ def test_lesson_navigation_is_explicit_and_restores_workspace(tmp_path, qt_app):
 
 
 def test_independent_assembly_survives_lesson_and_document_changes(tmp_path, qt_app):
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     (tmp_path / "robot.ldr").write_text("0 Original model\n")
     path = tmp_path / "robot.json"
@@ -240,8 +240,8 @@ def test_assembly_link_works_without_task_card_and_selects_lesson_robot(
     from PySide6.QtCore import Qt, QUrl
     from PySide6.QtTest import QTest
 
-    from pyblocks.qt.app import Studio
-    from pyblocks.qt.assembly import AssemblyPage
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.assembly import AssemblyPage
 
     # Navigation does not depend on geometry loading or a graphics context.
     monkeypatch.setattr(AssemblyPage, "load", lambda self: None)
@@ -301,8 +301,8 @@ def test_assembly_link_works_without_task_card_and_selects_lesson_robot(
 
 
 def test_starter_preserves_draft_and_device_check_uses_stage_ports(tmp_path, qt_app):
-    from pyblocks.pybricks.devices import HubInfo
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.pybricks.devices import HubInfo
+    from little_tinker_rig.qt.app import Studio
 
     root = make_lesson(tmp_path)
     (root / "starter.py").write_text("new_value = 2\n")
@@ -351,7 +351,7 @@ def test_starter_preserves_draft_and_device_check_uses_stage_ports(tmp_path, qt_
         assert project.progress["completed"] == ["drive"]
         window.update_hub(HubInfo(connected=False, ports={"A": {"type": "motor"}}))
         assert not window.lessons.check_ready()
-        project.path = tmp_path / "work.pyblocks"
+        project.path = tmp_path / "work.ltr"
         assert window.lessons.save(project)
         saved = StudentProject.open(project.path)
         try:
@@ -371,14 +371,14 @@ def test_project_reopens_program_tabs_and_recovers_unsaved_progress(
 ):
     from PySide6.QtWidgets import QMessageBox
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     old = Studio(tmp_path / "plain.py")
     restored = None
     try:
         page = old.lessons.open(make_lesson(tmp_path))
         project = page.lesson_project
-        project.path = tmp_path / "lesson.pyblocks"
+        project.path = tmp_path / "lesson.ltr"
         page.session.editor.commit("saved = 1\n")
         old.lessons.new_program()
         second = old.document_page
@@ -418,8 +418,8 @@ def test_close_keeps_working_files_when_recovery_update_fails(
 ):
     from PySide6.QtWidgets import QMessageBox
 
-    from pyblocks.qt import recovery
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt import recovery
+    from little_tinker_rig.qt.app import Studio
 
     window = Studio(tmp_path / "plain.py")
     try:
@@ -452,7 +452,7 @@ def test_close_keeps_working_files_when_recovery_update_fails(
 def test_named_program_links_preserve_drafts_and_stage_navigation(tmp_path, qt_app):
     from PySide6.QtCore import QUrl
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     root = make_lesson(tmp_path)
     (root / "first.py").write_text("first = 1\n")

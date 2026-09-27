@@ -1,6 +1,6 @@
-# Studio interaction design
+# LittleTinker Rig interaction design
 
-Studio supports a first introduction to robotics and everyday Python work.
+LittleTinker Rig supports a first introduction to robotics and everyday Python work.
 Every frontend uses the same document model and core editing operations.
 
 ## Workspace

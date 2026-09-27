@@ -2,16 +2,16 @@ import ast
 
 import pytest
 
-from pyblocks.core.analysis import Analysis
-from pyblocks.core.imports import manage_imports
-from pyblocks.core.snippets import (
+from little_tinker_rig.core.analysis import Analysis
+from little_tinker_rig.core.imports import manage_imports
+from little_tinker_rig.core.snippets import (
     builtin_snippets,
     instantiate,
     load_module,
     recognize,
     upgrade,
 )
-from pyblocks.core.syntax import Syntax
+from little_tinker_rig.core.syntax import Syntax
 
 
 def test_loading_never_executes_source():
@@ -152,7 +152,7 @@ def test_bundled_libraries_can_load_without_robot_dependencies():
 
 
 def test_await_template_only_offers_async_destinations():
-    from pyblocks.core.edit import insertion_targets
+    from little_tinker_rig.core.edit import insertion_targets
 
     snippet = next(
         s for s in builtin_snippets() if s.identity == "pybricks/tasks/await_task"
@@ -210,7 +210,7 @@ def test_managed_import_survives_dirty_scratch_and_forward_annotation():
 
 
 def test_difficulty_metadata_rejects_all_and_unknown_blocks(tmp_path):
-    from pyblocks.core.snippets import load_collection
+    from little_tinker_rig.core.snippets import load_collection
 
     (tmp_path / "motions.py").write_text(
         'def go():\n    """Start moving."""\n    print("go")\n'

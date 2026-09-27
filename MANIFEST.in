@@ -11,5 +11,5 @@ recursive-include lessons *.py *.json *.md *.txt *.ldr *.mpd *.png *.svg
 prune lessons/**/ldraw
 prune lessons/**/__pycache__
 prune lessons/**/.*
-recursive-exclude lessons *.pyblocks.json .*
+recursive-exclude lessons *.ltr.json *.pyblocks.json .*
 prune AI

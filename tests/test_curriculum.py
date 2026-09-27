@@ -10,14 +10,14 @@ from unittest.mock import patch
 
 import pytest
 
-from pyblocks.core import edit
-from pyblocks.core.parameters import choices, default_bindings
-from pyblocks.core.project import Project
-from pyblocks.core.session import Session
-from pyblocks.core.snippets import builtin_snippets, instantiate
-from pyblocks.pybricks.sim_runtime import install_modules
-from pyblocks.pybricks.simulation import World
-from pyblocks.pybricks.virtual import VirtualConnection
+from little_tinker_rig.core import edit
+from little_tinker_rig.core.parameters import choices, default_bindings
+from little_tinker_rig.core.project import Project
+from little_tinker_rig.core.session import Session
+from little_tinker_rig.core.snippets import builtin_snippets, instantiate
+from little_tinker_rig.pybricks.sim_runtime import install_modules
+from little_tinker_rig.pybricks.simulation import World
+from little_tinker_rig.pybricks.virtual import VirtualConnection
 
 
 @pytest.fixture
@@ -32,7 +32,7 @@ def execute(blocks, name, namespace, **bindings):
 
 
 def test_old_level_setting_migrates_and_groups_limit_visual_load(tmp_path, qt_app):
-    from pyblocks.qt.app import QSettings, Studio
+    from little_tinker_rig.qt.app import QSettings, Studio
 
     QSettings().setValue("blockLevel", "standard")
     window = Studio(tmp_path / "main.py")
@@ -111,8 +111,10 @@ def test_sensor_activities_poll_and_brake_on_completion_and_error(
         if len(steps) == 3:
             world.configure(port, kind, {"reflection": 10})
 
-    monkeypatch.setattr("pyblocks.pybricks.sim_runtime.time.sleep", tick)
-    monkeypatch.setattr("pyblocks.pybricks.sim_runtime.time.monotonic", lambda: now[0])
+    monkeypatch.setattr("little_tinker_rig.pybricks.sim_runtime.time.sleep", tick)
+    monkeypatch.setattr(
+        "little_tinker_rig.pybricks.sim_runtime.time.monotonic", lambda: now[0]
+    )
     with patch.dict(sys.modules):
         install_modules(world, Queue())
         namespace = {}
@@ -146,7 +148,9 @@ def test_curves_have_signed_distance_heading_and_synchronized_wheels(
     radius, angle, blocks, monkeypatch
 ):
     world = World()
-    monkeypatch.setattr("pyblocks.pybricks.sim_runtime.time.sleep", world.advance)
+    monkeypatch.setattr(
+        "little_tinker_rig.pybricks.sim_runtime.time.sleep", world.advance
+    )
     with patch.dict(sys.modules):
         install_modules(world, Queue())
         namespace = {}
@@ -204,7 +208,7 @@ def test_remote_activity_brakes_on_release_exit_and_disconnect(
             observed.append(tuple(world.snapshot()[p]["speed"] for p in "AB"))
             world.advance(seconds)
 
-        monkeypatch.setattr("pyblocks.pybricks.sim_runtime.time.sleep", tick)
+        monkeypatch.setattr("little_tinker_rig.pybricks.sim_runtime.time.sleep", tick)
         namespace = {}
         execute(blocks, "drive/create_robot", namespace)
         if fail:
@@ -225,7 +229,9 @@ def test_remote_activity_brakes_on_release_exit_and_disconnect(
 )
 def test_hub_feedback_and_capabilities(model, setup, blocks, monkeypatch):
     world = World(model=model)
-    monkeypatch.setattr("pyblocks.pybricks.sim_runtime.time.sleep", world.advance)
+    monkeypatch.setattr(
+        "little_tinker_rig.pybricks.sim_runtime.time.sleep", world.advance
+    )
     with patch.dict(sys.modules):
         install_modules(world, Queue())
         namespace = {}

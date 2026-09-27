@@ -28,8 +28,8 @@ its button counts new messages. TUI uses F7/F5/F6 and F8 for its console.
 CLI can wait for completion:
 
 ```sh
-uv run pyblocks run examples/motor.py --transport virtual --model boost
-uv run --extra pybricks pyblocks run examples/motor.py --name 'My hub'
+uv run little-tinker-rig run examples/motor.py --transport virtual --model boost
+uv run --extra pybricks little-tinker-rig run examples/motor.py --name 'My hub'
 ```
 
 The device panel shows hub identity, firmware, battery and port readings.
@@ -63,8 +63,8 @@ Disconnecting it disables commands. To feed your own program instead, select
 **Send controller input to my program** and use the helper:
 
 ```sh
-uv run pyblocks controller examples/pyblocks_controller.py --write
-uv run --all-extras pyblocks-qt examples/drive_controller.py
+uv run little-tinker-rig controller examples/little_tinker_rig_controller.py --write
+uv run --all-extras little-tinker-rig-qt examples/drive_controller.py
 ```
 
 `Controller.update()` reads `left_x`, `left_y`, `right_x`, `right_y`,

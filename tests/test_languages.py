@@ -3,8 +3,12 @@ from unittest.mock import patch
 
 import pytest
 
-from pyblocks.core.snippets import builtin_snippets, load_module, snippet_groups
-from pyblocks.i18n import DEFAULT_LANGUAGE, language, set_language, tr
+from little_tinker_rig.core.snippets import (
+    builtin_snippets,
+    load_module,
+    snippet_groups,
+)
+from little_tinker_rig.i18n import DEFAULT_LANGUAGE, language, set_language, tr
 
 
 def block_position(browser, title):
@@ -33,13 +37,37 @@ def test_english_source_and_russian_catalog():
     assert language() == "ru"
 
 
+def test_rename_preserves_settings_without_overwriting_new_preferences(
+    tmp_path, qt_app, monkeypatch
+):
+    from PySide6.QtCore import QSettings
+
+    from little_tinker_rig.qt import app
+
+    previous = QSettings(str(tmp_path / "old.ini"), QSettings.Format.IniFormat)
+    current = QSettings(str(tmp_path / "new.ini"), QSettings.Format.IniFormat)
+    previous.setValue("language", "ru")
+    previous.setValue("windowMaximized", True)
+    monkeypatch.setattr(
+        app,
+        "QSettings",
+        lambda organization, _: previous if organization == "PyBlocks" else current,
+    )
+    restored = app.application_settings()
+    assert restored.value("language") == "ru"
+    assert restored.value("windowMaximized", type=bool)
+    restored.setValue("language", "en")
+    assert app.application_settings().value("language") == "en"
+    assert previous.value("language") == "ru"
+
+
 @pytest.mark.parametrize(
     "stored, expected", [(None, "en"), ("ru", "ru"), ("invalid", "en")]
 )
 def test_launch_preserves_language_choice(tmp_path, qt_app, stored, expected):
     from PySide6.QtCore import QTimer
 
-    from pyblocks.qt.app import QSettings, launch
+    from little_tinker_rig.qt.app import QSettings, launch
 
     settings = QSettings()
     if stored is not None:
@@ -48,7 +76,7 @@ def test_launch_preserves_language_choice(tmp_path, qt_app, stored, expected):
     observed = []
 
     def inspect_window():
-        from pyblocks.qt.app import Studio
+        from little_tinker_rig.qt.app import Studio
 
         window = next(
             w
@@ -72,7 +100,7 @@ def test_help_groups_links_back_search_and_language(qt_app):
     from PySide6.QtCore import Qt
     from PySide6.QtTest import QTest
 
-    from pyblocks.qt.help import HelpPage
+    from little_tinker_rig.qt.help import HelpPage
 
     snippets = builtin_snippets()
     page = HelpPage(snippets)
@@ -162,7 +190,7 @@ def test_help_groups_links_back_search_and_language(qt_app):
 
 
 def test_help_custom_group_without_docstring_excludes_historical_versions(qt_app):
-    from pyblocks.qt.help import HelpPage
+    from little_tinker_rig.qt.help import HelpPage
 
     source = "def twice(value=2):\n    return value * 2\n"
     current = load_module(source, "custom/math", "2")
@@ -179,8 +207,8 @@ def test_help_custom_group_without_docstring_excludes_historical_versions(qt_app
 
 
 def test_documentation_anchor_names_match_rendered_sections(qt_app):
-    from pyblocks.documentation import heading_anchors
-    from pyblocks.qt.help import HelpPage
+    from little_tinker_rig.documentation import heading_anchors
+    from little_tinker_rig.qt.help import HelpPage
 
     text = '# Test\n\n## `Motor.run` and **speed**\n\n## Повтор\n\n## Повтор\n\n```python\n# ignored\n```\n\n<a name="stable-id"></a>\n\n## [Final](index.md)\n'
     assert list(heading_anchors(text)) == [
@@ -215,7 +243,7 @@ def test_help_fallback_keeps_page_identity_and_resolves_relative_links(
 ):
     from PySide6.QtCore import QUrl
 
-    from pyblocks.qt.help import HelpPage
+    from little_tinker_rig.qt.help import HelpPage
 
     en, ru = tmp_path / "en", tmp_path / "ru"
     en.mkdir()
@@ -244,8 +272,8 @@ def test_help_fallback_keeps_page_identity_and_resolves_relative_links(
 def test_switching_language_preserves_scratch_widgets_and_user_text(tmp_path, qt_app):
     from PySide6.QtWidgets import QMessageBox
 
-    from pyblocks.qt.app import Studio
-    from pyblocks.qt.scratch import Grip
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.scratch import Grip
 
     set_language("ru")
     window = Studio(tmp_path / "Program.py")
@@ -277,8 +305,8 @@ def test_documentation_coverage_links_and_anchors(tmp_path):
     from tools.check_docs import ROOT, check
 
     assert check(ROOT) == []
-    (tmp_path / "pyblocks/locale").mkdir(parents=True)
-    (tmp_path / "pyblocks/locale/languages.json").write_text(
+    (tmp_path / "little_tinker_rig/locale").mkdir(parents=True)
+    (tmp_path / "little_tinker_rig/locale/languages.json").write_text(
         json.dumps({"en": "English", "ru": "Русский"})
     )
     (tmp_path / "doc/en").mkdir(parents=True)

@@ -21,7 +21,7 @@ group title and description; each decorated function supplies a block. A block's
 identity is `collection/module/function`. Ordinary undecorated functions are
 helpers and do not appear in the library.
 
-Connect a collection with `pyblocks --collection ./my_robot qt main.py`.
+Connect a collection with `little-tinker-rig --collection ./my_robot qt main.py`.
 Historical directories must stay inside the collection. Historical definitions
 remain recognizable, and explicit upgrades preserve compatible parameters and
 names. A major version change requires manual review.
@@ -32,10 +32,10 @@ Before changing a published collection, archive its saved definitions and advanc
 the version with **Start next version…** in Block Editor or:
 
 ```sh
-uv run pyblocks next-block-version ./my_blocks 1.1.0
+uv run little-tinker-rig next-block-version ./my_blocks 1.1.0
 ```
 
-The same command works for built-in collections in `pyblocks/snippets/` during
+The same command works for built-in collections in `little_tinker_rig/snippets/` during
 release development. Versions use `MAJOR.MINOR.PATCH`. The command validates a
 staged collection, archives current Python modules and `snapshot.toml` under
 `history/<previous-version>/`, then updates `collection.toml`. Existing archives
@@ -91,8 +91,8 @@ a statement block. The choice of mode is explicit: the editor never silently
 replaces inline code with a function call.
 
 Decorators belong only to library definitions. Programs sent to a hub contain
-ordinary Python, imports and helper functions, without PyBlocks decorators or a
-PyBlocks runtime dependency.
+ordinary Python, imports and helper functions, without LittleTinker Rig decorators or a
+LittleTinker Rig runtime dependency.
 
 ## Properties in the source
 
@@ -207,8 +207,8 @@ Older undecorated templates and manifest `[levels]` remain readable. Migrate a
 collection explicitly with:
 
 ```sh
-pyblocks migrate-blocks ./my_robot
-pyblocks migrate-blocks ./my_robot --write
+little-tinker-rig migrate-blocks ./my_robot
+little-tinker-rig migrate-blocks ./my_robot --write
 ```
 
 The first command prints a diff. The second applies the validated conversion,

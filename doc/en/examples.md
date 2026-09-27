@@ -35,7 +35,7 @@ Use Pybricks 3.5+ and a compatible Bluetooth Xbox controller. On first use, swit
 on the controller and hold its pairing button until the light flashes rapidly,
 then run the program. Later runs only need the controller switched on.
 The Technic hub disconnects from the computer to connect to Xbox. **Press the
-green hub button to stop**, then reconnect Studio to edit the program.
+green hub button to stop**, then reconnect LittleTinker Rig to edit the program.
 See the [official Pybricks guide](https://pybricks.com/project/technic-42109-xbox/).
 
 ## Technic 42100 excavator with Xbox
@@ -53,7 +53,7 @@ each other. Pair Xbox as described above, start the lower hub's stored program,
 then start the upper one with the controls released. The lower hub shows blue
 while connecting, green while driving, and yellow in slow mode. The upper hub
 shows yellow while waiting and green while receiving fresh commands; it can
-also start first and wait. The lower hub disconnects from Studio to use Xbox.
+also start first and wait. The lower hub disconnects from LittleTinker Rig to use Xbox.
 
 | Xbox input | Action |
 |---|---|
@@ -68,7 +68,7 @@ also start first and wait. The lower hub disconnects from Studio to use Xbox.
 
 Release a control to brake; opposite directions pressed together also brake.
 The green button on either hub stops that hub's program. Stopping only the upper
-hub leaves the base running. Stop the lower program before reconnecting Studio.
+hub leaves the base running. Stop the lower program before reconnecting LittleTinker Rig.
 
 Loops update every 50 ms. A changing sequence in each radio message prevents
 the upper hub from continuing indefinitely on repeated old commands: it brakes
@@ -92,7 +92,7 @@ remote/Xbox programs for 42099, 42109, 42124, 42129, 42131, 42146 and 42160,
 the Inventor/SPIKE ball balancer, hub menus, and small input/motor tutorials.
 The crane needs two Technic hubs and Pybricks 4; its base and crane files run on
 different hubs. Camera projects require the external Pybricks Code vision host;
-Studio does not process camera data. These programs are not bundled; requirements are recorded alongside their links.
+LittleTinker Rig does not process camera data. These programs are not bundled; requirements are recorded alongside their links.
 SPIKE Essential, Duplo and EV3 examples remain outside the supported hub scope.
 The beginner palette stays unchanged; task, radio and external-app blocks are Expert.
 

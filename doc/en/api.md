@@ -1,13 +1,13 @@
 # Developer API
 
-`pyblocks.core` imports neither Qt, Textual, SDL nor connection libraries. Session
+`little_tinker_rig.core` imports neither Qt, Textual, SDL nor connection libraries. Session
 is the main integration entry point; pure transformations are also public.
 
 ## Documents and sessions
 
 ```python
 from pathlib import Path
-from pyblocks.core.session import Session
+from little_tinker_rig.core.session import Session
 
 session = Session(Path("main.py"))
 snippet = next(s for s in session.snippets if s.identity == "python/basics/display")

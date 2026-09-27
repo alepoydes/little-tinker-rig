@@ -168,20 +168,20 @@ Coordinates refer to the formatted source returned by `inspect`: lines start at
 only `--write` saves it.
 
 ```sh
-uv run pyblocks inspect examples/courier.py
-uv run pyblocks diagnose examples/courier.py
-uv run pyblocks snippets main.py
-uv run pyblocks insert main.py python/basics/display --param 'value="Hello"'
-uv run pyblocks replace main.py '4 + 5' --at 1:4
-uv run pyblocks move main.py --at 2:0 --to 7:0
-uv run pyblocks scratch main.py --at 2:0 --write
-uv run pyblocks restore main.py 0 --at 1:0 --write
-uv run pyblocks format main.py --write
+uv run little-tinker-rig inspect examples/courier.py
+uv run little-tinker-rig diagnose examples/courier.py
+uv run little-tinker-rig snippets main.py
+uv run little-tinker-rig insert main.py python/basics/display --param 'value="Hello"'
+uv run little-tinker-rig replace main.py '4 + 5' --at 1:4
+uv run little-tinker-rig move main.py --at 2:0 --to 7:0
+uv run little-tinker-rig scratch main.py --at 2:0 --write
+uv run little-tinker-rig restore main.py 0 --at 1:0 --write
+uv run little-tinker-rig format main.py --write
 ```
 
 `diagnose` exits with 1 for warnings and 0 otherwise. Input/transformation errors
-exit with 2. `pyblocks --help` lists commands. Add a collection with
-`pyblocks --collection ./my_snippets qt main.py`; saving remembers its path.
+exit with 2. `little-tinker-rig --help` lists commands. Add a collection with
+`little-tinker-rig --collection ./my_snippets qt main.py`; saving remembers its path.
 See [authoring snippets](snippets.md) and [robot control](robotics.md).
 
 ![Multiple documents, inline parameters and the English interface](images/editor.png)
@@ -280,7 +280,7 @@ break the pattern and leave ordinary Python.
 ## Recovery, examples and runtime errors
 
 The desktop keeps separate recovery checkpoints of open documents, unsaved text
-and Scratch in the operating system's user data directory (`pyblocks-studio/recovery`).
+and Scratch in the operating system's user data directory (`little-tinker-rig/recovery`).
 Changes are checkpointed within about a second while the interface is responsive.
 After an abnormal exit, **Recover work** offers to restore them. Yes restores;
 No discards that checkpoint; Cancel keeps it for later. Other live windows are

@@ -24,19 +24,23 @@ def qt_app(tmp_path_factory):
 
 @pytest.fixture(autouse=True)
 def isolated_personal_collection(tmp_path, monkeypatch):
-    import pyblocks.core.paths
+    import little_tinker_rig.core.paths
 
     monkeypatch.setattr(
-        pyblocks.core.paths, "user_data_path", lambda *a, **k: tmp_path / "user-data"
+        little_tinker_rig.core.paths,
+        "user_data_path",
+        lambda *a, **k: tmp_path / "user-data",
     )
     monkeypatch.setattr(
-        pyblocks.core.paths, "user_cache_path", lambda *a, **k: tmp_path / "user-cache"
+        little_tinker_rig.core.paths,
+        "user_cache_path",
+        lambda *a, **k: tmp_path / "user-cache",
     )
 
 
 @pytest.fixture(autouse=True)
 def interface_language():
-    from pyblocks.i18n import DEFAULT_LANGUAGE, language, set_language
+    from little_tinker_rig.i18n import DEFAULT_LANGUAGE, language, set_language
 
     previous = language()
     set_language(DEFAULT_LANGUAGE)
@@ -49,11 +53,15 @@ def isolated_qt_settings(request, tmp_path, monkeypatch):
     if "qt_app" in request.fixturenames:
         from PySide6.QtCore import QSettings
 
-        import pyblocks.qt.app
-        import pyblocks.qt.recovery
+        import little_tinker_rig.qt.app
+        import little_tinker_rig.qt.recovery
 
         settings = QSettings(str(tmp_path / "settings.ini"), QSettings.Format.IniFormat)
-        monkeypatch.setattr(pyblocks.qt.app, "QSettings", lambda *args: settings)
         monkeypatch.setattr(
-            pyblocks.qt.recovery, "recovery_directory", lambda: tmp_path / "recovery"
+            little_tinker_rig.qt.app, "QSettings", lambda *args: settings
+        )
+        monkeypatch.setattr(
+            little_tinker_rig.qt.recovery,
+            "recovery_directory",
+            lambda: tmp_path / "recovery",
         )

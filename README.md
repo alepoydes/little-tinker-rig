@@ -1,8 +1,8 @@
-# PyBlocks Studio
+# LittleTinker Rig
 
 **Learn Python by building real programs with blocks.**
 
-PyBlocks Studio is a desktop editor for learning Python and programming LEGO robots
+LittleTinker Rig is a desktop editor for learning Python and programming LEGO robots
 running [Pybricks](https://pybricks.com/). Blocks are an editable view of ordinary
 Python: the program stays a `.py` file, and you can switch between blocks and text
 as you learn. Your code, documentation and downloaded building resources stay on
@@ -14,7 +14,7 @@ your computer.
 > coverage. Public use is at your own risk; keep copies of your programs and
 > supervise children when running real robots.
 
-![Python blocks, the library and Scratch in PyBlocks Studio](doc/en/images/editor.png)
+![Python blocks, the library and Scratch in LittleTinker Rig](doc/en/images/editor.png)
 
 ## Why this project exists
 
@@ -55,12 +55,14 @@ controllers, multiple hubs or devices that it cannot simulate. See the
 
 ## Try it from source
 
-Clone or download this repository and open a terminal in its directory. Install
-[uv](https://docs.astral.sh/uv/getting-started/installation/), then run:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then clone
+the [repository](https://github.com/alepoydes/little-tinker-rig) and run:
 
 ```sh
+git clone https://github.com/alepoydes/little-tinker-rig.git
+cd little-tinker-rig
 uv sync --locked --extra qt --extra pybricks --extra gamepad
-uv run --locked --extra qt --extra pybricks --extra gamepad pyblocks-qt
+uv run --locked --extra qt --extra pybricks --extra gamepad little-tinker-rig-qt
 ```
 
 For the editor and virtual hubs alone, use `--extra qt` in both commands. Keep the
@@ -78,8 +80,8 @@ connection requirements.
 
 The [first steps guide](doc/en/tutorial/first.md) walks through a small program.
 The terminal interface is also available with
-`uv run --extra tui pyblocks-tui examples/first.py`; the command-line tools start
-with `uv run pyblocks inspect examples/first.py`.
+`uv run --extra tui little-tinker-rig-tui examples/first.py`; the command-line tools start
+with `uv run little-tinker-rig inspect examples/first.py`.
 
 ## Documentation and feedback
 
@@ -94,7 +96,8 @@ with `uv run pyblocks inspect examples/first.py`.
 
 Feedback about learning and editing is especially useful: where a child gets
 stuck, which action is hard to find, and where blocks make a program harder to
-understand. Bug reports should include your operating system, hub and firmware
+understand. [Bug reports](https://github.com/alepoydes/little-tinker-rig/issues)
+should include your operating system, hub and firmware
 when relevant, the steps to reproduce, and a small example program.
 
 ## Development
@@ -102,8 +105,8 @@ when relevant, the steps to reproduce, and a small example program.
 ```sh
 uv sync --all-extras --locked
 uv run --all-extras --locked pytest
-uv run --all-extras --locked ruff check pyblocks tests tools build_support.py
-uv run --all-extras --locked black --check pyblocks tests tools build_support.py
+uv run --all-extras --locked ruff check little_tinker_rig tests tools build_support.py
+uv run --all-extras --locked black --check little_tinker_rig tests tools build_support.py
 uv run --all-extras --locked python tools/translations.py check
 uv run --all-extras --locked python tools/check_docs.py
 uv build
@@ -114,12 +117,12 @@ GitHub's Ubuntu runner, with Qt in offscreen mode and simulated devices. Physica
 Bluetooth/USB, flashing and native 3D rendering still need local checks.
 
 See the [architecture](doc/en/architecture.md), [development invariants](doc/en/development.md)
-and [design specification](devs/PYBLOCKS_DESIGN_SPEC.md). Examples retain upstream
+and [design specification](devs/DESIGN_SPEC.md). Examples retain upstream
 formatting; lint and formatting checks target the application, tests and tools.
 
 ## License and credits
 
-Studio's software is [MIT licensed](LICENSE.txt). Bundled examples retain their
+LittleTinker Rig's software is [MIT licensed](LICENSE.txt). Bundled examples retain their
 sources and license notices. Website-only Pybricks programs are linked instead
 of redistributed. Small community LDraw models use CC BY 2.0 with separate
 [attribution and license texts](lessons/pybricks/README.md#ldraw-assembly-instructions).

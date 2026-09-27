@@ -34,7 +34,7 @@ Use Run to start this file and Stop to finish. Compare what you predicted with t
 
 ### Upstream explanation (MIT)
 
-The following licensed notes describe the original workflow. Program links above open the adapted Studio copies; installation and terminal names may refer to Pybricks Code.
+The following licensed notes describe the original workflow. Program links above open the adapted LittleTinker Rig copies; installation and terminal names may refer to Pybricks Code.
 
 #### Program
 The playing instructions for each robot variant are in the docstrings of the corresponding file.

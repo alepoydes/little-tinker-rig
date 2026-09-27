@@ -3,8 +3,8 @@
 ```sh
 uv sync --all-extras --locked
 uv run --all-extras --locked pytest
-uv run --all-extras --locked ruff check pyblocks tests tools build_support.py
-uv run --all-extras --locked black --check pyblocks tests tools build_support.py
+uv run --all-extras --locked ruff check little_tinker_rig tests tools build_support.py
+uv run --all-extras --locked black --check little_tinker_rig tests tools build_support.py
 uv run --all-extras --locked python tools/translations.py check
 uv run --all-extras --locked python tools/check_docs.py
 uv build
@@ -149,7 +149,7 @@ formatting resources and core-only virtual execution on the minimum Python versi
 ## Translations
 
 English is the source and default interface language; Russian is a translation. gettext PO files live in
-`pyblocks/locale/<language>/LC_MESSAGES/pyblocks.po`; compiled MO files ship in the
+`little_tinker_rig/locale/<language>/LC_MESSAGES/little_tinker_rig.po`; compiled MO files ship in the
 wheel. `locale/languages.json` maps language codes to their native menu names.
 Use the development translation tool to extract/update catalogs, validate coverage
 and compile. Babel is a development dependency, not a runtime dependency.
@@ -224,8 +224,8 @@ must not snap to a different legal target.
 Compile the monitor and controller as well as the courier example:
 
 ```sh
-uv run --extra pybricks python -m mpy_cross_v6 pyblocks/pybricks/hub_monitor.py -o /tmp/pyblocks-monitor.mpy
-uv run --extra pybricks python -m mpy_cross_v6 pyblocks/pybricks/hub_controller.py -o /tmp/pyblocks-controller.mpy
+uv run --extra pybricks python -m mpy_cross_v6 little_tinker_rig/pybricks/hub_monitor.py -o /tmp/little-tinker-rig-monitor.mpy
+uv run --extra pybricks python -m mpy_cross_v6 little_tinker_rig/pybricks/hub_controller.py -o /tmp/little-tinker-rig-controller.mpy
 ```
 
 Imports in static templates declare dependencies, including names used only by
@@ -367,7 +367,7 @@ Resolving it never creates directories; tests isolate it through the path resolv
 Only explicit project collection connections belong in workspace metadata.
 Built-in collections remain packaged with the application.
 
-Before changing published definitions, run `pyblocks next-block-version DIRECTORY
+Before changing published definitions, run `little-tinker-rig next-block-version DIRECTORY
 MAJOR.MINOR.PATCH` or use the equivalent authoring action. A saved snapshot includes
 current modules and its manifest, without recursively archiving existing history.
 Validate the staged collection and compare live sources before registration. A
@@ -451,7 +451,7 @@ packaging. Offline export owns a snapshot and writes a separate archive, retaini
 drafts, Scratch, dependency closure and licenses without marking the original
 project saved. Test cancellation and checksum failure against synthetic archives,
 then reopen an exported project with its cache removed and networking disabled.
-The pilot mating check is optional: set `PYBLOCKS_TEST_LDRAW` to a verified local
+The pilot mating check is optional: set `LITTLE_TINKER_RIG_TEST_LDRAW` to a verified local
 `complete.zip`. Routine tests never download the full library.
 
 Package only authored lesson Python, JSON, Markdown, text notices, LDraw models

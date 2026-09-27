@@ -16,13 +16,13 @@ def main():
     from PySide6.QtCore import QSettings
     from PySide6.QtWidgets import QApplication, QMessageBox
 
-    from pyblocks.core.parameters import default_bindings
-    from pyblocks.core.snippets import instantiate
-    from pyblocks.core.transfer import Transfer
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.core.parameters import default_bindings
+    from little_tinker_rig.core.snippets import instantiate
+    from little_tinker_rig.core.transfer import Transfer
+    from little_tinker_rig.qt.app import Studio
 
     app = QApplication([])
-    with TemporaryDirectory(prefix="pyblocks-benchmark-") as folder:
+    with TemporaryDirectory(prefix="little-tinker-rig-benchmark-") as folder:
         root = Path(folder)
         sources = [("courier", Path("examples/courier.py").read_text())]
         sources.extend(
@@ -35,7 +35,7 @@ def main():
         )
         settings = QSettings(str(root / "settings.ini"), QSettings.Format.IniFormat)
         print("document,open_ms,library_to_scratch_ms,program_to_scratch_ms")
-        with patch("pyblocks.qt.app.QSettings", return_value=settings):
+        with patch("little_tinker_rig.qt.app.QSettings", return_value=settings):
             for name, source in sources:
                 path = root / f"{name}.py"
                 path.write_text(source)

@@ -3,9 +3,9 @@
 from PySide6.QtCore import QPointF
 from PySide6.QtGui import QPainterPath
 
-from pyblocks.core.session import Session
-from pyblocks.core.snippets import builtin_snippets
-from pyblocks.qt.editor import SourceView
+from little_tinker_rig.core.session import Session
+from little_tinker_rig.core.snippets import builtin_snippets
+from little_tinker_rig.qt.editor import SourceView
 
 
 def test_siblings_have_a_shared_boundary_and_comments_belong_inside(

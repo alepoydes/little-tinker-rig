@@ -1,4 +1,4 @@
-PyBlocks two-wheel training base and lesson instructions
+LittleTinker Rig two-wheel training base and lesson instructions
 
 MIT License
 

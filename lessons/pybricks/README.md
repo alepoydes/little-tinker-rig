@@ -44,7 +44,7 @@ Each `sources.json` records the source documents, hashes, revision, authors and
 program adaptations. A license copy accompanies both the lesson materials and
 student programs. The 42109 Xbox activity uses the catalog's MIT Audi adaptation
 with the 42109 configuration; it is not a copy of the website's downloadable code.
-The 42100 lesson reuses the existing PyBlocks MIT implementations of the community
+The 42100 lesson reuses the existing LittleTinker Rig MIT implementations of the community
 Xbox control scheme; its source record distinguishes those programs from the
 upstream references.
 
@@ -57,7 +57,7 @@ keeps its author/license headers; `robot/CAreadme.txt` contains attribution,
 adaptation details and the full license. `sources.json` records original and
 adapted hashes, publications, downloads and official LEGO instruction links.
 
-| Model | Studio steps | MPD size |
+| Model | LittleTinker Rig steps | MPD size |
 |---|---:|---:|
 | 51515 · Blast | 91 | 719 KiB |
 | 75253 · R2-D2 | 104 | 77 KiB |
@@ -92,7 +92,7 @@ Each source directory contains a manifest, two Markdown documents and provenance
 lessons with a digital model also contain a small `robot` directory.
 The `examples` manifest mapping reuses the installed example catalog. Creating or
 exporting a lesson with `Lesson.archive()` resolves these references into ordinary
-files, retaining a fixed copy even if Studio or the catalog is updated. Student
+files, retaining a fixed copy even if LittleTinker Rig or the catalog is updated. Student
 programs keep their module filenames; multi-file activities such as Gelo therefore
 work without a separate import or download step.
 

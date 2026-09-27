@@ -48,7 +48,7 @@ sends the text and a carriage return. Input needs a physical Bluetooth/USB hub
 with its port monitor stopped. It is not a terminal or REPL emulator.
 
 Imported lesson text comes from the [MIT-licensed Projects repository](https://github.com/pybricks/pybricks-projects/blob/master/LICENSE).
-The 42100 activity uses existing PyBlocks MIT programs and original guidance.
+The 42100 activity uses existing LittleTinker Rig MIT programs and original guidance.
 The four community models have separate CC BY 2.0 attribution and licenses in
 their `robot` directories; their part geometry remains in the external library.
 Additional [website projects](https://pybricks.com/project/) remain links because
@@ -58,7 +58,7 @@ every activity. EV3 is not included.
 
 ## Save and resume
 
-**Save** writes a portable `.pyblocks` archive containing ordinary Python programs,
+**Save** writes a portable `.ltr` archive containing ordinary Python programs,
 Scratch, a copy of the lesson materials and robot arrangement, editor view state,
 hints and progress. Invalid unfinished Python can be saved too. Open this file to
 continue; open the lesson again to start a separate project. Use **File → New
@@ -71,7 +71,7 @@ and Scratch, and keeps the original project's save path. User-authored model fil
 remain in the project; they are never placed only in a disposable cache.
 
 Working files and crash recovery live in the platform's user data directory,
-under `pyblocks-studio/projects` and `pyblocks-studio/recovery`, never in the
+under `little-tinker-rig/projects` and `little-tinker-rig/recovery`, never in the
 installation or lesson directory. Recovery is debounced; it is not a replacement
 for saving the portable archive. A changed archive is not silently overwritten.
 The working copy is removed after a normal close; an abnormal close leaves it
@@ -128,14 +128,14 @@ this download. Assembly shows progress and a Cancel button; after a failed or
 cancelled download, retry or choose **Open parts ZIP…** with a matching local copy.
 The first-drive archive is about 139 MiB. It is downloaded once for all projects.
 
-On Linux the default cache is `~/.cache/pyblocks-studio/ldraw/`; other platforms use
+On Linux the default cache is `~/.cache/little-tinker-rig/ldraw/`; other platforms use
 their standard cache directory. Archives are stored under their SHA-256, checked
 before use, and installed atomically. The viewer reads only referenced ZIP members
 into memory without extracting thousands of files. No geometry is downloaded
 during rendering, camera movement or step changes.
 
 Prepared model geometry is cached in the `scenes/` subdirectory and reused after
-restarting Studio, including across working copies of the same lesson. The first
+restarting LittleTinker Rig, including across working copies of the same lesson. The first
 open builds this cache; subsequent opens read it directly. Changes to the model,
 referenced parts, colors or geometry converter trigger a rebuild. Camera settings
 and lesson progress remain separate. The graphics card still receives the geometry
@@ -230,7 +230,7 @@ LDraw `0 STEP`/`0 ROTSTEP` delimit authored steps. Nested submodel steps are vis
 in assembly order at their final positions; automatic ROTSTEP camera conversion
 and texture maps are not implemented. Parts use triangles, quads, explicit and
 conditional edges. Faces are double-sided, including mirrored and uncertified
-parts. `0 !PYBLOCKS ID left-motor` immediately before a reference assigns a stable
+parts. `0 !LITTLE_TINKER_RIG ID left-motor` immediately before a reference assigns a stable
 instance ID; submodel paths compose IDs. Keep these IDs stable when annotating
 wiring. Referenced geometry must belong to the model's local files or its declared
 library and retain attribution. To prepare a compact resource archive for release,

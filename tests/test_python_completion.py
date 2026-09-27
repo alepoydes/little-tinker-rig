@@ -7,9 +7,9 @@ from PySide6.QtGui import QTextCursor
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QToolTip
 
-from pyblocks.qt.code import CodeEdit
-from pyblocks.qt.completion import Suggestions, analyze
-from pyblocks.qt.editor import qt_offset
+from little_tinker_rig.qt.code import CodeEdit
+from little_tinker_rig.qt.completion import Suggestions, analyze
+from little_tinker_rig.qt.editor import qt_offset
 
 
 def wait_for(predicate):

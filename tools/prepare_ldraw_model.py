@@ -10,9 +10,9 @@ import re
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from pyblocks.core.ldraw import LDraw
-from pyblocks.core.ldraw_parts import PartLibrary
-from pyblocks.core.project import atomic_write
+from little_tinker_rig.core.ldraw import LDraw
+from little_tinker_rig.core.ldraw_parts import PartLibrary
+from little_tinker_rig.core.project import atomic_write
 
 
 def prepare(source, library):
@@ -63,7 +63,7 @@ def main():
     args = parser.parse_args()
     with PartLibrary(args.library) as library:
         text = prepare(args.source.read_text(encoding="utf-8-sig"), library)
-    with TemporaryDirectory(prefix="pyblocks-model-") as temporary:
+    with TemporaryDirectory(prefix="little-tinker-rig-model-") as temporary:
         path = Path(temporary) / "model.mpd"
         path.write_text(text, encoding="utf-8")
         with LDraw(path, args.library) as reader:

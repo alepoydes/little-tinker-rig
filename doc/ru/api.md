@@ -1,14 +1,14 @@
 # API для разработчиков
 
-Ядро находится в `pyblocks.core`. Импорт ядра не загружает Qt, Textual, SDL
+Ядро находится в `little_tinker_rig.core`. Импорт ядра не загружает Qt, Textual, SDL
 или библиотеки связи с хабом. Основной путь интеграции — `Session`; низкоуровневые
 преобразования доступны отдельно для автоматизации и тестирования.
 
 ## Документ и транзакция
 
 ```python
-from pyblocks.core.document import Document
-from pyblocks.core.interaction import Editor
+from little_tinker_rig.core.document import Document
+from little_tinker_rig.core.interaction import Editor
 
 document = Document("speed = 300\n")
 editor = Editor(document)
@@ -76,7 +76,7 @@ undo или redo нужно получить их заново. UI перево�
 
 ```python
 from pathlib import Path
-from pyblocks.core.session import Session
+from little_tinker_rig.core.session import Session
 
 session = Session(Path("main.py"))
 snippet = next(s for s in session.snippets if s.identity == "python/basics/display")
@@ -182,12 +182,12 @@ session.project.save()
 Точность осей — 0,01. Формат не содержит управляющих байтов stdin.
 Если триггер ненулевой, перед переводом строки добавляется `LLRR` — два
 двухзначных hex-значения 0…100. Новый helper читает как 16-, так и 20-байтные кадры.
-Для триггеров обновите ранее скопированный `pyblocks_controller.py` командой
-`pyblocks controller путь.py --write`.
+Для триггеров обновите ранее скопированный `little_tinker_rig_controller.py` командой
+`little-tinker-rig controller путь.py --write`.
 
 Протокол монитора отделён от кадров `Controller`: строка
 `A,speed,200;B,servo,90\n` управляет назначенными моторами. Телеметрия начинается
-с `\x1ePYBLOCKS ` и содержит `repr` словаря, который host разбирает через
+с `\x1eLITTLE_TINKER_RIG ` и содержит `repr` словаря, который host разбирает через
 `ast.literal_eval`. Это позволяет работать на BOOST без `ujson` и `PUPDevice`:
 при отсутствии универсального определения порт опрашивается типизированными
 конструкторами устройств. Остальной stdout передаётся в консоль без задержки

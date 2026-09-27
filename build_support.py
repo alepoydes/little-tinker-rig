@@ -16,7 +16,7 @@ class BuildPy(build_py):
             ("examples", "examples"),
             ("lessons", "lesson_data"),
         ):
-            destination = Path(self.build_lib) / "pyblocks" / name
+            destination = Path(self.build_lib) / "little_tinker_rig" / name
             if destination.exists():
                 rmtree(destination)
             copytree(
@@ -27,7 +27,7 @@ class BuildPy(build_py):
                     for n in names
                     if n == "__pycache__"
                     or n.startswith(".")
-                    or n.endswith((".pyc", ".pyblocks.json"))
+                    or n.endswith((".pyc", ".ltr.json", ".pyblocks.json"))
                     or (
                         lesson
                         and (

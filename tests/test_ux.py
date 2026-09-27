@@ -3,10 +3,10 @@ from unittest.mock import patch
 
 import pytest
 
-from pyblocks.core import edit
-from pyblocks.core.parameters import change_parameter, default_bindings, slots
-from pyblocks.core.session import Session
-from pyblocks.i18n import set_language
+from little_tinker_rig.core import edit
+from little_tinker_rig.core.parameters import change_parameter, default_bindings, slots
+from little_tinker_rig.core.session import Session
+from little_tinker_rig.i18n import set_language
 
 
 def discard_window(window):
@@ -60,7 +60,7 @@ def test_library_defaults_choose_existing_devices_and_fresh_names(tmp_path):
 
 
 def test_documents_and_languages_preserve_text_and_undo(tmp_path, qt_app):
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     first, second = tmp_path / "one.py", tmp_path / "two.py"
     first.write_text("first = 1\n")
@@ -105,8 +105,8 @@ def test_short_mode_list_scrolls_without_switching_and_keeps_named_icons(qt_app)
     from PySide6.QtTest import QTest
     from PySide6.QtWidgets import QStyle, QStyleOptionViewItem
 
-    from pyblocks.qt.localization import localize
-    from pyblocks.qt.navigation import ModeList
+    from little_tinker_rig.qt.localization import localize
+    from little_tinker_rig.qt.navigation import ModeList
 
     modes = ModeList()
     modes.add_mode("lesson", "Lesson")
@@ -175,7 +175,7 @@ def test_library_drop_has_preview_and_inserts_defaults_without_dialog(tmp_path, 
     from PySide6.QtGui import QDragEnterEvent, QDragMoveEvent, QDropEvent
     from PySide6.QtWidgets import QApplication
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     path = tmp_path / "drop.py"
     path.write_text("i = 5\n")
@@ -185,7 +185,7 @@ def test_library_drop_has_preview_and_inserts_defaults_without_dialog(tmp_path, 
     try:
         view = window.source
         data = QMimeData()
-        data.setData("application/x-pyblocks-snippet", b"python/basics/repeat")
+        data.setData("application/x-little-tinker-rig-snippet", b"python/basics/repeat")
         point = QPoint(40, 55)
         enter = QDragEnterEvent(
             point,
@@ -234,7 +234,7 @@ def test_parameter_combo_opens_in_place_and_validates_before_commit(tmp_path, qt
     from PySide6.QtTest import QTest
     from PySide6.QtWidgets import QApplication
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     path = tmp_path / "motor.py"
     path.write_text(
@@ -291,7 +291,7 @@ def test_parameter_combo_opens_in_place_and_validates_before_commit(tmp_path, qt
 
 
 def test_parameter_replacements_preserve_grouping_and_all_occurrences(tmp_path):
-    from pyblocks.core.snippets import load_module
+    from little_tinker_rig.core.snippets import load_module
 
     path = tmp_path / "formula.py"
     path.write_text("result = 2 * 2\n")
@@ -310,7 +310,7 @@ def test_parameter_replacements_preserve_grouping_and_all_occurrences(tmp_path):
 
 
 def test_insertion_destinations_respect_declarations_and_loop_context():
-    from pyblocks.core.syntax import Syntax
+    from little_tinker_rig.core.syntax import Syntax
 
     syntax = Syntax("def update():\n    global value\n    print(value)\n")
     function = syntax.tree.body[0]
@@ -332,8 +332,8 @@ def test_save_as_preserves_source_encoding(
 ):
     from PySide6.QtWidgets import QFileDialog
 
-    from pyblocks.core.project import Project
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.core.project import Project
+    from little_tinker_rig.qt.app import Studio
 
     path, destination = tmp_path / "original.py", tmp_path / "copy.py"
     source = f'# coding: {cookie}\nmessage = "{text}"\n'
@@ -367,7 +367,7 @@ def test_closing_invalid_draft_and_save_as_preserve_other_documents(
 ):
     from PySide6.QtWidgets import QFileDialog, QMessageBox
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     first, second = tmp_path / "one.py", tmp_path / "two.py"
     first.write_text("value = 1\n")
@@ -417,7 +417,7 @@ def test_selection_pulses_across_the_block_and_never_exposes_text_cursor(
     from PySide6.QtGui import QTextCursor
     from PySide6.QtTest import QTest
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     path = tmp_path / "block.py"
     path.write_text("print(42)\nif True:\n    if True:\n        print(12)\n")
@@ -451,9 +451,9 @@ def test_selection_pulses_across_the_block_and_never_exposes_text_cursor(
 def test_translated_help_and_device_panel_keep_port_values(tmp_path, qt_app):
     from PySide6.QtWidgets import QDialogButtonBox
 
-    from pyblocks.pybricks.devices import HubInfo
-    from pyblocks.qt.app import Studio
-    from pyblocks.qt.device import ConnectDialog
+    from little_tinker_rig.pybricks.devices import HubInfo
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.device import ConnectDialog
 
     path = tmp_path / "robot.py"
     path.write_text('print("Привет")\n')

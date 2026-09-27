@@ -6,6 +6,7 @@ __pycache__/
 .ruff_cache/
 build/
 dist/
+*.ltr.json
 *.pyblocks.json
 /AI/
 # Third-party geometry belongs in the user cache, not in lesson sources.

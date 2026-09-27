@@ -17,7 +17,7 @@ Bluetooth; также доступны USB и виртуальный хаб. Д�
 Виртуальный хаб не требует дополнительных пакетов связи:
 
 ```sh
-uv run --extra qt pyblocks-qt examples/motor.py
+uv run --extra qt little-tinker-rig-qt examples/motor.py
 ```
 
 Для настоящего хаба добавьте `--extra pybricks`. Bluetooth и USB используют
@@ -38,9 +38,9 @@ uv run --extra qt pyblocks-qt examples/motor.py
 Запуск из терминала с ожиданием завершения:
 
 ```sh
-uv run pyblocks run examples/motor.py --transport virtual --model boost
-uv run --extra pybricks pyblocks run examples/motor.py --name 'My hub'
-uv run --extra pybricks pyblocks run examples/motor.py --transport usb
+uv run little-tinker-rig run examples/motor.py --transport virtual --model boost
+uv run --extra pybricks little-tinker-rig run examples/motor.py --name 'My hub'
+uv run --extra pybricks little-tinker-rig run examples/motor.py --transport usb
 ```
 
 ## Информация о хабе
@@ -101,8 +101,8 @@ WASD, правый — стрелками, пока соответствующи
 алгоритма, который читает состояние ввода. Создайте вспомогательный файл:
 
 ```sh
-uv run pyblocks controller examples/pyblocks_controller.py --write
-uv run --extra qt pyblocks-qt examples/drive_controller.py
+uv run little-tinker-rig controller examples/little_tinker_rig_controller.py --write
+uv run --extra qt little-tinker-rig-qt examples/drive_controller.py
 ```
 
 Запустите программу на выбранном хабе, откройте «Управление», выберите передачу
@@ -110,7 +110,7 @@ uv run --extra qt pyblocks-qt examples/drive_controller.py
 Пример ожидает моторы A/B; размеры колеса и колеи задаются в миллиметрах.
 
 ```python
-from pyblocks_controller import Controller
+from little_tinker_rig_controller import Controller
 from pybricks.tools import wait
 
 controller = Controller()

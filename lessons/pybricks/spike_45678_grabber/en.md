@@ -36,7 +36,7 @@ Use Run to start this file and Stop to finish. Compare what you predicted with t
 
 ### Upstream explanation (MIT)
 
-The following licensed notes describe the original workflow. Program links above open the adapted Studio copies; installation and terminal names may refer to Pybricks Code.
+The following licensed notes describe the original workflow. Program links above open the adapted LittleTinker Rig copies; installation and terminal names may refer to Pybricks Code.
 
 This program is for the Hand-Controlled Grabber in the [Invention Squad: Super Clean-Up](https://education.lego.com/en-us/lessons/prime-invention-squad/super-cleanup) lesson unit.
 

@@ -36,7 +36,7 @@ Use Run to start this file and Stop to finish. Compare what you predicted with t
 
 ### Upstream explanation (MIT)
 
-The following licensed notes describe the original workflow. Program links above open the adapted Studio copies; installation and terminal names may refer to Pybricks Code.
+The following licensed notes describe the original workflow. Program links above open the adapted LittleTinker Rig copies; installation and terminal names may refer to Pybricks Code.
 
 In this project we'll show you how to control the Audi RS Q e-tron with the Powered Up remote.
 
@@ -71,7 +71,7 @@ Pair the controller using its pairing button after starting the program. Keep th
 
 ### Upstream explanation (MIT)
 
-The following licensed notes describe the original workflow. Program links above open the adapted Studio copies; installation and terminal names may refer to Pybricks Code.
+The following licensed notes describe the original workflow. Program links above open the adapted LittleTinker Rig copies; installation and terminal names may refer to Pybricks Code.
 
 In this project we'll show you how to control the Audi RS Q e-tron with the
 Xbox Controller, using either block programming or Python.
@@ -119,7 +119,7 @@ Pair the controller using its pairing button after starting the program. Keep th
 
 ### Upstream explanation (MIT)
 
-The following licensed notes describe the original workflow. Program links above open the adapted Studio copies; installation and terminal names may refer to Pybricks Code.
+The following licensed notes describe the original workflow. Program links above open the adapted LittleTinker Rig copies; installation and terminal names may refer to Pybricks Code.
 
 In this project we'll show you how to control the Audi RS Q e-tron with the
 Xbox Controller, using either block programming or Python.

@@ -8,7 +8,7 @@ from zipfile import ZipFile
 
 import pytest
 
-from pyblocks.pybricks import firmware
+from little_tinker_rig.pybricks import firmware
 
 
 def package_bytes(device=0x81, kind="pybricks"):
@@ -129,7 +129,7 @@ def test_firmware_dialog_prepares_before_install_and_blocks_close_during_flash(
     from PySide6.QtCore import QProcess
     from PySide6.QtTest import QTest
 
-    from pyblocks.qt.firmware import FirmwareDialog
+    from little_tinker_rig.qt.firmware import FirmwareDialog
 
     dialog = FirmwareDialog()
     path = tmp_path / "firmware.zip"
@@ -171,7 +171,7 @@ def test_firmware_dialog_prepares_before_install_and_blocks_close_during_flash(
 async def test_upload_does_not_run_and_stored_snapshot_includes_local_imports(
     model, tmp_path
 ):
-    from pyblocks.pybricks.virtual import VirtualConnection
+    from little_tinker_rig.pybricks.virtual import VirtualConnection
 
     output = []
     hub = VirtualConnection(output.append, model=model)

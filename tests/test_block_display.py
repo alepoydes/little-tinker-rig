@@ -10,15 +10,15 @@ from PySide6.QtGui import QMouseEvent
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 
-from pyblocks.core.display import Display
-from pyblocks.core.helpers import END, START
-from pyblocks.core.parameters import change_parameter
-from pyblocks.core.session import Session
-from pyblocks.core.snippets import instantiate, load_module
-from pyblocks.core.syntax import Syntax
-from pyblocks.core.transfer import Transfer
-from pyblocks.qt.editor import SourceView
-from pyblocks.qt.structure import block_menu
+from little_tinker_rig.core.display import Display
+from little_tinker_rig.core.helpers import END, START
+from little_tinker_rig.core.parameters import change_parameter
+from little_tinker_rig.core.session import Session
+from little_tinker_rig.core.snippets import instantiate, load_module
+from little_tinker_rig.core.syntax import Syntax
+from little_tinker_rig.core.transfer import Transfer
+from little_tinker_rig.qt.editor import SourceView
+from little_tinker_rig.qt.structure import block_menu
 
 DEFINITION = '''@inline_block(level="beginner", icon="▶", color="action")
 def pair(value=3):

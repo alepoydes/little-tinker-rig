@@ -27,8 +27,8 @@ jobs:
           uv sync --all-extras --locked
       - name: Check code
         run: |
-          uv run --all-extras --locked ruff check pyblocks tests tools build_support.py
-          uv run --all-extras --locked black --check pyblocks tests tools build_support.py
+          uv run --all-extras --locked ruff check little_tinker_rig tests tools build_support.py
+          uv run --all-extras --locked black --check little_tinker_rig tests tools build_support.py
       - name: Check documentation and translations
         run: |
           uv run --all-extras --locked python tools/translations.py check

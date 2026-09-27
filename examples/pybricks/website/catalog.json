@@ -453,7 +453,7 @@
       ],
       "firmware": "4.1",
       "extra_hardware": [
-        "Pybricks Code camera/vision host and the published model; Studio does not provide AppData camera processing"
+        "Pybricks Code camera/vision host and the published model; LittleTinker Rig does not provide AppData camera processing"
       ]
     },
     {
@@ -468,7 +468,7 @@
       ],
       "firmware": "4.1",
       "extra_hardware": [
-        "Pybricks Code camera/vision host and the published model; Studio does not provide AppData camera processing"
+        "Pybricks Code camera/vision host and the published model; LittleTinker Rig does not provide AppData camera processing"
       ]
     },
     {

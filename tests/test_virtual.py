@@ -5,15 +5,15 @@ from pathlib import Path
 
 import pytest
 
-from pyblocks.pybricks.control import ControlState
-from pyblocks.pybricks.devices import (
+from little_tinker_rig.pybricks.control import ControlState
+from little_tinker_rig.pybricks.devices import (
     MotorBinding,
     TelemetryStream,
     encode_commands,
     motor_commands,
 )
-from pyblocks.pybricks.simulation import World
-from pyblocks.pybricks.virtual import VirtualConnection
+from little_tinker_rig.pybricks.simulation import World
+from little_tinker_rig.pybricks.virtual import VirtualConnection
 
 
 def test_manual_speed_servo_and_expired_command_have_physical_results():
@@ -56,7 +56,13 @@ def test_duplicate_port_mapping_is_rejected_before_movement():
 def test_telemetry_and_unicode_console_survive_every_packet_boundary(encode):
     text = "Привет, робот!\n".encode()
     payload = {"ports": {"A": {"angle": 42}}, "monitoring": True}
-    wire = text + b"\x1ePYBLOCKS " + encode(payload).encode() + b"\n" + b"prompt> "
+    wire = (
+        text
+        + b"\x1eLITTLE_TINKER_RIG "
+        + encode(payload).encode()
+        + b"\n"
+        + b"prompt> "
+    )
     for size in range(1, len(wire) + 1):
         output, packets = [], []
         stream = TelemetryStream(output.append, packets.append)
@@ -113,8 +119,8 @@ async def test_virtual_hub_program_sensors_console_and_stop(tmp_path):
 
 @pytest.fixture
 def generated_helper_program(tmp_path):
-    from pyblocks.core.session import Session
-    from pyblocks.core.snippets import load_module
+    from little_tinker_rig.core.session import Session
+    from little_tinker_rig.core.snippets import load_module
 
     (snippet,) = load_module(
         """
@@ -196,12 +202,12 @@ async def test_virtual_manual_motor_lease_and_disconnect():
 async def test_target_hub_profiles_and_real_monitor_program(model, ports):
     # Launch the actual hub monitor against modeled public Pybricks APIs. BOOST
     # deliberately has no iodevices module, as on the target firmware.
-    monitor = Path(__file__).parents[1] / "pyblocks/pybricks/hub_monitor.py"
+    monitor = Path(__file__).parents[1] / "little_tinker_rig/pybricks/hub_monitor.py"
     process = await asyncio.create_subprocess_exec(
         sys.executable,
         "-u",
         "-m",
-        "pyblocks.pybricks.sim_runtime",
+        "little_tinker_rig.pybricks.sim_runtime",
         "--model",
         model,
         "--program",
@@ -278,7 +284,7 @@ def test_monitor_imports_firmware_modules_and_reports_ports(model, ports, capsys
     import queue
     from unittest.mock import patch
 
-    from pyblocks.pybricks.sim_runtime import install_modules
+    from little_tinker_rig.pybricks.sim_runtime import install_modules
 
     class Finished(BaseException):
         pass
@@ -309,7 +315,9 @@ def test_monitor_imports_firmware_modules_and_reports_ports(model, ports, capsys
             raise Finished()
 
         modules["pybricks.tools"].wait = finish
-        monitor = Path(__file__).parents[1] / "pyblocks/pybricks/hub_monitor.py"
+        monitor = (
+            Path(__file__).parents[1] / "little_tinker_rig/pybricks/hub_monitor.py"
+        )
         with pytest.raises(Finished):
             exec(
                 compile(monitor.read_text(), str(monitor), "exec"),
@@ -335,7 +343,7 @@ def test_monitor_redetects_unknown_devices_and_unplugged_ports(monkeypatch, caps
     import runpy
     from unittest.mock import patch
 
-    from pyblocks.pybricks.sim_runtime import install_modules
+    from little_tinker_rig.pybricks.sim_runtime import install_modules
 
     class Finished(BaseException):
         pass
@@ -367,7 +375,9 @@ def test_monitor_redetects_unknown_devices_and_unplugged_ports(monkeypatch, caps
         monkeypatch.setattr(PUPDevice, "info", identify)
         monkeypatch.setattr(tools.StopWatch, "time", lambda self: now)
         monkeypatch.setattr(tools, "wait", advance)
-        monitor = Path(__file__).parents[1] / "pyblocks/pybricks/hub_monitor.py"
+        monitor = (
+            Path(__file__).parents[1] / "little_tinker_rig/pybricks/hub_monitor.py"
+        )
         with pytest.raises(Finished):
             runpy.run_path(str(monitor), run_name="__main__")
 
@@ -384,7 +394,7 @@ def test_monitor_brakes_started_motors_if_later_device_fails(monkeypatch):
     import runpy
     from unittest.mock import patch
 
-    from pyblocks.pybricks.sim_runtime import install_modules
+    from little_tinker_rig.pybricks.sim_runtime import install_modules
 
     class Finished(BaseException):
         pass
@@ -411,7 +421,9 @@ def test_monitor_brakes_started_motors_if_later_device_fails(monkeypatch):
 
         monkeypatch.setattr(Motor, "run", run)
         monkeypatch.setattr(tools, "wait", end_cycle)
-        monitor = Path(__file__).parents[1] / "pyblocks/pybricks/hub_monitor.py"
+        monitor = (
+            Path(__file__).parents[1] / "little_tinker_rig/pybricks/hub_monitor.py"
+        )
         with pytest.raises(Finished):
             runpy.run_path(str(monitor), run_name="__main__")
 

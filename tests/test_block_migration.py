@@ -1,9 +1,9 @@
 import ast
 import tomllib
 
-from pyblocks.cli.main import main
-from pyblocks.core.migration import migrate_collection
-from pyblocks.core.snippets import instantiate, load_collection
+from little_tinker_rig.cli.main import main
+from little_tinker_rig.core.migration import migrate_collection
+from little_tinker_rig.core.snippets import instantiate, load_collection
 
 
 def legacy_collection(root):
@@ -92,7 +92,7 @@ def test_migration_validation_precedes_writes(tmp_path, capsys):
 def test_migration_restores_written_modules_on_manifest_failure(
     tmp_path, monkeypatch, capsys
 ):
-    from pyblocks.core import project
+    from little_tinker_rig.core import project
 
     original = legacy_collection(tmp_path)
     write = project.atomic_write

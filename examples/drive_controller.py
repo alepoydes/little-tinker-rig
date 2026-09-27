@@ -1,6 +1,6 @@
 """Copy the Controller helper beside this file before uploading; see doc/robotics.md."""
 
-from pyblocks_controller import Controller
+from little_tinker_rig_controller import Controller
 from pybricks.parameters import Direction, Port
 from pybricks.pupdevices import Motor
 from pybricks.robotics import DriveBase

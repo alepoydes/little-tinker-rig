@@ -2,7 +2,7 @@ import pytest
 
 np = pytest.importorskip("numpy")
 
-from pyblocks.core.ldraw import LDraw, rgba  # noqa: E402
+from little_tinker_rig.core.ldraw import LDraw, rgba  # noqa: E402
 
 
 @pytest.fixture
@@ -12,13 +12,13 @@ def model(tmp_path):
     )
     path = tmp_path / "robot.mpd"
     path.write_text("""0 FILE main.ldr
-0 !PYBLOCKS ID left
+0 !LITTLE_TINKER_RIG ID left
 1 4 10 0 0 1 0 0 0 1 0 0 0 1 part.dat
 0 STEP
-0 !PYBLOCKS ID right
+0 !LITTLE_TINKER_RIG ID right
 1 1 -10 0 0 -1 0 0 0 1 0 0 0 1 part.dat
 0 STEP
-0 !PYBLOCKS ID subassembly
+0 !LITTLE_TINKER_RIG ID subassembly
 1 14 0 40 0 1 0 0 0 1 0 0 0 1 child.ldr
 0 FILE child.ldr
 1 16 0 0 0 1 0 0 0 1 0 0 0 1 part.dat
@@ -77,8 +77,8 @@ def test_inline_geometry_is_not_lost_next_to_parts(model):
     source = model.read_text()
     model.write_text(
         source.replace(
-            "0 STEP\n0 !PYBLOCKS ID right",
-            "0 STEP\n3 2 0 0 0 0 -100 0 100 0 0\n0 STEP\n0 !PYBLOCKS ID right",
+            "0 STEP\n0 !LITTLE_TINKER_RIG ID right",
+            "0 STEP\n3 2 0 0 0 0 -100 0 100 0 0\n0 STEP\n0 !LITTLE_TINKER_RIG ID right",
         )
     )
     scene = LDraw(model).scene()
@@ -90,7 +90,7 @@ def test_inline_geometry_is_not_lost_next_to_parts(model):
 def test_model_without_steps_hides_assembly_navigation(model, qt_app):
     import json
 
-    from pyblocks.qt.assembly import AssemblyPage
+    from little_tinker_rig.qt.assembly import AssemblyPage
 
     description = model.parent / "robot.json"
     description.write_text(
@@ -129,7 +129,7 @@ def test_embedded_colors_and_conditional_edges(tmp_path):
 
 def test_renderer_draws_and_picks_visible_instance(model):
     moderngl = pytest.importorskip("moderngl")
-    from pyblocks.qt.lego_view import Camera, Renderer
+    from little_tinker_rig.qt.lego_view import Camera, Renderer
 
     try:
         context = moderngl.create_standalone_context(backend="egl")
@@ -168,7 +168,7 @@ def test_qt_views_render_with_independent_native_contexts(model, qt_app):
     from PySide6.QtGui import QImage, QPlatformSurfaceEvent
     from PySide6.QtWidgets import QVBoxLayout, QWidget
 
-    from pyblocks.qt.lego_view import LegoView
+    from little_tinker_rig.qt.lego_view import LegoView
 
     if qt_app.platformName().startswith(("offscreen", "minimal")):
         pytest.skip("Run with QT_QPA_PLATFORM=wayland or xcb to check native Qt GL")
@@ -272,7 +272,7 @@ def test_selection_preserves_camera_and_explicit_centering_preserves_zoom(
     from PySide6.QtCore import QEvent, QPointF, Qt
     from PySide6.QtGui import QMouseEvent
 
-    from pyblocks.qt.lego_view import LegoView
+    from little_tinker_rig.qt.lego_view import LegoView
 
     scene = LDraw(model).scene()
     view = LegoView(scene)
@@ -342,7 +342,7 @@ def test_selection_preserves_camera_and_explicit_centering_preserves_zoom(
 def test_zoom_interest_follows_selection_step_and_isolated_group(model, qt_app):
     from PySide6.QtCore import QEvent
 
-    from pyblocks.qt.lego_view import LegoView
+    from little_tinker_rig.qt.lego_view import LegoView
 
     scene = LDraw(model).scene()
     view = LegoView(scene)
@@ -374,7 +374,7 @@ def test_zoom_interest_follows_selection_step_and_isolated_group(model, qt_app):
 
 def test_selected_copies_are_visible_through_geometry_but_not_future_parts(tmp_path):
     moderngl = pytest.importorskip("moderngl")
-    from pyblocks.qt.lego_view import Camera, Renderer
+    from little_tinker_rig.qt.lego_view import Camera, Renderer
 
     try:
         context = moderngl.create_standalone_context(backend="egl")
@@ -441,12 +441,12 @@ def test_assembly_inspection_preserves_step_and_selects_all_copies(model, qt_app
     from PySide6.QtCore import QEvent, Qt
     from PySide6.QtTest import QTest
 
-    from pyblocks.qt.assembly import AssemblyPage
+    from little_tinker_rig.qt.assembly import AssemblyPage
 
     model.write_text(
         model.read_text().replace(
-            "0 STEP\n0 !PYBLOCKS ID right",
-            "0 !PYBLOCKS ID copy\n1 4 40 0 0 1 0 0 0 1 0 0 0 1 part.dat\n0 STEP\n0 !PYBLOCKS ID right",
+            "0 STEP\n0 !LITTLE_TINKER_RIG ID right",
+            "0 !LITTLE_TINKER_RIG ID copy\n1 4 40 0 0 1 0 0 0 1 0 0 0 1 part.dat\n0 STEP\n0 !LITTLE_TINKER_RIG ID right",
         )
     )
     path = model.parent / "robot.json"
@@ -512,12 +512,12 @@ def test_pilot_mating_points_track_and_ground_plane():
     import os
     from pathlib import Path
 
-    from pyblocks.core.lessons import lessons_directory
+    from little_tinker_rig.core.lessons import lessons_directory
 
-    archive = os.environ.get("PYBLOCKS_TEST_LDRAW")
+    archive = os.environ.get("LITTLE_TINKER_RIG_TEST_LDRAW")
     if not archive:
         pytest.skip(
-            "Set PYBLOCKS_TEST_LDRAW to a downloaded official ZIP for the model integration check"
+            "Set LITTLE_TINKER_RIG_TEST_LDRAW to a downloaded official ZIP for the model integration check"
         )
     root = lessons_directory() / "first_drive" / "robot"
     with LDraw(root / "car.mpd", Path(archive)) as reader:

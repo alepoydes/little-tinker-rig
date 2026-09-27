@@ -1,6 +1,6 @@
-# PyBlocks Studio guide
+# LittleTinker Rig guide
 
-PyBlocks Studio edits ordinary Python as visible structural blocks. The source
+LittleTinker Rig edits ordinary Python as visible structural blocks. The source
 file remains readable and executable outside the editor. English and Russian
 interfaces share the same editing operations; **View → Language** also selects
 the language of this guide.

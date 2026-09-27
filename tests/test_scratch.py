@@ -3,12 +3,12 @@ from unittest.mock import patch
 
 import pytest
 
-from pyblocks.core import edit
-from pyblocks.core.parameters import choices, slots
-from pyblocks.core.presentation import regions, snippet_role
-from pyblocks.core.session import Session
-from pyblocks.core.snippets import Parameter, instantiate
-from pyblocks.core.transfer import Transfer
+from little_tinker_rig.core import edit
+from little_tinker_rig.core.parameters import choices, slots
+from little_tinker_rig.core.presentation import regions, snippet_role
+from little_tinker_rig.core.session import Session
+from little_tinker_rig.core.snippets import Parameter, instantiate
+from little_tinker_rig.core.transfer import Transfer
 
 
 def snippet(session, name):
@@ -156,7 +156,7 @@ def send_drop(qt_app, widget, data, point):
 
     action = (
         Qt.DropAction.MoveAction
-        if data.hasFormat("application/x-pyblocks-fragment")
+        if data.hasFormat("application/x-little-tinker-rig-fragment")
         else Qt.DropAction.CopyAction
     )
     args = (action, data, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
@@ -182,15 +182,17 @@ def close_window(window):
 def test_qt_drag_library_scratch_program_undo_and_raw_draft(tmp_path, qt_app):
     from PySide6.QtCore import QMimeData, QPoint
 
-    from pyblocks.qt.app import Studio
-    from pyblocks.qt.drag import BlockMime
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.drag import BlockMime
 
     window = Studio(tmp_path / "main.py")
     window.show()
     qt_app.processEvents()
     try:
         data = QMimeData()
-        data.setData("application/x-pyblocks-snippet", b"pybricks/motors/create_motor")
+        data.setData(
+            "application/x-little-tinker-rig-snippet", b"pybricks/motors/create_motor"
+        )
         send_drop(qt_app, window.scratch.viewport(), data, QPoint(30, 30))
         assert not window.session.document.state.source
         assert len(window.scratch.cells) == 1
@@ -236,7 +238,7 @@ def test_qt_drag_library_scratch_program_undo_and_raw_draft(tmp_path, qt_app):
 def test_qt_window_controls_scratch_visibility_and_help(tmp_path, qt_app):
     from PySide6.QtCore import Qt
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     window = Studio(tmp_path / "main.py")
     window.show()
@@ -282,7 +284,7 @@ def test_qt_window_controls_scratch_visibility_and_help(tmp_path, qt_app):
 def test_qt_annotations_keep_source_and_scroll_anchor(tmp_path, qt_app):
     from PySide6.QtGui import QTextCursor
 
-    from pyblocks.qt.editor import SourceView
+    from little_tinker_rig.qt.editor import SourceView
 
     path = tmp_path / "main.py"
     path.write_text("\n".join(f"value_{i} = {i}" for i in range(60)))
@@ -325,7 +327,7 @@ def test_qt_annotations_keep_source_and_scroll_anchor(tmp_path, qt_app):
 def test_qt_blank_lines_continue_nested_indentation_bands(qt_app):
     from PySide6.QtGui import QTextCursor
 
-    from pyblocks.qt.editor import SourceView
+    from little_tinker_rig.qt.editor import SourceView
 
     session = Session.fragment(
         "def task():\n    while True:\n        print(1)\n\n        print(2)\n", ()
@@ -359,7 +361,7 @@ def test_qt_single_block_can_be_dragged_out_even_without_internal_target(
     from PySide6.QtCore import QPoint, Qt
     from PySide6.QtTest import QTest
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     path = tmp_path / "main.py"
     path.write_text("motor.run(500)\n")
@@ -370,7 +372,7 @@ def test_qt_single_block_can_be_dragged_out_even_without_internal_target(
         view = window.source
         rect = view._rect(1, 0)
         start = QPoint(view.viewport().width() - 80, int(rect.center().y()))
-        with patch("pyblocks.qt.editor.drag_block") as drag:
+        with patch("little_tinker_rig.qt.editor.drag_block") as drag:
             QTest.mousePress(view.viewport(), Qt.MouseButton.LeftButton, pos=start)
             QTest.mouseMove(view.viewport(), start + QPoint(20, 0), 30)
             QTest.mouseMove(
@@ -398,7 +400,7 @@ def test_qt_single_block_can_be_dragged_out_even_without_internal_target(
 async def test_program_built_from_library_runs_on_virtual_hubs(
     tmp_path, model, constructor, reading, expected
 ):
-    from pyblocks.pybricks.virtual import VirtualConnection
+    from little_tinker_rig.pybricks.virtual import VirtualConnection
 
     session = Session(tmp_path / "robot.py")
     for name, bindings in (
@@ -440,7 +442,7 @@ async def test_program_built_from_library_runs_on_virtual_hubs(
 def test_qt_drop_into_empty_line_uses_pointer_indentation(tmp_path, qt_app):
     from PySide6.QtCore import QMimeData, QPoint
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     path = tmp_path / "main.py"
     path.write_text("while True:\n    print(1)\n")
@@ -451,7 +453,9 @@ def test_qt_drop_into_empty_line_uses_pointer_indentation(tmp_path, qt_app):
         view = window.source
         blank = view._rect(view.document().blockCount(), 4)
         data = QMimeData()
-        data.setData("application/x-pyblocks-snippet", b"pybricks/sensors/wait_ms")
+        data.setData(
+            "application/x-little-tinker-rig-snippet", b"pybricks/sensors/wait_ms"
+        )
         send_drop(
             qt_app,
             view.viewport(),

@@ -2,9 +2,14 @@ import ast
 
 import pytest
 
-from pyblocks.core.snippets import instantiate, load_collection, load_module, recognize
-from pyblocks.core.syntax import Syntax
-from pyblocks.core.types import (
+from little_tinker_rig.core.snippets import (
+    instantiate,
+    load_collection,
+    load_module,
+    recognize,
+)
+from little_tinker_rig.core.syntax import Syntax
+from little_tinker_rig.core.types import (
     Compatibility,
     ValueType,
     annotation_types,
@@ -220,7 +225,7 @@ def test_types_preserve_numeric_precision_units_and_uncertainty():
 
 
 def test_known_incompatible_units_inside_expressions_remain_visible():
-    from pyblocks.core.analysis import Analysis
+    from little_tinker_rig.core.analysis import Analysis
 
     syntax = Syntax("""
 distance: "int[mm]" = 10
@@ -237,7 +242,7 @@ unknown = distance + external
 
 
 def test_helper_lifecycle_is_atomic_with_scratch_and_undo(tmp_path):
-    from pyblocks.core.session import Session
+    from little_tinker_rig.core.session import Session
 
     snippets = load_module(
         """
@@ -290,7 +295,7 @@ def show(value=3):
 
 
 def test_helper_cleanup_preserves_user_code_comments_and_changed_implementations():
-    from pyblocks.core.helpers import manage_helpers
+    from little_tinker_rig.core.helpers import manage_helpers
 
     (snippet,) = load_module("@block\ndef value():\n    return 1\n", "test", "1")
     expanded = instantiate(snippet, {})
@@ -320,7 +325,7 @@ def test_helper_cleanup_preserves_user_code_comments_and_changed_implementations
 
 
 def test_helper_roots_respect_local_shadowing_and_report_global_collisions():
-    from pyblocks.core.helpers import manage_helpers
+    from little_tinker_rig.core.helpers import manage_helpers
 
     (snippet,) = load_module("@block\ndef value():\n    return 1\n", "test", "1")
     helpers = {fn.name: fn for fn in snippet.helpers}
@@ -334,7 +339,7 @@ def test_helper_roots_respect_local_shadowing_and_report_global_collisions():
 
 
 def test_typed_declarations_recognize_existing_unannotated_source(tmp_path):
-    from pyblocks.core.session import Session
+    from little_tinker_rig.core.session import Session
 
     (snippet,) = load_module(
         """
@@ -357,7 +362,7 @@ def measure(sensor=device):
 
 
 def test_parameter_errors_keep_recognition_and_unknown_values_are_allowed(tmp_path):
-    from pyblocks.core.session import Session
+    from little_tinker_rig.core.session import Session
 
     (snippet,) = load_module(
         """
@@ -387,7 +392,7 @@ def start(motor: "Motor" = left, speed: "number[deg/s]" = 300):
 
 
 def test_type_contracts_apply_to_function_calls_returns_and_numeric_units():
-    from pyblocks.core.analysis import Analysis
+    from little_tinker_rig.core.analysis import Analysis
 
     analysis = Analysis(Syntax("""
 def elapsed() -> "int[ms]":
@@ -412,9 +417,9 @@ distance: "number[mm]" = elapsed()
 
 
 def test_suggestions_use_the_same_type_and_unit_contract(tmp_path):
-    from pyblocks.core.parameters import choices
-    from pyblocks.core.session import Session
-    from pyblocks.core.snippets import Parameter
+    from little_tinker_rig.core.parameters import choices
+    from little_tinker_rig.core.session import Session
+    from little_tinker_rig.core.snippets import Parameter
 
     path = tmp_path / "main.py"
     path.write_text(
@@ -431,10 +436,10 @@ def test_suggestions_use_the_same_type_and_unit_contract(tmp_path):
 
 
 def test_fixed_implementation_is_closed_across_structural_operations():
-    from pyblocks.core import edit
-    from pyblocks.core.parameters import change_parameter, slots
-    from pyblocks.core.session import Session
-    from pyblocks.core.structure import sequence
+    from little_tinker_rig.core import edit
+    from little_tinker_rig.core.parameters import change_parameter, slots
+    from little_tinker_rig.core.session import Session
+    from little_tinker_rig.core.structure import sequence
 
     (snippet,) = load_module(
         """
@@ -478,8 +483,8 @@ def measure(sensor=device, offset=0):
 
 
 def test_public_expression_lists_repeat_edits_and_fixed_operations_stay_fixed():
-    from pyblocks.core.session import Session
-    from pyblocks.core.structure import sequence
+    from little_tinker_rig.core.session import Session
+    from little_tinker_rig.core.structure import sequence
 
     (snippet,) = load_module(
         "@inline_block\ndef twice(value=1):\n    print(value)\n    print(value)\n",
@@ -499,11 +504,11 @@ def test_public_expression_lists_repeat_edits_and_fixed_operations_stay_fixed():
 
 
 def test_source_metadata_drives_cards_help_notes_and_units(qt_app):
-    from pyblocks.core.session import Session
-    from pyblocks.qt.annotations import block_notes
-    from pyblocks.qt.help import group_document
-    from pyblocks.qt.library import COLOR, ICON, LEVEL, Library
-    from pyblocks.qt.parameters import unit_text
+    from little_tinker_rig.core.session import Session
+    from little_tinker_rig.qt.annotations import block_notes
+    from little_tinker_rig.qt.help import group_document
+    from little_tinker_rig.qt.library import COLOR, ICON, LEVEL, Library
+    from little_tinker_rig.qt.parameters import unit_text
 
     (snippet,) = load_module(
         '''"""Robot motions\n\nSmall precise movements."""
@@ -538,7 +543,7 @@ def move(duration: "int[ms]" = 10):
 
 
 def test_metadata_controls_edit_literals_without_replacing_python_or_comments():
-    from pyblocks.core.block_metadata import change_property
+    from little_tinker_rig.core.block_metadata import change_property
 
     source = '''# Module note.
 @inline_block(
@@ -560,7 +565,7 @@ def show(value=1):
 
 
 def test_helper_local_bindings_do_not_conflict_with_global_imports(tmp_path):
-    from pyblocks.core.session import Session
+    from little_tinker_rig.core.session import Session
 
     (snippet,) = load_module(
         """
@@ -593,7 +598,7 @@ def calculate(value=4):
 
 
 def test_helper_imports_follow_selected_implementations_after_library_reload(tmp_path):
-    from pyblocks.core.session import Session
+    from little_tinker_rig.core.session import Session
 
     source = """
 from math import sqrt as operation
@@ -622,7 +627,7 @@ def calculate(value=4):
 
 
 def test_inserting_a_standalone_definition_adds_its_helpers_atomically(tmp_path):
-    from pyblocks.core.session import Session
+    from little_tinker_rig.core.session import Session
 
     (snippet,) = load_module(
         """
@@ -644,9 +649,9 @@ def show(value=9):
 
 
 def test_builtin_definitions_are_source_complete_and_migration_is_idempotent():
-    from pyblocks.core.migration import migrate_module
-    from pyblocks.core.presentation import block_icon, snippet_role
-    from pyblocks.core.snippets import builtin_snippets
+    from little_tinker_rig.core.migration import migrate_module
+    from little_tinker_rig.core.presentation import block_icon, snippet_role
+    from little_tinker_rig.core.snippets import builtin_snippets
 
     groups = {}
     for snippet in builtin_snippets():
@@ -707,16 +712,16 @@ def motion(drive=drive):
 
 
 def test_class_skeleton_can_be_named_and_filled_without_exposing_class_locals():
-    from pyblocks.core import edit
-    from pyblocks.core.parameters import slots
-    from pyblocks.core.session import Session
-    from pyblocks.core.snippets import builtin_snippets
+    from little_tinker_rig.core import edit
+    from little_tinker_rig.core.parameters import slots
+    from little_tinker_rig.core.session import Session
+    from little_tinker_rig.core.snippets import builtin_snippets
 
     snippets = builtin_snippets()
     skeleton = next(s for s in snippets if s.identity == "python/objects/define_class")
     session = Session.fragment(instantiate(skeleton, {}).source, snippets)
     slot = next(s for s in slots(session) if s.field == "name")
-    from pyblocks.core.parameters import change_parameter
+    from little_tinker_rig.core.parameters import change_parameter
 
     change_parameter(session, slot, "Rover")
     syntax = session.document.syntax
@@ -737,8 +742,8 @@ def test_class_skeleton_can_be_named_and_filled_without_exposing_class_locals():
 
 
 def test_named_calls_share_definitions_and_cleanup_only_after_last_reference(tmp_path):
-    from pyblocks.core import edit
-    from pyblocks.core.session import Session
+    from little_tinker_rig.core import edit
+    from little_tinker_rig.core.session import Session
 
     snippets = load_module(
         """from math import sqrt
@@ -803,7 +808,7 @@ def show_twice(value=-5):
 
 
 def test_named_helper_conflicts_are_explicit_and_leave_the_document_unchanged(tmp_path):
-    from pyblocks.core.session import Session
+    from little_tinker_rig.core.session import Session
 
     source = "@block\ndef show(value=3):\n    print(value)\n"
     (first,) = load_module(source, "first", "1")
@@ -841,8 +846,8 @@ def test_shadowed_function_names_are_not_recognized_as_library_blocks():
 
 
 def test_function_insertion_rejects_a_shadowed_callee_atomically(tmp_path):
-    from pyblocks.core import edit
-    from pyblocks.core.session import Session
+    from little_tinker_rig.core import edit
+    from little_tinker_rig.core.session import Session
 
     (snippet,) = load_module(
         "@block\ndef show(value=3):\n    print(value)\n", "test", "1"

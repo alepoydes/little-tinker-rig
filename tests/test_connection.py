@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from pyblocks.pybricks.connection import Connection
-from pyblocks.pybricks.control import ControlState
+from little_tinker_rig.pybricks.connection import Connection
+from little_tinker_rig.pybricks.control import ControlState
 
 
 @pytest.mark.asyncio
@@ -85,7 +85,7 @@ async def test_real_transport_monitor_identity_telemetry_and_braking(monkeypatch
     from pybricksdev.connections import pybricks
     from reactivex.subject import BehaviorSubject, Subject
 
-    from pyblocks.pybricks.devices import encode_commands
+    from little_tinker_rig.pybricks.devices import encode_commands
 
     events = []
 
@@ -107,7 +107,7 @@ async def test_real_transport_monitor_identity_telemetry_and_braking(monkeypatch
         async def run(self, path, **options):
             self.status_observable.on_next(StatusFlag.USER_PROGRAM_RUNNING)
             self.stdout_observable.on_next(
-                b"\x1ePYBLOCKS {'name': 'Classroom', 'model': 'boost', 'ports': {'A': {'type': 'motor', 'angle': 15}}, 'battery_mv': 7900}\n"
+                b"\x1eLITTLE_TINKER_RIG {'name': 'Classroom', 'model': 'boost', 'ports': {'A': {'type': 'motor', 'angle': 15}}, 'battery_mv': 7900}\n"
             )
 
         async def write(self, data):

@@ -46,7 +46,7 @@ waiting for a line that never arrives.
 For the remote activity, turn on a physical LEGO Powered Up remote. Left +/-
 drives forward/backward, right +/- turns, releasing buttons brakes, and the
 center button finishes the block. This uses a direct hub-to-remote connection,
-not Studio's screen joystick. Bluetooth pairing is not modeled by the simulator.
+not LittleTinker Rig's screen joystick. Bluetooth pairing is not modeled by the simulator.
 
 These activities follow the progression from parameter changes and sequences to
 sensor-guided behavior in [BOOST](https://www.lego.com/en-au/product/boost-creative-toolbox-17101)

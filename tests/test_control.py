@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from pyblocks.pybricks.control import ControlState
+from little_tinker_rig.pybricks.control import ControlState
 
 
 @pytest.mark.parametrize("value", [-1, -0.37, 0, 0.59, 1])
@@ -37,7 +37,7 @@ def test_hub_parser_handles_partial_frames_and_neutralizes_stale_input(monkeypat
     tools.StopWatch = Clock
     tools.read_input_byte = lambda: buffer.pop(0) if buffer else None
     monkeypatch.setitem(sys.modules, "pybricks.tools", tools)
-    path = Path(__file__).parents[1] / "pyblocks/pybricks/hub_controller.py"
+    path = Path(__file__).parents[1] / "little_tinker_rig/pybricks/hub_controller.py"
     spec = importlib.util.spec_from_file_location("test_hub_controller", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

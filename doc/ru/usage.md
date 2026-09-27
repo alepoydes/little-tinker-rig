@@ -215,7 +215,7 @@ Ctrl+N для нового фрагмента и Ctrl+R для возврата.
 ## Диагностика
 
 Редактор показывает предупреждения об очевидно неизвестных именах. В Qt откройте
-Вид → Диагностика имён; в CLI используйте `pyblocks diagnose файл.py`.
+Вид → Диагностика имён; в CLI используйте `little-tinker-rig diagnose файл.py`.
 Предупреждения не запрещают сохранение. Анализ лексический: он не предсказывает
 все ветви выполнения, динамические импорты и содержимое сторонних библиотек.
 
@@ -226,27 +226,27 @@ Ctrl+N для нового фрагмента и Ctrl+R для возврата.
 Команды преобразования печатают результат. Только `--write` сохраняет файл.
 
 ```sh
-uv run pyblocks inspect examples/first.py
-uv run pyblocks diagnose examples/first.py
-uv run pyblocks snippets examples/first.py
-uv run pyblocks insert main.py python/basics/display --param 'value="Hello!"'
-uv run pyblocks replace main.py '4 + 5' --at 1:4
-uv run pyblocks move main.py --at 2:0 --to 7:0
-uv run pyblocks scratch main.py --at 2:0 --write
-uv run pyblocks restore main.py 0 --at 1:0 --write
-uv run pyblocks format main.py --write
+uv run little-tinker-rig inspect examples/first.py
+uv run little-tinker-rig diagnose examples/first.py
+uv run little-tinker-rig snippets examples/first.py
+uv run little-tinker-rig insert main.py python/basics/display --param 'value="Hello!"'
+uv run little-tinker-rig replace main.py '4 + 5' --at 1:4
+uv run little-tinker-rig move main.py --at 2:0 --to 7:0
+uv run little-tinker-rig scratch main.py --at 2:0 --write
+uv run little-tinker-rig restore main.py 0 --at 1:0 --write
+uv run little-tinker-rig format main.py --write
 ```
 
 `inspect` выводит JSON с текстом, структурными областями и распознанными шаблонами.
 `diagnose` возвращает код 1 при предупреждениях, 0 при их отсутствии.
-Ошибки ввода и преобразования дают код 2. Список команд: `pyblocks --help`.
+Ошибки ввода и преобразования дают код 2. Список команд: `little-tinker-rig --help`.
 
 ## Библиотеки и версии
 
 Дополнительную библиотеку подключают через общий параметр CLI:
 
 ```sh
-uv run --extra qt pyblocks --collection ./my_snippets qt main.py
+uv run --extra qt little-tinker-rig --collection ./my_snippets qt main.py
 ```
 
 После сохранения путь сохраняется в workspace-файле. При распознавании целые
@@ -369,7 +369,7 @@ uv run --extra qt pyblocks --collection ./my_snippets qt main.py
 ## Восстановление, примеры и ошибки выполнения
 
 Редактор отдельно хранит снимки открытых документов, несохранённого текста и
-Scratch в пользовательском каталоге данных ОС (`pyblocks-studio/recovery`).
+Scratch в пользовательском каталоге данных ОС (`little-tinker-rig/recovery`).
 Пока интерфейс отвечает, изменения записываются примерно в течение секунды.
 После аварийного завершения появляется предложение **Восстановить работу**:
 «Да» восстанавливает, «Нет» удаляет этот снимок, «Отмена» оставляет его на потом.

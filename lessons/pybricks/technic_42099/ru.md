@@ -21,7 +21,7 @@
 
 Переходи по авторским шагам LDraw, вращай модель и выбирай детали, чтобы рассмотреть их положение. Номера шагов отличаются от LEGO PDF. «Рекомендуемый ракурс» показывает текущую сборку крупно. Гибкие компоненты показаны целиком, вместе с их проводами.
 
-Цифровая модель и авторские шаги: [Philippe Hurbain (Philo)](https://forums.ldraw.org/thread-23139.html), [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/). Конструкция робота: LEGO Group. Адаптация для Студии; детали берутся из внешней библиотеки LDraw.
+Цифровая модель и авторские шаги: [Philippe Hurbain (Philo)](https://forums.ldraw.org/thread-23139.html), [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/). Конструкция робота: LEGO Group. Адаптация для LittleTinker Rig; детали берутся из внешней библиотеки LDraw.
 
 - [Официальные инструкции LEGO (скачивание PDF)](https://www.lego.com/en-us/service/building-instructions/42099)
 

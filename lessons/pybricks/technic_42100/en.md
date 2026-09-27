@@ -51,7 +51,7 @@ stop. Each hub's physical button stops its own program.
 Connect to the **lower hub** and use **Upload**. These files run on different hubs;
 they are not imports of one another. Turn on Xbox and, for first pairing, hold
 its pairing button until the light flashes rapidly. Start the lower hub's stored
-program. It is blue while connecting; the Technic hub disconnects from Studio to
+program. It is blue while connecting; the Technic hub disconnects from LittleTinker Rig to
 use Xbox. See the [Pybricks pairing guide](https://docs.pybricks.com/en/latest/iodevices/xboxcontroller.html).
 
 Hold **X** for the first movement checks. Try one mechanism at a time.
@@ -71,7 +71,7 @@ Hold **X** for the first movement checks. Try one mechanism at a time.
 Release an input to brake its motor. Stop before a mechanism reaches its end of
 travel: these programs do not automatically home or limit actuator positions.
 Stopping only the upper hub does not stop the base. Stop the lower program before
-reconnecting Studio to edit it.
+reconnecting LittleTinker Rig to edit it.
 
 <a name="experiment"></a>
 
@@ -87,7 +87,7 @@ Save the project to retain both programs and completion marks.
 ## Credits
 
 The [community demonstration by gibona](https://github.com/orgs/pybricks/discussions/1738)
-provided the control and port layout. The included programs are existing PyBlocks
+provided the control and port layout. The included programs are existing LittleTinker Rig
 implementations under the [MIT license](LICENSE.txt), with current radio APIs,
 slow/stop controls and a sequence timeout. They do not reproduce the unlicensed
 upstream programs. The LDraw model has its separate CC BY 2.0 license and retains

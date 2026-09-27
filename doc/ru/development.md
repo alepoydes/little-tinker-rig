@@ -78,13 +78,13 @@ Save As переносит кодировку исходного докумен�
 ```sh
 uv sync --all-extras --locked
 uv run --all-extras --locked pytest
-uv run --all-extras --locked ruff check pyblocks tests tools build_support.py
-uv run --all-extras --locked black --check pyblocks tests tools build_support.py
+uv run --all-extras --locked ruff check little_tinker_rig tests tools build_support.py
+uv run --all-extras --locked black --check little_tinker_rig tests tools build_support.py
 uv build
 ```
 
 `uv run` синхронизирует окружение с выбранными extras. Для запуска интерфейса
-указывайте его явно: `uv run --extra qt pyblocks-qt`.
+указывайте его явно: `uv run --extra qt little-tinker-rig-qt`.
 
 Линтер и форматирование проверяют приложение, тесты и инструменты. Примеры
 сохраняют соглашения исходных авторов и проверяются тестами примеров. Pytest
@@ -161,8 +161,8 @@ Qt работает с `QT_QPA_PLATFORM=offscreen`; оборудование и 
 Компиляция служебных программ для MicroPython (extra `pybricks`):
 
 ```sh
-uv run --extra pybricks python -m mpy_cross_v6 pyblocks/pybricks/hub_monitor.py -o /tmp/pyblocks-monitor.mpy
-uv run --extra pybricks python -m mpy_cross_v6 pyblocks/pybricks/hub_controller.py -o /tmp/pyblocks-controller.mpy
+uv run --extra pybricks python -m mpy_cross_v6 little_tinker_rig/pybricks/hub_monitor.py -o /tmp/little-tinker-rig-monitor.mpy
+uv run --extra pybricks python -m mpy_cross_v6 little_tinker_rig/pybricks/hub_controller.py -o /tmp/little-tinker-rig-controller.mpy
 ```
 
 Wheel проверяется из каталога вне репозитория: справка и настройки форматтера
@@ -211,14 +211,14 @@ O(число позиций × размер программы). Оптимиз�
 доступные моторы должны тормозиться.
 
 ```sh
-uv run --extra pybricks python -m mpy_cross_v6 examples/courier.py -o /tmp/pyblocks-courier.mpy
+uv run --extra pybricks python -m mpy_cross_v6 examples/courier.py -o /tmp/little-tinker-rig-courier.mpy
 ```
 
 ## Переводы
 
 Исходный язык подписей Qt и язык по умолчанию — английский. Русский хранится
 как перевод. gettext-каталоги находятся в
-`pyblocks/locale/<код>/LC_MESSAGES/pyblocks.po`, скомпилированные `.mo` входят
+`little_tinker_rig/locale/<код>/LC_MESSAGES/little_tinker_rig.po`, скомпилированные `.mo` входят
 в пакет. `locale/languages.json` задаёт коды языков и их собственные названия
 для меню. Babel нужен только разработчику; приложение использует стандартный gettext.
 
@@ -448,7 +448,7 @@ MicroPython отдельно от последовательности вирт�
 В рабочее пространство записываются только явные подключения коллекций проекта.
 Встроенные коллекции поставляются с приложением.
 
-До изменения опубликованных определений выполните `pyblocks next-block-version
+До изменения опубликованных определений выполните `little-tinker-rig next-block-version
 КАТАЛОГ MAJOR.MINOR.PATCH` или соответствующее действие редактора. Снимок включает
 текущие модули и манифест, без рекурсивного копирования предыдущей истории.
 До регистрации проверяются временная коллекция и неизменность исходников.
@@ -536,7 +536,7 @@ Scratch, всеми зависимостями деталей и лицензи�
 сохранённым. Проверяйте отмену и ошибку контрольной суммы на синтетических архивах,
 а экспортированный проект открывайте после удаления кеша и отключения сети.
 Проверка соединений учебной модели необязательна: укажите проверенный локальный
-`complete.zip` в `PYBLOCKS_TEST_LDRAW`. Обычные тесты не скачивают библиотеку.
+`complete.zip` в `LITTLE_TINKER_RIG_TEST_LDRAW`. Обычные тесты не скачивают библиотеку.
 
 Включайте в пакет только созданные для урока Python, JSON, Markdown, текстовые
 уведомления, модели LDraw (`.ldr`/`.mpd`) и иллюстрации PNG/SVG. Фильтры уроков

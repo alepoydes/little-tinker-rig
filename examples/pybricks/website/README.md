@@ -1,7 +1,7 @@
 # Pybricks project links
 
 These links open programs and project guides on the authors' website. The Python
-files are **not bundled with Studio**: we have not obtained permission to
+files are **not bundled with LittleTinker Rig**: we have not obtained permission to
 redistribute the website-only downloads. The MIT-licensed Pybricks Projects
 repository is a separate source; its adapted programs remain available through
 **File → Examples → pybricks**.
@@ -17,7 +17,7 @@ is derived from the MIT repository and remains available locally.
 Program links point to the original download or, for inline examples, its page.
 Follow the source guide for setup, associated files and current firmware requirements.
 The requirements below describe the versions inspected during the inventory;
-these externally hosted programs have not been adapted or validated by Studio.
+these externally hosted programs have not been adapted or validated by LittleTinker Rig.
 Xbox programs need a compatible Bluetooth controller. Car calibration needs
 mechanical stops. Camera projects depend on an external Pybricks Code vision host.
 The interactive simulator does not implement Xbox pairing, cooperative Pybricks
@@ -52,13 +52,13 @@ tasks, gyro balancing, inter-hub radio or camera processing.
 | [technic_42160_remote.py](https://pybricks.com/assets/programs/set_42160_pup_remote.py) · [source](https://pybricks.com/project/technic-42160-powered-up-remote/) | 42160 | advanced | 3.5+ | LEGO Powered Up remote 88010 |
 | [technic_42160_xbox.py](https://pybricks.com/assets/programs/set_42160_xbox.py) · [source](https://pybricks.com/project/technic-42160-xbox/) | 42160 | advanced | 3.5+ | Bluetooth Xbox controller |
 | [tutorials/sound.py](https://pybricks.com/assets/programs/sound.py) · [source](https://pybricks.com/project/spike-hub-menu/) | 45678, 51515 | advanced | 3.5+ | Prime/Inventor hub |
-| [spike_45678_arm_camera.py](https://pybricks.com/assets/programs/spike_arm_camera.py) · [source](https://pybricks.com/project/robot-arm-camera-tracker/) | 45678 | expert | 4.1+ | Pybricks Code camera/vision host and the published model; Studio does not provide AppData camera processing |
-| [spike_45678_groceries.py](https://pybricks.com/assets/programs/spike_groceries.py) · [source](https://pybricks.com/project/machine-learning-groceries/) | 45678 | expert | 4.1+ | Pybricks Code camera/vision host and the published model; Studio does not provide AppData camera processing |
+| [spike_45678_arm_camera.py](https://pybricks.com/assets/programs/spike_arm_camera.py) · [source](https://pybricks.com/project/robot-arm-camera-tracker/) | 45678 | expert | 4.1+ | Pybricks Code camera/vision host and the published model; LittleTinker Rig does not provide AppData camera processing |
+| [spike_45678_groceries.py](https://pybricks.com/assets/programs/spike_groceries.py) · [source](https://pybricks.com/project/machine-learning-groceries/) | 45678 | expert | 4.1+ | Pybricks Code camera/vision host and the published model; LittleTinker Rig does not provide AppData camera processing |
 | [tutorials/spike_45678_menu.py](https://pybricks.com/project/spike-hub-menu/) · [source](https://pybricks.com/project/spike-hub-menu/) | 45678, 51515 | advanced | 3.5+ | Prime/Inventor hub |
 | [tutorials/spike_45678_choose_program.py](https://pybricks.com/project/spike-hub-menu/) · [source](https://pybricks.com/project/spike-hub-menu/) | 45678, 51515 | expert | 3.5+ | BOOST ColorDistanceSensor on A and a DC motor on B, or menu motor on A; Prime/Inventor hub |
 
 ## Other hardware
 
 The inventory also records links excluded from the supported hub families, with
-reasons. EV3, City/Duplo and SPIKE Essential are outside the current Studio scope.
+reasons. EV3, City/Duplo and SPIKE Essential are outside the current LittleTinker Rig scope.
 For additional projects, visit the [Pybricks project catalog](https://pybricks.com/project/).

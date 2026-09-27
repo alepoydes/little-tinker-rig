@@ -2,16 +2,18 @@ import json
 
 import pytest
 
-from pyblocks.cli.main import main
-from pyblocks.core.project import Project
-from pyblocks.core.session import Session
+from little_tinker_rig.cli.main import main
+from little_tinker_rig.core.project import Project
+from little_tinker_rig.core.session import Session
 
 
-def test_save_reopen_and_external_change_detection(tmp_path):
+@pytest.mark.parametrize("suffix", [".ltr.json", ".pyblocks.json"])
+def test_save_reopen_and_external_change_detection(tmp_path, suffix):
     path = tmp_path / "main.py"
     project = Project(path)
     project.document.commit("x = 2\n", ("incomplete(",))
     project.save()
+    project.workspace_path.rename(path.with_suffix(".py" + suffix))
     restored = Project(path)
     assert restored.document.state == project.document.state
     path.write_text("x = 3\n")
@@ -69,13 +71,13 @@ def test_cli_transform_is_read_only_without_write(tmp_path, capsys):
 
 
 def test_cli_can_export_hub_helper(tmp_path):
-    path = tmp_path / "pyblocks_controller.py"
+    path = tmp_path / "little_tinker_rig_controller.py"
     assert main(["controller", str(path), "--write"]) == 0
     assert "class Controller:" in path.read_text()
 
 
 def test_interrupted_restore_save_preserves_scratch_copy(tmp_path, monkeypatch):
-    from pyblocks.core import project as storage
+    from little_tinker_rig.core import project as storage
 
     path = tmp_path / "main.py"
     project = Project(path)

@@ -3,9 +3,9 @@ from unittest.mock import patch
 
 import pytest
 
-from pyblocks.core.project import Project
-from pyblocks.core.runtime_errors import Tracebacks
-from pyblocks.pybricks.program import Program
+from little_tinker_rig.core.project import Project
+from little_tinker_rig.core.runtime_errors import Tracebacks
+from little_tinker_rig.pybricks.program import Program
 
 
 def close(window):
@@ -34,7 +34,7 @@ def test_unfinished_source_saves_with_scratch_and_keeps_external_conflicts(tmp_p
 
 
 def test_save_does_not_require_structural_preparation(tmp_path, qt_app):
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     path = tmp_path / "work.py"
     window = Studio(path)
@@ -56,7 +56,7 @@ def test_saved_draft_can_close_reopen_and_save_as_without_becoming_runnable(
 ):
     from PySide6.QtWidgets import QFileDialog, QMessageBox
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     path, destination = tmp_path / "main.py", tmp_path / "copy.py"
     path.write_text("print(1)\n")
@@ -95,7 +95,7 @@ def test_recovery_restores_tabs_scratch_drafts_and_original_disk_baseline(
 ):
     from PySide6.QtWidgets import QMessageBox
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     first, second = tmp_path / "main.py", tmp_path / "new.py"
     first.write_text("value = 1\n")
@@ -155,7 +155,7 @@ def test_examples_follow_directory_changes_and_reuse_existing_tabs(
     from PySide6.QtCore import QCoreApplication, QEvent
     from PySide6.QtWidgets import QMenu, QMenuBar
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     root = tmp_path / "examples"
     nested = root / "robot"
@@ -165,7 +165,7 @@ def test_examples_follow_directory_changes_and_reuse_existing_tabs(
     one, two = root / "one.py", nested / "51515_two.py"
     one.write_text("print(1)\n")
     two.write_text("print(2)\n")
-    monkeypatch.setattr("pyblocks.qt.app.examples_directory", lambda: root)
+    monkeypatch.setattr("little_tinker_rig.qt.app.examples_directory", lambda: root)
     window = Studio(tmp_path / "work.py")
     try:
         bar = window.menuWidget().findChild(QMenuBar)
@@ -202,7 +202,7 @@ def test_recovering_another_version_never_replaces_unsaved_tab(
 ):
     from PySide6.QtWidgets import QMessageBox
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     path = tmp_path / "work.py"
     path.write_text("value = 1\n")
@@ -285,9 +285,9 @@ def test_runtime_error_marks_block_but_changed_source_opens_executed_snapshot(
 ):
     from PySide6.QtWidgets import QDialog
 
-    from pyblocks.core.runtime_errors import RuntimeProblem
-    from pyblocks.qt.app import Studio
-    from pyblocks.qt.code import CodeEdit
+    from little_tinker_rig.core.runtime_errors import RuntimeProblem
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.code import CodeEdit
 
     path = tmp_path / "main.py"
     path.write_text("result = 1 / 0\n")
@@ -304,7 +304,7 @@ def test_runtime_error_marks_block_but_changed_source_opens_executed_snapshot(
             for notes in window.source.notes.values()
             for note in notes
         )
-        from pyblocks.i18n import set_language
+        from little_tinker_rig.i18n import set_language
 
         set_language("ru")
         window.retranslate()
@@ -336,7 +336,7 @@ def test_virtual_runtime_and_run_stored_keep_the_uploaded_source(tmp_path, qt_ap
 
     from PySide6.QtTest import QTest
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     def wait_until(predicate):
         deadline = monotonic() + 10

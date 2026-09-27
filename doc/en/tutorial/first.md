@@ -1,10 +1,10 @@
 # First steps
 
-A program is a sequence of actions. PyBlocks keeps those actions in an ordinary
+A program is a sequence of actions. LittleTinker Rig keeps those actions in an ordinary
 Python file and shows their structure as colored blocks.
 
 ```sh
-uv run --extra qt pyblocks-qt examples/first.py
+uv run --extra qt little-tinker-rig-qt examples/first.py
 ```
 
 The narrow tabs on the left switch between **Program**, **Control** and **Help**.
@@ -19,7 +19,7 @@ It opens the example file itself; use **Save as** to keep your own variation.
 
 ## From an empty document
 
-Launch `uv run --extra qt pyblocks-qt` without a filename, or choose **File → New**.
+Launch `uv run --extra qt little-tinker-rig-qt` without a filename, or choose **File → New**.
 The library starts with **Python basics** at Beginner level.
 
 1. Select **Repeat actions a given number of times** and click **Add selected block**.
@@ -78,7 +78,7 @@ selection, scrolling, and undo. The × button or Ctrl+W closes a file and asks a
 unsaved changes. Cancelling keeps it open.
 
 Ctrl+S saves the Python file. Scratch fragments and collection settings are stored
-beside it in `name.py.pyblocks.json`; the Python program does not need that file to
+beside it in `name.py.ltr.json`; the Python program does not need that file to
 run. In Blocks, Ctrl+X moves a fragment to Scratch. In Python, Ctrl+X is ordinary
 text cutting. External changes to a file are detected before saving: reopen the
 current file or use Save as to another path.

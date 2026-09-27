@@ -13,11 +13,11 @@ import tokenize
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from pyblocks.core import edit
-from pyblocks.core.formatting import format_source
-from pyblocks.core.helpers import manage_helpers
-from pyblocks.core.snippets import builtin_snippets, instantiate
-from pyblocks.core.syntax import Span, Syntax
+from little_tinker_rig.core import edit
+from little_tinker_rig.core.formatting import format_source
+from little_tinker_rig.core.helpers import manage_helpers
+from little_tinker_rig.core.snippets import builtin_snippets, instantiate
+from little_tinker_rig.core.syntax import Span, Syntax
 
 EXAMPLES = Path(__file__).resolve().parents[1] / "examples/pybricks"
 # Only leading keywords in signature order can become positional arguments.

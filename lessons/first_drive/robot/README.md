@@ -24,7 +24,7 @@ Cables are described in the instructions; their flexible geometry is not modeled
 The motor port labels A/B and sensor D refer to the hub's molded labels.
 
 Only the original robot arrangement and lesson annotations are stored here.
-`robot.json` pins the external LDraw archive by release and SHA-256. PyBlocks
+`robot.json` pins the external LDraw archive by release and SHA-256. LittleTinker Rig
 downloads it to the user's cache and reads the required ZIP members directly.
 An offline project export includes a minimal parts ZIP with author notices and
 licenses. See [LICENSE.txt](LICENSE.txt).

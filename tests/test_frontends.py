@@ -8,7 +8,7 @@ async def test_tui_edit_validation_and_library(tmp_path):
     pytest.importorskip("textual")
     from textual.widgets import TextArea
 
-    from pyblocks.tui.app import EditDialog, Studio
+    from little_tinker_rig.tui.app import EditDialog, Studio
 
     app = Studio(tmp_path / "main.py")
     async with app.run_test(size=(120, 40)) as pilot:
@@ -28,9 +28,9 @@ async def test_tui_edit_validation_and_library(tmp_path):
 
 
 def test_qt_selection_unicode_and_draft_validation(tmp_path, qt_app):
-    from pyblocks.qt.app import Studio
-    from pyblocks.qt.dialogs import EditDialog
-    from pyblocks.qt.editor import qt_offset, source_offset
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.dialogs import EditDialog
+    from little_tinker_rig.qt.editor import qt_offset, source_offset
 
     app = qt_app
     path = tmp_path / "main.py"
@@ -57,7 +57,7 @@ def test_qt_drag_uses_core_move_and_fold_is_reversible(tmp_path, qt_app):
     from PySide6.QtGui import QTextCursor
     from PySide6.QtTest import QTest
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     path = tmp_path / "main.py"
     path.write_text('print("first")\nx = 1\nprint("last")\n')
@@ -88,7 +88,7 @@ def test_qt_drag_uses_core_move_and_fold_is_reversible(tmp_path, qt_app):
 @pytest.mark.asyncio
 async def test_tui_refresh_keeps_selection_and_can_discard_on_quit(tmp_path):
     pytest.importorskip("textual")
-    from pyblocks.tui.app import QuitDialog, Studio
+    from little_tinker_rig.tui.app import QuitDialog, Studio
 
     path = tmp_path / "main.py"
     path.write_text("first = 1\nsecond = 2\n")
@@ -111,7 +111,7 @@ async def test_tui_keyboard_can_edit_a_second_operand(tmp_path):
     pytest.importorskip("textual")
     from textual.widgets import TextArea
 
-    from pyblocks.tui.app import Studio
+    from little_tinker_rig.tui.app import Studio
 
     path = tmp_path / "main.py"
     path.write_text("print(2 + 3)\n")
@@ -132,7 +132,7 @@ def test_qt_python_draft_save_format_undo_and_native_cut(tmp_path, qt_app):
     from PySide6.QtGui import QTextCursor
     from PySide6.QtTest import QTest
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     path = tmp_path / "draft.py"
     path.write_text("value =\n")
@@ -168,9 +168,9 @@ def test_qt_python_draft_save_format_undo_and_native_cut(tmp_path, qt_app):
 def test_qt_hidden_console_help_links_and_library_colors(tmp_path, qt_app):
     from PySide6.QtCore import QUrl
 
-    from pyblocks.core.presentation import PALETTE, snippet_role
-    from pyblocks.qt.app import Studio
-    from pyblocks.qt.library import COLOR, IDENTITY, PREVIEW
+    from little_tinker_rig.core.presentation import PALETTE, snippet_role
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.library import COLOR, IDENTITY, PREVIEW
 
     path = tmp_path / "program.py"
     path.write_text("print(42)\n")
@@ -221,9 +221,9 @@ def test_qt_upload_reports_worker_output_progress_and_failure(
 
     from tqdm import tqdm
 
-    from pyblocks.pybricks.devices import HubInfo
-    from pyblocks.qt.app import Studio
-    from pyblocks.qt.console import capture_output
+    from little_tinker_rig.pybricks.devices import HubInfo
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.console import capture_output
 
     entered, release = Event(), Event()
 
@@ -255,7 +255,7 @@ def test_qt_upload_reports_worker_output_progress_and_failure(
         async def disconnect(self):
             pass
 
-    monkeypatch.setattr("pyblocks.qt.robot.Connection", Connection)
+    monkeypatch.setattr("little_tinker_rig.qt.robot.Connection", Connection)
     path = tmp_path / "main.py"
     path.write_text('print("Hub: €")\n')
     window = Studio(path)
@@ -302,7 +302,7 @@ def test_qt_virtual_hub_manual_controls_and_disconnect(tmp_path, qt_app, model, 
     from PySide6.QtCore import Qt
     from PySide6.QtTest import QTest
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     path = tmp_path / "robot.py"
     path.write_text('print("ready")\n')
@@ -345,9 +345,9 @@ def test_qt_virtual_hub_manual_controls_and_disconnect(tmp_path, qt_app, model, 
 
 
 def test_qt_controller_mirrors_physical_state_and_stops_on_disconnect(qt_app):
-    from pyblocks.pybricks.control import ControlState
-    from pyblocks.pybricks.devices import HubInfo
-    from pyblocks.qt.controls import ControlsPage
+    from little_tinker_rig.pybricks.control import ControlState
+    from little_tinker_rig.pybricks.devices import HubInfo
+    from little_tinker_rig.qt.controls import ControlsPage
 
     class Gamepad:
         attached = True
@@ -392,7 +392,7 @@ def test_qt_interrupts_pending_connection_before_disconnect(qt_app, monkeypatch)
     import asyncio
     from threading import Event
 
-    from pyblocks.qt.robot import Robot
+    from little_tinker_rig.qt.robot import Robot
 
     entered, released = Event(), Event()
 
@@ -414,7 +414,7 @@ def test_qt_interrupts_pending_connection_before_disconnect(qt_app, monkeypatch)
             assert released.is_set()
             self.connected = False
 
-    monkeypatch.setattr("pyblocks.qt.robot.VirtualConnection", Connection)
+    monkeypatch.setattr("little_tinker_rig.qt.robot.VirtualConnection", Connection)
     robot = Robot()
     try:
         future = robot.connect_hub(transport="virtual")
@@ -434,7 +434,7 @@ def test_console_line_and_immediate_keyboard_input(qt_app):
     from PySide6.QtGui import QKeySequence, QShortcut
     from PySide6.QtTest import QTest
 
-    from pyblocks.qt.console import HubInput
+    from little_tinker_rig.qt.console import HubInput
 
     widget = HubInput()
     received, cancelled = [], []

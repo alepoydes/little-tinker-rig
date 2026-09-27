@@ -8,4 +8,4 @@ Put a large upright object in front of the robot. Run the program and keep **Sto
 
 On the virtual hub, change D to an ultrasonic sensor and adjust its distance in the monitor before running. The virtual sensor value is a controlled input, not a simulated room.
 
-Save the `.pyblocks` project. Closing and reopening it keeps your program, Scratch, hints and completed stages. You can repeat the lesson as a new independent project.
+Save the `.ltr` project. Closing and reopening it keeps your program, Scratch, hints and completed stages. You can repeat the lesson as a new independent project.

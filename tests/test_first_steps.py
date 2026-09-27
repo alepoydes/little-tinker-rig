@@ -15,9 +15,9 @@ from PySide6.QtWidgets import (
     QToolButton,
 )
 
-from pyblocks.qt.app import Studio
-from pyblocks.qt.device import ConnectDialog
-from pyblocks.qt.library import IDENTITY
+from little_tinker_rig.qt.app import Studio
+from little_tinker_rig.qt.device import ConnectDialog
+from little_tinker_rig.qt.library import IDENTITY
 
 
 def wait_until(predicate):
@@ -294,7 +294,7 @@ def test_route_lesson_lists_iteration_and_measured_results(tmp_path, qt_app):
 
 
 def test_mouse_drag_first_block_scratch_return_and_undo(tmp_path, qt_app):
-    from pyblocks.qt.drag import cancel_drag
+    from little_tinker_rig.qt.drag import cancel_drag
 
     window = Studio(tmp_path / "drag_lesson.py")
     window.confirm_close = lambda *_: True
@@ -355,7 +355,7 @@ def test_open_example_save_variation_run_and_correct_python_error(
 
     from PySide6.QtGui import QTextCursor
 
-    from pyblocks.examples import examples_directory
+    from little_tinker_rig.examples import examples_directory
 
     original = examples_directory() / "first.py"
     before = original.read_bytes()
@@ -375,7 +375,7 @@ def test_open_example_save_variation_run_and_correct_python_error(
             QFileDialog, "getSaveFileName", lambda *a: (str(destination), "")
         )
         assert window.save_as()
-        field(window, '"Hello from PyBlocks!"', '"My greeting"')
+        field(window, '"Hello from LittleTinker Rig!"', '"My greeting"')
         connect(window)
         run(window)
         wait_until(lambda: window.console.toPlainText().count("My greeting") == 3)
@@ -558,7 +558,7 @@ def test_small_screen_navigation_keeps_every_workspace_accessible(
     window.show()
     qt_app.processEvents()
     try:
-        from pyblocks.core.lessons import lessons_directory
+        from little_tinker_rig.core.lessons import lessons_directory
 
         window.lessons.open(lessons_directory() / "first_drive")
         window.change_language(language)

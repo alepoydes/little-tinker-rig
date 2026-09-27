@@ -3,11 +3,11 @@
 import ast
 from unittest.mock import patch
 
-from pyblocks.core.authoring import DefinitionDraft, user_collection
-from pyblocks.core.session import Session
-from pyblocks.core.snippets import load_collection, load_module
-from pyblocks.qt.editor import SourceView
-from pyblocks.qt.structure import block_menu
+from little_tinker_rig.core.authoring import DefinitionDraft, user_collection
+from little_tinker_rig.core.session import Session
+from little_tinker_rig.core.snippets import load_collection, load_module
+from little_tinker_rig.qt.editor import SourceView
+from little_tinker_rig.qt.structure import block_menu
 
 
 def action(menu, title):
@@ -17,7 +17,7 @@ def action(menu, title):
 def test_context_menu_targets_pointer_and_compound_undo(tmp_path, qt_app):
     from PySide6.QtWidgets import QMessageBox
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     path = tmp_path / "main.py"
     path.write_text("print(1)\nwhile True:\n    print(2)\nprint(3)\n")
@@ -81,7 +81,7 @@ def test_context_menu_targets_pointer_and_compound_undo(tmp_path, qt_app):
 
 
 def test_history_definition_is_exact_readonly_version(tmp_path, qt_app):
-    from pyblocks.qt.authoring import BlockEditor
+    from little_tinker_rig.qt.authoring import BlockEditor
 
     root = user_collection(tmp_path)
     (root / "history").mkdir()
@@ -195,7 +195,7 @@ def test_expanded_recipe_menu_edits_the_pointed_child(qt_app):
 
 
 def test_scratch_context_deletion_uses_owner_undo(tmp_path, qt_app):
-    from pyblocks.qt.scratch import ScratchPane
+    from little_tinker_rig.qt.scratch import ScratchPane
 
     owner = Session(tmp_path / "main.py")
     owner.set_scratch(None, "print(1)\nprint(2)")

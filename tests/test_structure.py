@@ -3,13 +3,13 @@ from unittest.mock import patch
 
 import pytest
 
-from pyblocks.core import edit
-from pyblocks.core.analysis import Analysis
-from pyblocks.core.parameters import change_parameter, slots
-from pyblocks.core.session import Session
-from pyblocks.core.snippets import builtin_snippets, instantiate
-from pyblocks.core.structure import rename, sequence
-from pyblocks.core.syntax import Syntax
+from little_tinker_rig.core import edit
+from little_tinker_rig.core.analysis import Analysis
+from little_tinker_rig.core.parameters import change_parameter, slots
+from little_tinker_rig.core.session import Session
+from little_tinker_rig.core.snippets import builtin_snippets, instantiate
+from little_tinker_rig.core.structure import rename, sequence
+from little_tinker_rig.core.syntax import Syntax
 
 
 def session(source, snippets=()):
@@ -178,7 +178,7 @@ def test_user_function_cards_distinguish_actions_from_results(definition, expres
 
 
 def test_shared_binding_edits_nested_operands_consistently():
-    from pyblocks.core.snippets import load_module
+    from little_tinker_rig.core.snippets import load_module
 
     snippets = load_module(
         "def twice(x):\n    print(x)\n    print(x)\n", "example", "1"
@@ -193,7 +193,7 @@ def test_ui_list_controls_and_red_diagnostic(qt_app):
     from PySide6.QtTest import QTest
     from PySide6.QtWidgets import QInputDialog
 
-    from pyblocks.qt.editor import SourceView
+    from little_tinker_rig.qt.editor import SourceView
 
     owner = session("def f(a):\n    pass\nf()\n")
     view = SourceView(owner)
@@ -228,7 +228,7 @@ def test_ui_list_controls_and_red_diagnostic(qt_app):
 
 
 def test_operator_change_preserves_operand_tree_comments_and_binding_occurrences():
-    from pyblocks.core.snippets import load_module
+    from little_tinker_rig.core.snippets import load_module
 
     owner = session("result = a + b * c\n")
     change_parameter(owner, field(owner, "+"), "*")
@@ -252,8 +252,8 @@ def test_note_hover_shares_colors_and_origin_marker_keeps_indentation(qt_app):
     from PySide6.QtTest import QTest
     from PySide6.QtWidgets import QApplication
 
-    from pyblocks.core.transfer import Transfer
-    from pyblocks.qt.editor import SourceView
+    from little_tinker_rig.core.transfer import Transfer
+    from little_tinker_rig.qt.editor import SourceView
 
     view = SourceView(session("while True:\n    if True:\n        print(1)\n"))
     view.resize(900, 600)
@@ -304,7 +304,7 @@ def test_note_hover_shares_colors_and_origin_marker_keeps_indentation(qt_app):
 
 
 def test_library_search_uses_all_words_from_full_help_and_dynamic_functions(qt_app):
-    from pyblocks.qt.library import IDENTITY, Library
+    from little_tinker_rig.qt.library import IDENTITY, Library
 
     owner = session("def greet(name):\n    print(name)\n", builtin_snippets())
     library = Library(owner.available_snippets)
@@ -371,7 +371,7 @@ def test_removing_argument_preserves_neighbouring_comment_and_defaults_are_not_r
 
 
 def test_condition_operands_keep_their_own_type_suggestions():
-    from pyblocks.core.parameters import choices
+    from little_tinker_rig.core.parameters import choices
 
     owner = session("if speed > 0 and count > 0:\n    pass\n", builtin_snippets())
     value = field(owner, "0")

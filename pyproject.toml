@@ -3,7 +3,7 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pyblocks-studio"
+name = "little-tinker-rig"
 version = "0.1.0"
 description = "Structural Python editor with optional Pybricks robotics support"
 readme = "README.md"
@@ -25,10 +25,15 @@ qt = [
 pybricks = ["pybricksdev>=2.3,<3"]
 gamepad = ["pygame-ce>=2.5,<3"]
 
+[project.urls]
+Homepage = "https://github.com/alepoydes/little-tinker-rig"
+Repository = "https://github.com/alepoydes/little-tinker-rig"
+Issues = "https://github.com/alepoydes/little-tinker-rig/issues"
+
 [project.scripts]
-pyblocks = "pyblocks.cli.main:main"
-pyblocks-qt = "pyblocks.qt.app:main"
-pyblocks-tui = "pyblocks.tui.app:main"
+little-tinker-rig = "little_tinker_rig.cli.main:main"
+little-tinker-rig-qt = "little_tinker_rig.qt.app:main"
+little-tinker-rig-tui = "little_tinker_rig.tui.app:main"
 
 [dependency-groups]
 dev = [
@@ -40,14 +45,14 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["pyblocks*"]
+include = ["little_tinker_rig*"]
 namespaces = false
 
 [tool.setuptools.cmdclass]
 build_py = "build_support.BuildPy"
 
 [tool.setuptools.package-data]
-pyblocks = ["snippets/**/*.py", "snippets/**/*.toml", "core/formatting.toml", "locale/languages.json", "locale/**/*.po", "locale/**/*.mo", "qt/icons/*.svg"]
+little_tinker_rig = ["snippets/**/*.py", "snippets/**/*.toml", "core/formatting.toml", "locale/languages.json", "locale/**/*.po", "locale/**/*.mo", "qt/icons/*.svg"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -64,7 +69,7 @@ select = ["E4", "E7", "E9", "F", "I", "UP", "B"]
 # Templates are parsed, not executed. String annotations define type/unit contracts;
 # imports declare expansion dependencies, including names used by defaults.
 # Defaults, assignments and empty loop bodies are intentional expansion patterns.
-"pyblocks/snippets/**/*.py" = ["F401", "F722", "F821", "F841", "B006", "B007", "B008", "UP037"]
+"little_tinker_rig/snippets/**/*.py" = ["F401", "F722", "F821", "F841", "B006", "B007", "B008", "UP037"]
 
 [tool.black]
 target-version = ["py311"]

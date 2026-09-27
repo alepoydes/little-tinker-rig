@@ -11,15 +11,15 @@ from babel.messages.catalog import Catalog
 from babel.messages.mofile import write_mo
 from babel.messages.pofile import read_po, write_po
 
-from pyblocks.core.block_metadata import decorator
+from little_tinker_rig.core.block_metadata import decorator
 
 ROOT = Path(__file__).resolve().parents[1]
-LOCALES = ROOT / "pyblocks/locale"
+LOCALES = ROOT / "little_tinker_rig/locale"
 
 
 def messages():
-    catalog = Catalog(project="PyBlocks Studio", version="0.1", charset="utf-8")
-    for path in sorted((ROOT / "pyblocks").rglob("*.py")):
+    catalog = Catalog(project="LittleTinker Rig", version="0.1", charset="utf-8")
+    for path in sorted((ROOT / "little_tinker_rig").rglob("*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"))
         parents = {
             child: node
@@ -40,7 +40,7 @@ def messages():
                 catalog.add(
                     node.value, locations=[(str(path.relative_to(ROOT)), node.lineno)]
                 )
-    for path in sorted((ROOT / "pyblocks/snippets").rglob("*.py")):
+    for path in sorted((ROOT / "little_tinker_rig/snippets").rglob("*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"))
         functions = [
             node
@@ -70,12 +70,12 @@ def main():
         if code == "en":
             continue
         directory = LOCALES / code / "LC_MESSAGES"
-        path = directory / "pyblocks.po"
+        path = directory / "little_tinker_rig.po"
         if path.exists():
             with path.open("rb") as stream:
                 catalog = read_po(stream, locale=code)
         else:
-            catalog = Catalog(locale=code, project="PyBlocks Studio", version="0.1")
+            catalog = Catalog(locale=code, project="LittleTinker Rig", version="0.1")
         if action == "update":
             catalog.update(template, no_fuzzy_matching=True)
             directory.mkdir(parents=True, exist_ok=True)
@@ -117,7 +117,7 @@ def main():
         if not missing and not invalid:
             compiled = io.BytesIO()
             write_mo(compiled, catalog)
-            binary = directory / "pyblocks.mo"
+            binary = directory / "little_tinker_rig.mo"
             if action == "compile":
                 binary.write_bytes(compiled.getvalue())
             elif not binary.exists() or binary.read_bytes() != compiled.getvalue():

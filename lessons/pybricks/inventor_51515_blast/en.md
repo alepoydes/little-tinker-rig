@@ -21,7 +21,7 @@ Sources: [index.md](https://github.com/pybricks/pybricks-projects/blob/faaacce09
 
 Follow the authored LDraw steps, rotate the model and select parts to inspect their placement. Step numbers differ from the LEGO PDF. Recommended view frames the current construction. Flexible components are shown as single items, including their attached cables.
 
-Digital model and authored steps: [Philippe Hurbain (Philo)](https://forums.ldraw.org/thread-23742.html), [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/). Original robot: LEGO Group. Adapted for Studio; parts come from the external LDraw library.
+Digital model and authored steps: [Philippe Hurbain (Philo)](https://forums.ldraw.org/thread-23742.html), [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/). Original robot: LEGO Group. Adapted for LittleTinker Rig; parts come from the external LDraw library.
 
 - [Official LEGO instructions (PDF downloads)](https://www.lego.com/en-us/service/building-instructions/51515)
 - [LEGO PDF 1](https://www.lego.com/cdn/product-assets/product.bi.additional.main.pdf/51515_Blast.pdf)
@@ -47,7 +47,7 @@ Use Run to start this file and Stop to finish. Compare what you predicted with t
 
 ### Upstream explanation (MIT)
 
-The following licensed notes describe the original workflow. Program links above open the adapted Studio copies; installation and terminal names may refer to Pybricks Code.
+The following licensed notes describe the original workflow. Program links above open the adapted LittleTinker Rig copies; installation and terminal names may refer to Pybricks Code.
 
 #### Program
 The playing instructions for each robot variant are in the docstrings of the corresponding file.

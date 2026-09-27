@@ -4,8 +4,8 @@ np = pytest.importorskip("numpy")
 pytest.importorskip("moderngl")
 pytest.importorskip("PySide6")
 
-from pyblocks.core.ldraw import box_corners  # noqa: E402
-from pyblocks.qt.lego_view import Camera  # noqa: E402
+from little_tinker_rig.core.ldraw import box_corners  # noqa: E402
+from little_tinker_rig.qt.lego_view import Camera  # noqa: E402
 
 
 def camera_and_points(screen_bounds):

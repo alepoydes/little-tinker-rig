@@ -31,7 +31,7 @@
       "notes": []
     }
   ],
-  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included.",
+  "adaptation": "LittleTinker Rig: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included.",
   "models": [
     {
       "path": "robot/model.mpd",
@@ -45,7 +45,7 @@
       "license": "CC-BY-2.0",
       "license_file": "robot/CAreadme.txt",
       "license_url": "https://creativecommons.org/licenses/by/2.0/",
-      "adaptation": "PyBlocks Studio: embedded part definitions removed; OMR-prefixed part references resolve through the external LDraw library. Assembly transforms, colors, steps and licensed flexible-component geometry are retained.",
+      "adaptation": "LittleTinker Rig: embedded part definitions removed; OMR-prefixed part references resolve through the external LDraw library. Assembly transforms, colors, steps and licensed flexible-component geometry are retained.",
       "steps": 104,
       "official_instructions": "https://www.lego.com/en-us/service/building-instructions/75253",
       "pdfs": [

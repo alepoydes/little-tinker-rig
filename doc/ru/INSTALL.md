@@ -1,6 +1,19 @@
 # Установка и запуск
 
-PyBlocks работает на компьютере. Программу для робота он передаёт на хаб
+Исходный код доступен на [GitHub](https://github.com/alepoydes/little-tinker-rig):
+
+```sh
+git clone https://github.com/alepoydes/little-tinker-rig.git
+cd little-tinker-rig
+```
+
+Настройки PyBlocks, пользовательские блоки и загруженный кеш сохраняются.
+При новой установке данные и кеш используют каталог `little-tinker-rig`
+в стандартных пользовательских каталогах ОС. Новые проекты уроков имеют
+расширение `.ltr`; прежние `.pyblocks` и рабочие файлы `.pyblocks.json`
+по-прежнему читаются.
+
+LittleTinker Rig работает на компьютере. Программу для робота он передаёт на хаб
 с установленной прошивкой Pybricks. Для знакомства с редактором робот не нужен.
 
 При первом запуске интерфейс английский. **View → Language → Русский**
@@ -17,21 +30,21 @@ PyBlocks работает на компьютере. Программу для �
 
 ```sh
 uv sync --extra qt
-uv run --extra qt pyblocks-qt examples/first.py
+uv run --extra qt little-tinker-rig-qt examples/first.py
 ```
 
 Терминальный редактор:
 
 ```sh
 uv sync --extra tui
-uv run --extra tui pyblocks-tui examples/first.py
+uv run --extra tui little-tinker-rig-tui examples/first.py
 ```
 
 Для работы с хабом добавьте `--extra pybricks` при установке и запуске:
 
 ```sh
 uv sync --extra qt --extra pybricks
-uv run --extra qt --extra pybricks pyblocks-qt examples/motor.py
+uv run --extra qt --extra pybricks little-tinker-rig-qt examples/motor.py
 ```
 
 Физический геймпад требует ещё `--extra gamepad`. Установка терминального
@@ -58,7 +71,7 @@ python -m venv .venv
 
 ```sh
 python -m pip install '.[qt,pybricks]'
-pyblocks-qt examples/first.py
+little-tinker-rig-qt examples/first.py
 ```
 
 ## Если запуск не удался

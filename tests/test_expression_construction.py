@@ -4,7 +4,7 @@ import ast
 
 import pytest
 
-from pyblocks.core.expressions import (
+from little_tinker_rig.core.expressions import (
     OPERATIONS,
     Proposal,
     children,
@@ -16,10 +16,10 @@ from pyblocks.core.expressions import (
     targets,
     unwrap,
 )
-from pyblocks.core.session import Session
-from pyblocks.core.snippets import builtin_snippets, load_module
-from pyblocks.core.structure import sequence
-from pyblocks.pybricks.program import Program
+from little_tinker_rig.core.session import Session
+from little_tinker_rig.core.snippets import builtin_snippets, load_module
+from little_tinker_rig.core.structure import sequence
+from little_tinker_rig.pybricks.program import Program
 
 
 def select_value(session, text):
@@ -158,7 +158,7 @@ def test_comparison_chain_evaluates_middle_operand_once_and_short_circuits():
 
 
 def test_attribute_and_unpacking_targets_use_structural_tools():
-    from pyblocks.core.parameters import change_parameter, slots
+    from little_tinker_rig.core.parameters import change_parameter, slots
 
     owner = Session.fragment("target = 12\n", builtin_snippets())
     select_value(owner, "target")
@@ -181,7 +181,7 @@ def test_attribute_and_unpacking_targets_use_structural_tools():
 
 
 def test_outer_scope_actions_preserve_docstrings_and_validate_atomically(tmp_path):
-    from pyblocks.core.structure import declare_scope
+    from little_tinker_rig.core.structure import declare_scope
 
     path = tmp_path / "scopes.py"
     path.write_text(
@@ -229,8 +229,8 @@ def test_imports_and_sequence_edits_keep_focus_on_the_new_input(tmp_path):
 
 
 def test_structural_header_actions_preserve_executable_python(tmp_path):
-    from pyblocks.core.parameters import change_parameter, slots
-    from pyblocks.core.structure import add_import, function_field
+    from little_tinker_rig.core.parameters import change_parameter, slots
+    from little_tinker_rig.core.structure import add_import, function_field
 
     path = tmp_path / "headers.py"
     path.write_text(
@@ -311,7 +311,7 @@ def test_qt_composition_search_keyboard_and_collection_controls(qt_app):
     from PySide6.QtCore import Qt
     from PySide6.QtTest import QTest
 
-    from pyblocks.qt.editor import SourceView
+    from little_tinker_rig.qt.editor import SourceView
 
     owner = Session.fragment("result = ...\n", builtin_snippets())
     view = SourceView(owner)
@@ -353,7 +353,7 @@ def test_qt_composition_search_keyboard_and_collection_controls(qt_app):
 def test_ambiguous_palette_target_is_explicit_and_cancel_preserves_selection(
     tmp_path, qt_app
 ):
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     window = Studio(tmp_path / "targets.py")
     window.confirm_close = lambda *_: True

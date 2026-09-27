@@ -6,14 +6,18 @@ from unittest.mock import patch
 
 import pytest
 
-from pyblocks.core.authoring import (
+from little_tinker_rig.core.authoring import (
     DefinitionDraft,
     template_from_source,
     user_collection,
 )
-from pyblocks.core.block_metadata import change_property
-from pyblocks.core.session import Session
-from pyblocks.core.snippets import builtin_snippets, instantiate, load_collection
+from little_tinker_rig.core.block_metadata import change_property
+from little_tinker_rig.core.session import Session
+from little_tinker_rig.core.snippets import (
+    builtin_snippets,
+    instantiate,
+    load_collection,
+)
 
 SOURCE = '@inline_block(level="intermediate", icon="▶", color="action")\ndef show(value=1):\n    """Show a value."""\n    print(value)\n'
 
@@ -104,14 +108,14 @@ def test_save_refuses_external_edits_and_rolls_back_manifest_failure(tmp_path):
     draft.path.write_text(SOURCE.split("\n", 1)[1])
     draft = DefinitionDraft(draft.path)
     original = draft.saved_source
-    from pyblocks.core.project import atomic_write
+    from little_tinker_rig.core.project import atomic_write
 
     def fail_manifest(path, text):
         if path.name == "collection.toml":
             raise OSError("unavailable")
         atomic_write(path, text)
 
-    with patch("pyblocks.core.authoring.atomic_write", fail_manifest):
+    with patch("little_tinker_rig.core.authoring.atomic_write", fail_manifest):
         with pytest.raises(OSError, match="unavailable"):
             draft.save()
     assert draft.path.read_text() == original
@@ -156,7 +160,7 @@ def test_selection_becomes_a_template_without_executing_it():
     source = template_from_source(
         "motor.run(300)\nwait(500)\nmotor.brake()", ("from pybricks.tools import wait",)
     )
-    from pyblocks.core.snippets import load_module
+    from little_tinker_rig.core.snippets import load_module
 
     snippet = load_module(source, "test", "1")[0]
     expansion = instantiate(snippet, {})
@@ -171,7 +175,7 @@ def test_editor_preview_navigation_drafts_and_test_values(tmp_path, qt_app):
     from PySide6.QtGui import QTextCursor
     from PySide6.QtTest import QTest
 
-    from pyblocks.qt.authoring import BlockEditor
+    from little_tinker_rig.qt.authoring import BlockEditor
 
     root = user_collection(tmp_path)
     page = BlockEditor(lambda: root, lambda root, snippets: None)
@@ -252,14 +256,16 @@ def test_editor_preview_navigation_drafts_and_test_values(tmp_path, qt_app):
 def test_studio_applies_definitions_without_committing_program_drafts(tmp_path, qt_app):
     from PySide6.QtCore import QUrl
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     program = tmp_path / "main.py"
     program.write_text("print(1)\n")
     window = Studio(program)
     window.confirm_close = lambda page: True
     try:
-        window.help_page.follow_link(QUrl("pyblocks-definition:python/basics/show"))
+        window.help_page.follow_link(
+            QUrl("little-tinker-rig-definition:python/basics/show")
+        )
         # Open through the actual library signal with an existing template.
         snippet = window.session.snippets[0]
         window.library.definition_requested.emit(snippet.identity)
@@ -307,7 +313,7 @@ def test_studio_applies_definitions_without_committing_program_drafts(tmp_path, 
 
 
 def test_selection_preserves_multiline_literals_and_expression_kind():
-    from pyblocks.core.snippets import load_module
+    from little_tinker_rig.core.snippets import load_module
 
     source = '    message = """first\n  exact spaces\nlast"""\n    print(message)\n'
     snippet = load_module(template_from_source(source), "test", "1")[0]
@@ -332,7 +338,7 @@ def test_selection_preserves_multiline_literals_and_expression_kind():
 def test_editor_groups_copies_and_language_changes_keep_edits(tmp_path, qt_app):
     from PySide6.QtGui import QTextCursor
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     window = Studio(tmp_path / "main.py")
     window.confirm_close = lambda page: True
@@ -380,7 +386,7 @@ def test_editor_groups_copies_and_language_changes_keep_edits(tmp_path, qt_app):
 def test_metadata_controls_are_source_edits_with_undo_and_no_manifest_changes(
     tmp_path, qt_app
 ):
-    from pyblocks.qt.authoring import BlockEditor
+    from little_tinker_rig.qt.authoring import BlockEditor
 
     root = user_collection(tmp_path)
     manifest = (root / "collection.toml").read_bytes()
@@ -413,7 +419,7 @@ def test_metadata_controls_are_source_edits_with_undo_and_no_manifest_changes(
 
 
 def test_shared_helpers_preview_copy_and_rename_together(tmp_path, qt_app):
-    from pyblocks.qt.authoring import BlockEditor
+    from little_tinker_rig.qt.authoring import BlockEditor
 
     root = user_collection(tmp_path)
     source = '''"""Measurements"""
@@ -452,7 +458,7 @@ def measure(value=-3) -> "number":
 
 
 def test_copy_checks_import_collisions_before_changing_module(tmp_path, qt_app):
-    from pyblocks.qt.authoring import BlockEditor
+    from little_tinker_rig.qt.authoring import BlockEditor
 
     root = user_collection(tmp_path)
     page = BlockEditor(lambda: root, lambda *_: None)
@@ -479,7 +485,7 @@ def test_copy_checks_import_collisions_before_changing_module(tmp_path, qt_app):
 
 
 def test_created_name_preview_navigates_to_its_typed_declaration(tmp_path, qt_app):
-    from pyblocks.qt.authoring import BlockEditor
+    from little_tinker_rig.qt.authoring import BlockEditor
 
     root = user_collection(tmp_path)
     page = BlockEditor(lambda: root, lambda *_: None)

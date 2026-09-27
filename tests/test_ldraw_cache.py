@@ -10,10 +10,10 @@ import pytest
 
 np = pytest.importorskip("numpy")
 
-from pyblocks.core import ldraw_cache  # noqa: E402
-from pyblocks.core.ldraw import LDraw  # noqa: E402
-from pyblocks.core.ldraw_cache import load_scene  # noqa: E402
-from pyblocks.core.paths import parts_cache  # noqa: E402
+from little_tinker_rig.core import ldraw_cache  # noqa: E402
+from little_tinker_rig.core.ldraw import LDraw  # noqa: E402
+from little_tinker_rig.core.ldraw_cache import load_scene  # noqa: E402
+from little_tinker_rig.core.paths import parts_cache  # noqa: E402
 
 
 def part(length):
@@ -79,9 +79,9 @@ def test_scene_cache_survives_restart_and_lesson_copy(model, tmp_path, monkeypat
     code = """
 import sys
 from pathlib import Path
-import pyblocks.core.paths as paths
-from pyblocks.core.ldraw import LDraw
-from pyblocks.core.ldraw_cache import load_scene
+import little_tinker_rig.core.paths as paths
+from little_tinker_rig.core.ldraw import LDraw
+from little_tinker_rig.core.ldraw_cache import load_scene
 paths.user_cache_path = lambda *a, **k: Path(sys.argv[3])
 def no_parse(*args):
     raise AssertionError('A new process must reuse the scene cache')

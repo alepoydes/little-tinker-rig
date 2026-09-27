@@ -8,9 +8,9 @@ Model sections and LDCad-generated flexible geometry retain their individual
 Author and !LICENSE headers. They are distributed under Creative Commons
 Attribution 2.0 (CC BY 2.0): https://creativecommons.org/licenses/by/2.0/
 
-PyBlocks Studio: embedded part definitions removed; OMR-prefixed part references resolve through the external LDraw library. Assembly transforms, colors, steps and licensed flexible-component geometry are retained.
+LittleTinker Rig: embedded part definitions removed; OMR-prefixed part references resolve through the external LDraw library. Assembly transforms, colors, steps and licensed flexible-component geometry are retained.
 The external LDraw Parts Library has its own attribution and licenses.
-This model is not covered by PyBlocks Studio's MIT software license.
+This model is not covered by LittleTinker Rig's MIT software license.
 LEGO is a trademark of the LEGO Group. This independent adaptation is not
 sponsored, endorsed or authorized by the LEGO Group or the digital model author.
 

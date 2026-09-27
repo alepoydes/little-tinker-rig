@@ -5,14 +5,14 @@ import re
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
-from pyblocks.documentation import heading_anchors, prose
+from little_tinker_rig.documentation import heading_anchors, prose
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def check(root=ROOT):
     languages = json.loads(
-        (root / "pyblocks/locale/languages.json").read_text(encoding="utf-8")
+        (root / "little_tinker_rig/locale/languages.json").read_text(encoding="utf-8")
     )
     docs = root / "doc"
     pages = {

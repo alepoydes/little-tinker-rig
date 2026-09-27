@@ -4,10 +4,10 @@ import tomllib
 
 import pytest
 
-from pyblocks.core.authoring import DefinitionDraft, user_collection
-from pyblocks.core.paths import personal_collection
-from pyblocks.core.session import Session
-from pyblocks.core.snippets import (
+from little_tinker_rig.core.authoring import DefinitionDraft, user_collection
+from little_tinker_rig.core.paths import personal_collection
+from little_tinker_rig.core.session import Session
+from little_tinker_rig.core.snippets import (
     instantiate,
     load_collection,
     load_module,
@@ -15,10 +15,29 @@ from pyblocks.core.snippets import (
     snippet_groups,
     upgrade,
 )
-from pyblocks.core.syntax import Syntax
-from pyblocks.core.versions import next_version
+from little_tinker_rig.core.syntax import Syntax
+from little_tinker_rig.core.versions import next_version
 
 SOURCE = '@block(level="beginner", color="action", icon="▶")\ndef show(value: "number" = 3):\n    print(value + 1)\n'
+
+
+@pytest.mark.parametrize("kind", ["data", "cache"])
+def test_rename_reuses_existing_user_storage(tmp_path, monkeypatch, kind):
+    from little_tinker_rig.core import paths
+
+    monkeypatch.setattr(paths, f"user_{kind}_path", lambda name, **_: tmp_path / name)
+    location = paths.personal_collection if kind == "data" else paths.parts_cache
+    current = tmp_path / "little-tinker-rig"
+    previous = tmp_path / "pyblocks-studio"
+    assert location().parent == current
+    assert not current.exists()
+    previous.mkdir()
+    marker = previous / "saved-resource"
+    marker.write_text("keep")
+    assert location().parent == previous
+    current.mkdir()
+    assert location().parent == current
+    assert marker.read_text() == "keep"
 
 
 def test_personal_library_is_lazy_global_and_not_a_project_path(tmp_path):
@@ -111,7 +130,7 @@ def test_version_failures_leave_manifest_modules_and_history_unchanged(
     def fail(*_):
         raise OSError("injected manifest write failure")
 
-    monkeypatch.setattr("pyblocks.core.versions.atomic_write", fail)
+    monkeypatch.setattr("little_tinker_rig.core.versions.atomic_write", fail)
     with pytest.raises(OSError):
         next_version(root, "1.1.0")
     assert (root / "collection.toml").read_bytes() == manifest
@@ -138,7 +157,7 @@ def test_start_version_refreshes_definition_editor_without_editing_program(
 ):
     from PySide6.QtWidgets import QInputDialog
 
-    from pyblocks.qt.app import Studio
+    from little_tinker_rig.qt.app import Studio
 
     window = Studio(tmp_path / "main.py")
     window.confirm_close = lambda page: True
@@ -165,8 +184,8 @@ def test_start_version_refreshes_definition_editor_without_editing_program(
 
 
 def test_appearance_choices_use_source_values_across_languages(tmp_path, qt_app):
-    from pyblocks.i18n import set_language
-    from pyblocks.qt.authoring import BlockEditor
+    from little_tinker_rig.i18n import set_language
+    from little_tinker_rig.qt.authoring import BlockEditor
 
     root = user_collection(tmp_path)
     page = BlockEditor(lambda: root, lambda *_: None)
@@ -197,8 +216,8 @@ def test_appearance_choices_use_source_values_across_languages(tmp_path, qt_app)
 def test_upgrade_dialog_reviews_exact_changes_and_cancel_keeps_source(tmp_path, qt_app):
     from PySide6.QtCore import QTimer
 
-    from pyblocks.qt.app import Studio
-    from pyblocks.qt.dialogs import EditDialog
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.dialogs import EditDialog
 
     root = user_collection()
     path = root / "custom.py"

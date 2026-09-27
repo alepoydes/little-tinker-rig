@@ -65,7 +65,7 @@ Legacy modules are converted into a source draft; obsolete manifest levels are
 removed only when that draft is saved.
 
 The personal collection lives in the operating system's user data directory:
-`~/.local/share/pyblocks-studio/blocks/` on Linux by default, respecting
+`~/.local/share/little-tinker-rig/blocks/` on Linux by default, respecting
 `XDG_DATA_HOME`. **Open blocks folder** opens it. Existing personal blocks are
 available to every document and frontend automatically; this implicit connection
 is not written into each program's workspace. Explicit external collections can

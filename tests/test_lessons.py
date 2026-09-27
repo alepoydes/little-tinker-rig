@@ -4,8 +4,14 @@ from zipfile import ZipFile
 
 import pytest
 
-from pyblocks.core.lessons import Lesson, StudentProject, extract, pack, resource
-from pyblocks.core.project import Project
+from little_tinker_rig.core.lessons import (
+    Lesson,
+    StudentProject,
+    extract,
+    pack,
+    resource,
+)
+from little_tinker_rig.core.project import Project
 
 
 @pytest.fixture
@@ -50,7 +56,7 @@ def test_independent_projects_and_portable_draft(lesson, tmp_path):
     program.document.commit("", ("distance = 200\n",))
     program.save()
     first.progress.update(stage="drive", completed=["build"], hints={"drive": 1})
-    destination = tmp_path / "car.pyblocks"
+    destination = tmp_path / "car.ltr"
     first.save(destination)
     assert not first.dirty
     reopened = StudentProject.open(destination)
@@ -70,7 +76,7 @@ def test_package_and_recovery_keep_original_save_baseline(lesson, tmp_path):
     archive = tmp_path / "car.pylesson"
     archive.write_bytes(pack(lesson))
     project = StudentProject.create(archive)
-    saved = tmp_path / "student.pyblocks"
+    saved = tmp_path / "student.ltr"
     project.save(saved)
     project.progress["stage"] = "drive"
     recovered = StudentProject.restore(project.checkpoint())
@@ -79,7 +85,7 @@ def test_package_and_recovery_keep_original_save_baseline(lesson, tmp_path):
     with pytest.raises(ValueError, match="changed outside"):
         recovered.save()
     assert saved.read_bytes() == b"external edit"
-    recovered.save(tmp_path / "copy.pyblocks")
+    recovered.save(tmp_path / "copy.ltr")
     assert not recovered.dirty
 
 
@@ -113,7 +119,7 @@ def test_symlink_resources_are_not_followed(lesson, tmp_path):
 
 
 def test_markdown_stage_sections_ignore_code_and_keep_subsections():
-    from pyblocks.documentation import section
+    from little_tinker_rig.documentation import section
 
     text = """# Lesson
 <a name="drive"></a>
@@ -140,8 +146,8 @@ Save.
 def test_multifile_lesson_snapshot_is_independent_of_installed_examples(
     lesson, tmp_path, monkeypatch
 ):
-    import pyblocks.core.lessons as lessons
-    from pyblocks.pybricks.program import Program
+    import little_tinker_rig.core.lessons as lessons
+    from little_tinker_rig.pybricks.program import Program
 
     installed = tmp_path / "examples"
     installed.mkdir()
@@ -170,9 +176,7 @@ def test_multifile_lesson_snapshot_is_independent_of_installed_examples(
     assert "examples" not in project.lesson.data
     assert project.main.name == "main.py"
     for name in ("main.py", "shared.py"):
-        settings = json.loads(
-            (project.main.parent / (name + ".pyblocks.json")).read_text()
-        )
+        settings = json.loads((project.main.parent / (name + ".ltr.json")).read_text())
         assert (
             project.main.parent / settings["collections"][0]
         ).resolve() == project.lesson.root / "blocks"
@@ -185,7 +189,7 @@ def test_multifile_lesson_snapshot_is_independent_of_installed_examples(
     finally:
         snapshot.cleanup()
     project.main.write_text("# Student revision\n")
-    saved = tmp_path / "student.pyblocks"
+    saved = tmp_path / "student.ltr"
     project.save(saved)
     reopened = StudentProject.open(saved)
     assert reopened.main.read_text() == "# Student revision\n"
@@ -216,8 +220,8 @@ def test_lesson_program_manifest_rejects_ambiguous_or_unsafe_paths(lesson, chang
 def test_bundled_pybricks_lessons_have_resolvable_materials_programs_and_palettes():
     import re
 
-    from pyblocks.core.lessons import lessons_directory
-    from pyblocks.core.snippets import builtin_snippets
+    from little_tinker_rig.core.lessons import lessons_directory
+    from little_tinker_rig.core.snippets import builtin_snippets
 
     available = {s.identity for s in builtin_snippets()}
     paths = sorted((lessons_directory() / "pybricks").glob("*/lesson.json"))

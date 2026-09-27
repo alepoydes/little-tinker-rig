@@ -8,9 +8,9 @@ import argparse
 import hashlib
 from pathlib import Path
 
-from pyblocks.core.ldraw_parts import digest, subset
-from pyblocks.core.paths import parts_cache
-from pyblocks.core.project import atomic_write
+from little_tinker_rig.core.ldraw_parts import digest, subset
+from little_tinker_rig.core.paths import parts_cache
+from little_tinker_rig.core.project import atomic_write
 
 
 def main():

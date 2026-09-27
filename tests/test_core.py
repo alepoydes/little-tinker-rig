@@ -2,11 +2,11 @@ import ast
 
 import pytest
 
-from pyblocks.core import edit
-from pyblocks.core.document import Document
-from pyblocks.core.interaction import Editor
-from pyblocks.core.presentation import regions
-from pyblocks.core.syntax import Syntax, parse
+from little_tinker_rig.core import edit
+from little_tinker_rig.core.document import Document
+from little_tinker_rig.core.interaction import Editor
+from little_tinker_rig.core.presentation import regions
+from little_tinker_rig.core.syntax import Syntax, parse
 
 
 def test_unicode_offsets_and_ownership():
