@@ -171,6 +171,72 @@ def test_independent_assembly_survives_lesson_and_document_changes(tmp_path, qt_
         window.deleteLater()
 
 
+def test_assembly_link_works_without_task_card_and_selects_lesson_robot(
+    tmp_path, qt_app, monkeypatch
+):
+    from PySide6.QtCore import Qt, QUrl
+    from PySide6.QtTest import QTest
+
+    from pyblocks.qt.app import Studio
+    from pyblocks.qt.assembly import AssemblyPage
+
+    # Navigation does not depend on geometry loading or a graphics context.
+    monkeypatch.setattr(AssemblyPage, "load", lambda self: None)
+    root = make_lesson(tmp_path)
+    (root / "goal.md").write_text(
+        "# Build the robot\n\n"
+        + "Read the instructions and check each connection.\n\n" * 30
+        + "| Port | Device |\n|---|---|\n| A | Motor |\n"
+    )
+    (root / "robot.ldr").write_text("0 Original model\n")
+    (root / "robot.json").write_text(
+        json.dumps(
+            {"format": 1, "model": "robot.ldr", "steps": {"1": {}, "2": {}, "3": {}}}
+        )
+    )
+    data = json.loads((root / "lesson.json").read_text())
+    data["robot"] = "robot.json"
+    data["stages"][0].update(mode="assembly", assembly=[2, 3])
+    (root / "lesson.json").write_text(json.dumps(data))
+    window = Studio(tmp_path / "plain.py")
+    window.show()
+    try:
+        page = window.lessons.open(root)
+        lesson = window.lessons
+        page.session.editor.commit("unfinished_work = 42\n")
+        lesson.guidance.trigger()
+        qt_app.processEvents()
+        assert lesson.card.isHidden()
+        assert 'href="assembly:"' in lesson.description.toHtml()
+        assert lesson.description.verticalScrollBar().maximum() > 0
+        assert lesson.description.verticalScrollBar().value() == 0
+        assert not lesson.assembly.attempted
+        lesson.assembly_host.open(root / "robot.json")
+        assert not lesson.assembly_host.showing_lesson
+        cursor = lesson.description.document().find("Open 3D building instructions")
+        cursor.setPosition(cursor.selectionStart() + 5)
+        position = lesson.description.cursorRect(cursor).center()
+        assert lesson.description.viewport().rect().contains(position)
+        QTest.mouseClick(
+            lesson.description.viewport(), Qt.MouseButton.LeftButton, pos=position
+        )
+        assert window.pages.currentIndex() == 5
+        assert lesson.assembly_host.showing_lesson
+        assert lesson.assembly.step == 1
+        lesson.assembly.set_step(2)
+        lesson.follow_link(QUrl("lesson:"))
+        lesson.description.anchorClicked.emit(QUrl("assembly:"))
+        assert lesson.assembly.step == 2
+        assert page.text == "unfinished_work = 42\n"
+        assert lesson.current.stage["id"] == "drive"
+        assert not lesson.current.progress["completed"]
+        lesson.select_stage(1)
+        assert 'href="assembly:"' not in lesson.description.toHtml()
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
 def test_starter_preserves_draft_and_device_check_uses_stage_ports(tmp_path, qt_app):
     from pyblocks.pybricks.devices import HubInfo
     from pyblocks.qt.app import Studio

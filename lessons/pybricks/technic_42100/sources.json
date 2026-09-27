@@ -1,0 +1,87 @@
+{
+  "models": [
+    {
+      "path": "robot/model.mpd",
+      "title": "42100 - Liebherr R 9800",
+      "author": "Philippe Hurbain [Philo]",
+      "designer": "LEGO Group",
+      "source": "https://forums.ldraw.org/thread-23139.html",
+      "download": "https://www.brickshelf.com/gallery/Philo/SetModels/Set42100/42100_-_liebherr_r_9800.mpd",
+      "source_sha256": "eb21935ae6757744edaee7a29deb3b51627b380a200b8c553643ad074490703c",
+      "sha256": "f22d4053fa6b7ea0ee8904f5911538e297d2f853389cc45ef4266f2193b7c511",
+      "license": "CC-BY-2.0",
+      "license_file": "robot/CAreadme.txt",
+      "license_url": "https://creativecommons.org/licenses/by/2.0/",
+      "adaptation": "PyBlocks Studio: embedded part definitions removed; OMR-prefixed part references resolve through the external LDraw library. Assembly transforms, colors, steps and licensed flexible-component geometry are retained.",
+      "steps": 530,
+      "official_instructions": "https://www.lego.com/en-us/service/building-instructions/42100",
+      "pdfs": [
+        "https://www.lego.com/cdn/product-assets/product.bi.core.pdf/6324103.pdf",
+        "https://www.lego.com/cdn/product-assets/product.bi.core.pdf/6324716.pdf"
+      ],
+      "known_limitations": [
+        "No stickers"
+      ]
+    }
+  ],
+  "authors": [
+    "PyBlocks Studio contributors"
+  ],
+  "programs": [
+    {
+      "file": "community/technic_42100_base_xbox.py",
+      "set": 42100,
+      "source": "https://raw.githubusercontent.com/gibona/pybricks/74a66fc2c2de2ce7707f15d388f85bd7243c64fa/technic42100bottom.py",
+      "reference": "https://github.com/orgs/pybricks/discussions/1738",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Assembled LEGO 42100 with both Technic hubs",
+        "Compatible Bluetooth Xbox controller"
+      ],
+      "firmware": "4.0",
+      "sha256": "91cd79dc21ee327a84354943f8492fe559018385f2d5bd19c2721edf5ef91142",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-virtual-motors"
+      ],
+      "status": "modernized",
+      "level": "expert",
+      "notes": [
+        "Lower hub: Xbox input, tracks, turntable, command broadcaster",
+        "New implementation using the community control/port layout; upstream source is a reference, not an AST-equivalent import.",
+        "50 ms loop, reduced speed limits, X slow mode, Y stop, 500 ms receiver sequence watchdog; no physical verification."
+      ]
+    },
+    {
+      "file": "community/technic_42100_upper.py",
+      "set": 42100,
+      "source": "https://raw.githubusercontent.com/gibona/pybricks/74a66fc2c2de2ce7707f15d388f85bd7243c64fa/technic42100top.py",
+      "reference": "https://github.com/orgs/pybricks/discussions/1738",
+      "role": "program",
+      "dependencies": [],
+      "extra_hardware": [
+        "Assembled LEGO 42100 with both Technic hubs",
+        "Compatible Bluetooth Xbox controller"
+      ],
+      "firmware": "4.0",
+      "sha256": "91023a94a41547738f9bd8364f59e3ba178241b86df8da7f256c28b93367aa86",
+      "validation": [
+        "block-rebuild",
+        "mpy5",
+        "mpy6",
+        "scripted-virtual-motors"
+      ],
+      "status": "modernized",
+      "level": "expert",
+      "notes": [
+        "Upper hub: boom, arm, bucket tilt/opening, command watchdog",
+        "New implementation using the community control/port layout; upstream source is a reference, not an AST-equivalent import.",
+        "50 ms loop, reduced speed limits, X slow mode, Y stop, 500 ms receiver sequence watchdog; no physical verification."
+      ]
+    }
+  ],
+  "adaptation": "Original PyBlocks MIT implementations using the cited community control layout; upstream source files are not redistributed. LDraw model licensing is separate."
+}

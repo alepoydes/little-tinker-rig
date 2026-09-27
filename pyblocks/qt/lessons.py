@@ -196,6 +196,8 @@ class Lessons(QObject):
     def follow_link(self, url):
         if url.scheme() == "program":
             self.open_program(url.path())
+        elif url.scheme() == "assembly":
+            self.open_assembly()
         elif url.scheme() == "lesson":
             self.show_stage()
         elif url.scheme() in ("http", "https"):
@@ -343,6 +345,8 @@ class Lessons(QObject):
         self.stages.blockSignals(False)
         stage = project.stage
         text = project.lesson.description(stage, language())
+        if stage.get("mode") == "assembly":
+            text = f"**[{tr('Open 3D building instructions')}](assembly:)**\n\n{text}"
         shown = project.progress.get("hints", {}).get(stage["id"], 0)
         for hint in stage.get("hints", [])[:shown]:
             text += "\n\n---\n\n" + localized(hint, language())
@@ -358,6 +362,7 @@ class Lessons(QObject):
         )
         self.description.setMarkdown(text)
         self.description.style_document()
+        self.description.verticalScrollBar().setValue(0)
         self.task.setText(
             tr(
                 "Stage {current} of {total} · {title}",
@@ -429,14 +434,20 @@ class Lessons(QObject):
     def start_stage(self):
         if self.current:
             mode = self.current.stage.get("mode", "program")
+            if mode == "assembly":
+                self.open_assembly()
+                return
             if mode == "program" and "program" in self.current.stage:
                 self.open_program(self.current.stage["program"])
-            if mode == "assembly" and self.assembly:
-                self.assembly_host.select_lesson()
-                steps = self.current.stage.get("assembly")
-                if steps and not steps[0] - 1 <= self.assembly.step < steps[1]:
-                    self.assembly.set_step(steps[0] - 1)
-            self.window.set_mode({"program": 0, "control": 1, "assembly": 5}[mode])
+            self.window.set_mode({"program": 0, "control": 1}[mode])
+
+    def open_assembly(self):
+        if self.current and self.assembly:
+            self.assembly_host.select_lesson()
+            steps = self.current.stage.get("assembly")
+            if steps and not steps[0] - 1 <= self.assembly.step < steps[1]:
+                self.assembly.set_step(steps[0] - 1)
+            self.window.set_mode(5)
 
     def hint(self):
         if self.current:

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PyBlocks Studio 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-27 07:03+0300\n"
+"POT-Creation-Date: 2026-09-27 10:16+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -38,11 +38,11 @@ msgstr " · отпустите для возврата к нулю"
 msgid " · {p0:.2f} V"
 msgstr " · {p0:.2f} В"
 
-#: pyblocks/qt/assembly.py:279
+#: pyblocks/qt/assembly.py:280
 msgid "3D is unavailable on this display. Step descriptions and parts are still available."
 msgstr "На этом экране 3D недоступно. Описание шагов и список деталей доступны."
 
-#: pyblocks/qt/assembly.py:286
+#: pyblocks/qt/assembly.py:289
 #, python-brace-format
 msgid "3D unavailable: {detail}"
 msgstr "3D недоступно: {detail}"
@@ -181,7 +181,7 @@ msgstr "Аргументы: {name}"
 msgid "Assembly"
 msgstr "Сборка"
 
-#: pyblocks/qt/assembly.py:306
+#: pyblocks/qt/assembly.py:312
 #, python-brace-format
 msgid "Assembly · step {current} of {total}"
 msgstr "Сборка · шаг {current} из {total}"
@@ -353,7 +353,7 @@ msgstr "Вызов: …(…)"
 msgid "Cancel"
 msgstr "Отмена"
 
-#: pyblocks/qt/assembly.py:158
+#: pyblocks/qt/assembly.py:159
 msgid "Cancel download"
 msgstr "Отменить загрузку"
 
@@ -532,7 +532,7 @@ msgstr ""
 msgid "Choose between two actions using a condition."
 msgstr "Выбрать одно из двух действий по условию."
 
-#: pyblocks/qt/assembly.py:513
+#: pyblocks/qt/assembly.py:520
 msgid "Choose one of the open robot models."
 msgstr "Выбери одну из открытых моделей роботов."
 
@@ -1399,7 +1399,7 @@ msgstr "Найти блок…"
 msgid "Find a definition…"
 msgstr "Найти определение…"
 
-#: pyblocks/qt/assembly.py:86
+#: pyblocks/qt/assembly.py:87
 msgid ""
 "Find a device already installed at this assembly step. This does not check its "
 "connection to the hub."
@@ -1850,16 +1850,16 @@ msgstr ""
 "\n"
 "Списки, строки и словари как обычные данные Python."
 
-#: pyblocks/qt/assembly.py:227
+#: pyblocks/qt/assembly.py:228
 #, python-brace-format
 msgid "Loading parts: {current} / {total} MiB"
 msgstr "Загрузка деталей: {current} / {total} МиБ"
 
-#: pyblocks/qt/assembly.py:62 pyblocks/qt/assembly.py:209
+#: pyblocks/qt/assembly.py:62 pyblocks/qt/assembly.py:210
 msgid "Loading robot model…"
 msgstr "Загрузка модели робота…"
 
-#: pyblocks/qt/assembly.py:348
+#: pyblocks/qt/assembly.py:355
 msgid "Locate a device"
 msgstr "Найти устройство"
 
@@ -2067,7 +2067,7 @@ msgstr "Следующий узел / цель"
 msgid "Next stage →"
 msgstr "Следующий этап →"
 
-#: pyblocks/qt/assembly.py:138
+#: pyblocks/qt/assembly.py:139
 msgid "Next step"
 msgstr "Следующий шаг"
 
@@ -2113,9 +2113,13 @@ msgstr ""
 msgid "Open"
 msgstr "Открыть"
 
-#: pyblocks/qt/assembly.py:523
+#: pyblocks/qt/assembly.py:530
 msgid "Open a robot.json file to follow assembly steps without a lesson."
 msgstr "Открой файл robot.json, чтобы пройти шаги сборки без урока."
+
+#: pyblocks/qt/lessons.py:349
+msgid "Open 3D building instructions"
+msgstr "Открыть пошаговую 3D-инструкцию"
 
 #: pyblocks/qt/lessons.py:377
 msgid "Open assembly"
@@ -2153,11 +2157,11 @@ msgstr "Открыть урок или проект…"
 msgid "Open local firmware…"
 msgstr "Открыть файл прошивки…"
 
-#: pyblocks/qt/assembly.py:176
+#: pyblocks/qt/assembly.py:177
 msgid "Open parts ZIP"
 msgstr "Открыть ZIP с деталями"
 
-#: pyblocks/qt/assembly.py:155
+#: pyblocks/qt/assembly.py:156
 msgid "Open parts ZIP…"
 msgstr "Открыть ZIP с деталями…"
 
@@ -2177,11 +2181,11 @@ msgstr "Открыть программу или урок"
 msgid "Open recent"
 msgstr "Открыть недавние"
 
-#: pyblocks/qt/assembly.py:594
+#: pyblocks/qt/assembly.py:601
 msgid "Open robot instructions"
 msgstr "Открыть инструкцию сборки"
 
-#: pyblocks/qt/assembly.py:529 pyblocks/qt/lessons.py:161
+#: pyblocks/qt/assembly.py:536 pyblocks/qt/lessons.py:161
 msgid "Open robot instructions…"
 msgstr "Открыть инструкцию сборки…"
 
@@ -2223,7 +2227,11 @@ msgstr "Параметры: {name}"
 msgid "Parent"
 msgstr "Родитель"
 
-#: pyblocks/qt/assembly.py:73
+#: pyblocks/qt/assembly.py:305
+msgid "Parts"
+msgstr "Детали"
+
+#: pyblocks/qt/assembly.py:73 pyblocks/qt/assembly.py:305
 msgid "Parts for this step"
 msgstr "Детали для этого шага"
 
@@ -2319,7 +2327,7 @@ msgstr "Предыдущий узел / цель"
 msgid "Previous position"
 msgstr "Прежнее положение"
 
-#: pyblocks/qt/assembly.py:131
+#: pyblocks/qt/assembly.py:132
 msgid "Previous step"
 msgstr "Предыдущий шаг"
 
@@ -2637,7 +2645,7 @@ msgstr "Прочитать, какая сторона хаба направле�
 msgid "Read-only"
 msgstr "Только чтение"
 
-#: pyblocks/qt/assembly.py:141
+#: pyblocks/qt/assembly.py:142
 msgid "Recommended view"
 msgstr "Рекомендуемый вид"
 
@@ -2796,7 +2804,7 @@ msgstr "Восстановить прошивку LEGO"
 msgid "Result"
 msgstr "Результат"
 
-#: pyblocks/qt/assembly.py:152
+#: pyblocks/qt/assembly.py:153
 msgid "Retry loading parts"
 msgstr "Повторить загрузку деталей"
 
@@ -2838,9 +2846,13 @@ msgstr ""
 "\n"
 "Короткие законченные действия в виде обычных функций Python."
 
-#: pyblocks/qt/assembly.py:249
+#: pyblocks/qt/assembly.py:250
 msgid "Robot instructions"
 msgstr "Инструкция сборки робота"
+
+#: pyblocks/qt/assembly.py:316
+msgid "Robot model"
+msgstr "Модель робота"
 
 #: pyblocks/snippets/pybricks/hub_display.py:6
 msgid "Rotate the display for the way the hub is mounted. Options: up."
@@ -3016,7 +3028,7 @@ msgstr ""
 "type должно иметь значение lego. Автоматическая загрузка LEGO доступна только для "
 "Inventor / SPIKE Prime."
 
-#: pyblocks/qt/assembly.py:78
+#: pyblocks/qt/assembly.py:79
 msgid "Select all copies added in this step. Click again or press Escape to clear."
 msgstr ""
 "Выдели все копии, добавляемые на этом шаге. Повторный щелчок или Escape снимает "
@@ -3176,7 +3188,7 @@ msgstr "Показать значок на дисплее Prime или Inventor.
 msgid "Show block"
 msgstr "Показать блок"
 
-#: pyblocks/qt/assembly.py:123
+#: pyblocks/qt/assembly.py:124
 msgid "Show future parts as outlines"
 msgstr "Показать контуры будущих деталей"
 
@@ -3589,11 +3601,11 @@ msgstr "Включить вибрацию Xbox для обратной связ�
 msgid "View"
 msgstr "Вид"
 
-#: pyblocks/qt/assembly.py:98
+#: pyblocks/qt/assembly.py:99
 msgid "View the whole robot or isolate an assembled section without changing the step."
 msgstr "Покажи всего робота или отдельно собранную часть, не меняя шаг."
 
-#: pyblocks/qt/assembly.py:108
+#: pyblocks/qt/assembly.py:109
 msgid "View:"
 msgstr "Вид:"
 
@@ -3649,7 +3661,7 @@ msgstr ""
 msgid "Warnings"
 msgstr "Предупреждения"
 
-#: pyblocks/qt/assembly.py:360
+#: pyblocks/qt/assembly.py:367
 msgid "Whole robot"
 msgstr "Весь робот"
 
@@ -3878,4 +3890,3 @@ msgstr "＋ Подключить хаб"
 
 #~ msgid "Start this stage"
 #~ msgstr "Начать этот этап"
-

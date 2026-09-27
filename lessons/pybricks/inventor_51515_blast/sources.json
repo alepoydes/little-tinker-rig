@@ -32,5 +32,27 @@
       "notes": []
     }
   ],
-  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included.",
+  "models": [
+    {
+      "path": "robot/model.mpd",
+      "title": "51515 - Blast",
+      "author": "Philippe Hurbain [Philo]",
+      "designer": "LEGO Group",
+      "source": "https://forums.ldraw.org/thread-23742.html",
+      "download": "https://www.brickshelf.com/gallery/Philo/SetModels/Set51515/51515_-_robot_inventor_-_blast.mpd",
+      "source_sha256": "cb4d9b097a2945bcccdaffeef0a0f87b6da963e5a7333898f0a4d10e3269abb7",
+      "sha256": "7718f15047cbbaa79de5499808f3abd26f32526f57a24e4f6def5659fd1657a0",
+      "license": "CC-BY-2.0",
+      "license_file": "robot/CAreadme.txt",
+      "license_url": "https://creativecommons.org/licenses/by/2.0/",
+      "adaptation": "PyBlocks Studio: embedded part definitions removed; OMR-prefixed part references resolve through the external LDraw library. Assembly transforms, colors, steps and licensed flexible-component geometry are retained.",
+      "steps": 91,
+      "official_instructions": "https://www.lego.com/en-us/service/building-instructions/51515",
+      "pdfs": [
+        "https://www.lego.com/cdn/product-assets/product.bi.additional.main.pdf/51515_Blast.pdf"
+      ],
+      "known_limitations": []
+    }
+  ]
 }

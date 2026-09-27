@@ -31,5 +31,27 @@
       "notes": []
     }
   ],
-  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included.",
+  "models": [
+    {
+      "path": "robot/model.mpd",
+      "title": "75253 - R2-D2",
+      "author": "Philippe Hurbain [Philo]",
+      "designer": "LEGO Group",
+      "source": "https://forums.ldraw.org/thread-22313.html",
+      "download": "https://www.brickshelf.com/gallery/Philo/SetModels/Set75253/75253_-_droid_commander_-_r2-d2.mpd",
+      "source_sha256": "016e78942e90e091d9db15868792fd82da7844e87e5ba4f19d038b55a96f9f05",
+      "sha256": "e9a5d077e3e5e5e51a21feb242175c90342020c5dfb1a2e13c8a5ca2110d0844",
+      "license": "CC-BY-2.0",
+      "license_file": "robot/CAreadme.txt",
+      "license_url": "https://creativecommons.org/licenses/by/2.0/",
+      "adaptation": "PyBlocks Studio: embedded part definitions removed; OMR-prefixed part references resolve through the external LDraw library. Assembly transforms, colors, steps and licensed flexible-component geometry are retained.",
+      "steps": 104,
+      "official_instructions": "https://www.lego.com/en-us/service/building-instructions/75253",
+      "pdfs": [
+        "https://www.lego.com/cdn/product-assets/product.bi.additional.main.pdf/75253_X_Artoo.pdf"
+      ],
+      "known_limitations": []
+    }
+  ]
 }

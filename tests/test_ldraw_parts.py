@@ -1,7 +1,9 @@
 import hashlib
 import io
 import json
+import runpy
 from concurrent.futures import CancelledError, ThreadPoolExecutor
+from pathlib import Path
 from threading import Event
 from zipfile import ZipFile
 
@@ -122,6 +124,61 @@ def test_subset_is_complete_and_preserves_attribution(parts):
     assert len(scene.instances) == 1
     assert scene.meshes["block.dat"].triangles.shape == (1, 3, 3)
     assert scene.colors[4][0][0] == pytest.approx(170 / 255)
+
+
+def test_model_preparation_preserves_assembly_and_excludes_embedded_part_metadata(
+    parts,
+):
+    np = pytest.importorskip("numpy")
+    from pyblocks.core.ldraw import LDraw
+
+    prepare = runpy.run_path(
+        str(Path(__file__).parents[1] / "tools/prepare_ldraw_model.py")
+    )["prepare"]
+
+    archive, _, model = parts
+    license = "0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt"
+    source = f"""0 FILE main.ldr
+0 Sample assembly
+0 Author: Model author
+{license}
+1 4 10 20 30 1 0 0 0 1 0 0 0 1 123 - block.dat
+0 STEP
+1 1 0 0 0 1 0 0 0 1 0 0 0 1 child.ldr
+0 FILE child.ldr
+0 Subassembly
+{license}
+1 16 -10 0 0 -1 0 0 0 1 0 0 0 1 123 - block.dat
+0 FILE 123 - block.dat
+0 Embedded part
+1 16 0 0 0 1 0 0 0 1 0 0 0 1 triangle.dat
+0 !LICENSE Free for non-commercial use.
+0 !LDCAD SNAP_CYL [gender=M]
+"""
+    with PartLibrary(archive) as library:
+        prepared = prepare(source, library)
+        with pytest.raises(ValueError, match="license"):
+            prepare(
+                source.replace(license, "0 !LICENSE All rights reserved", 1), library
+            )
+    assert "Free for non-commercial" not in prepared
+    assert "0 FILE 123 - block.dat" not in prepared
+    assert "0 Author: Model author" in prepared
+    model.write_text(source)
+    with LDraw(model, archive) as reader:
+        original = reader.scene()
+    model.write_text(prepared)
+    with LDraw(model, archive) as reader:
+        adapted = reader.scene()
+    assert adapted.step_count == original.step_count == 2
+    for old, new in zip(original.instances, adapted.instances, strict=True):
+        assert (old.identity, old.color, old.step) == (
+            new.identity,
+            new.color,
+            new.step,
+        )
+        np.testing.assert_array_equal(old.transform, new.transform)
+    np.testing.assert_array_equal(original.bounds(), adapted.bounds())
 
 
 def make_lesson(parts):

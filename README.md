@@ -107,3 +107,8 @@ Source is in `pyblocks/`, localized documentation in `doc/en/` and `doc/ru/`,
 examples in `examples/`, and tests in `tests/`. Code comments, docstrings, design
 notes, and commit descriptions use English. Russian UI translations are maintained
 in gettext catalogs; the runtime needs only the Python standard library for them.
+
+The Studio software uses the [MIT license](LICENSE.txt). Bundled community LDraw
+models use CC BY 2.0 with separate attribution and license texts; see the
+[lesson model catalog](lessons/pybricks/README.md#ldraw-assembly-instructions).
+The LDraw parts library stays in external user storage.

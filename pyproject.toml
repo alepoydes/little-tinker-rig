@@ -8,8 +8,8 @@ version = "0.1.0"
 description = "Structural Python editor with optional Pybricks robotics support"
 readme = "README.md"
 requires-python = ">=3.11"
-license = "MIT"
-license-files = ["LICENSE.txt", "examples/pybricks/LICENSE.txt", "examples/pybricks/website/NOTICE.md", "examples/pybricks/community/licenses/*.txt"]
+license = "MIT AND CC-BY-2.0"
+license-files = ["LICENSE.txt", "examples/pybricks/LICENSE.txt", "examples/pybricks/website/NOTICE.md", "examples/pybricks/community/licenses/*.txt", "lessons/pybricks/*/robot/CAreadme.txt"]
 authors = [{ name = "Igor Lobanov", email = "lobanov.igor@gmail.com" }]
 dependencies = ["platformdirs>=4,<5", "ruff>=0.14,<1"]
 

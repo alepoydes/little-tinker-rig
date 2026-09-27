@@ -70,7 +70,8 @@ class AssemblyPage(QWidget):
         self.notes = HelpBrowser()
         self.notes.setOpenExternalLinks(True)
         sidebar.addWidget(self.notes, 1)
-        sidebar.addWidget(QLabel(N_("Parts for this step")))
+        self.parts_caption = QLabel(N_("Parts for this step"))
+        sidebar.addWidget(self.parts_caption)
         self.parts = PartsList()
         self.parts.setWordWrap(True)
         self.parts.setToolTip(
@@ -281,6 +282,8 @@ class AssemblyPage(QWidget):
             )
             self.error.show()
         self.set_step(min(self.step, scene.step_count - 1))
+        if not self.state.get("camera"):
+            self.reset_camera()
 
     def show_error(self, error):
         self.error.setText(tr("3D unavailable: {detail}", detail=error))
@@ -297,6 +300,11 @@ class AssemblyPage(QWidget):
         self.state["step"] = self.step
         self.back.setEnabled(self.step > 0)
         self.next_step.setEnabled(self.step < count - 1)
+        for control in (self.back, self.next_step, self.slider):
+            control.setVisible(count > 1)
+        self.parts_caption.setText(
+            tr("Parts for this step") if count > 1 else tr("Parts")
+        )
         self.future.setVisible(self.step < count - 1)
         self.slider.blockSignals(True)
         self.slider.setValue(self.step)
@@ -307,6 +315,8 @@ class AssemblyPage(QWidget):
                 current=self.step + 1,
                 total=count,
             )
+            if count > 1
+            else localized(self.robot.get("title", ""), language()) or tr("Robot model")
         )
         details = self.robot.get("steps", {}).get(str(self.step + 1), {})
         self.notes.setMarkdown(
@@ -472,6 +482,7 @@ class AssemblyPage(QWidget):
                 self.scene.bounds(visible),
                 self.view.width() / max(self.view.height(), 1),
             )
+            self.view.fitted = True
             hint = self.robot.get("steps", {}).get(str(self.step + 1), {}).get("camera")
             if hint:
                 self.view.camera.restore(hint)

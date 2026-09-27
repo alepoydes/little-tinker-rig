@@ -35,9 +35,13 @@
         "en": "en.md#prepare",
         "ru": "ru.md#prepare"
       },
-      "mode": "program",
+      "mode": "assembly",
       "blocks": [],
-      "program": "boost_75253_r2_d2.py"
+      "program": "boost_75253_r2_d2.py",
+      "assembly": [
+        1,
+        104
+      ]
     },
     {
       "id": "run-1",
@@ -143,5 +147,6 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "robot": "robot/robot.json"
 }

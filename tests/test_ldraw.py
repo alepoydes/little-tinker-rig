@@ -45,6 +45,34 @@ def test_circular_references_fail_without_recursion(model):
         LDraw(model).scene()
 
 
+def test_flexible_components_keep_geometry_without_exposing_generated_segments(
+    tmp_path,
+):
+    path = tmp_path / "robot.mpd"
+    path.write_text("""0 FILE main.ldr
+1 4 0 0 0 1 0 0 0 1 0 0 0 1 cable.ldr
+0 STEP
+1 1 40 0 0 1 0 0 0 1 0 0 0 1 cable.ldr
+0 FILE cable.ldr
+0 Cable
+0 !LDCAD CONTENT [type=path]
+1 16 0 0 0 1 0 0 0 1 0 0 0 1 segment.dat
+0 STEP
+1 16 10 0 0 1 0 0 0 1 0 0 0 1 segment.dat
+0 FILE segment.dat
+0 Segment
+3 16 0 0 0 10 0 0 0 -5 0
+""")
+    with LDraw(path) as reader:
+        scene = reader.scene()
+    assert len(scene.instances) == 2
+    assert scene.step_count == 2
+    assert [i.color for i in scene.instances] == [4, 1]
+    assert list(scene.meshes) == ["cable.ldr"]
+    assert len(scene.meshes["cable.ldr"].triangles) == 2
+    np.testing.assert_allclose(scene.bounds(), [[0, -5, 0], [60, 0, 0]])
+
+
 def test_inline_geometry_is_not_lost_next_to_parts(model):
     source = model.read_text()
     model.write_text(
@@ -57,6 +85,32 @@ def test_inline_geometry_is_not_lost_next_to_parts(model):
     assert len(scene.instances) == 5
     assert [i.step for i in scene.instances] == [0, 1, 2, 3, 4]
     np.testing.assert_allclose(scene.bounds(), [[-30, -100, 0], [100, 40, 0]])
+
+
+def test_model_without_steps_hides_assembly_navigation(model, qt_app):
+    import json
+
+    from pyblocks.qt.assembly import AssemblyPage
+
+    description = model.parent / "robot.json"
+    description.write_text(
+        json.dumps({"format": 1, "title": "Sample model", "model": "part.dat"})
+    )
+    with LDraw(model.parent / "part.dat") as reader:
+        scene = reader.scene()
+    page = AssemblyPage(description)
+    try:
+        page.loaded(scene, None)
+        assert page.caption.text() == "Sample model"
+        assert page.parts_caption.text() == "Parts"
+        assert page.parts.count() == 1
+        assert all(
+            w.isHidden() for w in (page.back, page.next_step, page.slider, page.future)
+        )
+    finally:
+        if page.view:
+            page.view.cleanup()
+        page.deleteLater()
 
 
 def test_embedded_colors_and_conditional_edges(tmp_path):

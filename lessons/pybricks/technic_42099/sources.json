@@ -125,5 +125,27 @@
       "notes": []
     }
   ],
-  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included."
+  "adaptation": "PyBlocks Studio: staged activities, English/Russian guidance, external media links, and existing catalog code adaptations. Website-only text and downloads are not included.",
+  "models": [
+    {
+      "path": "robot/model.mpd",
+      "title": "42099 - 4x4 X-treme Off-Roader",
+      "author": "Philippe Hurbain [Philo]",
+      "designer": "LEGO Group",
+      "source": "https://forums.ldraw.org/thread-23139.html",
+      "download": "https://www.brickshelf.com/gallery/Philo/SetModels/Set42099/42099_-_4x4_x-treme_off-roader.mpd",
+      "source_sha256": "c1081c56fe30cecc90e6c57056039ea2d4f772669328aaa4fa9a3dd0cc479a49",
+      "sha256": "a450c337d10782b61f461efef726ac1432646014f4f4be68fad3a303a5dc8246",
+      "license": "CC-BY-2.0",
+      "license_file": "robot/CAreadme.txt",
+      "license_url": "https://creativecommons.org/licenses/by/2.0/",
+      "adaptation": "PyBlocks Studio: embedded part definitions removed; OMR-prefixed part references resolve through the external LDraw library. Assembly transforms, colors, steps and licensed flexible-component geometry are retained.",
+      "steps": 173,
+      "official_instructions": "https://www.lego.com/en-us/service/building-instructions/42099",
+      "pdfs": [],
+      "known_limitations": [
+        "No stickers"
+      ]
+    }
+  ]
 }

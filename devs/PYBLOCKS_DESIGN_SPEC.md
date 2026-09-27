@@ -1863,6 +1863,11 @@ physical task. Manual completion and observable device checks remain distinct.
 A single task card stays above the workspaces, including the lesson overview,
 with completion status and actions in one place. Completion does not navigate;
 completed stages have green check icons, including in the selected list row.
+Assembly stages also expose an `assembly:` link at the start of their description,
+so instructions remain reachable when the task card is hidden. Opening a stage
+description starts at the top after layout and formatting. Both entry points
+select the active lesson's robot and preserve its step within the stage range,
+independently of any separately opened robot instructions.
 Hints and starter actions are available only where authored. Opening a saved project restores its workspace,
 including when its document is already open. Hub callbacks after closing must not
 read removed project resources.
@@ -1892,7 +1897,14 @@ Window shortcuts and the focused editor route Escape through the same cancellati
 and whole-block selection handler.
 
 Robot models use LDraw/MPD geometry. Original models and instructional materials
-belong to the lesson; third-party libraries stay outside the repository. A library
+belong to the lesson. Small community MPD assemblies may be bundled when their
+licenses explicitly allow redistribution and adaptation; retain source URLs,
+original/adapted hashes, authorship and license texts. Original LEGO PDF and author
+links remain available alongside community instructions. Embedded part libraries
+and unrelated editor metadata are removed; third-party part libraries stay
+outside the repository. Model import must preserve transforms, colors and authored
+steps; library substitutions are checked against the original geometry.
+A library
 reference pins its id, version, HTTPS URL and SHA-256. Opening Assembly lazily
 downloads a verified ZIP into the shared user cache, with progress, cancellation,
 retry and local ZIP import. The loader indexes the archive once and reads only
@@ -1910,6 +1922,11 @@ The scene
 contains shared meshes, transformed instances, stable identities, submodel groups
 and authored steps. Device metadata binds instance IDs to expected ports. This is
 instructional wiring; the Python program remains the runtime source of truth.
+LDCad path/spring components consume their supplied fallback geometry as a single
+component. Their generated wire segments must not become individual assembly
+steps or selectable parts. Models without step divisions open as whole models;
+unavailable instructions are not invented. Authored MPD steps may differ from
+official PDF page numbers and do not imply physical validation.
 Assembly uses its own workspace and supports orbit/pan/zoom, picking, current-step
 parts, previous-step muting, optional future outlines and camera hints. Inspection
 never changes construction progress: devices and subassemblies are limited to

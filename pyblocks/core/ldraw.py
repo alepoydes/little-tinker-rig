@@ -107,6 +107,7 @@ class LDraw(AbstractContextManager):
     def __init__(self, path: Path, library: Path | None = None):
         self.root = path.resolve().parent
         self.files = {}
+        self.parts = set()
         self.meshes = {}
         self.colors = {}
         self.loading = set()
@@ -142,6 +143,15 @@ class LDraw(AbstractContextManager):
                 records = []
             else:
                 records.append(tokens)
+                # Flexible components carry ordinary LDraw fallback geometry.
+                # Their segments belong to one physical component, not a sequence
+                # of subassembly steps or thousands of selectable cable slices.
+                if tokens[:3] == ["0", "!LDCAD", "CONTENT"] and any(
+                    value in tokens[3:] for value in ("[type=path]", "[type=spring]")
+                ):
+                    self.parts.add(current)
+                if tokens[:3] == ["0", "UNOFFICIAL", "PART"]:
+                    self.parts.add(current)
                 if tokens[:2] == ["0", "!COLOUR"]:
 
                     def field(key, default, tokens=tokens):
@@ -294,7 +304,8 @@ class LDraw(AbstractContextManager):
                         raise ValueError(f"Duplicate instance id: {key}")
                     used.add(key)
                     matrix = transform @ matrix
-                    if child.endswith(".dat"):
+                    self.records(child)
+                    if child.endswith(".dat") or child in self.parts:
                         self.mesh(child)
                         if pending:
                             step += 1
@@ -306,7 +317,7 @@ class LDraw(AbstractContextManager):
                         visit(child, matrix, color, (*groups, key.rsplit("/", 1)[-1]))
             stack.remove(name)
 
-        if not self.main.endswith(".dat"):
+        if not self.main.endswith(".dat") and self.main not in self.parts:
             visit(self.main, np.eye(4), 7, ())
         if not instances:
             # A standalone part is useful while authoring instructions.

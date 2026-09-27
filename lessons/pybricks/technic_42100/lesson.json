@@ -1,0 +1,141 @@
+{
+  "format": 1,
+  "id": "pybricks-technic-42100",
+  "group": {
+    "en": "Pybricks · Technic",
+    "ru": "Pybricks · Technic"
+  },
+  "title": {
+    "en": "42100 · Liebherr R 9800",
+    "ru": "42100 · Liebherr R 9800"
+  },
+  "robot": "robot/robot.json",
+  "examples": {
+    "code/technic_42100_upper.py": "pybricks/community/technic_42100_upper.py",
+    "code/technic_42100_base_xbox.py": "pybricks/community/technic_42100_base_xbox.py"
+  },
+  "programs": {
+    "technic_42100_upper.py": "code/technic_42100_upper.py",
+    "technic_42100_base_xbox.py": "code/technic_42100_base_xbox.py",
+    "LICENSE.txt": "LICENSE.txt",
+    "README.md": "en.md",
+    "catalog.json": "sources.json"
+  },
+  "main": "technic_42100_upper.py",
+  "stages": [
+    {
+      "id": "prepare",
+      "title": {
+        "en": "Build and identify both hubs",
+        "ru": "Собери робота и найди оба хаба"
+      },
+      "goal": {
+        "en": "Build the excavator and check its motor ports.",
+        "ru": "Собери экскаватор и проверь порты моторов."
+      },
+      "description": {
+        "en": "en.md#prepare",
+        "ru": "ru.md#prepare"
+      },
+      "mode": "assembly",
+      "blocks": [],
+      "assembly": [
+        1,
+        530
+      ]
+    },
+    {
+      "id": "upper",
+      "title": {
+        "en": "Upload the upper-hub program",
+        "ru": "Загрузи программу верхнего хаба"
+      },
+      "goal": {
+        "en": "Make the upper hub wait for fresh radio commands.",
+        "ru": "Подготовь верхний хаб к приёму новых радиокоманд."
+      },
+      "description": {
+        "en": "en.md#upper",
+        "ru": "ru.md#upper"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/brake",
+        "pybricks/drive/create_clock",
+        "pybricks/drive/reset_clock",
+        "pybricks/hubs/light",
+        "pybricks/hubs/technic_hub",
+        "pybricks/motors/acceleration",
+        "pybricks/motors/create_oriented_motor",
+        "pybricks/motors/run_motor",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/basics/compare",
+        "python/data/item"
+      ],
+      "program": "technic_42100_upper.py"
+    },
+    {
+      "id": "lower",
+      "title": {
+        "en": "Pair Xbox and drive",
+        "ru": "Подключи Xbox и управляй"
+      },
+      "goal": {
+        "en": "Control each mechanism at reduced speed.",
+        "ru": "Проверь каждый механизм на малой скорости."
+      },
+      "description": {
+        "en": "en.md#lower",
+        "ru": "ru.md#lower"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/brake",
+        "pybricks/hubs/light",
+        "pybricks/hubs/technic_hub",
+        "pybricks/messaging/broadcast",
+        "pybricks/motors/acceleration",
+        "pybricks/motors/create_oriented_motor",
+        "pybricks/motors/run_motor",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/data/contains",
+        "python/data/store",
+        "python/flow/break_loop"
+      ],
+      "program": "technic_42100_base_xbox.py"
+    },
+    {
+      "id": "experiment",
+      "title": {
+        "en": "Compare movement speeds",
+        "ru": "Сравни скорости"
+      },
+      "goal": {
+        "en": "Tune slow mode and explain the receiver timeout.",
+        "ru": "Настрой медленный режим и объясни тайм-аут приёмника."
+      },
+      "description": {
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
+      },
+      "mode": "program",
+      "blocks": [
+        "pybricks/drive/brake",
+        "pybricks/hubs/light",
+        "pybricks/hubs/technic_hub",
+        "pybricks/messaging/broadcast",
+        "pybricks/motors/acceleration",
+        "pybricks/motors/create_oriented_motor",
+        "pybricks/motors/run_motor",
+        "pybricks/sensors/wait_ms",
+        "python/basics/assign",
+        "python/data/contains",
+        "python/data/store",
+        "python/flow/break_loop"
+      ],
+      "program": "technic_42100_base_xbox.py"
+    }
+  ]
+}

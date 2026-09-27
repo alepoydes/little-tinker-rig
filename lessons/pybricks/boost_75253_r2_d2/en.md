@@ -6,7 +6,7 @@
 
 Make R2-D2 move, turn, and return to a stable standing position.
 
-Use LEGO **75253** and the exact mechanism from the source. A matching hub alone is not enough. The programs open as ordinary editable Python, recognized by the standard block library. The linked building instructions describe the model; this lesson opens without a 3D assembly view.
+Use LEGO **75253** and the exact mechanism from the source. A matching hub alone is not enough. The programs open as ordinary editable Python, recognized by the standard block library. Open Assembly to follow the included LDraw construction steps. Their numbering differs from the official PDF.
 
 - [Video](https://www.youtube.com/watch?v=aDA_RQq4t3k)
 - [Building instructions](https://www.lego.com/cdn/product-assets/product.bi.additional.main.pdf/75253_X_Artoo.pdf)
@@ -16,6 +16,15 @@ Connect the required devices using the port tables in the following stages. Keep
 Open a program to inspect it before Run. Calibration can move motors immediately. Mark this stage complete when the mechanism and its connections are ready. Media links need internet; the lesson text, code and dependencies are included in saved projects.
 
 Sources: [index.md](https://github.com/pybricks/pybricks-projects/blob/faaacce09ffe1d865fd1db241bcacb056234d597/sets/boost/droid-commander/r2-d2/index.md). The Pybricks Team. [MIT](LICENSE.txt).
+
+### 3D model and building sources
+
+Follow the authored LDraw steps, rotate the model and select parts to inspect their placement. Step numbers differ from the LEGO PDF. Recommended view frames the current construction. Flexible components are shown as single items, including their attached cables.
+
+Digital model and authored steps: [Philippe Hurbain (Philo)](https://forums.ldraw.org/thread-22313.html), [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/). Original robot: LEGO Group. Adapted for Studio; parts come from the external LDraw library.
+
+- [Official LEGO instructions (PDF downloads)](https://www.lego.com/en-us/service/building-instructions/75253)
+- [LEGO PDF 1](https://www.lego.com/cdn/product-assets/product.bi.additional.main.pdf/75253_X_Artoo.pdf)
 
 <a name="run-1"></a>
 

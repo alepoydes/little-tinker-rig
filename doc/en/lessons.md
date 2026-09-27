@@ -27,20 +27,30 @@ Ordinary **File → New** creates a program outside the lesson, with the normal 
 ## Pybricks projects
 
 **File → Lessons → Pybricks · BOOST / Robot Inventor / SPIKE Prime / Technic**
-offers 23 project lessons with English/Russian goals, port tables, experiments and
+offers 24 project lessons with English/Russian goals, port tables, experiments and
 restricted block palettes. A lesson can contain several runnable variants and
 shared modules. **Open program** and program links select the indicated student
 copy; reopening it preserves edits. Stage navigation only changes the task.
 
 Programs, dependencies, descriptions, licenses and progress are saved together.
-Building instructions, photos and videos open as links in your browser; these
-links require internet. These lessons have no 3D assembly model. For keyboard
+Blast 51515, R2-D2 75253, X-treme Off-Roader 42099 and Liebherr 42100 include
+community LDraw models with authored steps. Select **Open 3D building instructions**
+at the top of the preparation description, or **Open assembly** in the task card.
+The description link remains available when the card is hidden and opens the
+lesson robot even if another model was opened separately.
+Author credits, licenses and official LEGO PDF links
+remain available. Steps follow the MPD rather than PDF page numbers. Other lessons
+retain their building links. PDFs, photos and videos open in your browser and
+require internet or a separately saved copy. For keyboard
 projects, open **Console**, focus **Hub input** and enable **Send keys immediately**.
 Only that field sends keys; Escape returns to line input. In line mode, Enter
 sends the text and a carriage return. Input needs a physical Bluetooth/USB hub
 with its port monitor stopped. It is not a terminal or REPL emulator.
 
-Imported content is limited to the [MIT-licensed Projects repository](https://github.com/pybricks/pybricks-projects/blob/master/LICENSE).
+Imported lesson text comes from the [MIT-licensed Projects repository](https://github.com/pybricks/pybricks-projects/blob/master/LICENSE).
+The 42100 activity uses existing PyBlocks MIT programs and original guidance.
+The four community models have separate CC BY 2.0 attribution and licenses in
+their `robot` directories; their part geometry remains in the external library.
 Additional [website projects](https://pybricks.com/project/) remain links because
 [the website terms](https://pybricks.com/legal/#pybricks-website-site-content)
 require permission to reproduce that content. Source attribution is included in

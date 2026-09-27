@@ -35,9 +35,13 @@
         "en": "en.md#prepare",
         "ru": "ru.md#prepare"
       },
-      "mode": "program",
+      "mode": "assembly",
       "blocks": [],
-      "program": "inventor_51515_blast.py"
+      "program": "inventor_51515_blast.py",
+      "assembly": [
+        1,
+        91
+      ]
     },
     {
       "id": "run-1",
@@ -133,5 +137,6 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "robot": "robot/robot.json"
 }

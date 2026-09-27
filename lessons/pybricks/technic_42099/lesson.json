@@ -43,9 +43,13 @@
         "en": "en.md#prepare",
         "ru": "ru.md#prepare"
       },
-      "mode": "program",
+      "mode": "assembly",
       "blocks": [],
-      "program": "technic_42099_off_roader.py"
+      "program": "technic_42099_off_roader.py",
+      "assembly": [
+        1,
+        173
+      ]
     },
     {
       "id": "run-1",
@@ -316,5 +320,6 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "robot": "robot/robot.json"
 }
