@@ -8,9 +8,7 @@ from pybricks.tools import wait, StopWatch
 
 
 # --- automatically managed helpers ---
-def legacy_curve(
-    drive: "DriveBase", radius: "number[mm]", angle: "number[deg]"
-):
+def legacy_curve(drive: "DriveBase", radius: "number[mm]", angle: "number[deg]"):
     """Drive a curve using the Pybricks 3.x sign convention.
 
     Radius selects forward/backward travel; angle selects right/left turning.
@@ -22,9 +20,7 @@ def legacy_curve(
     )
 
 
-def dance_turns(
-    drive: "DriveBase", angle: "number[deg]"
-):
+def dance_turns(drive: "DriveBase", angle: "number[deg]"):
     """Turn one way and back, like Tricky's dance."""
     # Turn both ways to finish facing the original direction.
     drive.turn(angle)
@@ -124,12 +120,8 @@ drive_base = DriveBase(left_wheel, right_wheel, diameter, track)
 drive_base.straight(distance)  # straight forward for distance then stop
 drive_base.straight(-distance)  # backwards
 dance_turns(drive_base, angle)
-legacy_curve(
-    drive_base, radius, angle
-)  # arc of radius to the right for angle
-legacy_curve(
-    drive_base, radius, -angle
-)  # to the left
+legacy_curve(drive_base, radius, angle)  # arc of radius to the right for angle
+legacy_curve(drive_base, radius, -angle)  # to the left
 
 drive_base.drive(drive_speed, turn_rate)  # drive/steer until told otherwise
 drive_base.drive(0, 0)  # decelerate to a stop

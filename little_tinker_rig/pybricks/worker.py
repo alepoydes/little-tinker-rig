@@ -3,6 +3,7 @@
 import asyncio
 import codecs
 from concurrent.futures import CancelledError
+from dataclasses import replace
 from threading import Event, Thread
 
 from little_tinker_rig.core.runtime_errors import Tracebacks
@@ -30,6 +31,7 @@ class HubWorker:
         self.stored_program = None
         self.lock = asyncio.Lock()
         self.generation = 0
+        self.connection_generation = 0
         ready = Event()
 
         def run():
@@ -44,19 +46,23 @@ class HubWorker:
             raise RuntimeError("Could not start hub event loop")
 
     def _remember(self, info):
-        self.info = info
-        self._updated(info)
+        self.info = replace(info, connection_action=self.info.connection_action)
+        self._updated(self.info)
+
+    def _connection_action(self, action):
+        self.info = replace(self.info, connection_action=action)
+        self._updated(self.info)
 
     def submit(self, coroutine, *, operation=False, interrupt=False):
         if operation and self.operation and not self.operation.done():
-            if interrupt:
-                self.operation.cancel()
-            else:
+            if not interrupt:
                 coroutine.close()
                 self._failed(tr("Wait for the hub operation to finish"))
                 return None
         if operation:
             self.generation += 1
+            if interrupt and self.operation:
+                self.operation.cancel()
             if self.pending:
                 self.pending.cancel()
             self._busy_changed(True)
@@ -68,6 +74,8 @@ class HubWorker:
                     return await coroutine
             finally:
                 coroutine.close()
+                if operation and generation == self.generation:
+                    self._busy_changed(False)
 
         future = asyncio.run_coroutine_threadsafe(serialized(), self.loop)
 
@@ -78,40 +86,66 @@ class HubWorker:
                 pass
             except Exception as error:
                 self._failed(str(error) or type(error).__name__)
-            finally:
-                if operation and generation == self.generation:
-                    self._busy_changed(False)
 
         future.add_done_callback(finished)
         if operation:
             self.operation = future
         return future
 
-    async def _connect(self, name, transport, model):
+    async def _connect(self, name, transport, model, generation):
         self._output(tr("Connecting to hub…") + "\n")
         self.tracebacks = self.stored_program = None
-        if self.connection:
-            await self.connection.disconnect()
         decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
 
         def output(data):
+            if generation != self.connection_generation:
+                return
             text = decoder.decode(data)
             self._output(text)
             if self.tracebacks is not None:
                 self.tracebacks.feed(text)
 
-        factory = VirtualConnection if transport == "virtual" else Connection
-        options = {"model": model} if transport == "virtual" else {}
-        self.connection = factory(
-            output,
-            self._remember,
-            **options,
-        )
-        await self.connection.connect(name, transport)
-        self._output(tr("Hub connected.") + "\n")
+        try:
+            if self.connection:
+                await self._disconnect()
+            factory = VirtualConnection if transport == "virtual" else Connection
+            options = {"model": model} if transport == "virtual" else {}
+            self.connection = factory(
+                output,
+                lambda info: (
+                    self._remember(info)
+                    if generation == self.connection_generation
+                    else None
+                ),
+                **options,
+            )
+            await self.connection.connect(name, transport)
+            if generation != self.connection_generation:
+                raise asyncio.CancelledError
+            self._output(tr("Hub connected.") + "\n")
+        except BaseException as error:
+            try:
+                await self._disconnect()
+            except Exception as cleanup_error:
+                self._output(str(cleanup_error) + "\n")
+            if isinstance(error, asyncio.CancelledError):
+                self._output(tr("Connection cancelled.") + "\n")
+            raise
+        finally:
+            if self.info.connection_action == "connecting":
+                self._connection_action("")
 
     def connect_hub(self, name=None, transport="ble", model="inventor"):
-        return self.submit(self._connect(name, transport, model), operation=True)
+        if self.info.connection_action or (
+            self.operation and not self.operation.done()
+        ):
+            return None
+        self.connection_generation += 1
+        self._connection_action("connecting")
+        return self.submit(
+            self._connect(name, transport, model, self.connection_generation),
+            operation=True,
+        )
 
     def run_file(self, path):
         if self.connection:
@@ -198,21 +232,39 @@ class HubWorker:
             if not self.operation or self.operation.done():
                 return self.submit(self.connection.write_input(data))
 
-    def disconnect_hub(self):
-        async def disconnect():
+    async def _disconnect(self):
+        try:
             if self.connection:
-                await self.connection.disconnect()
+                async with asyncio.timeout(5):
+                    await self.connection.disconnect()
+        except TimeoutError:
+            self._output(
+                tr("Hub did not acknowledge disconnection; local connection closed.")
+                + "\n"
+            )
+        finally:
+            self._remember(
+                replace(self.info, connected=False, running=False, monitoring=False)
+            )
+
+    def disconnect_hub(self):
+        if self.info.connection_action == "disconnecting":
+            return self.operation
+        self.connection_generation += 1
+        self._connection_action("disconnecting")
+
+        async def disconnect():
+            try:
+                await self._disconnect()
+            finally:
+                self._connection_action("")
 
         return self.submit(disconnect(), operation=True, interrupt=True)
 
     def close(self):
-        async def disconnect():
-            if self.connection:
-                await self.connection.disconnect()
-
-        future = self.submit(disconnect(), operation=True, interrupt=True)
+        future = self.disconnect_hub()
         try:
-            future.result(timeout=5)
+            future.result(timeout=7)
         except Exception:
             future.cancel()
         self.loop.call_soon_threadsafe(self.loop.stop)

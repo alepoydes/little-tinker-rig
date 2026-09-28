@@ -219,7 +219,13 @@ class Studio(App):
                 state += " · " + tr("Running")
             if self.info.battery_mv is not None:
                 state += f" · {self.info.battery_mv / 1000:.2f} V"
-        if self.hub_busy:
+        if self.info.connection_action:
+            state = (
+                tr("Connecting to hub…")
+                if self.info.connection_action == "connecting"
+                else tr("Disconnecting…")
+            )
+        elif self.hub_busy:
             state += " · " + tr("Working…")
         if self.unread:
             state += " · " + tr("New console output · F8")
@@ -467,6 +473,11 @@ class Studio(App):
 
     @work(group="connection-dialog", exclusive=True)
     async def action_connect(self):
+        if self.info.connection_action == "disconnecting":
+            return
+        if self.info.connected or self.info.connection_action == "connecting":
+            self.action_disconnect()
+            return
         answer = await self.push_screen_wait(
             Form(
                 tr("Connect hub"),
@@ -481,7 +492,7 @@ class Studio(App):
                             (tr("Virtual hub"), "virtual"),
                         ],
                     ),
-                    ("name", tr("Hub name (empty: first available)"), "", None),
+                    ("name", tr("Hub name / USB port (empty: automatic)"), "", None),
                     (
                         "model",
                         tr("Virtual hub model"),

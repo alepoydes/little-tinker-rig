@@ -209,6 +209,31 @@ async def test_tui_firmware_review_invalidation_and_isolated_install(
         await until(lambda: isinstance(app.screen, FirmwareScreen))
         await pilot.pause()
         screen = app.screen
+        from little_tinker_rig.pybricks.firmware import Image
+
+        screen.images = [
+            Image("inventor", "pybricks", "4.0.1", ""),
+            Image(
+                "inventor",
+                "pybricks",
+                "4.1.0b4",
+                "",
+                channel="beta",
+                notes="https://github.com/pybricks/pybricks-micropython/releases/tag/v4.1.0b4",
+            ),
+        ]
+        screen.selection_changed()
+        assert screen.query_one("#channel", Select).value == "stable"
+        assert screen.query_one("#version", Select).value == "0"
+        screen.package = object()
+        screen.query_one("#consent", Checkbox).value = True
+        screen.query_one("#channel", Select).value = "beta"
+        await pilot.pause()
+        assert screen.query_one("#version", Select).value == "1"
+        assert (
+            screen.package is None and not screen.query_one("#consent", Checkbox).value
+        )
+        assert not screen.query_one("#notes").disabled
         screen.query_one("#local-path", Input).value = str(path)
         await pilot.click("#local")
         await until(lambda: screen.package is not None and not screen.busy)

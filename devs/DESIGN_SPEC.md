@@ -1745,6 +1745,52 @@ recovery 1.3; BOOST/Technic restoration requires a local compatible LEGO package
 Automation prepares images and tests public transport boundaries; physical flashing
 requires separate hardware verification.
 
+Stable is the default firmware channel; Beta explicitly exposes prereleases and
+release notes in Qt and TUI. New USB Serial firmware uses the Pybricks 1.6+ SPIKE
+COBS protocol through a shared native serial adapter. BLE remains the connection
+default and the legacy USB adapter remains available. Inventor/Prime and EV3 use
+the same serial workflow; EV3 is experimental and has no hardware verification,
+port monitor, simulator or Bluetooth Classic transport yet.
+
+Metadata v3 firmware variants are validated during preparation and selected by
+the actual hardware at install time. Public Pybricks flash tools and the required
+second-stage bootloader are pinned and verified in the user cache. New beta
+flashing requires libusb. On F4, restoring stable/LEGO firmware requires entering
+the original bootloader with the Bluetooth-button USB sequence. Incompatible
+bootloader revisions must be rejected before erase.
+
+### USB adapter ownership and access diagnostics
+
+BLE, legacy USB and firmware installation use public Pybricks implementations.
+USB Serial is a temporary compatibility layer until pybricksdev provides a public
+adapter for the current protocol; identifiers and compilation remain upstream-owned.
+EV3 shares the serial protocol but remains experimental until hardware verification;
+initial physical checks target Inventor. Existing EV3 Linux/SD-card systems are excluded.
+
+Serial-open failures retain their system error and receive localized, actionable
+instructions. Linux advice inspects the actual port group and mode, registered
+membership and current process groups. Only serial-specific groups can produce an
+add-membership command. Stale sessions require a fresh login; other restrictions
+require administrator review. The app does not modify system permissions. Upstream
+udev rules are obtained from pybricksdev, never copied into this repository. Qt
+provides offline USB help and error copying; the same diagnosis reaches TUI and CLI.
+
+### Cancellable hub connections and persistent firmware cache
+
+The hub connection action distinguishes connecting, connected and disconnecting.
+The toolbar hub button and F7 cancel a pending connection or disconnect an active
+one; they never open the port monitor. A connection attempt has a 20-second deadline.
+Cancellation finishes transport cleanup before enabling a new attempt; late callbacks
+cannot revive the cancelled connection. A child process owns native USB resources,
+allowing termination when driver discovery or a handshake blocks indefinitely.
+
+Firmware catalog and archives persist in the platform user cache. Opening the
+firmware dialog reads the saved catalog; only explicit refresh accesses releases.
+GitHub API rate limiting records a retry deadline and falls back to the public
+release feed, retaining known asset hashes and older cached versions. Network
+failure leaves the saved catalog available. Archive URLs identify cached downloads
+across channels and restarts; preparation reports cache reuse or download in the UI.
+
 ### Structural expression and function editing
 
 The desktop exposes expression leaves, call receivers and callees, function names,

@@ -1,0 +1,14 @@
+{
+  "revision": "8aa9986cd0666fb610225de05440fb6d1f99c4ab",
+  "files": {
+    "LICENSE": "80bcfb8f454b1a3ba4a87d97d2a67462d492c30aa525720456bef2e5b8672bb1",
+    "bricks/primehub_f4/mboot.bin": "382e392a555cf915aa30e28ef70ae029753b3a9bbb4dc8acade79d648562cbfd",
+    "tools/flash/firmware.py": "1b6be3cc5469931d547ecfc9bb68eccb75821a0070422278aaa551c87522e2ec",
+    "tools/flash/checksum.py": "bf40ff16becb17b1b5d6706a4d9fc34e3413017fe6839f1e3f657293ec8c601d",
+    "tools/flash/dfu.py": "d4a4acce8445928377c33cfeaeadc34f1c6240efd081c2e9fc926235cbe4f427",
+    "tools/flash/ev3.py": "8a3d7d382ec6eeb0baf7a8260879bf53d053cd0169006506590707b947147cdd",
+    "tools/flash/constants.py": "3067bd7ca1a5f9db4de111e8acfa88aa62631c1f7488e369ed729028a1e67779",
+    "tools/flash/util.py": "86f699433f0d0278b97b4da1c8145b3268bac9304f7d58aec3b6930cb3abfc98",
+    "tools/flash/lwp3/bytecodes.py": "a418ca187ebe3c6170890f20ca37f00ac491747c1d93ecf39e5fc7fd941be09b"
+  }
+}

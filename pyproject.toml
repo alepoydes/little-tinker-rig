@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "little-tinker-rig"
-version = "0.1.0"
+version = "0.1.1"
 description = "Structural Python editor with optional Pybricks robotics support"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -28,7 +28,7 @@ qt = [
     "moderngl>=5.12,<6",
     "numpy>=2,<3",
 ]
-pybricks = ["pybricksdev>=2.3,<3"]
+pybricks = ["pybricksdev>=2.3,<3", "pyserial>=3.5,<4"]
 gamepad = ["pygame-ce>=2.5,<3"]
 
 [project.urls]
@@ -58,7 +58,7 @@ namespaces = false
 build_py = "build_support.BuildPy"
 
 [tool.setuptools.package-data]
-little_tinker_rig = ["snippets/**/*.py", "snippets/**/*.toml", "core/formatting.toml", "locale/languages.json", "locale/**/*.po", "locale/**/*.mo", "qt/icons/*.svg"]
+little_tinker_rig = ["snippets/**/*.py", "snippets/**/*.toml", "core/formatting.toml", "locale/languages.json", "locale/**/*.po", "locale/**/*.mo", "qt/icons/*.svg", "pybricks/installer.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -275,8 +275,21 @@ class Studio(QMainWindow):
         row = QHBoxLayout()
         row.addWidget(QLabel(N_("Program output and messages")))
         row.addStretch()
+        self.last_error = ""
+        self.copy_error = QPushButton(N_("Copy error"))
+        self.copy_error.clicked.connect(
+            lambda: QApplication.clipboard().setText(self.last_error)
+        )
+        self.copy_error.hide()
+        row.addWidget(self.copy_error)
+        self.connection_help = QPushButton(N_("USB connection help"))
+        self.connection_help.clicked.connect(self.show_usb_help)
+        self.connection_help.hide()
+        row.addWidget(self.connection_help)
         clear = QPushButton(N_("Clear"))
         clear.clicked.connect(self.console.clear)
+        clear.clicked.connect(self.copy_error.hide)
+        clear.clicked.connect(self.connection_help.hide)
         row.addWidget(clear)
         layout.addLayout(row)
         self.runtime_panel = RuntimePanel(self)
@@ -563,13 +576,7 @@ class Studio(QMainWindow):
         self.hub_button = QToolButton()
         self.hub_button.setIcon(self._icon("network-connect", "SP_ComputerIcon"))
         self.hub_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        self.hub_button.clicked.connect(
-            lambda: (
-                self.toggle_dock(self.device_dock)
-                if self.hub_info.connected
-                else self.connect_hub()
-            )
-        )
+        self.hub_button.clicked.connect(self.connect_hub)
         toolbar.addWidget(self.hub_button)
         self.console_button = QToolButton()
         self.console_button.setIcon(
@@ -1092,10 +1099,20 @@ class Studio(QMainWindow):
             self.console_button.setText(tr("Console"))
 
     def error(self, message):
-        self.statusBar().showMessage(message, 15000)
+        self.last_error = message
+        self.copy_error.show()
+        self.statusBar().showMessage(message.splitlines()[0] if message else "", 15000)
         self.append_output(message + "\n")
         self.console_dock.show()
         self.controls.armed.setChecked(False)
+
+    def hub_error(self, message):
+        self.error(message)
+        self.connection_help.show()
+
+    def show_usb_help(self):
+        self.help_page.show_page("usb.md")
+        self.set_mode(2)
 
     def upgrade_block(self):
         from difflib import unified_diff
@@ -1434,7 +1451,7 @@ class Studio(QMainWindow):
 
             self.robot = Robot(self)
             self.robot.output.connect(self.append_output)
-            self.robot.failed.connect(self.error)
+            self.robot.failed.connect(self.hub_error)
             self.robot.updated.connect(self.update_hub)
             self.robot.busy_changed.connect(self.hub_busy)
             self.robot.problem.connect(self.runtime_panel.receive)
@@ -1446,7 +1463,6 @@ class Studio(QMainWindow):
         if busy:
             self.hub_input.setEnabled(False)
         self.hub_progress.setVisible(busy)
-        self.hub_button.setEnabled(not busy)
         self.run_action.setEnabled(
             self.hub_info.connected and not busy and self.pages.currentIndex() != 3
         )
@@ -1455,10 +1471,7 @@ class Studio(QMainWindow):
         )
         self.stored_action.setEnabled(self.hub_info.connected and not busy)
         self.firmware_action.setEnabled(not busy)
-        if busy:
-            self.hub_button.setText(tr("Please wait…"))
-        else:
-            self.update_hub(self.hub_info)
+        self.update_hub(self.hub_info)
 
     def update_hub(self, info):
         if info.error and info.error != self.hub_info.error:
@@ -1472,22 +1485,29 @@ class Studio(QMainWindow):
         )
         if hasattr(self, "lessons"):
             self.lessons.update_check()
+        action = info.connection_action
+        self.hub_button.setEnabled(action != "disconnecting")
         self.hub_button.setText(
-            tr("Please wait…")
-            if self.hub_is_busy
+            tr("Disconnecting…")
+            if action == "disconnecting"
             else (
-                (
-                    "● "
-                    + (tr("Virtual hub") if info.transport == "virtual" else info.name)
-                )
-                if info.connected
-                else tr("＋ Connect hub")
+                tr("Cancel connection")
+                if action == "connecting"
+                else tr("Disconnect hub") if info.connected else tr("＋ Connect hub")
             )
         )
         self.hub_button.setToolTip(
-            tr("Hub information and port readings")
-            if info.connected
-            else tr("Bluetooth, USB or virtual hub")
+            tr("Cancel connection")
+            if action == "connecting"
+            else (
+                tr("Disconnecting…")
+                if action == "disconnecting"
+                else (
+                    tr("Disconnect {name}", name=info.name or tr("Virtual hub"))
+                    if info.connected
+                    else tr("Bluetooth, USB or virtual hub")
+                )
+            )
         )
         self.run_action.setEnabled(
             info.connected and not self.hub_is_busy and self.pages.currentIndex() != 3
@@ -1496,11 +1516,16 @@ class Studio(QMainWindow):
             info.connected and not self.hub_is_busy and self.pages.currentIndex() != 3
         )
         self.stored_action.setEnabled(info.connected and not self.hub_is_busy)
-        self.stop_action.setEnabled(info.connected)
+        self.stop_action.setEnabled(info.connected and not action)
         self.device_panel.update_info(info)
         self.controls.update_info(info)
 
     def connect_hub(self):
+        if self.hub_info.connection_action == "disconnecting":
+            return
+        if self.hub_info.connected or self.hub_info.connection_action == "connecting":
+            self.disconnect_hub()
+            return
         dialog = ConnectDialog(self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self._robot().connect_hub(

@@ -6,11 +6,16 @@ import sys
 from dataclasses import replace
 from pathlib import Path
 
+from little_tinker_rig.i18n import tr
+
 from .control import ControlState
 from .devices import HubInfo, TelemetryStream, encode_commands
 
 
 class Connection:
+    connect_timeout = 20
+    disconnect_timeout = 3
+
     def __init__(self, output=None, changed=None):
         self.output = output or (lambda data: None)
         self.changed = changed or (lambda info: None)
@@ -39,6 +44,23 @@ class Connection:
 
     async def connect(self, name: str | None = None, transport: str = "ble") -> None:
         await self.disconnect()
+        try:
+            async with asyncio.timeout(self.connect_timeout):
+                await self._connect(name, transport)
+        except BaseException as error:
+            try:
+                await self.disconnect()
+            except Exception:
+                pass  # Preserve the connection failure or explicit cancellation.
+            if isinstance(error, TimeoutError):
+                raise TimeoutError(
+                    tr(
+                        "Hub connection timed out. Check the cable, firmware and connection mode."
+                    )
+                ) from error
+            raise
+
+    async def _connect(self, name, transport):
         if transport == "ble":
             from pybricksdev.ble import find_device
             from pybricksdev.connections.pybricks import PybricksHubBLE
@@ -46,34 +68,22 @@ class Connection:
             device = await find_device(name)
             hub = PybricksHubBLE(device)
         elif transport == "usb":
-            from pybricksdev.connections.pybricks import PybricksHubUSB
-            from pybricksdev.usb import LEGO_USB_VID
-            from usb.core import find
+            from .usb_process import USBHub
 
-            device = await asyncio.to_thread(
-                find,
-                custom_match=lambda d: d.idVendor == LEGO_USB_VID
-                and (d.product or "").endswith("Pybricks"),
-            )
-            if device is None:
-                raise ValueError("No Pybricks USB hub found")
-            hub = PybricksHubUSB(device)
+            hub = USBHub(name)
         else:
             raise ValueError("Transport must be 'ble' or 'usb'")
-        try:
-            await hub.connect()
-        except BaseException:
-            await hub.disconnect()
-            raise
         self.hub = hub
+        await hub.connect()
         kind = getattr(getattr(hub, "hub_kind", None), "name", "Hub")
         model = {
             "BOOST": "boost",
             "TECHNIC": "technic",
             "TECHNIC_LARGE": "inventor",
+            "EV3": "ev3",
         }.get(kind, "")
         self._update(
-            name=name or "Pybricks",
+            name=getattr(hub, "name", None) or name or "Pybricks",
             kind=kind,
             model=model,
             firmware=str(getattr(hub, "fw_version", "") or ""),
@@ -139,6 +149,8 @@ class Connection:
         self._update(running=False, monitoring=False)
 
     async def start_monitor(self):
+        if self.info.model == "ev3":
+            raise ValueError(tr("EV3 port monitoring is not supported yet"))
         await self.stop()
         self._monitor_requested = True
         try:
@@ -184,9 +196,11 @@ class Connection:
             if hub:
                 try:
                     if monitoring:
-                        await hub.stop_user_program()
+                        async with asyncio.timeout(min(1, self.disconnect_timeout)):
+                            await hub.stop_user_program()
                 finally:
-                    await hub.disconnect()
+                    async with asyncio.timeout(self.disconnect_timeout):
+                        await hub.disconnect()
         finally:
             self._update(connected=False, running=False, monitoring=False)
 

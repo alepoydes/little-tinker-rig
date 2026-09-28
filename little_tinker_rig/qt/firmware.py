@@ -24,7 +24,6 @@ from PySide6.QtWidgets import (
 from little_tinker_rig.core.paths import firmware_cache
 from little_tinker_rig.i18n import language, tr
 from little_tinker_rig.pybricks import firmware
-from little_tinker_rig.pybricks.simulation import PROFILES
 
 
 class PrepareJob(QThread):
@@ -43,6 +42,8 @@ class PrepareJob(QThread):
 
 
 class FirmwareDialog(QDialog):
+    message = Signal(str)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle(tr("Hub firmware"))
@@ -60,13 +61,20 @@ class FirmwareDialog(QDialog):
         layout = QVBoxLayout(self)
         form = QFormLayout()
         self.model, self.kind, self.version = QComboBox(), QComboBox(), QComboBox()
-        for key, (name, _, _) in PROFILES.items():
-            self.model.addItem(name, key)
+        self.channel = QComboBox()
+        self.channel.addItem(tr("Stable"), "stable")
+        self.channel.addItem(tr("Beta"), "beta")
+        for key, (_, _, name) in firmware.MODELS.items():
+            self.model.addItem(tr(name), key)
         self.kind.addItem(tr("Install Pybricks"), "pybricks")
         self.kind.addItem(tr("Restore LEGO firmware"), "lego")
         form.addRow(tr("Hub model"), self.model)
         form.addRow(tr("Firmware"), self.kind)
+        form.addRow(tr("Release channel"), self.channel)
         form.addRow(tr("Version"), self.version)
+        self.notes = QLabel()
+        self.notes.setOpenExternalLinks(True)
+        form.addRow(self.notes)
         layout.addLayout(form)
         row = QHBoxLayout()
         self.refresh_button = QPushButton(tr("Refresh versions"))
@@ -83,6 +91,7 @@ class FirmwareDialog(QDialog):
         layout.addWidget(self.details)
         self.log = QTextEdit()
         self.log.setReadOnly(True)
+        self.message.connect(self.log.append)
         layout.addWidget(self.log, 1)
         self.progress = QProgressBar()
         layout.addWidget(self.progress)
@@ -100,7 +109,8 @@ class FirmwareDialog(QDialog):
         layout.addLayout(row)
         self.model.currentIndexChanged.connect(self.selection_changed)
         self.kind.currentIndexChanged.connect(self.selection_changed)
-        self.version.currentIndexChanged.connect(self.invalidate)
+        self.channel.currentIndexChanged.connect(self.selection_changed)
+        self.version.currentIndexChanged.connect(self.version_changed)
         self.refresh_button.clicked.connect(self.refresh_catalog)
         self.download_button.clicked.connect(self.prepare_download)
         self.local_button.clicked.connect(self.open_local)
@@ -131,6 +141,7 @@ class FirmwareDialog(QDialog):
         ):
             widget.setEnabled(idle)
         self.download_button.setEnabled(idle and self.version.currentData() is not None)
+        self.channel.setEnabled(idle and self.kind.currentData() == "pybricks")
         self.install_button.setEnabled(
             idle and self.package is not None and self.consent.isChecked()
         )
@@ -145,9 +156,22 @@ class FirmwareDialog(QDialog):
         self.version.clear()
         model, kind = self.model.currentData(), self.kind.currentData()
         for image in self.images:
-            if (image.model, image.kind) == (model, kind):
-                self.version.addItem(image.version, image)
-        self.instructions.setText(firmware.instructions(model, kind))
+            if image.matches(model, kind, self.channel.currentData()):
+                self.version.addItem(image.label, image)
+        self.instructions.setText(
+            firmware.instructions(model, kind, self.channel.currentData())
+        )
+        self.invalidate()
+
+    def version_changed(self):
+        from html import escape
+
+        image = self.version.currentData()
+        self.notes.setText(
+            f'<a href="{escape(image.notes, quote=True)}">{tr("Release notes")}</a>'
+            if image and image.notes
+            else ""
+        )
         self.invalidate()
 
     def start_job(self, action, receiver):
@@ -168,7 +192,10 @@ class FirmwareDialog(QDialog):
 
     def refresh_catalog(self):
         self.start_job(
-            lambda: firmware.catalog(self.cache, refresh=True), self.catalog_ready
+            lambda: firmware.catalog(
+                self.cache, refresh=True, report=self.message.emit
+            ),
+            self.catalog_ready,
         )
 
     def catalog_ready(self, images):
@@ -178,7 +205,9 @@ class FirmwareDialog(QDialog):
     def prepare_download(self):
         image = self.version.currentData()
         if image:
-            self.prepare(lambda: firmware.download(image, self.cache))
+            self.prepare(
+                lambda: firmware.download(image, self.cache, report=self.message.emit)
+            )
 
     def open_local(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -200,7 +229,7 @@ class FirmwareDialog(QDialog):
         self.details.setText(
             f"{self.model.currentText()} · {self.kind.currentText()} · {package.version}\n{package.path}\nSHA-256: {package.digest}"
         )
-        self.log.setPlainText(package.license)
+        self.log.setPlainText(self.log.toPlainText() + "\n\n" + package.license)
         self.update_buttons()
 
     def failed(self, message):
@@ -214,7 +243,7 @@ class FirmwareDialog(QDialog):
         if (
             owner is not None
             and getattr(owner, "hub_info", None)
-            and owner.hub_info.connected
+            and (owner.hub_info.connected or owner.hub_info.connection_action)
         ):
             owner.controls.armed.setChecked(False)
             future = owner.robot.disconnect_hub()
@@ -260,7 +289,9 @@ class FirmwareDialog(QDialog):
         self.progress.setRange(0, 100)
         success = code == 0 and status == QProcess.ExitStatus.NormalExit
         self.progress.setValue(100 if success else 0)
-        message = firmware.result_message(success, self.package.kind)
+        message = firmware.result_message(
+            success, self.package.kind, self.package.model
+        )
         self.log.append(message)
         self.consent.setChecked(False)
         self.update_buttons()

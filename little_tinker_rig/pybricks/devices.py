@@ -53,6 +53,7 @@ class HubInfo:
     transport: str = ""
     model: str = ""
     connected: bool = False
+    connection_action: str = ""
     running: bool = False
     monitoring: bool = False
     battery_mv: int | None = None

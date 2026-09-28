@@ -4,6 +4,7 @@ import asyncio
 import codecs
 import re
 import sys
+import webbrowser
 from pathlib import Path
 
 from textual import on, work
@@ -24,7 +25,6 @@ from textual.widgets import (
 from little_tinker_rig.core.paths import firmware_cache
 from little_tinker_rig.i18n import language, tr
 from little_tinker_rig.pybricks import firmware
-from little_tinker_rig.pybricks.simulation import PROFILES
 
 
 class FirmwareScreen(ModalScreen):
@@ -57,7 +57,10 @@ class FirmwareScreen(ModalScreen):
             with VerticalScroll(id="firmware-fields"):
                 with Horizontal():
                     yield Select(
-                        [(name, key) for key, (name, _, _) in PROFILES.items()],
+                        [
+                            (tr(name), key)
+                            for key, (_, _, name) in firmware.MODELS.items()
+                        ],
                         value="inventor",
                         allow_blank=False,
                         id="model",
@@ -71,10 +74,17 @@ class FirmwareScreen(ModalScreen):
                         allow_blank=False,
                         id="kind",
                     )
+                yield Select(
+                    [(tr("Stable"), "stable"), (tr("Beta"), "beta")],
+                    value="stable",
+                    allow_blank=False,
+                    id="channel",
+                )
                 yield Select([], prompt=tr("Version"), id="version")
                 with Horizontal():
                     yield Button(tr("Refresh versions"), id="refresh")
                     yield Button(tr("Prepare download"), id="download")
+                    yield Button(tr("Release notes"), id="notes", disabled=True)
                 with Horizontal():
                     yield Input(
                         placeholder=tr("Local firmware ZIP / BIN path"), id="local-path"
@@ -122,7 +132,7 @@ class FirmwareScreen(ModalScreen):
 
     def update_buttons(self):
         for widget in self.query(
-            "Select, Input, #refresh, #download, #local, #consent, #close"
+            "Select, Input, #refresh, #download, #local, #consent, #close, #notes"
         ):
             widget.disabled = self.busy
         self.query_one("#install", Button).disabled = (
@@ -134,6 +144,13 @@ class FirmwareScreen(ModalScreen):
             self.query_one("#download", Button).disabled = (
                 self.query_one("#version", Select).value is Select.NULL
             )
+        self.query_one("#channel", Select).disabled = (
+            self.busy or self.query_one("#kind", Select).value == "lego"
+        )
+        index = self.query_one("#version", Select).value
+        self.query_one("#notes", Button).disabled = (
+            self.busy or index is Select.NULL or not self.images[int(index)].notes
+        )
 
     def selection_changed(self):
         model, kind = (
@@ -141,20 +158,20 @@ class FirmwareScreen(ModalScreen):
             self.query_one("#kind", Select).value,
         )
         choices = [
-            (image.version, str(index))
+            (image.label, str(index))
             for index, image in enumerate(self.images)
-            if (image.model, image.kind) == (model, kind)
+            if image.matches(model, kind, self.query_one("#channel", Select).value)
         ]
         version = self.query_one("#version", Select)
         version.set_options(choices)
         if choices:
             version.value = choices[0][1]
         self.query_one("#instructions", Static).update(
-            firmware.instructions(model, kind)
+            firmware.instructions(model, kind, self.query_one("#channel", Select).value)
         )
         self.invalidate()
 
-    @on(Select.Changed, "#model, #kind")
+    @on(Select.Changed, "#model, #kind, #channel")
     def target_changed(self):
         self.selection_changed()
 
@@ -172,6 +189,10 @@ class FirmwareScreen(ModalScreen):
         event.stop()
         if event.button.id == "close":
             self.action_close()
+        elif event.button.id == "notes":
+            index = self.query_one("#version", Select).value
+            if index is not Select.NULL:
+                webbrowser.open(self.images[int(index)].notes)
         elif not self.busy:
             self.perform(event.button.id)
 
@@ -189,10 +210,14 @@ class FirmwareScreen(ModalScreen):
         progress = self.query_one("#firmware-progress", ProgressBar)
         progress.update(total=None, progress=0)
         success = False
+
+        def report(text):
+            self.app.call_from_thread(self.log_text, text + "\n")
+
         try:
             if action == "refresh":
                 self.images = await asyncio.to_thread(
-                    firmware.catalog, self.cache, refresh=True
+                    firmware.catalog, self.cache, refresh=True, report=report
                 )
                 self.selection_changed()
             elif action in {"download", "local"}:
@@ -207,7 +232,10 @@ class FirmwareScreen(ModalScreen):
                     if index is Select.NULL:
                         raise ValueError(tr("Choose a firmware version first"))
                     path = await asyncio.to_thread(
-                        firmware.download, self.images[int(index)], self.cache
+                        firmware.download,
+                        self.images[int(index)],
+                        self.cache,
+                        report=report,
                     )
                 else:
                     path = Path(self.query_one("#local-path", Input).value).expanduser()
@@ -244,14 +272,18 @@ class FirmwareScreen(ModalScreen):
                 self.log_text(decoder.decode(b"", final=True))
                 success = await self.process.wait() == 0
                 self.log_text(
-                    "\n" + firmware.result_message(success, package.kind) + "\n"
+                    "\n"
+                    + firmware.result_message(success, package.kind, package.model)
+                    + "\n"
                 )
                 return
             success = True
         except Exception as error:
             self.log_text(str(error) + "\n")
             if action == "install":
-                self.log_text(firmware.result_message(False, package.kind) + "\n")
+                self.log_text(
+                    firmware.result_message(False, package.kind, package.model) + "\n"
+                )
         finally:
             self.busy = False
             self.process = None

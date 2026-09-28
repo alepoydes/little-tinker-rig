@@ -36,7 +36,8 @@ be silently overwritten; reopen it or save your version under another name.
 
 ## Connect and run
 
-F7 opens the connection dialog. Bluetooth is selected initially; USB and virtual
+F7 opens the connection dialog when disconnected. During connection it cancels
+the attempt; once connected it disconnects the hub. Bluetooth is selected initially; USB and virtual
 Inventor / SPIKE Prime, BOOST and Technic hubs are also available. The model
 choice applies only to virtual hubs. The status line shows the connection and
 program state.

@@ -38,7 +38,9 @@ uncached building resources need a connection.
 - **Robots:** connect to Pybricks hubs over Bluetooth or supported USB connections,
   upload and run programs, read console output, inspect ports, and install or
   restore supported firmware. Target families are SPIKE Prime / Robot Inventor,
-  BOOST and Technic. Virtual hubs are available for trying basic programs.
+  BOOST and Technic. USB Serial and beta firmware installation also include
+  experimental EV3 support, untested on hardware; EV3 port monitoring is not
+  available yet. Virtual hubs are available for trying basic programs.
 - **Optional lessons:** open activities, track progress, and use 3D building views
   where a model is available. Source credits and links to original building
   instructions are retained. Downloaded models and parts are cached outside the
@@ -109,6 +111,7 @@ The command-line tools start with
 - [Creating blocks](doc/en/block-editor.md)
 - [Bundled examples and credits](examples/pybricks/README.md)
 - [Additional Pybricks projects — external links](examples/pybricks/website/README.md)
+- [Changelog](CHANGELOG.md)
 
 Feedback about learning and editing is especially useful: where a child gets
 stuck, which action is hard to find, and where blocks make a program harder to
@@ -131,6 +134,7 @@ uv build
 The [GitHub Actions workflow](.github/workflows/checks.yml) runs these checks on
 GitHub's Ubuntu runner, with Qt in offscreen mode and simulated devices. Physical
 Bluetooth/USB, flashing and native 3D rendering still need local checks.
+See [USB connection help](doc/en/usb.md) for serial-port permissions and troubleshooting.
 
 See the [architecture](doc/en/architecture.md), [development invariants](doc/en/development.md)
 and [design specification](devs/DESIGN_SPEC.md). Examples retain upstream
@@ -196,8 +200,9 @@ created models and patiently helped someone learn. We are deeply grateful.
   view possible.
 - **[pygame-ce](https://pyga.me/)** and the **[SDL](https://www.libsdl.org/)**
   library it builds on: thank you for the gamepad support that helps put robot
-  control into children's hands. **[Bleak](https://github.com/hbldh/bleak)** and
-  **[PyUSB](https://pyusb.github.io/pyusb/)** help us connect to their hubs.
+  control into children's hands. **[Bleak](https://github.com/hbldh/bleak)**,
+  **[PyUSB](https://pyusb.github.io/pyusb/)** and
+  **[pySerial](https://pyserial.readthedocs.io/)** help us connect to their hubs.
 
 We also thank the maintainers of platformdirs, Babel, uv, Ruff, Black, pytest,
 setuptools and the many dependencies beneath them. Packaging, translations,

@@ -45,7 +45,14 @@ class ConnectDialog(QDialog):
         self.name.setPlaceholderText(N_("Empty — first available hub"))
         self.name.setEnabled(False)
         self.transport.currentIndexChanged.connect(
-            lambda index: self.name.setEnabled(self.transport.currentData() == "ble")
+            lambda index: self.name.setEnabled(
+                self.transport.currentData() != "virtual"
+            )
+        )
+        self.name.setToolTip(
+            N_(
+                "Bluetooth hub name, or USB serial port such as /dev/ttyACM0 or COM3. Leave empty for automatic discovery."
+            )
         )
         self.model = QComboBox()
         for label, key in (
@@ -61,7 +68,7 @@ class ConnectDialog(QDialog):
         )
         self.transport.setCurrentIndex(self.transport.findData("ble"))
         form.addRow(N_("Connection"), self.transport)
-        form.addRow(N_("Bluetooth name"), self.name)
+        form.addRow(N_("Hub name / USB port"), self.name)
         form.addRow(N_("Virtual hub model"), self.model)
         layout.addLayout(form)
         buttons = QDialogButtonBox(
@@ -70,6 +77,11 @@ class ConnectDialog(QDialog):
         buttons.button(QDialogButtonBox.StandardButton.Ok).setText(N_("Connect"))
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
+        help_button = buttons.addButton(
+            N_("USB connection help"), QDialogButtonBox.ButtonRole.HelpRole
+        )
+        help_button.clicked.connect(self.reject)
+        help_button.clicked.connect(parent.show_usb_help)
         layout.addWidget(buttons)
         localize(self)
 
@@ -161,13 +173,33 @@ class DevicePanel(QWidget):
             if info.connected
             else tr("Connect a hub at the top right of the window.")
         )
-        self.monitor.setEnabled(info.connected and not info.monitoring)
+        self.monitor.setEnabled(
+            info.connected
+            and not info.connection_action
+            and not info.monitoring
+            and info.model != "ev3"
+        )
+        self.monitor.setToolTip(
+            tr("EV3 port monitoring is not supported yet")
+            if info.model == "ev3"
+            else tr(
+                "Replaces the running program with the port monitor. Motors remain stopped."
+            )
+        )
         self.monitor.setText(
             tr("Stop program and inspect ports")
             if info.running
             else tr("Open port monitor")
         )
-        self.disconnect.setEnabled(info.connected)
+        self.disconnect.setEnabled(
+            info.connection_action == "connecting"
+            or (info.connected and not info.connection_action)
+        )
+        self.disconnect.setText(
+            tr("Cancel connection")
+            if info.connection_action == "connecting"
+            else tr("Disconnect hub")
+        )
         virtual = info.connected and info.transport == "virtual"
         for port, (kind, label, slider) in self.rows.items():
             data = info.ports.get(port, {}) if info.connected else {}
@@ -176,7 +208,9 @@ class DevicePanel(QWidget):
             kind.setCurrentIndex(max(0, kind.findData(key)))
             kind.blockSignals(False)
             kind.setEnabled(virtual and not (info.model == "boost" and port in "AB"))
-            kind.parentWidget().setVisible(not info.ports or port in info.ports)
+            kind.parentWidget().setVisible(
+                info.model != "ev3" and (not info.ports or port in info.ports)
+            )
             text = describe_device(data)
             fresh = info.monitoring or virtual
             label.setText(

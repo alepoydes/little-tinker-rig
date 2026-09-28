@@ -307,6 +307,44 @@ erase, verify the reviewed digest again in the flash process, and propagate
 failures. Use mocked transport boundaries in automation; report physical flashing
 separately. A subprocess isolates public DFU routines that may call SystemExit.
 
+Connection lifecycle is separate from hub telemetry. Disconnect cancels an in-flight
+connect; busy ends only after cleanup, and callbacks from a cancelled attempt cannot
+restore a connection. Native USB drivers live in a child process so synchronous
+native stalls cannot block cancellation. Kill and reap that process when cooperative
+shutdown fails. Exercise connect timeout, cancellation, reconnection and hung
+shutdown with a blocking synthetic child, without discovering physical devices.
+
+Release lookup must preserve cached versions and digests during rate limiting or
+network failure. Persist GitHub's retry deadline and reuse identical asset URLs
+across REST and public-feed lookup. Catalog refresh never downloads binaries;
+reopening preparation reuses verified archives. Test with synthetic HTTP failures
+and local packages, never repeated real API calls.
+
+Keep Pybricks-owned functionality behind public upstream APIs; USB identifiers
+come from pybricksdev. The serial adapter is a compatibility layer until upstream
+provides it. Do not duplicate upstream udev rules. Diagnose serial open errors
+before crossing the worker boundary, retaining errno-specific advice and the original
+error. Linux group advice comes from device metadata, account membership and process
+groups; never suggest joining an administrative group. Tests distinguish missing
+membership, stale sessions, ACL failures, busy ports and unplugged devices. UI help
+must remain accessible offline. Inventor checks do not establish EV3 hardware support.
+
+USB Serial uses SPIKE COBS framing, not ordinary zero-delimited COBS. Fragmentation,
+coalescing and malformed frames must not change transaction boundaries. Serialize
+requests and correlate responses by tag / read selector; on timeout or cancellation
+close the stream rather than reusing it with an ambiguous late reply. An upload
+invalidates stored-program metadata before writing and commits its size only after
+every chunk succeeds. Run waits for idle status after its start acknowledgement,
+not a stale status from before it. Keep BLE and legacy USB on their public adapters.
+
+Metadata v3 separates hub type from hardware variant. Validate all images during
+preparation; let the pinned public upstream installer identify the actual DFU MCU
+before erase. Never send a v3 F4/H5 image to the old fixed-address DFU writer.
+`pybricks/installer.json` pins the upstream tools, license and bootloader hashes;
+they live in the user cache and are rechecked before execution. Update them as one
+reviewed unit. Keep hardware targets separate from implemented virtual profiles:
+EV3 USB support does not imply an EV3 simulator, BLE or port monitor.
+
 ## Structural fields and shared painting
 
 Names, expression leaves, operators and editable lists refer to one Syntax

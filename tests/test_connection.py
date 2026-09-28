@@ -196,3 +196,38 @@ async def test_console_input_serializes_writes_and_does_not_enter_monitor():
     with pytest.raises(ValueError, match="Stop the port monitor"):
         await pending
     assert received == [b"a", b"b"]
+
+
+@pytest.mark.asyncio
+async def test_ble_timeout_preserves_failure_and_bounds_cleanup(monkeypatch):
+    import asyncio
+
+    pytest.importorskip("pybricksdev")
+    from pybricksdev import ble
+    from pybricksdev.connections import pybricks
+
+    disconnected = []
+
+    class Hub:
+        def __init__(self, device):
+            pass
+
+        async def connect(self):
+            await asyncio.Event().wait()
+
+        async def disconnect(self):
+            disconnected.append(True)
+            await asyncio.Event().wait()
+
+    async def discover(name):
+        return object()
+
+    monkeypatch.setattr(ble, "find_device", discover)
+    monkeypatch.setattr(pybricks, "PybricksHubBLE", Hub)
+    connection = Connection()
+    connection.connect_timeout = connection.disconnect_timeout = 0.02
+    async with asyncio.timeout(0.5):
+        with pytest.raises(TimeoutError, match="Hub connection timed out"):
+            await connection.connect()
+    assert disconnected == [True]
+    assert connection.hub is None and not connection.info.connected

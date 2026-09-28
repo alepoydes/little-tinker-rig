@@ -396,3 +396,106 @@ def test_console_line_and_immediate_keyboard_input(qt_app):
         assert not widget.field.text()
     finally:
         widget.close()
+
+
+def test_hub_button_cancels_connection_then_disconnects_instead_of_opening_monitor(
+    tmp_path, qt_app, monkeypatch
+):
+    import asyncio
+    from threading import Event
+
+    from little_tinker_rig.pybricks.devices import HubInfo
+    from little_tinker_rig.qt.app import Studio
+
+    entered, released = Event(), Event()
+
+    class Connection:
+        def __init__(self, output, changed, **kwargs):
+            self.changed = changed
+
+        async def connect(self, *args):
+            entered.set()
+            try:
+                await asyncio.sleep(30)
+            finally:
+                # A late transport callback must not resurrect a cancelled link.
+                self.changed(HubInfo(connected=True, name="Late"))
+                await asyncio.sleep(0.05)
+                released.set()
+
+        async def disconnect(self):
+            pass
+
+    monkeypatch.setattr(
+        "little_tinker_rig.pybricks.worker.VirtualConnection", Connection
+    )
+    path = tmp_path / "main.py"
+    path.write_text("print(1)\n")
+    window = Studio(path)
+    try:
+        robot = window._robot()
+        future = robot.connect_hub(transport="virtual")
+        qt_wait(entered.is_set)
+        qt_app.processEvents()
+        assert window.hub_button.isEnabled()
+        assert window.hub_button.text() == "Cancel connection"
+        assert window.device_panel.disconnect.isEnabled()
+        window.hub_button.click()
+        assert not window.hub_button.isEnabled()
+        qt_wait(lambda: not window.hub_info.connection_action)
+        assert future.cancelled() and released.is_set()
+        assert not window.hub_info.connected
+        assert window.hub_button.isEnabled() and not window.hub_is_busy
+        disconnected = []
+        monkeypatch.setattr(robot, "disconnect_hub", lambda: disconnected.append(True))
+        window.update_hub(HubInfo(connected=True, name="Classroom"))
+        window.hub_button.click()
+        assert disconnected == [True]
+    finally:
+        robot.worker.close()
+        window.robot = None
+        window.close()
+
+
+def test_hub_error_can_be_copied_and_opens_offline_usb_help(tmp_path, qt_app):
+    from PySide6.QtWidgets import QDialogButtonBox
+
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.device import ConnectDialog
+
+    path = tmp_path / "main.py"
+    path.write_text("print(1)\n")
+    window = Studio(path)
+    window.show()
+    robot = window._robot()
+    message = "Could not open USB serial port /dev/ttyACM0.\n\nDetails and command"
+    try:
+        robot.failed.emit(message)
+        assert message in window.console.toPlainText()
+        assert window.statusBar().currentMessage() == message.splitlines()[0]
+        assert window.copy_error.isVisible()
+        assert window.connection_help.isVisible()
+        window.copy_error.click()
+        assert qt_app.clipboard().text() == message
+        window.connection_help.click()
+        assert window.help_page.current == "usb.md"
+        assert window.help_page.isVisible()
+        assert "usermod" in window.help_page.browser.toPlainText()
+
+        # Help is also reachable before attempting a connection.
+        window.set_mode(0)
+        dialog = ConnectDialog(window)
+        dialog.show()
+        buttons = dialog.findChild(QDialogButtonBox)
+        help_button = next(
+            button
+            for button in buttons.buttons()
+            if buttons.buttonRole(button) == QDialogButtonBox.ButtonRole.HelpRole
+        )
+        help_button.click()
+        assert not dialog.isVisible()
+        assert window.help_page.isVisible()
+    finally:
+        robot.close()
+        window.robot = None
+        window.close()

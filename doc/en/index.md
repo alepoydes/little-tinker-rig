@@ -17,6 +17,7 @@ on a virtual Inventor / SPIKE Prime hub.
 - [Editing, documents, Scratch, and CLI](usage.md)
 - [Terminal Python editor and Pybricks tools](tui.md)
 - [Hubs, sensors, motors, and controllers](robotics.md)
+- [USB connection help and access permissions](usb.md)
 - [Create your own block library](snippets.md)
 - [Block Editor and live preview](block-editor.md)
 
