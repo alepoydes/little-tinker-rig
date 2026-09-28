@@ -73,6 +73,28 @@ async def test_tui_unfinished_source_save_search_undo_and_discard(tmp_path):
     assert not app.robot.thread.is_alive()
 
 
+async def test_reopen_current_file_reads_after_save_confirmation(tmp_path):
+    from little_tinker_rig.tui.app import Studio
+    from little_tinker_rig.tui.dialogs import Form, Unsaved
+
+    path = tmp_path / "main.py"
+    path.write_text("value = 1\n")
+    app = Studio(path)
+    async with app.run_test(size=(120, 40)) as pilot:
+        app.editor.load_text("value = 2\n")
+        await pilot.press("ctrl+o")
+        await until(lambda: isinstance(app.screen, Form))
+        await pilot.click("#accept")
+        await until(lambda: isinstance(app.screen, Unsaved))
+        await pilot.click("#save")
+        await until(lambda: not isinstance(app.screen, (Form, Unsaved)))
+        await until(lambda: not app.file.dirty(app.editor.text))
+        assert app.editor.text == path.read_text() == "value = 2\n"
+        app.editor.load_text("value = 3\n")
+        await pilot.press("ctrl+s")
+        await until(lambda: path.read_text() == "value = 3\n")
+
+
 async def test_tui_virtual_upload_run_error_location_and_explicit_monitor(tmp_path):
     from little_tinker_rig.tui.app import Studio
     from little_tinker_rig.tui.dialogs import Form

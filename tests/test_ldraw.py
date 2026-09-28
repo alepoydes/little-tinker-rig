@@ -39,6 +39,38 @@ def test_shared_geometry_transforms_and_nested_steps(model):
     np.testing.assert_allclose(scene.bounds(), [[-30, -20, 0], [40, 40, 0]])
 
 
+@pytest.mark.parametrize("saved, expected", [(2, 2), (99, 3)])
+def test_saved_assembly_step_waits_for_model_count(model, qt_app, saved, expected):
+    import json
+
+    from little_tinker_rig.qt.assembly import AssemblyPage
+
+    description = model.with_suffix(".json")
+    description.write_text(
+        json.dumps(
+            {
+                "format": 1,
+                "model": model.name,
+                "steps": {"1": {"text": "Start here"}},
+            }
+        )
+    )
+    state = {"step": saved}
+    page = AssemblyPage(description, state)
+    try:
+        assert page.step == state["step"] == saved
+        assert not page.back.isEnabled() and not page.next_step.isEnabled()
+        page.loaded(None, "Parts unavailable")
+        page.retranslate()
+        assert page.step == state["step"] == saved
+        with LDraw(model) as reader:
+            page.loaded(reader.scene(), "")
+        assert page.step == state["step"] == expected
+        assert page.slider.value() == expected
+    finally:
+        page.deleteLater()
+
+
 def test_circular_references_fail_without_recursion(model):
     (model.parent / "part.dat").write_text("1 16 0 0 0 1 0 0 0 1 0 0 0 1 part.dat")
     with pytest.raises(ValueError, match="Circular"):

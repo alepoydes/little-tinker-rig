@@ -80,7 +80,14 @@ class World:
             if self.ports.get(port, {}).get("type") != kind:
                 data = {"type": kind}
                 if kind == "motor":
-                    data.update(angle=0.0, speed=0.0, target=None, limit=500.0)
+                    data.update(
+                        angle=0.0,
+                        speed=0.0,
+                        target=None,
+                        limit=500.0,
+                        remaining=None,
+                        motion=None,
+                    )
                 elif kind in SENSOR_VALUES:
                     data.update(
                         {
@@ -123,19 +130,43 @@ class World:
                 )
             self.active, self.age = selected, 0
 
-    def command(self, port, speed=0, target=None, limit=500):
-        if not all(math.isfinite(value) for value in (speed, limit)) or (
-            target is not None and not math.isfinite(target)
+    def command(self, port, speed=0, target=None, limit=500, duration=None):
+        if (
+            not all(math.isfinite(value) for value in (speed, limit))
+            or (target is not None and not math.isfinite(target))
+            or (duration is not None and (not math.isfinite(duration) or duration < 0))
         ):
             raise ValueError("Motor command must be finite")
         with self.lock:
+            motion = object()
             self.device(port, "motor").update(
-                speed=speed, target=target, limit=abs(limit)
+                speed=speed,
+                target=target,
+                limit=abs(limit),
+                remaining=duration,
+                motion=motion,
             )
+            self.active.discard(port)
+            if duration == 0:
+                self.stop(port)
+            return motion
 
     def stop(self, port):
         with self.lock:
-            self.device(port, "motor").update(speed=0.0, target=None)
+            self.device(port, "motor").update(
+                speed=0.0, target=None, remaining=None, motion=None
+            )
+
+    def pending(self, port, motion):
+        """Waiters may complete only their own command, never its replacement."""
+        with self.lock:
+            data = self.device(port, "motor")
+            if data["motion"] is not motion:
+                return False
+            if data["target"] is not None and abs(data["angle"] - data["target"]) <= 1:
+                self.stop(port)
+                return False
+            return True
 
     def advance(self, seconds):
         if not math.isfinite(seconds) or seconds < 0:
@@ -148,6 +179,8 @@ class World:
                 if data["type"] != "motor":
                     continue
                 dt = active_time if port in self.active else seconds
+                if data["remaining"] is not None:
+                    dt = min(dt, data["remaining"])
                 if data["target"] is None:
                     data["angle"] += data["speed"] * dt
                 else:
@@ -157,6 +190,10 @@ class World:
                     data["speed"] = (
                         travel / dt if dt and abs(delta) > abs(travel) else 0
                     )
+                if data["remaining"] is not None:
+                    data["remaining"] = max(0, data["remaining"] - seconds)
+                    if data["remaining"] == 0:
+                        self.stop(port)
             self.age += seconds
             if self.age >= 0.5:
                 for port in self.active:
@@ -169,7 +206,7 @@ class World:
                 port: {
                     key: round(value, 2) if isinstance(value, float) else value
                     for key, value in data.items()
-                    if key not in {"target", "limit"}
+                    if key not in {"target", "limit", "remaining", "motion"}
                 }
                 for port, data in self.ports.items()
             }

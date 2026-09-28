@@ -294,9 +294,8 @@ class Studio(App):
             path = Path(answer["path"]).expanduser()
             if not path.is_file():
                 raise FileNotFoundError(tr("Choose an existing Python file"))
-            file = SourceFile(path)
             if await self.may_leave():
-                self.load_file(file)
+                self.load_file(SourceFile(path))
         except (ValueError, SyntaxError, OSError, UnicodeError) as error:
             self.failed(str(error))
 

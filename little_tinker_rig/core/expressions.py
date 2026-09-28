@@ -13,7 +13,7 @@ from . import edit
 from .parameters import ENUM_VALUES, default_bindings, slots
 from .snippets import LEVELS
 from .structure import OPERATORS
-from .syntax import Span
+from .syntax import Span, Syntax
 from .types import (
     Compatibility,
     annotation_types,
@@ -405,10 +405,13 @@ def copy_to(session, node, target, *, move=False):
         else:
             direct.append((span, text))
     for match, parameter, root, edits in grouped.values():
-        value = edit.patches(
-            syntax.text(root),
-            edits,
-        )
+        # Parse the input independently before propagating it to linked uses.
+        # A text splice here would lose precedence before the outer edit sees it.
+        local = Syntax(f"({syntax.text(root)}\n)", fragment=True)
+        value = edit.replace_expressions(
+            local,
+            [(Span(span.start + 1, span.end + 1), text) for span, text in edits],
+        )[1:-2]
         direct.extend(
             (syntax.spans[n], value) for n in match.occurrences[parameter.name]
         )

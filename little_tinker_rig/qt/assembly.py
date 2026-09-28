@@ -270,9 +270,6 @@ class AssemblyPage(QWidget):
             self.notes.setMarkdown(
                 localized(self.robot.get("description", ""), language())
             )
-            count = max((int(s) for s in self.robot.get("steps", {})), default=1)
-            self.slider.setRange(0, count - 1)
-            self.set_step(min(self.step, count - 1))
             return
         self.scene = scene
         if self.view:
@@ -312,16 +309,15 @@ class AssemblyPage(QWidget):
         self.error.show()
 
     def set_step(self, step):
-        count = (
-            self.scene.step_count
-            if self.scene
-            else max((int(s) for s in self.robot.get("steps", {})), default=1)
-        )
-        self.step = max(0, min(step, count - 1))
+        # Annotations may cover only a few steps. Only the loaded model knows
+        # the count; retain the saved request while loading or after a failure.
+        count = self.scene.step_count if self.scene else 0
+        self.step = max(0, min(step, count - 1) if count else step)
         self.clear_selection()
         self.state["step"] = self.step
-        self.back.setEnabled(self.step > 0)
+        self.back.setEnabled(bool(count) and self.step > 0)
         self.next_step.setEnabled(self.step < count - 1)
+        self.slider.setEnabled(bool(count))
         for control in (self.back, self.next_step, self.slider):
             control.setVisible(count > 1)
         self.parts_caption.setText(

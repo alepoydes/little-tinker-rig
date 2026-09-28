@@ -29,6 +29,10 @@ def install_modules(world, incoming):
     def wait_ms(milliseconds):
         time.sleep(max(0, milliseconds) / 1000)
 
+    def wait_motion(commands):
+        while any(world.pending(port, motion) for port, motion in commands):
+            time.sleep(0.01)
+
     def feedback(channel, value):
         world.feedback[channel] = value
         print(f"[Virtual hub {channel}] {value}", flush=True)
@@ -105,16 +109,17 @@ def install_modules(world, incoming):
 
         brake = hold = stop
 
-        def run_target(self, speed, target_angle, then=Stop.HOLD, wait=True):
+        def _target(self, speed, target_angle):
             if speed <= 0:
                 raise ValueError("Target speed must be positive")
-            world.command(
+            return world.command(
                 self.port, target=(target_angle + self.zero) * self.sign, limit=speed
             )
+
+        def run_target(self, speed, target_angle, then=Stop.HOLD, wait=True):
+            motion = self._target(speed, target_angle)
             if wait:
-                while abs(self._position() - target_angle) > 1:
-                    time.sleep(0.01)
-                self.stop()
+                wait_motion([(self.port, motion)])
 
         def run_angle(self, speed, rotation_angle, then=Stop.HOLD, wait=True):
             self.run_target(
@@ -125,15 +130,11 @@ def install_modules(world, incoming):
             )
 
         def run_time(self, speed, time, then=Stop.HOLD, wait=True):
-            def motion():
-                self.run(speed)
-                wait_ms(time)
-                self.stop()
-
+            motion = world.command(
+                self.port, speed * self.sign, duration=max(0, time) / 1000
+            )
             if wait:
-                motion()
-            else:
-                Thread(target=motion, daemon=True).start()
+                wait_motion([(self.port, motion)])
 
     class ColorSensor:
         def __init__(self, port):
@@ -214,22 +215,18 @@ def install_modules(world, incoming):
 
         def _move(self, left, right, then, wait, duration):
             targets = (self.left.angle() + left, self.right.angle() + right)
+            commands = []
             for motor, target, delta in zip(
                 (self.left, self.right), targets, (left, right), strict=True
             ):
                 if delta:
-                    motor.run_target(abs(delta) / duration, target, then, wait=False)
+                    commands.append(
+                        (motor.port, motor._target(abs(delta) / duration, target))
+                    )
                 else:
                     motor.stop()
             if wait:
-                while any(
-                    abs(motor._position() - target) > 1
-                    for motor, target in zip(
-                        (self.left, self.right), targets, strict=True
-                    )
-                ):
-                    time.sleep(0.01)
-                self.stop()
+                wait_motion(commands)
 
         def straight(self, distance, then=Stop.HOLD, wait=True):
             rotation = distance * 360 / (math.pi * self.wheel)

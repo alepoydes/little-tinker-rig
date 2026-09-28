@@ -139,6 +139,48 @@ def test_move_expression_and_navigation_use_exact_nodes():
     assert "(1 + 2) * 3" in owner.document.state.source
 
 
+@pytest.mark.parametrize("move", [False, True])
+@pytest.mark.parametrize(
+    "value, input_value, target, expected",
+    [
+        ("1 + 2", "4 * 5", "4", "(1 + 2) * 5"),
+        ("10 - 3", "20 - 4", "4", "20 - (10 - 3)"),
+        ("2 ** 3", "4 ** 5", "4", "(2 ** 3) ** 5"),
+        ("True or False", "False and missing", "False", "(True or False) and missing"),
+    ],
+)
+def test_transfer_into_linked_subexpression_preserves_tree_and_undo(
+    move, value, input_value, target, expected
+):
+    snippets = load_module(
+        "@inline_block\ndef twice(value=1):\n    print(value)\n    print(value)\n",
+        "test",
+        "1",
+    )
+    source = f"a = {value}\n# linked input\nprint({input_value})\nprint({input_value}) # keep\n"
+    owner = Session.fragment(source, snippets)
+    syntax = owner.document.syntax
+    original_tree = ast.dump(syntax.tree)
+    node = syntax.tree.body[0].value
+    root = syntax.tree.body[1].value.args[0]
+    destination = next(
+        n
+        for n in ast.walk(root)
+        if isinstance(n, ast.expr) and syntax.text(n) == target
+    )
+    copy_to(owner, node, destination, move=move)
+    result = owner.document.state.source
+    assert ast.dump(ast.parse(result)) == ast.dump(
+        ast.parse(
+            f"a = {'...' if move else value}\nprint({expected})\nprint({expected})\n"
+        )
+    )
+    assert "# linked input" in result and "# keep" in result
+    assert ast.dump(syntax.tree) == original_tree
+    owner.editor.undo()
+    assert owner.document.state.source == source
+
+
 def test_comparison_chain_evaluates_middle_operand_once_and_short_circuits():
     owner = Session.fragment("answer = lower() < middle()\n", ())
     node = owner.document.syntax.tree.body[0].value

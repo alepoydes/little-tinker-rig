@@ -52,6 +52,83 @@ def test_duplicate_port_mapping_is_rejected_before_movement():
     assert world.snapshot() == before
 
 
+def test_timed_motion_integrates_only_until_deadline_and_can_be_replaced():
+    world = World()
+    first = world.command("A", speed=100, duration=0.25)
+    world.advance(0.125)
+    assert world.pending("A", first)
+    second = world.command("A", speed=200, duration=0.5)
+    world.advance(0.25)  # The old deadline must not stop the new command.
+    assert not world.pending("A", first)
+    assert world.pending("A", second)
+    assert world.snapshot()["A"]["speed"] == 200
+    world.advance(1)
+    assert not world.pending("A", second)
+    assert world.snapshot()["A"]["angle"] == 112.5
+    assert world.snapshot()["A"]["speed"] == 0
+    world.advance(10)
+    assert world.snapshot()["A"]["angle"] == 112.5
+
+
+@pytest.mark.parametrize("action", ["run_time", "run_target", "straight"])
+def test_waiting_motion_does_not_stop_a_replacement(monkeypatch, action):
+    from queue import Queue
+    from unittest.mock import patch
+
+    from little_tinker_rig.pybricks.sim_runtime import install_modules
+
+    world = World()
+    with patch.dict(sys.modules):
+        install_modules(world, Queue())
+        from pybricks.parameters import Port
+        from pybricks.pupdevices import Motor
+        from pybricks.robotics import DriveBase
+
+        motor = Motor(Port.A)
+        right = Motor(Port.B)
+
+        def replace(_):
+            motor.run(500)
+            right.run(400)
+
+        monkeypatch.setattr(
+            "little_tinker_rig.pybricks.sim_runtime.time.sleep", replace
+        )
+        if action == "run_time":
+            motor.run_time(100, 200)
+        elif action == "run_target":
+            motor.run_target(100, 200)
+        else:
+            DriveBase(motor, right, 56, 112).straight(200)
+        world.advance(1)
+        assert motor.speed() == 500 and right.speed() == 400
+        assert motor.angle() == 500
+
+
+def test_nonblocking_timed_motor_is_synchronous_to_start_and_replace():
+    from queue import Queue
+    from unittest.mock import patch
+
+    from little_tinker_rig.pybricks.sim_runtime import install_modules
+
+    world = World()
+    with patch.dict(sys.modules):
+        install_modules(world, Queue())
+        from pybricks.parameters import Port
+        from pybricks.pupdevices import Motor
+
+        motor = Motor(Port.A)
+        motor.run_time(100, 200, wait=False)
+        assert motor.speed() == 100
+        world.advance(0.1)
+        motor.run(500)
+        world.advance(1)
+        assert motor.speed() == 500 and motor.angle() == 510
+        motor.run_time(100, 200, wait=False)
+        world.advance(1)
+        assert motor.speed() == 0 and motor.angle() == 530
+
+
 @pytest.mark.parametrize("encode", [json.dumps, repr])
 def test_telemetry_and_unicode_console_survive_every_packet_boundary(encode):
     text = "Привет, робот!\n".encode()
@@ -162,7 +239,10 @@ async def test_generated_block_helpers_drive_virtual_hub(
         await hub.connect()
         await hub.run(generated_helper_program, wait=True)
         await wait_until(lambda: b"turn:" in b"".join(output))
-        assert b"turn: 90 90" in b"".join(output)
+        line = next(
+            line for line in b"".join(output).splitlines() if line.startswith(b"turn:")
+        )
+        assert tuple(map(float, line.split()[1:])) == pytest.approx((90, 90), abs=1)
         assert hub.info.ports["A"]["angle"] == pytest.approx(90, abs=1)
         assert hub.info.ports["A"]["speed"] == 0
     finally:

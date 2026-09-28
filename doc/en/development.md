@@ -43,6 +43,10 @@ Save As carries the source document's encoding, including its BOM, independently
 of the destination's previous contents. Verify the decoded text after reopening,
 not only the text still held by the editor.
 
+Open reads the destination after Save/Discard/Cancel is resolved. Reopening the
+current file must use the just-saved bytes and their new conflict-detection hash;
+a failed destination read keeps the current document.
+
 Close confirmations have the same scope as saves. A lesson archive owns all its
 programs: when closing a window, ask once per project and consider drafts in every
 tab. Discard must not be undone by saving another tab of the same archive; Cancel
@@ -95,6 +99,10 @@ Deleting or detaching a standalone expression removes its owning statement;
 only nested expressions leave an `...` placeholder. Empty suites retain `pass`.
 Deletion and transfer share this rule; replacement adds parentheses only when
 needed to preserve the AST.
+Expression edits replace subtrees before projecting text. Validate the projection
+against that independent tree, not against another textual substitution. Apply
+the same operation inside linked parameters before propagating their values.
+Check precedence, associativity, comments and one-step Undo for both copy and move.
 
 Python text assistance uses the public Jedi Script API and the official `pybricks`
 API package in the Qt and TUI extras. A shared analysis lock protects Jedi's
@@ -340,6 +348,11 @@ require hardware. Nested API reporters such as `hub.imu.heading()` derive their
 type and completion suggestions from the same receiver/member-path analysis.
 Movement completion compares unrounded positions: rounding a displayed motor
 angle before the tolerance check can stop outside the promised tolerance.
+Timed motor commands advance on the same World clock as target motions. A new
+command replaces the previous deadline; waiters may complete only the command
+they started. Test cancellation and deadline integration with explicit time steps.
+Runtime integration tests allow the modeled one-degree completion tolerance and
+check stopped speed, rather than requiring an exact printed angle.
 
 ## Definition and example invariants
 
@@ -418,6 +431,10 @@ from keyboard navigation. Verify scrolling, selection, hidden modes, localized
 tooltips and icon rendering. Initial window bounds respect screen space.
 
 ## Lesson and renderer invariants
+
+Preserve a requested assembly step until the model supplies its actual step count.
+Sparse step annotations and failed loads must not clamp saved progress. Navigation
+becomes available after loading; only then clamp an out-of-range saved step.
 
 Use the editor's `commit` operation when applying lesson starters: a direct
 Document commit leaves selection pointing into the old syntax tree. Stage changes

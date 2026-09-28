@@ -1,8 +1,10 @@
 """Source transformations. Inputs stay untouched; callers commit the result."""
 
 import ast
+import copy
 import io
 import tokenize
+from bisect import bisect_left
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 
@@ -233,11 +235,84 @@ def delete(syntax: Syntax, node: ast.AST | tuple[ast.stmt, ...]) -> str:
 def replace_expressions(
     syntax: Syntax, changes: list[tuple[Span, str]], *, removals=()
 ) -> str:
-    """Keep grouping only when the unparenthesized text changes the Python AST."""
+    """Replace AST subtrees, then project the result onto the original source.
+
+    Source fragments retain comments and whitespace. Grouping is accepted only
+    when reparsing produces the independently transformed tree.
+    """
     changes = [(span, text.strip()) for span, text in changes]
+    # Validate disjoint coordinates before moving them past statement removals.
+    patches(syntax.source, [*removals, *changes])
+    if removals:
+        source = patches(syntax.source, list(removals))
+        shifted = []
+        for span, text in changes:
+            shift = sum(
+                len(value) - (removed.end - removed.start)
+                for removed, value in removals
+                if removed.end <= span.start
+            )
+            shifted.append((Span(span.start + shift, span.end + shift), text))
+        changes = shifted
+        syntax = Syntax(source, fragment=syntax.fragment)
+    expressions = {span: ast.parse(text, mode="eval").body for span, text in changes}
+    starts = sorted(span.start for span in expressions)
+    found = set()
+
+    def context(node, ctx):
+        if hasattr(node, "ctx"):
+            node.ctx = ctx
+        if isinstance(node, (ast.List, ast.Tuple)):
+            for child in node.elts:
+                context(child, ctx)
+        elif isinstance(node, ast.Starred):
+            context(node.value, ctx)
+
+    def transform(node):
+        span = syntax.spans.get(node)
+        if isinstance(node, ast.expr) and span in expressions:
+            found.add(span)
+            replacement = expressions[span]
+            context(replacement, getattr(node, "ctx", ast.Load()))
+            return replacement
+        if span is not None:
+            index = bisect_left(starts, span.start)
+            if index == len(starts) or starts[index] >= span.end:
+                return node
+        fields = {}
+        for field, value in ast.iter_fields(node):
+            if isinstance(value, ast.AST):
+                child = transform(value)
+                if child is not value:
+                    fields[field] = child
+            elif isinstance(value, list):
+                children = [
+                    transform(n) if isinstance(n, ast.AST) else n for n in value
+                ]
+                if any(a is not b for a, b in zip(value, children, strict=True)):
+                    fields[field] = children
+        if not fields:
+            return node
+        result = copy.copy(node)
+        for field, value in fields.items():
+            setattr(result, field, value)
+        return result
+
+    expected = ast.dump(transform(syntax.tree))
+    if found != expressions.keys():
+        raise ValueError("Select complete expressions from the current source")
+
+    def agrees(source):
+        try:
+            return ast.dump(syntax.validate(source)) == expected
+        except SyntaxError:
+            return False
+
+    plain = patches(syntax.source, changes)
+    if agrees(plain):
+        return plain
     grouped = []
     for span, text in changes:
-        ast.parse(text, mode="eval")
         wrapped = f"({text})"
         try:
             ast.parse(wrapped, mode="eval")
@@ -245,14 +320,10 @@ def replace_expressions(
             # A trailing Python comment must not swallow the closing parenthesis.
             wrapped = f"({text}\n)"
         grouped.append((span, wrapped))
-    protected = patches(syntax.source, [*removals, *grouped])
-    expected = syntax.validate(protected)
-    plain = patches(syntax.source, [*removals, *changes])
-    try:
-        actual = syntax.validate(plain)
-    except SyntaxError:
+    protected = patches(syntax.source, grouped)
+    if agrees(protected):
         return protected
-    return plain if ast.dump(actual) == ast.dump(expected) else protected
+    raise ValueError("Cannot preserve the expression tree in this context")
 
 
 def replace(syntax: Syntax, node: ast.AST, fragment: str) -> str:
