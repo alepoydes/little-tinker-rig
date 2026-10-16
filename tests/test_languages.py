@@ -307,15 +307,24 @@ def test_documentation_coverage_links_and_anchors(tmp_path):
     assert check(ROOT) == []
     (tmp_path / "little_tinker_rig/locale").mkdir(parents=True)
     (tmp_path / "little_tinker_rig/locale/languages.json").write_text(
-        json.dumps({"en": "English", "ru": "Русский"})
+        json.dumps({"en": "English", "ru": "Русский"}), encoding="utf-8"
     )
     (tmp_path / "doc/en").mkdir(parents=True)
     (tmp_path / "doc/ru").mkdir()
-    (tmp_path / "README.md").write_text("[Start](doc/en/index.md#start)\n")
+    (tmp_path / "README.md").write_text(
+        "[Start](doc/en/index.md#start)\n", encoding="utf-8"
+    )
     (tmp_path / "doc/en/index.md").write_text(
-        "# Start\n\n[Missing](missing.md)\n[Section](#absent)\n"
+        "# Start\n\n[Missing](missing.md)\n[Section](#absent)\n", encoding="utf-8"
     )
     errors = check(tmp_path)
     assert any("ru: missing documentation page index.md" in error for error in errors)
     assert any("missing link target missing.md" in error for error in errors)
     assert any("missing anchor #absent" in error for error in errors)
+
+    (tmp_path / "doc/en/index.md").write_text("# Start\n", encoding="utf-8")
+    (tmp_path / "doc/ru/index.md").write_text("# Начало\n", encoding="utf-8")
+    (tmp_path / "doc/en/api.md").write_text("# Developer API\n", encoding="utf-8")
+    assert check(tmp_path) == []
+    (tmp_path / "doc/ru/api.md").write_text("# API\n", encoding="utf-8")
+    assert check(tmp_path) == ["ru: developer page must be English-only: api.md"]

@@ -136,7 +136,7 @@ GitHub's Ubuntu runner, with Qt in offscreen mode and simulated devices. Physica
 Bluetooth/USB, flashing and native 3D rendering still need local checks.
 See [USB connection help](doc/en/usb.md) for serial-port permissions and troubleshooting.
 
-See the [architecture](doc/en/architecture.md), [development invariants](doc/en/development.md)
+See the [project rules](AGENTS.md), [architecture](doc/en/architecture.md), [development invariants](doc/en/development.md)
 and [design specification](devs/DESIGN_SPEC.md). Examples retain upstream
 formatting; lint and formatting checks target the application, tests and tools.
 

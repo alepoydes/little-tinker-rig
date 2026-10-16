@@ -8,6 +8,11 @@ This document describes the current design of a Python structural editor and rob
 
 Where a detail has not yet been decided, the document marks it explicitly rather than inventing a choice.
 
+The [block catalog and learning research](BLOCK_CATALOG_RESEARCH.md)
+compares Pybricks, SPIKE, and MINDSTORMS and proposes a Python learning progression.
+Its catalog and curriculum proposals are research inputs, not changes to the
+implemented contracts described here.
+
 ---
 
 ## 1. Core idea

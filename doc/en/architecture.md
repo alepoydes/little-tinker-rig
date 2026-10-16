@@ -48,7 +48,8 @@ Selection pulse and editor state are transient.
 gettext PO catalogs are the translation source; MO files are compiled package data.
 Static captions are captured and translated without rebuilding widgets; dynamic
 messages use explicit format placeholders. User source, filenames and console
-output are never translated. Documentation has corresponding language directories.
+output are never translated. End-user documentation has corresponding language
+directories; developer documentation remains English-only.
 
 Real and virtual hubs share ControlState, MotorBinding and HubInfo. Qt owns I/O in
 an asyncio thread and serializes lifecycle operations. Input frames never build a

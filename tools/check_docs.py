@@ -8,6 +8,9 @@ from urllib.parse import unquote, urlsplit
 from little_tinker_rig.documentation import heading_anchors, prose
 
 ROOT = Path(__file__).resolve().parents[1]
+DEVELOPER_PAGES = {
+    Path(name) for name in ("api.md", "architecture.md", "development.md")
+}
 
 
 def check(root=ROOT):
@@ -22,9 +25,20 @@ def check(root=ROOT):
     failures = []
     expected = set().union(*pages.values(), {Path("index.md")})
     for code, present in pages.items():
-        for missing in sorted(expected - present):
+        required = expected if code == "en" else expected - DEVELOPER_PAGES
+        for missing in sorted(required - present):
             failures.append(f"{code}: missing documentation page {missing}")
-    files = [root / "README.md", *docs.rglob("*.md"), *(root / "devs").glob("*.md")]
+        if code != "en":
+            for translated in sorted(present & DEVELOPER_PAGES):
+                failures.append(
+                    f"{code}: developer page must be English-only: {translated}"
+                )
+    files = [
+        root / "README.md",
+        *root.glob("AGENTS.md"),
+        *docs.rglob("*.md"),
+        *(root / "devs").glob("*.md"),
+    ]
     anchor_cache = {}
     for path in files:
         text = path.read_text(encoding="utf-8")

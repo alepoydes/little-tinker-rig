@@ -1,5 +1,14 @@
 # Development
 
+The [project rules](../../AGENTS.md) define the language boundary: developer
+documentation, comments, and docstrings are English-only; localization serves
+end users through the GUI, block descriptions, help, and lab/lesson content.
+
+The [Pybricks, SPIKE, and MINDSTORMS block research](../../devs/BLOCK_CATALOG_RESEARCH.md)
+catalogs operations, execution semantics, and a proposed Python learning
+progression. It informs future library and lesson design without changing the
+editor's current contracts.
+
 ```sh
 uv sync --all-extras --locked
 uv run --all-extras --locked pytest
@@ -217,13 +226,16 @@ checking device effects and dependencies as well as syntax.
 
 ## Localized documentation and block groups
 
-Keep matching Markdown paths in `doc/en/` and `doc/ru/`. English is the reference
-version; update both supported guides when behavior changes. Language-specific
+Keep matching end-user Markdown paths in `doc/en/` and `doc/ru/`. English is the
+reference version; update both user guides when behavior changes. Developer API,
+architecture, and development pages exist only in `doc/en/`; the help viewer uses
+its existing English fallback for them. Put standalone developer documents in
+`devs/`, without translations. Language-specific
 screenshots belong to `doc/<language>/images/`; text-free shared assets may live
 in `doc/images/`. Help follows the selected interface language and retains the
 current page or block anchor. Missing translated pages fall back to English at
-runtime; `tools/check_docs.py` rejects missing release pages and broken local
-links or anchors. The root README, code comments, docstrings, design notes, and
+runtime; `tools/check_docs.py` rejects missing user-guide pages, translated developer
+pages, and broken local links or anchors. The root README, code comments, docstrings, design notes, and
 commit descriptions use English. Saved language choices remain authoritative;
 fresh or invalid preferences default to English.
 

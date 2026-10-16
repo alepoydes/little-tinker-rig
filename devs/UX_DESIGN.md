@@ -90,10 +90,14 @@ dynamic messages use tr, and snippet descriptions come from English docstrings.
 Changing language preserves editors, history, and unfinished text. Source code,
 filenames, parameter values, and console output are never translated.
 
-Documentation lives in doc/en and doc/ru with matching page identities. The help
-language follows the interface. Missing translated pages fall back to English;
-release checks require both supported manuals to be complete. Page and block
-anchors are preserved when changing languages.
+End-user documentation lives in doc/en and doc/ru with matching page identities.
+Help follows the interface language; missing translated pages fall back to English.
+Developer API, architecture, and development pages are English-only and use that
+fallback in every interface language. Standalone developer documents belong in
+devs and are not translated. Release checks require complete user guides and reject
+translated developer pages. Page and block anchors survive language changes.
+The [project rules](../AGENTS.md) define this language boundary, including English
+source-code comments and localized GUI, block descriptions, and lab/lesson text.
 
 The structural view has no text cursor outside parameter editing. Clicking a
 field opens a text input directly over the source value. A field with alternatives
