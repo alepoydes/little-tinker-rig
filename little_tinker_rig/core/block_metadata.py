@@ -33,6 +33,8 @@ FIELDS = {
     "variant",
     "advanced",
     "bindings",
+    "title",
+    "group",
 }
 
 
@@ -125,6 +127,25 @@ def metadata(function):
         )
     if values.get("category", "") not in ("", *CATEGORIES):
         raise ValueError(f"{function.name}: unknown catalog category")
+    title, group = values.get("title", ""), values.get("group", ())
+    if not isinstance(title, str) or (
+        title and (not title.strip() or len(title.splitlines()) != 1)
+    ):
+        raise ValueError(f"{function.name}: title must be single-line text")
+    if (
+        not isinstance(group, (tuple, list))
+        or len(group) > 2
+        or any(
+            not isinstance(part, str)
+            or not part.strip()
+            or len(part.splitlines()) != 1
+            or "/" in part
+            for part in group
+        )
+    ):
+        raise ValueError(
+            f"{function.name}: group needs up to two nonempty path segments"
+        )
     family = values.get("family", "")
     if not isinstance(family, str) or (
         family and not re.fullmatch(r"[\w.-]+(?:/[\w.-]+)+", family)
@@ -187,6 +208,7 @@ def metadata(function):
         color=color,
         names=tuple(names),
         advanced=tuple(advanced),
+        group=tuple(group),
     )
 
 

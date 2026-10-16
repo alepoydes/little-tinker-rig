@@ -190,6 +190,7 @@ def test_qt_drag_library_scratch_program_undo_and_raw_draft(tmp_path, qt_app):
     qt_app.processEvents()
     try:
         data = QMimeData()
+        window.toggle_dock(window.scratch_dock)
         data.setData(
             "application/x-little-tinker-rig-snippet", b"pybricks/motors/create_motor"
         )
@@ -255,8 +256,11 @@ def test_qt_window_controls_scratch_visibility_and_help(tmp_path, qt_app):
         window.showMinimized()
         assert window.isMinimized()
         window.showNormal()
+        assert window.scratch_dock.isHidden()
+        assert window.device_dock.isHidden()
+        window.toggle_dock(window.scratch_dock)
         assert window.scratch_dock.isVisible()
-        assert window.device_dock in window.tabifiedDockWidgets(window.scratch_dock)
+        window.device_dock.show()
         window.device_dock.raise_()
         qt_app.processEvents()
         assert window.scratch_visible

@@ -116,7 +116,7 @@ def test_builtins_and_lexical_names():
     names = analysis.available(syntax.source.index("missing"))
     assert {"a", "y", "x", "math", "print"} <= set(names)
     assert [d.message for d in analysis.diagnostics()] == [
-        "Name 'missing' is not defined"
+        "Name 'missing' is not defined before this use"
     ]
 
 

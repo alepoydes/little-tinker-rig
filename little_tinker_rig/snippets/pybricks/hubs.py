@@ -11,6 +11,8 @@ __category__ = "devices"
     color="state",
     names=("name",),
     variant="Prime / Inventor Hub",
+    title="Connect hub",
+    group=("Hub system",),
 )
 def prime_hub(name=hub):
     """Connect to a programmable hub.
@@ -28,6 +30,7 @@ def prime_hub(name=hub):
     names=("name",),
     family="pybricks/hubs/prime_hub",
     variant="Move Hub",
+    title="Connect hub",
 )
 def move_hub(name=hub):
     """Connect to the BOOST Move Hub."""
@@ -43,6 +46,7 @@ def move_hub(name=hub):
     names=("name",),
     family="pybricks/hubs/prime_hub",
     variant="Technic Hub",
+    title="Connect hub",
 )
 def technic_hub(name=hub):
     """Connect to the Technic Hub."""
@@ -52,7 +56,13 @@ def technic_hub(name=hub):
 
 
 @inline_block(
-    level="intermediate", icon="▶", color="action", category="output", variant="On"
+    level="intermediate",
+    icon="▶",
+    color="action",
+    category="output",
+    variant="On",
+    title="Set status light",
+    group=("Status lights",),
 )
 def light(
     hub: "PrimeHub | InventorHub | MoveHub | TechnicHub" = hub,
@@ -71,6 +81,7 @@ def light(
     category="output",
     family="pybricks/hubs/light",
     variant="Off",
+    title="Set status light",
 )
 def light_off(hub: "PrimeHub | InventorHub | MoveHub | TechnicHub" = hub):
     """Turn off the hub status light."""
@@ -83,6 +94,8 @@ def light_off(hub: "PrimeHub | InventorHub | MoveHub | TechnicHub" = hub):
     color="action",
     category="output",
     variant="Built-in icon",
+    title="Show image",
+    group=("Display",),
 )
 def icon(hub: "PrimeHub | InventorHub" = hub, icon: "Icon" = Icon.HEART):
     """Show an image on the hub display.
@@ -99,6 +112,8 @@ def icon(hub: "PrimeHub | InventorHub" = hub, icon: "Icon" = Icon.HEART):
     color="action",
     category="output",
     variant="Frequency and duration",
+    title="Play tone",
+    group=("Sound",),
 )
 def beep(
     hub: "PrimeHub | InventorHub" = hub,
@@ -112,13 +127,27 @@ def beep(
     hub.speaker.beep(frequency, duration)
 
 
-@inline_block(level="advanced", icon="▶", color="action", category="output")
+@inline_block(
+    level="advanced",
+    icon="▶",
+    color="action",
+    category="output",
+    title="Show number",
+    group=("Display",),
+)
 def display_number(hub: "PrimeHub | InventorHub" = hub, value: "number" = 0):
     """Show a number on the Prime or Inventor display."""
     hub.display.number(value)
 
 
-@inline_block(level="intermediate", icon="＝", color="value", category="input")
+@inline_block(
+    level="intermediate",
+    icon="＝",
+    color="value",
+    category="input",
+    title="Hub button pressed",
+    group=("Buttons and controllers",),
+)
 def button_pressed(
     hub: "PrimeHub | InventorHub | MoveHub | TechnicHub" = hub,
     button: "Button" = Button.CENTER,
@@ -132,7 +161,14 @@ def button_pressed(
     return button in hub.buttons.pressed()
 
 
-@inline_block(level="intermediate", icon="＝", color="value", category="input")
+@inline_block(
+    level="intermediate",
+    icon="＝",
+    color="value",
+    category="input",
+    title="Hub orientation",
+    group=("Orientation and motion",),
+)
 def tilted(
     hub: "PrimeHub | InventorHub | MoveHub | TechnicHub" = hub,
     side: "Side" = Side.LEFT,
@@ -143,7 +179,14 @@ def tilted(
     return hub.imu.up() == side
 
 
-@inline_block(level="advanced", icon="▶", color="action", category="input")
+@inline_block(
+    level="advanced",
+    icon="▶",
+    color="action",
+    category="input",
+    title="Gyro heading",
+    group=("Orientation and motion",),
+)
 def heading(hub: "PrimeHub | InventorHub | TechnicHub" = hub) -> "number[deg]":
     """Read the gyro heading in degrees.
 
@@ -151,7 +194,13 @@ def heading(hub: "PrimeHub | InventorHub | TechnicHub" = hub) -> "number[deg]":
     return hub.imu.heading()
 
 
-@inline_block(level="advanced", icon="▶", color="action")
+@inline_block(
+    level="advanced",
+    icon="▶",
+    color="action",
+    title="Battery voltage",
+    group=("Hub system",),
+)
 def battery_voltage(
     hub: "PrimeHub | InventorHub | MoveHub | TechnicHub" = hub,
 ) -> "number":
@@ -166,6 +215,7 @@ def battery_voltage(
     category="output",
     family="pybricks/hubs/icon",
     variant="Brightness matrix",
+    title="Show image",
 )
 def display_pattern(
     hub: "PrimeHub | InventorHub" = hub,
@@ -184,7 +234,14 @@ def display_pattern(
     hub.display.icon(pixels)
 
 
-@inline_block(level="intermediate", icon="▶", color="action", category="output")
+@inline_block(
+    level="intermediate",
+    icon="▶",
+    color="action",
+    category="output",
+    title="Clear display",
+    group=("Display",),
+)
 def display_off(hub: "PrimeHub | InventorHub" = hub):
     """Clear the hub display."""
     hub.display.off()

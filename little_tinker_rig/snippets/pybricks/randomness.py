@@ -5,7 +5,7 @@ Random choices supported by larger Pybricks hubs."""
 __category__ = "values"
 
 
-@inline_block(level="intermediate", icon="▶", color="action")
+@inline_block(level="intermediate", icon="▶", color="action", title="Random integer")
 def random_integer(low: "number" = 1, high: "number" = 6) -> "number":
     """Choose a random integer, including both limits.
 
@@ -16,7 +16,7 @@ def random_integer(low: "number" = 1, high: "number" = 6) -> "number":
     return randint(low, high)
 
 
-@inline_block(level="intermediate", icon="▶", color="value")
+@inline_block(level="intermediate", icon="▶", color="value", title="Random item")
 def random_item(items=("left", "right")):
     """Choose a random item from a nonempty sequence.
 

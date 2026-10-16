@@ -2,6 +2,7 @@
 
 import ast
 
+from PySide6.QtGui import QActionGroup
 from PySide6.QtWidgets import (
     QApplication,
     QComboBox,
@@ -25,6 +26,8 @@ from little_tinker_rig.core.expressions import (
     public,
     unwrap,
 )
+from little_tinker_rig.core.parameters import change_parameter
+from little_tinker_rig.core.parameters import choices as parameter_choices
 from little_tinker_rig.core.snippets import LEVELS
 from little_tinker_rig.core.structure import declare_scope, function_field, sequence
 from little_tinker_rig.core.transfer import Transfer
@@ -34,7 +37,7 @@ from little_tinker_rig.i18n import tr
 
 class StructureBar(QWidget):
     def __init__(self, view):
-        super().__init__(view.viewport())
+        super().__init__(view)
         self.view = view
         self.sequences = []
         self.offset = 0
@@ -144,20 +147,17 @@ class StructureBar(QWidget):
             return
         self.update_actions()
         self.adjustSize()
-        line = self.view.cursorForPosition(point).blockNumber() + 1
-        rect = self.view._rect(line, 0)
-        self.move(
-            max(0, self.view.viewport().width() - self.width() - 5),
-            max(
-                0,
-                min(
-                    int(rect.bottom() + 2),
-                    self.view.viewport().height() - self.height(),
-                ),
-            ),
-        )
+        self.view.setViewportMargins(0, 0, 0, self.height())
+        self.place()
         self.show()
         self.raise_()
+
+    def place(self):
+        self.move(2, self.view.viewport().geometry().bottom() + 1)
+
+    def hideEvent(self, event):
+        self.view.setViewportMargins(0, 0, 0, 0)
+        super().hideEvent(event)
 
     def current(self):
         index = self.choice.currentIndex()
@@ -261,6 +261,43 @@ def block_menu(view, point):
     view.selected.emit()
     menu = QMenu(view)
 
+    slot = view.parameter_at(point)
+    if slot:
+        menu.addAction(tr("Edit value…"), lambda: view.show_parameter(slot))
+        if not slot.binding:
+            available = set(session.analysis.available(slot.span.start))
+            values = [
+                value
+                for value in parameter_choices(session, slot.parameter, slot.span.start)
+                if value.isidentifier() and value in available
+            ]
+            if values:
+                existing = menu.addMenu(tr("Select existing value"))
+                for value in values:
+                    existing.addAction(
+                        value,
+                        lambda checked=False, value=value: perform(
+                            lambda: change_parameter(session, slot, value)
+                        ),
+                    )
+            menu.addAction(tr("Find value blocks"), lambda: view.search_input(slot))
+        if not slot.binding and slot.parameter.annotation:
+            menu.addAction(
+                tr("Find creation blocks"), lambda: view.search_input(slot, True)
+            )
+        if isinstance(slot.node, ast.Name) and (
+            scope := session.analysis.resolve(slot.node, slot.node.id)
+        ):
+            offset = scope.bindings.get(slot.node.id)
+            if offset is not None:
+
+                def show_binding():
+                    session.editor.select(offset)
+                    view.reveal_selection()
+
+                menu.addAction(tr("Show variable definition"), show_binding)
+        menu.addSeparator()
+
     def perform(action, *, transfer=False):
         try:
             if syntax is not session.document.syntax:
@@ -317,6 +354,24 @@ def block_menu(view, point):
         (m for m in session.matches if m.span.contains(syntax.spans[node].start)), None
     )
     if definition:
+        if block := view.display.by_span.get(definition.span):
+            if block.match.snippet.mode != "function":
+                display_menu = menu.addMenu(tr("Block display"))
+                display_group = QActionGroup(display_menu)
+                for mode, title in (
+                    ("auto", tr("Automatic")),
+                    ("source", tr("Python source")),
+                    ("definition", tr("Block definition")),
+                ):
+                    action = display_menu.addAction(title)
+                    action.setCheckable(True)
+                    display_group.addAction(action)
+                    action.setChecked(block.mode == mode)
+                    action.triggered.connect(
+                        lambda checked=False, mode=mode: view.set_display_mode(
+                            block, mode
+                        )
+                    )
         if match and not match.snippet.historical:
             from little_tinker_rig.core.variants import variant_bindings
 
@@ -327,6 +382,7 @@ def block_menu(view, point):
             if len(choices) > 1:
                 variants = menu.addMenu(tr("Variant"))
                 variants.setToolTipsVisible(True)
+                variant_group = QActionGroup(variants)
 
                 def change_variant(snippet):
                     if session.selected_match() is not match:
@@ -343,6 +399,7 @@ def block_menu(view, point):
                     )
                     action.setData(snippet.identity)
                     action.setCheckable(True)
+                    variant_group.addAction(action)
                     action.setChecked(snippet.identity == match.snippet.identity)
                     action.setEnabled(not action.isChecked())
                     action.setToolTip(tr(snippet.help))

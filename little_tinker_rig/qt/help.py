@@ -36,11 +36,21 @@ from .library import LEVEL_TITLES, group_title, snippet_title
 
 
 def group_document(identity, snippets):
+    def title(snippet):
+        label = snippet_title(snippet)
+        if snippet.family:
+            label += " · " + (
+                tr(snippet.variant)
+                if snippet.variant
+                else snippet.identity.rsplit("/", 1)[1]
+            )
+        return label
+
     parts = [
         f"# {group_title(identity, snippets)}",
         "\n".join(tr(snippets[0].group_help).splitlines()[1:]) if snippets else "",
         "\n".join(
-            f"- [{snippet_title(snippet)}](#{snippet.identity.rsplit('/', 1)[1]})"
+            f"- [{title(snippet)}](#{snippet.identity.rsplit('/', 1)[1]})"
             for snippet in snippets
         ),
     ]
@@ -48,10 +58,10 @@ def group_document(identity, snippets):
         name = snippet.identity.rsplit("/", 1)[1]
         help = tr(snippet.help).splitlines()
         parts.append(
-            f'<a name="{name}"></a>\n\n## {snippet_title(snippet)}\n\n'
+            f'<a name="{name}"></a>\n\n## {title(snippet)}\n\n'
             + tr(LEVEL_TITLES[snippet.level])
             + "\n\n"
-            + "\n".join(help[1:])
+            + "\n".join(help if snippet.title else help[1:])
         )
         if snippet.parameters:
             parameters = "\n".join(

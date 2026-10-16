@@ -30,6 +30,7 @@ class DocumentPage(QWidget):
     snippet_dropped = Signal(str, object)
     definition_requested = Signal(object)
     help_requested = Signal(str)
+    input_search_requested = Signal(object, object, bool)
     mode_changed = Signal()
 
     def __init__(self, path: Path, collections=()):
@@ -48,6 +49,7 @@ class DocumentPage(QWidget):
         self.source.snippet_dropped.connect(self.snippet_dropped)
         self.source.definition_requested.connect(self.definition_requested)
         self.source.help_requested.connect(self.help_requested)
+        self.source.input_search_requested.connect(self.input_search_requested)
         self.code = CodeEdit(path)
         self.code.setAcceptDrops(False)
         self.code.textChanged.connect(self.changed)

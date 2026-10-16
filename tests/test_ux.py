@@ -275,10 +275,10 @@ def test_parameter_combo_opens_in_place_and_validates_before_commit(tmp_path, qt
             window.session.document.syntax.text(window.session.editor.selection)
             == "300"
         )
-        assert window.whole_blocks.isVisible()
-        QTest.mouseClick(window.whole_blocks, Qt.MouseButton.LeftButton)
-        assert not isinstance(window.session.editor.selection, ast.expr)
+        assert window.library.eligible_ids is None
         assert not window.whole_blocks.isVisible()
+        assert not window.source.structure_bar.isVisible()
+        window.source.select_statement()
         assert window.source.viewport().cursor().shape() != Qt.CursorShape.IBeamCursor
         QTest.keyClick(window.source, Qt.Key.Key_Delete)
         assert "motor.run" not in window.session.document.state.source

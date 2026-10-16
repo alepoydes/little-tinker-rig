@@ -145,7 +145,7 @@ def test_repeated_parameter_links_only_its_own_block(qt_app):
         assert set(view.linked_parameter_spans(slot)).isdisjoint(
             view.linked_parameter_spans(values[2])
         )
-        assert view.parameter_tip(slot) == "value · 2 uses"
+        assert view.parameter_tip(slot).startswith("value · 2 uses · Python")
         original = session.document.state
         view.show_parameter(slot)
         field = view.parameter_editor

@@ -5,7 +5,7 @@ Lists, strings and mappings as ordinary Python data."""
 __category__ = "data"
 
 
-@inline_block(level="advanced", icon="▣", color="state")
+@inline_block(level="advanced", icon="▣", color="state", title="Assign value")
 def store(target=value, value=0):
     """Store a value in a variable, attribute, item or unpacking target.
 
@@ -14,7 +14,9 @@ def store(target=value, value=0):
     target = value
 
 
-@inline_block(level="advanced", icon="▣", color="state", names=("name",))
+@inline_block(
+    level="advanced", icon="▣", color="state", names=("name",), title="Create list"
+)
 def make_list(name=values, items=(10, 20, 30)):
     """Create a list of values.
 
@@ -23,13 +25,13 @@ def make_list(name=values, items=(10, 20, 30)):
     name: "list" = list(items)
 
 
-@inline_block(level="advanced", icon="▶", color="action")
+@inline_block(level="advanced", icon="▶", color="action", title="Append to list")
 def append(items: "list" = values, value=0):
     """Append a value to a list."""
     items.append(value)
 
 
-@inline_block(level="advanced", icon="＝", color="value")
+@inline_block(level="advanced", icon="＝", color="value", title="Read item")
 def item(items=values, index=0):
     """Read an item by index or key.
 
@@ -38,7 +40,7 @@ def item(items=values, index=0):
     return items[index]
 
 
-@inline_block(level="advanced", icon="▣", color="state")
+@inline_block(level="advanced", icon="▣", color="state", title="Replace item")
 def set_item(items=values, index=0, value=0):
     """Replace an item by index or key.
 
@@ -46,19 +48,31 @@ def set_item(items=values, index=0, value=0):
     items[index] = value
 
 
-@inline_block(level="advanced", icon="▶", color="action")
+@inline_block(level="advanced", icon="▶", color="action", title="Length")
 def length(items=values) -> "number":
     """Count the items in a collection or text."""
     return len(items)
 
 
-@inline_block(level="intermediate", icon="▶", color="action", category="values")
+@inline_block(
+    level="intermediate",
+    icon="▶",
+    color="action",
+    category="values",
+    title="Convert to text",
+)
 def text(value=0) -> "str":
     """Convert a value to text."""
     return str(value)
 
 
-@inline_block(level="advanced", icon="▣", color="state", names=("name",))
+@inline_block(
+    level="advanced",
+    icon="▣",
+    color="state",
+    names=("name",),
+    title="Create dictionary",
+)
 def make_dictionary(name=lookup, key="name", value="robot"):
     """Create a dictionary with a key and value.
 
@@ -66,7 +80,7 @@ def make_dictionary(name=lookup, key="name", value="robot"):
     name = {key: value}
 
 
-@inline_block(level="advanced", icon="＝", color="value")
+@inline_block(level="advanced", icon="＝", color="value", title="Slice sequence")
 def slice_items(items=values, start: "number" = 0, stop: "number" = 2):
     """Take a slice of a sequence.
 
@@ -74,7 +88,7 @@ def slice_items(items=values, start: "number" = 0, stop: "number" = 2):
     return items[start:stop]
 
 
-@inline_block(level="advanced", icon="＝", color="value")
+@inline_block(level="advanced", icon="＝", color="value", title="Contains value")
 def contains(value=0, items=values) -> "bool":
     """Check whether a collection contains a value.
 
@@ -82,7 +96,7 @@ def contains(value=0, items=values) -> "bool":
     return value in items
 
 
-@inline_block(level="advanced", icon="＝", color="value")
+@inline_block(level="advanced", icon="＝", color="value", title="Build list")
 def map_values(function=abs, items=(-1, 0, 1)) -> "list":
     """Build a list by applying a function to every item.
 

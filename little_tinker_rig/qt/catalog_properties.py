@@ -28,6 +28,16 @@ class CatalogProperties(QDialog):
         self.resize(590, 500)
         layout = QVBoxLayout(self)
         form = QFormLayout()
+        self.title = QLineEdit(snippet.title)
+        form.addRow(tr("Short title"), self.title)
+        self.group = QLineEdit(" / ".join(snippet.group))
+        self.group.setPlaceholderText(tr("Group / subgroup (family primary only)"))
+        self.group.setCompleter(
+            QCompleter(
+                sorted({" / ".join(s.group) for s in snippets if s.group}), self.group
+            )
+        )
+        form.addRow(tr("Group path"), self.group)
         self.category = QComboBox()
         self.category.addItem(tr("Module heading"), "")
         for key, title in CATEGORIES.items():
@@ -102,6 +112,12 @@ class CatalogProperties(QDialog):
 
     def apply(self):
         values = {
+            "title": self.title.text().strip(),
+            "group": (
+                tuple(part.strip() for part in self.group.text().split("/"))
+                if self.group.text().strip()
+                else ()
+            ),
             "category": self.category.currentData(),
             "family": self.family.text().strip(),
             "variant": self.variant.text().strip() or None,

@@ -8,7 +8,13 @@ __category__ = "movement"
 # Authors (MIT). Full notice: examples/pybricks/LICENSE.txt, included in distributions.
 
 
-@block(level="beginner", icon="◇", color="control")
+@block(
+    level="beginner",
+    icon="◇",
+    color="control",
+    title="Stop at line",
+    group=("Two-wheel drive bases",),
+)
 def stop_at_line(
     drive: "DriveBase" = drive,
     sensor: "ColorSensor | ColorDistanceSensor" = sensor,
@@ -29,7 +35,13 @@ def stop_at_line(
         drive.brake()
 
 
-@block(level="intermediate", icon="◇", color="control")
+@block(
+    level="intermediate",
+    icon="◇",
+    color="control",
+    title="Stop near object",
+    group=("Two-wheel drive bases",),
+)
 def stop_near_object(
     drive: "DriveBase" = drive,
     sensor: "UltrasonicSensor" = distance,
@@ -50,7 +62,13 @@ def stop_near_object(
         drive.brake()
 
 
-@block(level="beginner", icon="▣", color="state")
+@block(
+    level="beginner",
+    icon="▣",
+    color="state",
+    title="Follow line for time",
+    group=("Two-wheel drive bases",),
+)
 def follow_for(
     drive: "DriveBase" = drive,
     sensor: "ColorSensor | ColorDistanceSensor" = sensor,
@@ -76,7 +94,13 @@ def follow_for(
         drive.brake()
 
 
-@block(level="beginner", icon="▶", color="action")
+@block(
+    level="beginner",
+    icon="▶",
+    color="action",
+    title="Transfer conveyor part",
+    group=("Conveyors", "BOOST Auto Builder"),
+)
 def conveyor_transfer(
     arm: "Motor" = arm,
     belt: "Motor" = belt,
@@ -105,7 +129,13 @@ def conveyor_transfer(
     arm.run_target(300, 0)
 
 
-@block(level="beginner", icon="▶", color="action")
+@block(
+    level="beginner",
+    icon="▶",
+    color="action",
+    title="Draw rectangle",
+    group=("Two-axis mechanisms",),
+)
 def draw_rectangle(
     horizontal: "Motor" = horizontal_motor,
     vertical: "Motor" = vertical_motor,
@@ -124,7 +154,13 @@ def draw_rectangle(
     vertical.run_angle(speed, -height)
 
 
-@block(level="beginner", icon="▶", color="action")
+@block(
+    level="beginner",
+    icon="▶",
+    color="action",
+    title="Turn out and back",
+    group=("Two-wheel drive bases",),
+)
 def dance_turns(drive: "DriveBase" = drive, angle: "number[deg]" = 360):
     """Turn one way and back, like Tricky's dance."""
     # Turn both ways to finish facing the original direction.
@@ -132,7 +168,13 @@ def dance_turns(drive: "DriveBase" = drive, angle: "number[deg]" = 360):
     drive.turn(-angle)
 
 
-@block(level="beginner", icon="⟳", color="loop")
+@block(
+    level="beginner",
+    icon="⟳",
+    color="loop",
+    title="Control force gripper",
+    group=("Grippers",),
+)
 def force_gripper(
     motor: "Motor" = motor,
     sensor: "ForceSensor" = force_sensor,

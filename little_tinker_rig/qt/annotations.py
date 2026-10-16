@@ -29,6 +29,18 @@ LABELS = {
 }
 
 
+def snippet_title(snippet):
+    return (
+        tr(snippet.title)
+        if snippet.title
+        else (
+            tr(snippet.help).splitlines()[0]
+            if snippet.help
+            else snippet.identity.rsplit("/", 1)[-1]
+        )
+    )
+
+
 @dataclass(frozen=True)
 class BlockNote:
     column: int
@@ -100,11 +112,7 @@ def block_notes(session, runtime_problem=None):
                 ),
                 default=line,
             )
-        description = (
-            tr(match.snippet.help).splitlines()[0]
-            if match.snippet.help
-            else match.snippet.identity.rsplit("/", 1)[1]
-        )
+        description = snippet_title(match.snippet)
         notes[line].append(
             BlockNote(
                 column,

@@ -11,6 +11,7 @@ __category__ = "output"
     color="action",
     family="pybricks/hubs/beep",
     variant="Default tone",
+    title="Play tone",
 )
 def hub_speaker_beep(hub: "PrimeHub" = hub):
     """Play a tone on the hub speaker."""
@@ -23,25 +24,40 @@ def hub_speaker_beep(hub: "PrimeHub" = hub):
     color="action",
     family="pybricks/hubs/beep",
     variant="Frequency",
+    title="Play tone",
 )
 def hub_speaker_beep_frequency(hub: "PrimeHub" = hub, frequency: "number[Hz]" = 500):
     """Play a tone on the hub speaker. Options: frequency."""
     hub.speaker.beep(frequency)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    title="Set speaker volume",
+    group=("Sound",),
+)
 def hub_speaker_volume_volume(hub: "PrimeHub" = hub, volume: "number[%]" = 50):
     """Read or set the speaker volume. Options: volume."""
     hub.speaker.volume(volume)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert", icon="▶", color="action", title="Speaker volume", group=("Sound",)
+)
 def hub_speaker_volume(hub: "PrimeHub" = hub) -> "number[%]":
     """Read or set the speaker volume."""
     return hub.speaker.volume()
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    title="Blink status light",
+    group=("Status lights",),
+)
 def hub_light_blink_color_durations(
     hub: "PrimeHub | TechnicHub | MoveHub | Remote" = hub,
     color: "Color" = Color.GREEN,
@@ -61,6 +77,7 @@ def hub_light_blink_color_durations(
     variant="Frames and interval",
     bindings={"frames": "colors"},
     advanced=("interval",),
+    title="Animate status light",
 )
 def hub_light_animate_frames_interval(
     hub: "PrimeHub | TechnicHub | MoveHub | Remote" = hub,
@@ -71,7 +88,9 @@ def hub_light_animate_frames_interval(
     hub.light.animate(frames, interval)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert", icon="▶", color="action", title="Play notes", group=("Sound",)
+)
 def hub_speaker_play_notes_notes_tempo(
     hub: "PrimeHub" = hub, notes=["C4/4"], tempo: "number" = 120
 ):
@@ -85,6 +104,8 @@ def hub_speaker_play_notes_notes_tempo(
     color="action",
     variant="Color sequence",
     advanced=("interval",),
+    title="Animate status light",
+    group=("Status lights",),
 )
 def animate_light(
     hub: "PrimeHub | TechnicHub | MoveHub" = hub,

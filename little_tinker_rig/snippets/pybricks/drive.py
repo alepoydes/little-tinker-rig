@@ -5,7 +5,14 @@ Drive-base and clock building blocks."""
 __category__ = "movement"
 
 
-@inline_block(level="beginner", icon="➜", color="state", names=("name",))
+@inline_block(
+    level="beginner",
+    icon="➜",
+    color="state",
+    names=("name",),
+    title="Set up drive base",
+    group=("Two-wheel drive bases",),
+)
 def create_robot(
     name=drive,
     left_port: "Port" = Port.A,
@@ -29,7 +36,14 @@ def create_robot(
     )
 
 
-@inline_block(level="intermediate", icon="➜", color="state", names=("name",))
+@inline_block(
+    level="intermediate",
+    icon="➜",
+    color="state",
+    names=("name",),
+    title="Create drive base",
+    group=("Two-wheel drive bases",),
+)
 def create_drive(
     name=drive,
     left: "Motor" = left,
@@ -43,7 +57,13 @@ def create_drive(
     name: "DriveBase" = DriveBase(left, right, wheel_diameter=wheel, axle_track=track)
 
 
-@inline_block(level="intermediate", icon="➜", color="action")
+@inline_block(
+    level="intermediate",
+    icon="➜",
+    color="action",
+    title="Drive continuously",
+    group=("Two-wheel drive bases",),
+)
 def drive(
     drive: "DriveBase" = drive, speed: "number[mm/s]" = 180, turn: "number[deg/s]" = 0
 ):
@@ -51,7 +71,14 @@ def drive(
     drive.drive(speed, turn)
 
 
-@inline_block(level="beginner", icon="➜", color="action", variant="Brake")
+@inline_block(
+    level="beginner",
+    icon="➜",
+    color="action",
+    variant="Brake",
+    title="Stop drive base",
+    group=("Two-wheel drive bases",),
+)
 def brake(drive: "DriveBase" = drive):
     """Stop both robot wheels.
 
@@ -59,7 +86,14 @@ def brake(drive: "DriveBase" = drive):
     drive.brake()
 
 
-@inline_block(level="beginner", icon="➜", color="action", variant="Wait until finished")
+@inline_block(
+    level="beginner",
+    icon="➜",
+    color="action",
+    variant="Wait until finished",
+    title="Drive straight",
+    group=("Two-wheel drive bases",),
+)
 def straight(drive: "DriveBase" = drive, distance: "number[mm]" = 200):
     """Drive a measured distance.
 
@@ -70,7 +104,13 @@ def straight(drive: "DriveBase" = drive, distance: "number[mm]" = 200):
     drive.straight(distance)
 
 
-@inline_block(level="beginner", icon="➜", color="action")
+@inline_block(
+    level="beginner",
+    icon="➜",
+    color="action",
+    title="Turn drive base",
+    group=("Two-wheel drive bases",),
+)
 def turn(drive: "DriveBase" = drive, angle: "number[deg]" = 90):
     """Turn the robot in place, then stop.
 
@@ -79,20 +119,38 @@ def turn(drive: "DriveBase" = drive, angle: "number[deg]" = 90):
     drive.turn(angle)
 
 
-@inline_block(level="intermediate", icon="➜", color="action")
+@inline_block(
+    level="intermediate",
+    icon="➜",
+    color="action",
+    title="Travelled distance",
+    group=("Two-wheel drive bases",),
+)
 def drive_distance(drive: "DriveBase" = drive) -> "number[mm]":
     """Read the distance traveled by the robot."""
     return drive.distance()
 
 
-@inline_block(level="intermediate", icon="➜", color="action")
+@inline_block(
+    level="intermediate",
+    icon="➜",
+    color="action",
+    title="Drive base angle",
+    group=("Two-wheel drive bases",),
+)
 def drive_angle(drive: "DriveBase" = drive) -> "number[deg]":
     """Read the robot's turn angle."""
     return drive.angle()
 
 
 @inline_block(
-    level="intermediate", icon="⏱", color="state", names=("name",), category="input"
+    level="intermediate",
+    icon="⏱",
+    color="state",
+    names=("name",),
+    category="input",
+    title="Create stopwatch",
+    group=("Time",),
 )
 def create_clock(name=clock):
     """Create a stopwatch to measure time."""
@@ -101,13 +159,27 @@ def create_clock(name=clock):
     name: "StopWatch" = StopWatch()
 
 
-@inline_block(level="intermediate", icon="⏱", color="action", category="input")
+@inline_block(
+    level="intermediate",
+    icon="⏱",
+    color="action",
+    category="input",
+    title="Elapsed time",
+    group=("Time",),
+)
 def elapsed(clock: "StopWatch" = clock) -> "number[ms]":
     """Read elapsed milliseconds from the stopwatch."""
     return clock.time()
 
 
-@inline_block(level="intermediate", icon="⏱", color="action", category="input")
+@inline_block(
+    level="intermediate",
+    icon="⏱",
+    color="action",
+    category="input",
+    title="Reset stopwatch",
+    group=("Time",),
+)
 def reset_clock(clock: "StopWatch" = clock):
     """Restart the stopwatch."""
     clock.reset()
@@ -119,6 +191,8 @@ def reset_clock(clock: "StopWatch" = clock):
     color="action",
     variant="Speed and acceleration",
     advanced=("turn_acceleration",),
+    title="Set drive speeds",
+    group=("Two-wheel drive bases",),
 )
 def drive_settings(
     drive: "DriveBase" = drive,
@@ -137,7 +211,12 @@ def drive_settings(
 
 
 @inline_block(
-    level="advanced", icon="➜", color="action", variant="Current arc convention"
+    level="advanced",
+    icon="➜",
+    color="action",
+    variant="Current arc convention",
+    title="Drive an arc",
+    group=("Two-wheel drive bases",),
 )
 def curve(
     drive: "DriveBase" = drive, radius: "number[mm]" = 200, angle: "number[deg]" = 90
@@ -149,13 +228,26 @@ def curve(
     drive.arc(radius, angle=angle)
 
 
-@inline_block(level="advanced", icon="➜", color="action")
+@inline_block(
+    level="advanced",
+    icon="➜",
+    color="action",
+    title="Reset odometry",
+    group=("Two-wheel drive bases",),
+)
 def reset_drive(drive: "DriveBase" = drive):
     """Stop and reset the robot's distance and angle readings."""
     drive.reset()
 
 
-@inline_block(level="advanced", icon="➜", color="state", names=("name",))
+@inline_block(
+    level="advanced",
+    icon="➜",
+    color="state",
+    names=("name",),
+    title="Create steering car",
+    group=("Steering chassis",),
+)
 def create_car(
     name=car, steering: "Motor" = steering, propulsion: "Motor | list | tuple" = motor
 ):
@@ -169,13 +261,25 @@ def create_car(
     name: "Car" = Car(steering, propulsion)
 
 
-@inline_block(level="advanced", icon="➜", color="action")
+@inline_block(
+    level="advanced",
+    icon="➜",
+    color="action",
+    title="Steer car",
+    group=("Steering chassis",),
+)
 def steer_car(car: "Car" = car, steering: "number[%]" = 0):
     """Set car steering between -100 and 100 percent."""
     car.steer(steering)
 
 
-@inline_block(level="advanced", icon="➜", color="action")
+@inline_block(
+    level="advanced",
+    icon="➜",
+    color="action",
+    title="Power car",
+    group=("Steering chassis",),
+)
 def power_car(car: "Car" = car, power: "number[%]" = 0):
     """Set car propulsion power; zero lets the car coast.
 
@@ -184,7 +288,13 @@ def power_car(car: "Car" = car, power: "number[%]" = 0):
     car.drive_power(power)
 
 
-@block(level="advanced", icon="➜", color="action")
+@block(
+    level="advanced",
+    icon="➜",
+    color="action",
+    title="Drive arc (Pybricks 3)",
+    group=("Two-wheel drive bases",),
+)
 def legacy_curve(
     drive: "DriveBase" = drive, radius: "number[mm]" = 200, angle: "number[deg]" = 90
 ):

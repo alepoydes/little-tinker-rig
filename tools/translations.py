@@ -59,13 +59,19 @@ def messages():
             block = decorator(node)
             if isinstance(block, ast.Call):
                 for entry in block.keywords:
-                    if entry.arg == "variant" and isinstance(entry.value, ast.Constant):
-                        catalog.add(
-                            entry.value.value,
-                            locations=[
-                                (str(path.relative_to(ROOT)), entry.value.lineno)
-                            ],
-                        )
+                    if entry.arg in {"variant", "title", "group"}:
+                        for value in ast.walk(entry.value):
+                            if (
+                                isinstance(value, ast.Constant)
+                                and isinstance(value.value, str)
+                                and value.value
+                            ):
+                                catalog.add(
+                                    value.value,
+                                    locations=[
+                                        (str(path.relative_to(ROOT)), value.lineno)
+                                    ],
+                                )
     return catalog
 
 

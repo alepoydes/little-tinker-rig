@@ -44,8 +44,8 @@ Repeated occurrences change together. Enter or choosing an item applies; Escape
 dismisses. A structural selection uses the whole block background, including the
 remaining line width.
 
-Scratch is visible by default and can be resized or closed with its dock controls.
-The bottom Scratch button restores it. Control mode hides Scratch. The title bar
+Scratch and Hub and devices start hidden to leave room for your program.
+Open Scratch with the bottom button; resize or close it with its dock controls. Control mode hides Scratch. The title bar
 always shows minimize, maximize/restore, and close. Double-click it to toggle
 maximization; drag it or a window edge to move or resize. F11 toggles full screen.
 After a normal close, the next launch restores the window position, size and
@@ -53,11 +53,12 @@ maximized or full-screen state. A minimized window reopens visibly. Qt adjusts
 off-screen positions when the monitor configuration changes.
 
 Block titles and action symbols explain their purpose without adding comments to
-the Python file. Titles and source comments use the editor's normal font size.
+the Python file. Short titles use the interface font; Python and source comments use monospace.
 Indentation colors continue through blank lines.
 
-Each recognized inline block has an **A / P / D** button in its upper-right corner.
-Each click cycles through these modes:
+A display icon appears at the upper right of an inline block when you hover or
+select it, and stays visible for a manual override. Click to cycle modes, or use
+**Block display** in the context menu:
 
 - **Auto** (default): use the definition's comments until the program
   contains a comment belonging to this block. Blank lines do not affect the choice.
@@ -91,7 +92,8 @@ Use **Alt+Left / Right** to select its parent or child, and **Tab / Shift+Tab** 
 visit inputs. **Ctrl+Space** or **Enter** opens local search for operations, scoped
 names and compatible blocks. **Ctrl+Shift+Space** wraps the selected expression.
 Typing an operator such as `+` wraps it and selects the new operand. **Escape**
-selects the enclosing statement and restores its palette context.
+selects the enclosing statement. Close a pinned search with the back button above
+the catalog.
 
 New empty inputs use Python's `...` placeholder; `None` is an ordinary value.
 Click an empty input to build an expression. Unfinished inputs survive save, recovery
@@ -129,8 +131,8 @@ insert after the final loop or other compound, drag into the empty space below
 the program. This selects the program's end regardless of horizontal position.
 Use the lower half of the last body row to stay inside the compound. Between
 blocks, the next outside block offers insertion after a compound; horizontal
-position selects nesting on interior blank lines. A green **Insert here**
-row opens space before the destination's descriptions. Its appearance keeps the
+position selects nesting on interior blank lines. A green row names the destination, such as **Inside loop**, **After loop**,
+or **At program level**, and opens space before the destination's descriptions. Its appearance keeps the
 same source row and relative point under the pointer. Edges scroll the view;
 dragging does not fold code automatically.
 
@@ -145,7 +147,7 @@ a moved program still has the intended meaning.
 
 The library has separate buttons for difficulty and view. **Beginner**,
 **Intermediate**, **Advanced**, and **Expert** include earlier levels; **All**
-shows every level. Both groups use icons: increasing filled bars indicate the
+shows every level. Both groups use icons: numbered badges 1–4 indicate the
 four levels, and infinity means All. Hover for localized names, or reach a button
 with Tab and activate it with Space. The active choice stays highlighted.
 The two chevron buttons beside the views collapse or expand all category branches.
@@ -211,7 +213,7 @@ the section initially and remain visible in a summary when you collapse it.
 Enum and Boolean suggestions use Python values such as `Stop.HOLD` and `False`.
 They do not translate or execute your expressions.
 
-Read the operation description and **Python changes** before accepting: changing
+Read the operation description and expand **Python changes** when changes exist: changing
 the operation can change waiting, units, stop behavior, or remove a field. **OK**
 applies one edit, including needed imports; Undo restores it. **Cancel** leaves
 the program unchanged. Invalid expressions, incompatible result types, or changes
@@ -301,7 +303,7 @@ edit it as Python, clear it to `...`, or wrap it in a logical, arithmetic or
 comparison expression. Drag compatible blocks into the resulting empty fields.
 
 Click inside a call, function header or logical expression to show its compact
-list controls. Select the list when several are nested. **+** inserts after the
+list controls below the editor. Scalar input clicks only edit their value. Select the list when several are nested. **+** inserts after the
 selected item, or appends when no item is selected; its menu also inserts before
 an item. **−** removes an item, and the arrows reorder it. Calls and definitions
 may have no arguments; `and` and `or` retain at least two operands. Parameters may
@@ -402,3 +404,25 @@ Compound blocks retain their outer contour and their children's boundaries. Hove
 and selection strengthen both fill and border. The renderer is shared by Program,
 Scratch, definition previews and drag previews; borders add no row spacing and do
 not change drop targets. Error borders and insertion markers remain distinct.
+
+## Finding a missing device or value
+
+An amber input border marks a warning. Hover to see its expected type or unit and
+why the name is unavailable. Right-click the field to edit it, select an existing
+value, show a known definition, or **Find creation blocks**. **Find value blocks**
+searches expressions for the selected input. Hovering and ordinary clicks leave
+the catalog alone. The explicit search stays pinned while you browse; its back
+button restores your previous view and search. Editing the program ends the search.
+
+Creation search uses what a block produces: a Motor input finds motor constructors,
+and a ForceSensor input selects that variant of the shared sensor family. Level
+and lesson restrictions still apply. Place a variable's creation before its use
+in an accessible scope. An expression constructor inside a loop runs on every
+iteration. The editor does not choose ports or initialize dependencies for you.
+Lexical hints cannot prove that every branch or runtime call initializes a name.
+
+Large catalog branches have nested mechanism or input groups. Individual motors,
+two-wheel bases and steering chassis have separate branches; model-dependent
+conveyor actions live under **Conveyors / BOOST Auto Builder**. Shared sensor
+creation stays directly under Sensors and input. Search includes group names;
+Favorites, Recent and Frequent remain flat lists.

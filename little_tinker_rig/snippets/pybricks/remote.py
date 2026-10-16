@@ -8,7 +8,14 @@ __category__ = "input"
 # copyright and permission notice in examples/pybricks/LICENSE.txt.
 
 
-@block(level="beginner", icon="▶", color="action", category="movement")
+@block(
+    level="beginner",
+    icon="▶",
+    color="action",
+    category="movement",
+    title="Drive with remote",
+    group=("Two-wheel drive bases",),
+)
 def remote_drive(
     drive: "DriveBase" = drive, speed: "number[mm/s]" = 150, turn: "number[deg/s]" = 90
 ):
@@ -40,7 +47,14 @@ def remote_drive(
         controller.disconnect()
 
 
-@inline_block(level="advanced", icon="▣", color="state", names=("name",))
+@inline_block(
+    level="advanced",
+    icon="▣",
+    color="state",
+    names=("name",),
+    title="Connect LEGO remote",
+    group=("Buttons and controllers", "LEGO remote"),
+)
 def create_remote(name=remote):
     """Connect a LEGO Powered Up remote for your own control loop."""
     from pybricks.pupdevices import Remote
@@ -48,7 +62,13 @@ def create_remote(name=remote):
     name: "Remote" = Remote()
 
 
-@inline_block(level="advanced", icon="＝", color="value")
+@inline_block(
+    level="advanced",
+    icon="＝",
+    color="value",
+    title="Remote button pressed",
+    group=("Buttons and controllers", "LEGO remote"),
+)
 def remote_pressed(
     remote: "Remote" = remote, button: "Button" = Button.LEFT_PLUS
 ) -> "bool":
@@ -58,7 +78,13 @@ def remote_pressed(
     return button in remote.buttons.pressed()
 
 
-@inline_block(level="advanced", icon="▶", color="action")
+@inline_block(
+    level="advanced",
+    icon="▶",
+    color="action",
+    title="Remote buttons",
+    group=("Buttons and controllers", "LEGO remote"),
+)
 def buttons(remote: "Remote" = remote) -> "set":
     """Read all pressed remote buttons once.
 
@@ -66,7 +92,14 @@ def buttons(remote: "Remote" = remote) -> "set":
     return remote.buttons.pressed()
 
 
-@block(level="intermediate", icon="▣", color="state", category="movement")
+@block(
+    level="intermediate",
+    icon="▣",
+    color="state",
+    category="movement",
+    title="Centre steering",
+    group=("Steering chassis",),
+)
 def center_steering(steering: "Motor" = steer, speed: "number[deg/s]" = 200):
     """Find both steering stops and start returning to the center.
 
@@ -80,7 +113,14 @@ def center_steering(steering: "Motor" = steer, speed: "number[deg/s]" = 200):
     steering.run_target(speed, 0, wait=False)
 
 
-@inline_block(level="advanced", icon="▶", color="action", category="output")
+@inline_block(
+    level="advanced",
+    icon="▶",
+    color="action",
+    category="output",
+    title="Set remote light",
+    group=("Status lights",),
+)
 def remote_light(remote: "Remote" = remote, color: "Color" = Color.GREEN):
     """Set the remote light to show the selected driving mode."""
     from pybricks.parameters import Color

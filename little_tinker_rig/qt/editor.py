@@ -91,6 +91,7 @@ class SourceView(QTextEdit):
     snippet_dropped = Signal(str, object)
     definition_requested = Signal(object)
     help_requested = Signal(str)
+    input_search_requested = Signal(object, object, bool)
 
     def __init__(self, session):
         super().__init__()
@@ -136,6 +137,7 @@ class SourceView(QTextEdit):
         self.parameter_slots = ()
         self.parameter_lines = ()
         self.parameter_choices = {}
+        self.parameter_issues = {}
         self.parameter_revision = None
         self.parameter_editor = None
         self.structure_bar = StructureBar(self)
@@ -232,6 +234,21 @@ class SourceView(QTextEdit):
                 )
                 self.parameter_choices = {
                     slot.span: has_choices(self.session, slot)
+                    for slot in self.parameter_slots
+                }
+                diagnostics = sorted(
+                    self.session.analysis.diagnostics(), key=lambda d: d.span.start
+                )
+                starts = [d.span.start for d in diagnostics]
+                self.parameter_issues = {
+                    slot.span: tuple(
+                        d.message
+                        for d in diagnostics[
+                            bisect_left(starts, slot.span.start) : bisect_left(
+                                starts, slot.span.end
+                            )
+                        ]
+                    )
                     for slot in self.parameter_slots
                 }
                 self.notes = block_notes(self.session, self.runtime_problem)
@@ -640,7 +657,22 @@ class SourceView(QTextEdit):
             painter.setPen(pen)
             # Opaque shared edges occupy the same pixel without accumulating alpha.
             painter.drawPath(path)
-        note_font = self.font()
+            if region.foldable and region.extend_line:
+                bounds = QRectF()
+                for part in self.region_rects(region, first_line, last_line):
+                    bounds = bounds.united(part)
+                if not bounds.isEmpty():
+                    painter.setPen(QPen(QColor("#72859a"), 2))
+                    x = bounds.left() + 1
+                    painter.drawLine(
+                        QPointF(x, bounds.top()), QPointF(x, bounds.bottom() - 1)
+                    )
+                    if region.end_line <= last_line:
+                        painter.drawLine(
+                            QPointF(x, bounds.bottom() - 1),
+                            QPointF(x + 14, bounds.bottom() - 1),
+                        )
+        note_font = QFontDatabase.systemFont(QFontDatabase.SystemFont.GeneralFont)
         note_font.setBold(True)
         for line in range(first_line, last_line + 1):
             for index, note in enumerate(self.notes.get(line, ())):
@@ -718,7 +750,7 @@ class SourceView(QTextEdit):
                 painter.drawText(
                     rect,
                     Qt.AlignmentFlag.AlignCenter,
-                    {"auto": "A", "source": "P", "definition": "D"}[block.mode],
+                    {"auto": "◐", "source": "‹›", "definition": "≡"}[block.mode],
                 )
         active = (
             self.parameter_editor.slot
@@ -738,10 +770,16 @@ class SourceView(QTextEdit):
                 span.start <= slot.span.start and slot.span.end <= span.end
                 for span in linked
             )
+            issue = bool(self.parameter_issues.get(slot.span))
             painter.setPen(
-                QPen(QColor("#246c9a" if related else "#9ca7b2"), 2 if related else 1)
+                QPen(
+                    QColor("#b65b18" if issue else "#246c9a" if related else "#9ca7b2"),
+                    2 if related or issue else 1,
+                )
             )
-            painter.setBrush(QColor("#cbe6fa" if related else "#f8fafb"))
+            painter.setBrush(
+                QColor("#fff0cf" if issue else "#cbe6fa" if related else "#f8fafb")
+            )
             painter.drawRoundedRect(rect.adjusted(-1, 1, -1, -1), 3, 3)
             arrow = 13 if self.parameter_choices[slot.span] else 4
             painter.setPen(QColor("#243442"))
@@ -798,7 +836,7 @@ class SourceView(QTextEdit):
                     painter.drawText(
                         rect.adjusted(5, 0, -5, 0),
                         Qt.AlignmentFlag.AlignVCenter,
-                        "# ↳ " + tr("Insert here"),
+                        "# ↳ " + self.target_label(target),
                     )
         if self.origin_span is not None:
             rect = self.origin_rect()
@@ -1146,7 +1184,59 @@ class SourceView(QTextEdit):
         if count > 1:
             name = tr("{name} · {count} uses", name=name, count=count)
         unit = unit_text(slot.parameter.annotation)
-        return name + (" · " + unit if unit else "")
+        contract = slot.parameter.annotation or "Python"
+        detail = name + " · " + (unit or contract)
+        issues = self.parameter_issues.get(slot.span, ())
+        if issues:
+            detail += "\n" + "\n".join(issues)
+            if isinstance(slot.node, ast.Name):
+                scope = self.session.analysis.resolve(slot.node, slot.node.id)
+                offset = scope.bindings.get(slot.node.id) if scope else None
+                if offset is not None and offset > slot.span.start:
+                    detail += "\n" + tr(
+                        "Defined later at line {line}.",
+                        line=slot.syntax.position(offset)[0],
+                    )
+                if offset is None or offset > slot.span.start:
+                    detail += "\n" + tr(
+                        "Create the value before this block, in a scope visible here."
+                    )
+        if slot.binding:
+            return detail
+        return (
+            detail + "\n" + tr("Right-click: choose a value or find a creation block.")
+        )
+
+    def search_input(self, slot, providers=False):
+        if slot.syntax is not self.session.document.syntax:
+            return
+        self.session.editor.selection = slot.node
+        self.selected.emit()
+        self.input_search_requested.emit(self, slot, providers)
+
+    def target_label(self, target):
+        suite = target.suite
+        if target.index:
+            previous = suite.statements[target.index - 1]
+            if isinstance(previous, (ast.For, ast.While, ast.AsyncFor)):
+                return tr("After loop")
+            if isinstance(previous, ast.If):
+                return tr("After condition")
+        if isinstance(suite.owner, (ast.For, ast.While, ast.AsyncFor)):
+            return (
+                tr("Inside loop") if suite.field == "body" else tr("Inside loop else")
+            )
+        if isinstance(suite.owner, ast.If):
+            return (
+                tr("Inside condition") if suite.field == "body" else tr("Inside else")
+            )
+        if isinstance(suite.owner, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            return tr("Inside function")
+        return (
+            tr("At program level")
+            if isinstance(suite.owner, ast.Module)
+            else tr("Inside block")
+        )
 
     def show_parameter(self, slot):
         if empty(slot.node):
@@ -1221,6 +1311,13 @@ class SourceView(QTextEdit):
 
     def mode_rect(self, block):
         if block.match.snippet.mode == "function":
+            return None
+        selected = self.session.document.syntax.spans[self.session.editor.selection]
+        span = block.match.span
+        if block.mode == "auto" and not any(
+            value and span.start <= value.start and value.end <= span.end
+            for value in (self.hover, selected)
+        ):
             return None
         if location := self.note_locations.get(block.match.span):
             rect = self.note_rect(*location)
@@ -1409,13 +1506,21 @@ class SourceView(QTextEdit):
             )
             self.selected.emit()
             self.viewport().update()
-            self.structure_bar.activate(point)
+            if self.pending_parameter:
+                self.structure_bar.hide()
+            else:
+                self.structure_bar.activate(point)
 
     def contextMenuEvent(self, event):
         menu = block_menu(self, event.pos())
         if not menu.isEmpty():
             menu.exec(event.globalPos())
         menu.deleteLater()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if hasattr(self, "structure_bar") and self.structure_bar.isVisible():
+            self.structure_bar.place()
 
     def mouseMoveEvent(self, event):
         point = event.position().toPoint()

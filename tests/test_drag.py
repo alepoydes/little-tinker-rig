@@ -355,11 +355,7 @@ def test_level_filter_combines_search_and_groups_and_persists(tmp_path, qt_app):
     try:
         window.level_filter.select("advanced")
         window.search.setText("follow")
-        items = [
-            window.library.topLevelItem(i).child(j)
-            for i in range(window.library.topLevelItemCount())
-            for j in range(window.library.topLevelItem(i).childCount())
-        ]
+        items = window.library.rows.values()
         visible = [item for item in items if not item.isHidden()]
         assert {item.data(0, LEVEL) for item in visible[:2]} == {"beginner", "advanced"}
         assert all(item.data(0, LEVEL) != "expert" for item in visible)

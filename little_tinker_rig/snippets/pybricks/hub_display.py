@@ -5,7 +5,13 @@ Explicit device operations for studying complete robot programs."""
 __category__ = "output"
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    title="Display orientation",
+    group=("Display",),
+)
 def hub_display_orientation_up(hub: "PrimeHub" = hub, up: "Side" = Side.TOP):
     """Rotate the display for the way the hub is mounted. Options: up."""
     from pybricks.parameters import Side
@@ -13,7 +19,14 @@ def hub_display_orientation_up(hub: "PrimeHub" = hub, up: "Side" = Side.TOP):
     hub.display.orientation(up)
 
 
-@inline_block(level="expert", icon="▶", color="action", advanced=("interval",))
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    advanced=("interval",),
+    title="Animate display",
+    group=("Display",),
+)
 def hub_display_animate_frames_interval(
     hub: "PrimeHub" = hub, frames=frames, interval: "number[ms]" = 100
 ):
@@ -21,7 +34,9 @@ def hub_display_animate_frames_interval(
     hub.display.animate(frames, interval)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert", icon="▶", color="action", title="Set pixel", group=("Display",)
+)
 def hub_display_pixel_row_column_brightness(
     hub: "PrimeHub" = hub,
     row: "int" = 0,
@@ -32,13 +47,22 @@ def hub_display_pixel_row_column_brightness(
     hub.display.pixel(row, column, brightness)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert", icon="▶", color="action", title="Show character", group=("Display",)
+)
 def hub_display_char_character(hub: "PrimeHub" = hub, character: "str" = "!"):
     """Display a single character. Options: character."""
     hub.display.char(character)
 
 
-@inline_block(level="expert", icon="▶", color="action", variant="Default timing")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    variant="Default timing",
+    title="Scroll text",
+    group=("Display",),
+)
 def hub_display_text_text(hub: "PrimeHub" = hub, text: "str" = "Hello"):
     """Scroll text on the hub display."""
     hub.display.text(text)
@@ -51,6 +75,7 @@ def hub_display_text_text(hub: "PrimeHub" = hub, text: "str" = "Hello"):
     family="pybricks/hub_display/hub_display_text_text",
     variant="Character timing",
     advanced=("on", "off"),
+    title="Scroll text",
 )
 def hub_display_text_text_on_off(
     hub: "PrimeHub" = hub,

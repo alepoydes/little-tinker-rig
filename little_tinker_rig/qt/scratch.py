@@ -95,6 +95,7 @@ class ScratchCell(QFrame):
         self.source.snippet_dropped.connect(self.insert_snippet)
         self.source.definition_requested.connect(pane.definition_requested)
         self.source.help_requested.connect(pane.help_requested)
+        self.source.input_search_requested.connect(pane.input_search_requested)
         self.stack = QStackedWidget()
         self.stack.addWidget(self.source)
         self.stack.addWidget(self.code)
@@ -213,6 +214,7 @@ class ScratchPane(QScrollArea):
     failed = Signal(str)
     definition_requested = Signal(object)
     help_requested = Signal(str)
+    input_search_requested = Signal(object, object, bool)
     snippet_inserted = Signal(str)
 
     def __init__(self):

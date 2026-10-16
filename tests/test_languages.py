@@ -123,11 +123,11 @@ def test_help_groups_links_back_search_and_language(qt_app):
         assert all(tr(s.help).splitlines()[0] in text for s in motors)
         assert (
             0
-            <= block_position(page.browser, "Read the current motor speed.")
+            <= block_position(page.browser, "Motor speed")
             < page.browser.viewport().height()
         )
         page.browser.verticalScrollBar().setValue(0)
-        cursor = page.browser.document().find("Connect a motor to a hub port.")
+        cursor = page.browser.document().find("Connect motor")
         cursor.setPosition(cursor.selectionStart() + 5)
         point = page.browser.cursorRect(cursor).center()
         assert page.browser.anchorAt(point) == "#create_motor"
@@ -135,7 +135,7 @@ def test_help_groups_links_back_search_and_language(qt_app):
         assert page.current.endswith("#create_motor")
         assert (
             0
-            <= block_position(page.browser, "Connect a motor to a hub port.")
+            <= block_position(page.browser, "Connect motor")
             < page.browser.viewport().height()
         )
         page.back()
@@ -168,7 +168,7 @@ def test_help_groups_links_back_search_and_language(qt_app):
         } == visible
         assert (
             0
-            <= block_position(page.browser, "Узнать текущую скорость мотора.")
+            <= block_position(page.browser, "Скорость мотора")
             < page.browser.viewport().height()
         )
         page.show_page("usage.md")

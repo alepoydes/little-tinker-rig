@@ -349,41 +349,33 @@ complete lessons through the changed insertion controls. Native EN/RU checks
 verify icon rendering, tooltips, keyboard activation, both group actions, and the
 930 × 620 layout. Updated user guides and screenshots reflect the compact controls.
 
-## Follow-up: nested groups and dependency discovery
+## Nested groups and dependency discovery
 
-The [nested-group design](UX_DESIGN.md#planned-nested-groups) and
-[parameter-help proposal](UX_DESIGN.md#proposed-parameter-dependency-help) describe
-the next stage. These are not implemented features. The initial delivery counts
-and verification above describe the existing flat category branches.
+Implemented: short translated titles, optional subgroup paths in definitions,
+recursive catalog filtering and expansion restoration, flat personal views,
+source-derived provider discovery, inline missing-name warnings, explicit pinned
+search, scope/order guidance, and existing-value/definition actions. See the
+[nested groups](UX_DESIGN.md#nested-groups) and
+[parameter help](UX_DESIGN.md#parameter-dependency-help) contracts.
 
-1. Audit family destinations and applicability. Begin with Movement and Input;
-   retain shared sensor-creation families at their common category. Distinguish
-   mechanism requirements, genuine model-specific routines, example provenance,
-   and device/firmware support. Inventory every relocation without changing IDs,
-   source expansion, or personal references.
-2. Specify the smallest backward-compatible metadata extension for optional
-   subgroup paths, their localized names, and explicit applicability. Review the
-   contract before implementing it. Reuse lesson/project context where it carries
-   the required information; a hub connection alone does not identify a build.
-3. Implement nested rendering, descendant filtering, matching-path search,
-   recursive expansion, saved expansion state, and Block Editor controls together.
-   Preserve compact icon rows, flat personal views, family variants and exact
-   lesson palettes. Check EN/RU and narrow windows.
-4. Improve parameter guidance using the shared type/scope model. First expose
-   available values and actionable diagnostics for clear missing/later bindings.
-   Index public declarations and expression results from the current definitions;
-   filter exact provider variants before grouping them into cards.
-5. Implement an explicit pinned provider-search action and placement preview.
-   Distinguish an expression for the input from a statement that creates its
-   dependency. Keep hardware initialization frequency and lexical scope visible;
-   never silently add a chain of objects or relocate code. Apply an approved
-   source edit as one Undo operation and reject stale suggestions.
+Model-specific routines now have a named branch under their mechanism. Automatic
+project/model applicability filtering remains future work. Definite assignment
+across branches and runtime function calls is not claimed by the lexical analyzer.
+Unknown expression contracts require normal Python editing or explicit annotations.
 
-Acceptance examples include a missing Motor, a ForceSensor variant within the
-shared sensor card, DriveBase creation requiring two motors, a compatible object
-declared later, a function parameter, a conditional/uncertain binding, and a
-provider hidden by the lesson palette. None should change the catalog merely
-because the pointer crossed a parameter.
+Provider search retains level and lesson restrictions and chooses the exact
+matching family variant. It restores catalog navigation on exit and expires when
+the document revision changes. Users place creators using ordinary drag targets;
+no ports, variables, dependency chains or initialization moves are chosen silently.
+
+Validation covers recursive search and restoration, exact provider variants under
+lesson restrictions, stale-search invalidation, existing-value replacement with
+one Undo, and unit-aware reporter suggestions. All 253 default source expansions,
+imports, helpers and levels remain identical to the preceding catalog. The
+inventory tool verifies 305 default variant transitions. EN/RU Qt captures cover
+the workspace, nested catalog, parameter dialog, missing receiver and a move after
+the final loop; the 1000 × 700 workspace gives the editor 584 pixels of width
+with the default closed auxiliary docks.
 
 ### Shared-boundary move correction
 

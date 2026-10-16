@@ -5,13 +5,13 @@ Useful operations beyond the editable arithmetic operator blocks."""
 __category__ = "values"
 
 
-@inline_block(level="advanced", icon="▶", color="action")
+@inline_block(level="advanced", icon="▶", color="action", title="Absolute value")
 def absolute(value: "number" = -10) -> "number":
     """Take the absolute value of a number."""
     return abs(value)
 
 
-@inline_block(level="advanced", icon="▶", color="action")
+@inline_block(level="advanced", icon="▶", color="action", title="Round number")
 def rounded(value: "number" = 3.6) -> "number":
     """Round a number to the nearest integer."""
     return round(value)
@@ -24,6 +24,7 @@ def rounded(value: "number" = 3.6) -> "number":
     family="python/basics/sum_values",
     variant="Remainder",
     bindings={"value": "left", "divisor": "right"},
+    title="Calculate",
 )
 def remainder(value: "number" = 10, divisor: "number" = 3) -> "number":
     """Find the remainder after division.
@@ -33,7 +34,13 @@ def remainder(value: "number" = 10, divisor: "number" = 3) -> "number":
     return value % divisor
 
 
-@inline_block(level="advanced", icon="▶", color="action", variant="Minimum")
+@inline_block(
+    level="advanced",
+    icon="▶",
+    color="action",
+    variant="Minimum",
+    title="Minimum / maximum",
+)
 def minimum(left: "number" = 0, right: "number" = 100) -> "number":
     """Choose the smallest or largest value.
 
@@ -47,6 +54,7 @@ def minimum(left: "number" = 0, right: "number" = 100) -> "number":
     color="action",
     family="python/numbers/minimum",
     variant="Maximum",
+    title="Minimum / maximum",
 )
 def maximum(left: "number" = 0, right: "number" = 100) -> "number":
     """Choose the larger value."""

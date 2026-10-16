@@ -5,7 +5,13 @@ Nonblocking input from the connected computer's terminal."""
 __category__ = "input"
 
 
-@inline_block(level="advanced", icon="⌨", color="value")
+@inline_block(
+    level="advanced",
+    icon="⌨",
+    color="value",
+    title="Read terminal byte",
+    group=("Terminal input",),
+)
 def input_byte(latest: "bool" = True, character: "bool" = True):
     """Read a byte or character without waiting; optionally discard older buffered input."""
     from pybricks.tools import read_input_byte
@@ -13,7 +19,13 @@ def input_byte(latest: "bool" = True, character: "bool" = True):
     return read_input_byte(latest, character)
 
 
-@block(level="advanced", icon="⌨", color="value")
+@block(
+    level="advanced",
+    icon="⌨",
+    color="value",
+    title="Read key code",
+    group=("Terminal input",),
+)
 def read_key_code() -> "int | None":
     """Read one keyboard character code, or None when no key is available.
 
@@ -29,7 +41,13 @@ def read_key_code() -> "int | None":
     return None
 
 
-@inline_block(level="expert", icon="⌨", color="value")
+@inline_block(
+    level="expert",
+    icon="⌨",
+    color="value",
+    title="Create input poller",
+    group=("Terminal input",),
+)
 def input_poller():
     """Create a poll object for nonblocking terminal input."""
     from uselect import poll
@@ -37,7 +55,13 @@ def input_poller():
     return poll()
 
 
-@inline_block(level="expert", icon="⌨", color="action")
+@inline_block(
+    level="expert",
+    icon="⌨",
+    color="action",
+    title="Watch terminal input",
+    group=("Terminal input",),
+)
 def watch_input(keyboard=keyboard):
     """Register standard input with a poll object."""
     from usys import stdin
@@ -45,13 +69,25 @@ def watch_input(keyboard=keyboard):
     keyboard.register(stdin)
 
 
-@inline_block(level="expert", icon="⌨", color="value")
+@inline_block(
+    level="expert",
+    icon="⌨",
+    color="value",
+    title="Input ready",
+    group=("Terminal input",),
+)
 def ready_input(keyboard=keyboard, timeout: "int[ms]" = 0):
     """Check for input; zero milliseconds returns immediately."""
     return keyboard.poll(timeout)
 
 
-@inline_block(level="expert", icon="⌨", color="value")
+@inline_block(
+    level="expert",
+    icon="⌨",
+    color="value",
+    title="Read terminal text",
+    group=("Terminal input",),
+)
 def read_input(count: "int" = 1) -> "str":
     """Read characters after poll reports input ready."""
     from usys import stdin

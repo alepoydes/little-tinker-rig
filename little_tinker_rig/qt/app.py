@@ -64,7 +64,7 @@ from .document import DocumentPage
 from .editor import source_offset
 from .help import HelpPage
 from .lessons import Lessons
-from .library import IDENTITY, LEVEL_TITLES, VIEW_TITLES, Library
+from .library import IDENTITY, LEVEL_TITLES, VIEW_TITLES, Library, snippet_title
 from .localization import localize, translate_standard_dialogs
 from .navigation import ChoiceButtons, ModeList
 from .recovery import Recovery
@@ -101,7 +101,8 @@ class Studio(QMainWindow):
         )
         self.settings = application_settings()
         self.setMouseTracking(True)
-        self.scratch_visible = True
+        self.scratch_visible = False
+        self.input_search = None
         self.collections = collections
         available = self.screen().availableGeometry().size()
         self.setMinimumSize(QSize(930, 620).boundedTo(available))
@@ -198,9 +199,7 @@ class Studio(QMainWindow):
                 "The library is showing blocks for the selected input. Select its containing block to add the next action."
             )
         )
-        self.whole_blocks.clicked.connect(
-            lambda: self.editing_source.select_statement()
-        )
+        self.whole_blocks.clicked.connect(self.clear_input_search)
         self.whole_blocks.hide()
         layout.addWidget(self.whole_blocks)
         layout.addWidget(self.library, 1)
@@ -216,6 +215,9 @@ class Studio(QMainWindow):
         program_layout.addWidget(self.documents, 1)
         self.program_page.addWidget(self.program_documents)
         self.program_page.setSizes([320, 1060])
+        self.program_page.setStretchFactor(0, 0)
+        self.program_page.setStretchFactor(1, 1)
+        self.program_page.setChildrenCollapsible(False)
         self.controls = ControlsPage()
         self.controls.monitor_requested.connect(self.start_monitor)
         self.controls.drive_requested.connect(
@@ -347,6 +349,7 @@ class Studio(QMainWindow):
         self.scratch.snippet_inserted.connect(self.library.record_use)
         self.scratch.definition_requested.connect(self.open_definition)
         self.scratch.help_requested.connect(self.open_block_help)
+        self.scratch.input_search_requested.connect(self.find_input_blocks)
         self.scratch_dock = self.dock(
             N_("Scratch"), self.scratch, Qt.DockWidgetArea.RightDockWidgetArea
         )
@@ -366,7 +369,8 @@ class Studio(QMainWindow):
         )
         self.device_dock.setMinimumWidth(285)
         self.tabifyDockWidget(self.scratch_dock, self.device_dock)
-        self.scratch_dock.raise_()
+        self.scratch_dock.hide()
+        self.device_dock.hide()
 
     def dock(self, title, widget, area):
         dock = QDockWidget(title, self)
@@ -809,6 +813,7 @@ class Studio(QMainWindow):
         page.snippet_dropped.connect(self.insert_snippet)
         page.definition_requested.connect(self.open_definition)
         page.help_requested.connect(self.open_block_help)
+        page.input_search_requested.connect(self.find_input_blocks)
         page.mode_changed.connect(self.document_mode_changed)
         page.find_bar.returnPressed.connect(self.find_next)
         index = self.documents.addTab(page, path.name)
@@ -1006,11 +1011,10 @@ class Studio(QMainWindow):
         self.scratch_dock.setVisible(index == 0 and self.scratch_visible)
         self.scratch_dock.toggleViewAction().setEnabled(index == 0)
         self.scratch_button.setEnabled(index == 0)
-        if index in (0, 1):
+        if index == 1:
             self.device_dock.show()
-            if index == 1:
-                self.device_dock.raise_()
-        else:
+            self.device_dock.raise_()
+        elif index != 0:
             self.device_dock.hide()
         if index == 3:
             self.block_editor.configure(
@@ -1043,6 +1047,42 @@ class Studio(QMainWindow):
             return cell.code if cell.code_active else None
         return self.code if self.code_active else None
 
+    def find_input_blocks(self, view, slot, providers):
+        if not self.input_search:
+            self.library.remember_view()
+            self.catalog_return = (
+                self.library.view,
+                self.search.text(),
+                self.library.view_states[self.library.view],
+            )
+        self.input_search = (view, slot)
+        self.search.clear()
+        self.view_filter.select("catalog")
+        self.library.context_key = None
+        self.library.set_context(view.session, slot, providers)
+        self.library.expand_groups(True)
+        self.whole_blocks.setText(tr("← All blocks · {name}", name=slot.parameter.name))
+        self.whole_blocks.setToolTip(
+            tr("Create the value before this block, in a scope visible here.")
+            + "\n"
+            + tr("Constructors inside a loop run on every iteration.")
+            if providers
+            else tr("Drag a matching expression onto this input.")
+        )
+        self.whole_blocks.show()
+
+    def clear_input_search(self):
+        previous = self.input_search
+        self.input_search = None
+        self.library.clear_context()
+        self.whole_blocks.hide()
+        if previous:
+            view, search, state = self.catalog_return
+            self.view_filter.select(view)
+            self.search.setText(search)
+            self.library.view_states[view] = state
+            self.library.render()
+
     def refresh_status(self):
         if not hasattr(self, "undo_action"):
             return
@@ -1050,13 +1090,17 @@ class Studio(QMainWindow):
         if hasattr(self, "lessons"):
             self.lessons.palette()
         self.library.set_scope(self.document_page.catalog_scope)
-        self.library.set_context(self.editing_session)
-        self.whole_blocks.setVisible(
-            isinstance(self.editing_session.editor.selection, ast.expr)
-        )
+        if self.input_search:
+            view, slot = self.input_search
+            if (
+                view.session.document.syntax is not slot.syntax
+                or view.session is not self.editing_session
+                or self.library.context_key is None
+            ):
+                self.clear_input_search()
         match = self.session.selected_match()
         selection = (
-            tr(match.snippet.help).splitlines()[0]
+            snippet_title(match.snippet)
             if match and match.snippet.help
             else "Python" if self.code_active else tr("Select a block")
         )

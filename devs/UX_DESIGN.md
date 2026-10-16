@@ -33,7 +33,7 @@ The catalog implements the following layout:
 - Use a separate exclusive button group for Catalog, Favorites, Recent, Frequent,
   and For this lesson. View buttons use icons with localized names and tooltips,
   accessible labels, and a visible active state. Level buttons also use icons:
-  one to four filled bars, and infinity for All. Neither group has a persistent
+  numbered badges 1–4, and infinity for All. Neither group has a persistent
   caption. Collapse/expand-all icons share the view row; personal usage resets
   appear there only when relevant.
 - Display subject categories as expandable branches of the catalog tree, with
@@ -70,16 +70,15 @@ records consolidation candidates and personal-view semantics. The
 The [block library work plan](BLOCK_LIBRARY_PLAN.md) defines the implementation
 sequence, dependencies, and completion criteria.
 
-### Planned nested groups
+### Nested groups
 
-Nested groups are the next catalog extension; the current implementation still
-has one category level. Keep purpose as the first level, then use a mechanism or
+The catalog uses optional source-authored subgroup paths. Keep purpose as the first level, then use a mechanism or
 input kind where it reduces a large list. A robot can contain several mechanisms;
 its model name is not a suitable root for shared motor, sensor, or Python blocks.
 
 Start with the two crowded branches, Movement (54 families) and Input (42):
 
-| Category | Proposed subgroups | Placement examples |
+| Category | Subgroups | Placement examples |
 |---|---|---|
 | Motors and movement | Individual motors; two-wheel drive bases; steering chassis; grippers; two-axis mechanisms; conveyors | Motor setup, motion, measurements and control tuning stay with motors. DriveBase setup, movement, gyro use, line following and remote driving stay with two-wheel bases. Car setup and steering calibration stay with steering chassis. |
 | Sensors and input | Color and reflection; distance; force and contact; orientation and motion; buttons and controllers; time; terminal input | Reads are grouped by what they measure. Stopwatch creation and readings stay together. LEGO remote and Xbox branches may separate their controls when the combined branch becomes crowded. |
@@ -104,8 +103,9 @@ stops. `dance_turns` is a general DriveBase behavior; its Tricky example origin
 does not make it exclusive to Tricky. Keep these requirements separate from
 hub, port, accessory, and firmware compatibility.
 
-Model-specific branches should require an explicit model selection in project
-or lesson context. A project can select several mechanisms and models. Complete
+Future applicability filtering should use explicit model selection in project
+or lesson context. Currently model-specific routines have a named nested branch;
+there is no automatic hardware or model filter. A project can select several mechanisms and models. Complete
 discovery remains available through a catalog context action; no persistent extra
 selector row is needed. Do not infer a chassis from its connected hub or treat an
 unknown project configuration as a confirmed hardware mismatch. Existing source
@@ -119,17 +119,17 @@ visibility and collapse/expand-all operate recursively. Favorites, Recent and
 Frequent keep their existing flat ordering. Exact lesson and level restrictions
 still apply to variants before a card becomes visible.
 
-### Proposed parameter dependency help
+### Parameter dependency help
 
-This interaction is a proposal for the next implementation stage. Hover shows
+Hover shows
 the expected type/unit, current name, and a concise availability diagnostic.
 Hover does not change the catalog. Clicking or using the parameter context menu
 offers these distinct actions:
 
 - Use an existing value: offer compatible variables accessible at this use site,
   and compatible value-producing expressions.
-- Show a definition: navigate to a known declaration and explain if it is later
-  in the same execution sequence or outside the usable scope.
+- Show a definition: navigate to a lexically resolved declaration. A clearly later
+  module binding is identified by its source line.
 - Find a creation block: pin a catalog filter to declarations or constructors
   that provide the required type, selecting the matching family variant.
 
@@ -157,8 +157,11 @@ After insertion, reassess the original input; bind a new name only when that
 change is explicitly included in the reviewed edit. Document revision changes
 invalidate stale suggestions.
 
-Availability must distinguish a missing name, a later binding in the same
-sequence, an inaccessible binding, and uncertain execution. Source order alone
+Availability diagnostics cover missing names and clearly later module bindings.
+They are lexical diagnostics, not a definite-assignment proof: conditional
+creation, runtime calls, and closure execution can remain uncertain. Input types
+come from recognized template fields and ordinary inference; an untyped nested
+expression may require an explicit annotation or Python editing. Source order alone
 does not prove availability across branches, loops, closures or function calls.
 A module variable used by a function need not precede the function definition;
 it must exist when the function executes. Start with clear straight-line cases,
@@ -278,7 +281,8 @@ Program upgrades have a read-only diff preview, explicit acceptance and Undo.
 
 ## Detached block ribbon
 
-Scratch is visible when opening a program and hidden in hub Control. Its dock
+Scratch and the device dock start hidden in Program mode. Scratch can be opened
+with its bottom button and is hidden in hub Control. Its dock
 can be resized or closed. Independent cells share the main structural renderer;
 each cell also offers a text view for unfinished fragments.
 
@@ -322,3 +326,23 @@ menus and shortcuts. Upload sends without execution; Run uploads and executes;
 Run stored program and Stop act on the hub. Firmware preparation and installation
 are separate steps with model checking, cached/local files, license review and
 progress. The dialog remains open during writing. There is no source read-back.
+
+## Block presentation
+
+Short source-authored `title` labels use the UI font; Python keeps its monospace
+font. The full docstring remains in help and hover text. Compound outlines have
+a left guide and closing foot. Insertion markers name the destination suite,
+including Inside loop, After loop and At program level. Equal source offsets
+do not erase that distinction.
+
+Ordinary scalar clicks edit values without changing the library. Sequence controls
+reserve a strip below the viewport instead of covering the next block. Missing
+references receive an amber input border and a localized tooltip. Reporter
+suggestions require confirmed result compatibility, including units; plain
+Python names with unknown units remain editable. Provider discovery uses public
+inline declarations and expression return types, never helper-private locals.
+
+The per-block display control appears on hover or selection, or while a manual
+override is active. The same modes are available from the context menu. Variant
+choices use exclusive actions; the parameter dialog fits its visible fields and
+only offers a collapsible Python diff when changes exist.

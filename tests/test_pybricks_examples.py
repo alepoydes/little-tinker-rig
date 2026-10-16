@@ -367,11 +367,7 @@ def test_imported_programs_open_with_their_blocks_available_in_the_panel(
             window.show()
             window.level_filter.select("all")
             qt_app.processEvents()
-            identities = {
-                window.library.topLevelItem(i).child(j).data(0, FAMILY)
-                for i in range(window.library.topLevelItemCount())
-                for j in range(window.library.topLevelItem(i).childCount())
-            }
+            identities = {card.data(0, FAMILY) for card in window.library.rows.values()}
             assert {m.snippet.catalog_id for m in window.session.matches} <= identities
             assert window.session.document.state.source == loaded
         finally:

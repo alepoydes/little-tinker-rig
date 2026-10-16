@@ -57,6 +57,11 @@ def report():
             if family.category != category:
                 continue
             lines += ["", f"### {family.identity}", ""]
+            lines += [
+                f"Catalog path: {' → '.join((title, *family.primary.group))}. "
+                f"Card title: **{family.primary.title or family.identity}**.",
+                "",
+            ]
             for snippet in family.members:
                 disposition = (
                     "Keep family entry"

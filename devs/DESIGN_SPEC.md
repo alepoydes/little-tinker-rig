@@ -663,6 +663,13 @@ A module may declare one literal `__category__` string; a block's optional
 `values`, `data`, `functions`, `movement`, `input`, `output`, and `devices`. Older
 collections without categories retain their module headings.
 
+An optional single-line `title` separates the compact label from the full help
+docstring. Without it, older definitions retain their first help line as a title.
+The optional `group=("Mechanism", "Model")` contains up to two nonempty path
+segments beneath the category. Segments are English translation keys; localized
+labels never become persistent navigation keys. The family primary owns the path;
+members may omit it or repeat it exactly. Block Editor edits these literal fields.
+
 A family uses the complete identity of a current primary block. Other forms name
 it with `family="collection/module/block"`. Primaries omit `family`; chains,
 missing primaries, and incompatible statement/expression or context requirements
@@ -1909,7 +1916,8 @@ survives save/recovery/Undo and blocks Run/Upload until filled; `None` remains a
 normal value. Local search, palette filtering and drops use the same type/unit
 compatibility contract, retaining unknown types. Ambiguous statement inputs require
 an explicit destination choice. Keyboard navigation visits public inputs, and
-Escape returns to the enclosing statement's palette context.
+Escape selects the enclosing statement; explicit pinned catalog search remains
+active until its back action or source/catalog invalidation.
 
 Building representative bundled programs from scratch is a one-time manual design
 review, with findings in `AI`. Recurring tests protect focused semantic and UI

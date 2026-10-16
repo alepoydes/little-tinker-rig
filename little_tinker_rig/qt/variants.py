@@ -13,7 +13,6 @@ from PySide6.QtWidgets import (
     QLabel,
     QPlainTextEdit,
     QScrollArea,
-    QSplitter,
     QToolButton,
     QVBoxLayout,
     QWidget,
@@ -64,7 +63,7 @@ class VariantDialog(QDialog):
         self.drafts = {}
         self.snippet = self.match.snippet
         self.setWindowTitle(tr("Block variants and parameters"))
-        self.resize(700, 640)
+        self.resize(590, 340)
         self.timer = QTimer(self)
         self.timer.setSingleShot(True)
         self.timer.setInterval(120)
@@ -84,19 +83,29 @@ class VariantDialog(QDialog):
         self.details = QLabel()
         self.details.setWordWrap(True)
         layout.addWidget(self.details)
-        splitter = QSplitter(Qt.Orientation.Vertical)
         self.form_area = QScrollArea()
         self.form_area.setWidgetResizable(True)
-        splitter.addWidget(self.form_area)
+        self.form_area.setFrameShape(QScrollArea.Shape.NoFrame)
+        layout.addWidget(self.form_area)
+        self.preview_toggle = QToolButton()
+        self.preview_toggle.setText(tr("Python changes"))
+        self.preview_toggle.setCheckable(True)
+        self.preview_toggle.setToolButtonStyle(
+            Qt.ToolButtonStyle.ToolButtonTextBesideIcon
+        )
+        self.preview_toggle.setArrowType(Qt.ArrowType.RightArrow)
+        layout.addWidget(self.preview_toggle)
         self.preview = QPlainTextEdit()
         self.preview.setReadOnly(True)
         self.preview.setFont(
             QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
         )
         self.preview.setAccessibleName(tr("Python changes"))
-        splitter.addWidget(self.preview)
-        splitter.setSizes([300, 220])
-        layout.addWidget(splitter, 1)
+        self.preview.setMaximumHeight(210)
+        self.preview.setMinimumHeight(180)
+        self.preview.hide()
+        layout.addWidget(self.preview)
+        self.preview_toggle.toggled.connect(self.show_preview)
         self.error = QLabel()
         self.error.setWordWrap(True)
         self.error.setStyleSheet("color: #a03333")
@@ -109,6 +118,7 @@ class VariantDialog(QDialog):
         layout.addWidget(self.buttons)
         self.variant.currentIndexChanged.connect(self.change_variant)
         self.change_variant()
+        self.resize(590, self.minimumSizeHint().height())
 
     def change_variant(self, *_):
         self.timer.stop()
@@ -172,7 +182,6 @@ class VariantDialog(QDialog):
         )
         self.more.toggled.connect(self.update_additional)
         self.update_additional()
-        layout.addStretch()
         old = self.form_area.takeWidget()
         if old:
             old.deleteLater()
@@ -180,6 +189,13 @@ class VariantDialog(QDialog):
         self.details.setText("\n\n".join(tr(self.snippet.help).split("\n\n")[:2]))
         self.details.setToolTip(tr(self.snippet.help))
         self.update_preview()
+
+    def show_preview(self, visible):
+        self.preview.setVisible(visible)
+        self.preview_toggle.setArrowType(
+            Qt.ArrowType.DownArrow if visible else Qt.ArrowType.RightArrow
+        )
+        self.resize(self.width(), self.minimumSizeHint().height())
 
     def values(self):
         return {name: field.currentText() for name, field in self.fields.items()}
@@ -197,6 +213,9 @@ class VariantDialog(QDialog):
         ]
         self.summary.setText("; ".join(active))
         self.summary.setVisible(bool(active) and not self.more.isChecked())
+        if panel := self.form_area.widget():
+            panel.layout().activate()
+            self.form_area.setFixedHeight(min(300, panel.sizeHint().height() + 4))
 
     def update_preview(self):
         self.update_additional()
@@ -225,6 +244,9 @@ class VariantDialog(QDialog):
             )
         )
         self.preview.setPlainText(diff or tr("No changes"))
+        self.preview_toggle.setVisible(bool(diff))
+        if not diff:
+            self.preview_toggle.setChecked(False)
         return True
 
     def apply(self):

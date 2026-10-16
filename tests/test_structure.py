@@ -346,10 +346,9 @@ def test_library_search_uses_all_words_from_full_help_and_dynamic_functions(qt_a
     try:
         library.filter("program console", "all")
         visible = [
-            library.topLevelItem(i).child(j).data(0, IDENTITY)
-            for i in range(library.topLevelItemCount())
-            for j in range(library.topLevelItem(i).childCount())
-            if not library.topLevelItem(i).child(j).isHidden()
+            card.data(0, IDENTITY)
+            for card in library.rows.values()
+            if not card.isHidden()
         ]
         assert "python/basics/display" in visible
         assert library.headings["functions"].text(0) == "Functions"

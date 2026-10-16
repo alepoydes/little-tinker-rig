@@ -112,3 +112,5 @@ Right-click an inserted block and choose **Open definition** to navigate directl
 here. A recognized historical block opens its original file and version read-only,
 not the current implementation with the same identity. Copy it to a user collection
 to make an editable variant.
+
+The catalog properties dialog also edits a short title and a group path of up to two segments (for example, `Individual motors / Motion`). Set the path on the family primary. Titles and group names are English source text with user-interface translations; full descriptions remain in the docstring.

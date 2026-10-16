@@ -61,6 +61,8 @@ class Snippet:
     context: str | None = None
     definition: str = ""
     category: str = ""
+    title: str = ""
+    group: tuple[str, ...] = ()
     family: str = ""
     variant: str | None = None
     advanced: tuple[str, ...] = ()
@@ -73,6 +75,22 @@ class Snippet:
     @property
     def catalog_visible(self):
         return not self.family or self.variant is not None
+
+    @cached_property
+    def produced_types(self):
+        """Declared results and public bindings, excluding private helper locals."""
+        if self.expression:
+            return (self.result_type,) if self.result_type else ()
+        if self.mode != "inline":
+            return ()
+        return tuple(
+            annotation_text(node.annotation)
+            for root in self.body
+            for node in ast.walk(root)
+            if isinstance(node, ast.AnnAssign)
+            and isinstance(node.target, ast.Name)
+            and node.target.id in self.names
+        )
 
     @cached_property
     def helper_signatures(self):
@@ -332,6 +350,8 @@ def load_module(
                 context=context,
                 definition=definition,
                 category=options.get("category", category) if options else category,
+                title=options.get("title", "") if options else "",
+                group=options["group"] if options else (),
                 family=options.get("family", "") if options else "",
                 variant=options.get("variant") if options else None,
                 advanced=options["advanced"] if options else (),

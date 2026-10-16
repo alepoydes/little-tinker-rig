@@ -3,7 +3,15 @@
 from pathlib import Path
 
 from PySide6.QtCore import QEvent, QMimeData, QRect, QSize, Qt, Signal
-from PySide6.QtGui import QColor, QFontDatabase, QFontMetrics, QIcon, QPainter, QPen
+from PySide6.QtGui import (
+    QActionGroup,
+    QColor,
+    QFontDatabase,
+    QFontMetrics,
+    QIcon,
+    QPainter,
+    QPen,
+)
 from PySide6.QtWidgets import (
     QStyle,
     QStyledItemDelegate,
@@ -19,9 +27,10 @@ from little_tinker_rig.core.catalog_history import History, reference
 from little_tinker_rig.core.expressions import eligible, input_roots
 from little_tinker_rig.core.presentation import role_color, snippet_role
 from little_tinker_rig.core.snippets import instantiate
+from little_tinker_rig.core.types import Compatibility, compatibility, known_type
 from little_tinker_rig.i18n import N_, tr
 
-from .annotations import block_icon
+from .annotations import block_icon, snippet_title
 from .colors import saturated
 from .drag import Drag
 
@@ -64,14 +73,6 @@ def group_title(identity, snippets=()):
     if snippets and snippets[0].group_help:
         return tr(snippets[0].group_help).splitlines()[0]
     return identity
-
-
-def snippet_title(snippet):
-    return (
-        tr(snippet.help).splitlines()[0]
-        if snippet.help
-        else snippet.identity.rsplit("/", 1)[1]
-    )
 
 
 def favorite_rect(rect):
@@ -155,7 +156,7 @@ class CardDelegate(QStyledItemDelegate):
 
 class CardItem(QTreeWidgetItem):
     def __lt__(self, other):
-        return self.data(0, ORDER) < other.data(0, ORDER)
+        return (self.data(0, ORDER) or (-1, 0)) < (other.data(0, ORDER) or (-1, 0))
 
 
 class Library(QTreeWidget):
@@ -242,7 +243,22 @@ class Library(QTreeWidget):
                 heading.setExpanded(expanded.get(category, self.level == "beginner"))
                 self.headings[category] = heading
                 for family in members:
-                    self.add_family(family, heading)
+                    parent = heading
+                    path = category
+                    for segment in family.primary.group:
+                        path += "/" + segment
+                        if path not in self.headings:
+                            child = CardItem(parent, [tr(segment)])
+                            child.setData(0, ORDER, (-1, len(self.headings)))
+                            child.setFlags(
+                                child.flags() & ~Qt.ItemFlag.ItemIsDragEnabled
+                            )
+                            child.setExpanded(
+                                expanded.get(path, self.level == "beginner")
+                            )
+                            self.headings[path] = child
+                        parent = self.headings[path]
+                    self.add_family(family, parent)
         else:
             refs = self.history.favorites if self.view == "favorites" else self.snapshot
             for key in refs:
@@ -454,6 +470,8 @@ class Library(QTreeWidget):
             " ".join(s.identity for s in members),
             tr(CATEGORIES.get(family.category, family.category))
             + " "
+            + " ".join(tr(part) + " " + part for part in family.primary.group)
+            + " "
             + " ".join(s.help + " " + tr(s.help) for s in members),
             " ".join(s.definition for s in members),
         )
@@ -497,7 +515,16 @@ class Library(QTreeWidget):
             rank = self.search_rank(family, words, choices)
             match = rank is not None and bool(choices)
             item.setHidden(not match)
-            hidden += not match and self.search_rank(family, words) is not None
+            relevant = tuple(
+                s
+                for s in family.members
+                if self.eligible_ids is None or s.identity in self.eligible_ids
+            )
+            hidden += (
+                not match
+                and bool(relevant)
+                and self.search_rank(family, words, relevant) is not None
+            )
             visible += match
             item.setData(0, ORDER, (rank if rank is not None else 99, position))
             if choices:
@@ -518,7 +545,7 @@ class Library(QTreeWidget):
                     snippet = min(choices, key=priority)
                 if item.data(0, IDENTITY) != snippet.identity:
                     self.paint_variant(item, snippet)
-        for key, group in self.headings.items():
+        for key, group in reversed(self.headings.items()):
             group.setHidden(
                 all(group.child(i).isHidden() for i in range(group.childCount()))
             )
@@ -550,7 +577,7 @@ class Library(QTreeWidget):
             )
         else:
             status = ""
-        if hidden and (words or self.view == "favorites"):
+        if hidden and (words or self.view == "favorites" or self.context_key):
             status += ("\n" if status else "") + tr(
                 "{count} matching families hidden by level, lesson or selected input.",
                 count=hidden,
@@ -558,7 +585,7 @@ class Library(QTreeWidget):
         self.status_changed.emit(status)
         self.variants_changed.emit()
 
-    def set_context(self, session):
+    def set_context(self, session, slot=None, providers=False):
         key = (
             session.document.syntax,
             session.editor.selection,
@@ -567,10 +594,26 @@ class Library(QTreeWidget):
         if key == self.context_key:
             return
         self.context_key = key
+        if providers:
+            self.eligible_ids = {
+                s.identity
+                for s in self.snippets.values()
+                if any(
+                    compatibility(slot.parameter.annotation, known_type(annotation))
+                    is Compatibility.COMPATIBLE
+                    for annotation in s.produced_types
+                )
+            }
+            self.filter(self.search)
+            return
         inputs = input_roots(session)
         self.eligible_ids = {
             s.identity for s in self.snippets.values() if eligible(session, s, inputs)
         }
+        self.filter(self.search)
+
+    def clear_context(self):
+        self.context_key = self.eligible_ids = None
         self.filter(self.search)
 
     def mimeData(self, items):
@@ -660,11 +703,13 @@ class Library(QTreeWidget):
         if len(choices) > 1:
             variants = menu.addMenu(tr("Variant"))
             variants.setToolTipsVisible(True)
+            variant_group = QActionGroup(variants)
             for snippet in choices:
                 action = variants.addAction(
                     tr(snippet.variant) if snippet.variant else snippet_title(snippet)
                 )
                 action.setCheckable(True)
+                variant_group.addAction(action)
                 action.setChecked(snippet.identity == item.data(0, IDENTITY))
                 action.setData(snippet.identity)
                 action.setToolTip(tr(snippet.help))

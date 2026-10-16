@@ -111,11 +111,9 @@ def test_stage_palette_preserves_source_and_free_exploration(tmp_path, qt_app):
         assert not page.lesson_project.progress["completed"]
         assert window.source.expression_ids == frozenset(["pybricks/drive/brake"])
         visible = {
-            g.child(j).data(0, IDENTITY)
-            for i in range(window.library.topLevelItemCount())
-            for g in [window.library.topLevelItem(i)]
-            for j in range(g.childCount())
-            if not g.child(j).isHidden()
+            card.data(0, IDENTITY)
+            for card in window.library.rows.values()
+            if not card.isHidden()
         }
         assert visible <= {"pybricks/drive/brake"}
         assert len(page.session.snippets) > 20

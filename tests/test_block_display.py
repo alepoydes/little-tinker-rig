@@ -315,6 +315,11 @@ def test_switching_and_parameter_edits_preserve_modes_and_highlight_whole_block(
     try:
         state = owner.document.state
         block = view.display.blocks[0]
+        assert view.mode_rect(block) is None
+        QTest.mouseMove(
+            view.viewport(),
+            view.note_rect(*view.note_locations[block.match.span]).center().toPoint(),
+        )
         QTest.mouseClick(
             view.viewport(),
             Qt.MouseButton.LeftButton,

@@ -5,7 +5,9 @@ Control flow beyond counted loops and simple decisions."""
 __category__ = "program"
 
 
-@inline_block(level="intermediate", icon="◇", color="control", context="loop")
+@inline_block(
+    level="intermediate", icon="◇", color="control", context="loop", title="Break loop"
+)
 def break_loop():
     """Leave the nearest loop.
 
@@ -14,7 +16,9 @@ def break_loop():
         break
 
 
-@inline_block(level="advanced", icon="⟳", color="loop", names=("name",))
+@inline_block(
+    level="advanced", icon="⟳", color="loop", names=("name",), title="For each item"
+)
 def for_each(name=item, items=values):
     """Repeat actions for each item in a collection.
 
@@ -23,14 +27,18 @@ def for_each(name=item, items=values):
         pass
 
 
-@inline_block(level="advanced", icon="◇", color="control", context="loop")
+@inline_block(
+    level="advanced", icon="◇", color="control", context="loop", title="Next iteration"
+)
 def continue_loop():
     """Skip to the next iteration of the nearest loop."""
     while True:
         continue
 
 
-@inline_block(level="advanced", icon="＝", color="value", category="values")
+@inline_block(
+    level="advanced", icon="＝", color="value", category="values", title="Choose value"
+)
 def choose_value(test: "bool" = True, yes=1, no=0):
     """Choose a value using a condition.
 
@@ -38,7 +46,7 @@ def choose_value(test: "bool" = True, yes=1, no=0):
     return yes if test else no
 
 
-@inline_block(level="expert", icon="◇", color="control")
+@inline_block(level="expert", icon="◇", color="control", title="Handle exception")
 def handle_error(error_type=ValueError):
     """Handle a specific Python exception.
 
@@ -50,7 +58,7 @@ def handle_error(error_type=ValueError):
         pass
 
 
-@inline_block(level="expert", icon="◇", color="control")
+@inline_block(level="expert", icon="◇", color="control", title="Always clean up")
 def cleanup():
     """Run cleanup even if an operation fails.
 
@@ -62,13 +70,13 @@ def cleanup():
         pass
 
 
-@inline_block(level="expert", icon="◇", color="control")
+@inline_block(level="expert", icon="◇", color="control", title="Raise error")
 def raise_error(message="Invalid value"):
     """Raise a ValueError with an explanation."""
     raise ValueError(message)
 
 
-@inline_block(level="expert", icon="◇", color="control")
+@inline_block(level="expert", icon="◇", color="control", title="Assert condition")
 def check(test: "bool" = True, message="Check failed"):
     """Assert a condition while debugging.
 

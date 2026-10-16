@@ -30,6 +30,8 @@ Execution details below are the authored operation contract. Parameter annotatio
 
 ### python/basics/display
 
+Catalog path: Program. Card title: **Display value**.
+
 **`python/basics/display`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/basics.py](../little_tinker_rig/snippets/python/basics.py); beginner; statement; inline expansion.
@@ -47,6 +49,8 @@ Use the console to see what happens in your program.
 
 
 ### python/basics/repeat
+
+Catalog path: Program. Card title: **Repeat with counter**.
 
 **`python/basics/repeat`** — Keep family entry.
 
@@ -84,6 +88,8 @@ The stop is not included. The step must not be zero.
 
 ### python/basics/condition
 
+Catalog path: Program. Card title: **If / else**.
+
 **`python/basics/condition`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/basics.py](../little_tinker_rig/snippets/python/basics.py); intermediate; statement; inline expansion.
@@ -113,6 +119,8 @@ Choose between two actions using a condition.
 
 ### python/basics/while_condition
 
+Catalog path: Program. Card title: **While loop**.
+
 **`python/basics/while_condition`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/basics.py](../little_tinker_rig/snippets/python/basics.py); intermediate; statement; inline expansion.
@@ -140,6 +148,8 @@ Add a wait to robot control loops so the hub has time for other work.
 
 ### python/flow/break_loop
 
+Catalog path: Program. Card title: **Break loop**.
+
 **`python/flow/break_loop`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/flow.py](../little_tinker_rig/snippets/python/flow.py); intermediate; statement; loop context; inline expansion.
@@ -152,6 +162,8 @@ Insert inside a for or while loop, often inside an if condition.
 
 
 ### python/flow/for_each
+
+Catalog path: Program. Card title: **For each item**.
 
 **`python/flow/for_each`** — Keep family entry.
 
@@ -171,6 +183,8 @@ The name takes each value in order. Replace pass with the actions to perform.
 
 ### python/flow/continue_loop
 
+Catalog path: Program. Card title: **Next iteration**.
+
 **`python/flow/continue_loop`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/flow.py](../little_tinker_rig/snippets/python/flow.py); advanced; statement; loop context; inline expansion.
@@ -181,6 +195,8 @@ Skip to the next iteration of the nearest loop.
 
 
 ### python/flow/handle_error
+
+Catalog path: Program. Card title: **Handle exception**.
 
 **`python/flow/handle_error`** — Keep family entry.
 
@@ -200,6 +216,8 @@ Choose the exception you expect instead of hiding every error.
 
 ### python/flow/cleanup
 
+Catalog path: Program. Card title: **Always clean up**.
+
 **`python/flow/cleanup`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/flow.py](../little_tinker_rig/snippets/python/flow.py); expert; statement; inline expansion.
@@ -213,6 +231,8 @@ Forced program termination may prevent cleanup from running.
 
 
 ### python/flow/raise_error
+
+Catalog path: Program. Card title: **Raise error**.
 
 **`python/flow/raise_error`** — Keep family entry.
 
@@ -228,6 +248,8 @@ Raise a ValueError with an explanation.
 
 
 ### python/flow/check
+
+Catalog path: Program. Card title: **Assert condition**.
 
 **`python/flow/check`** — Keep family entry.
 
@@ -246,6 +268,8 @@ Use for program assumptions, not hardware protection or required validation.
 
 
 ### python/objects/use_context
+
+Catalog path: Program. Card title: **Use context**.
 
 **`python/objects/use_context`** — Keep family entry.
 
@@ -277,6 +301,8 @@ Enter a context, name its resource, and clean up when leaving.
 
 ### pybricks/sensors/wait_ms
 
+Catalog path: Program. Card title: **Wait**.
+
 **`pybricks/sensors/wait_ms`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); beginner; statement; inline expansion.
@@ -291,6 +317,8 @@ Wait for a number of milliseconds. 1000 ms = 1 second.
 
 
 ### pybricks/sensors/wait_color
+
+Catalog path: Program. Card title: **Wait for color**.
 
 **`pybricks/sensors/wait_color`** — Keep family entry.
 
@@ -311,6 +339,8 @@ The next action starts when the color matches; Stop cancels the program.
 
 ### pybricks/sensors/wait_until
 
+Catalog path: Program. Card title: **Wait for condition**.
+
 **`pybricks/sensors/wait_until`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); intermediate; statement; inline expansion.
@@ -329,6 +359,8 @@ The condition is checked repeatedly, every 20 milliseconds.
 
 ### pybricks/tasks/await_task
 
+Catalog path: Program. Card title: **Await operation**.
+
 **`pybricks/tasks/await_task`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/tasks.py](../little_tinker_rig/snippets/pybricks/tasks.py); expert; statement; async context; inline expansion.
@@ -344,6 +376,8 @@ Wait for an operation inside an async function, allowing other tasks to run.
 
 ### pybricks/tasks/start_task
 
+Catalog path: Program. Card title: **Run main task**.
+
 **`pybricks/tasks/start_task`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/tasks.py](../little_tinker_rig/snippets/pybricks/tasks.py); expert; statement; inline expansion.
@@ -358,6 +392,8 @@ Run the main async task; call once from the ordinary program body.
 
 
 ### pybricks/tasks/parallel_tasks
+
+Catalog path: Program. Card title: **Combine async tasks**.
 
 **`pybricks/tasks/parallel_tasks`** — Keep family entry.
 
@@ -392,6 +428,8 @@ Finish when one operation completes and cancel the other, for example a timeout.
 
 ### python/basics/compare
 
+Catalog path: Values and calculations. Card title: **Compare values**.
+
 **`python/basics/compare`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/basics.py](../little_tinker_rig/snippets/python/basics.py); intermediate; expression → bool; inline expansion.
@@ -422,6 +460,8 @@ Check whether two values are equal.
 
 
 ### python/basics/both
+
+Catalog path: Values and calculations. Card title: **Combine conditions**.
 
 **`python/basics/both`** — Keep family entry.
 
@@ -454,6 +494,8 @@ Check that at least one condition is true.
 
 ### python/basics/opposite
 
+Catalog path: Values and calculations. Card title: **Negate condition**.
+
 **`python/basics/opposite`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/basics.py](../little_tinker_rig/snippets/python/basics.py); intermediate; expression → bool; inline expansion.
@@ -468,6 +510,8 @@ Negate a condition.
 
 
 ### python/basics/sum_values
+
+Catalog path: Values and calculations. Card title: **Calculate**.
 
 **`python/basics/sum_values`** — Keep family entry.
 
@@ -541,6 +585,8 @@ Use value % 2 == 0 to test whether an integer is even. The divisor cannot be zer
 
 ### python/data/text
 
+Catalog path: Values and calculations. Card title: **Convert to text**.
+
 **`python/data/text`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/data.py](../little_tinker_rig/snippets/python/data.py); intermediate; expression → str; inline expansion.
@@ -555,6 +601,8 @@ Convert a value to text.
 
 
 ### python/flow/choose_value
+
+Catalog path: Values and calculations. Card title: **Choose value**.
 
 **`python/flow/choose_value`** — Keep family entry.
 
@@ -575,6 +623,8 @@ Only the chosen expression is evaluated.
 
 ### python/numbers/absolute
 
+Catalog path: Values and calculations. Card title: **Absolute value**.
+
 **`python/numbers/absolute`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/numbers.py](../little_tinker_rig/snippets/python/numbers.py); advanced; expression → number; inline expansion.
@@ -590,6 +640,8 @@ Take the absolute value of a number.
 
 ### python/numbers/rounded
 
+Catalog path: Values and calculations. Card title: **Round number**.
+
 **`python/numbers/rounded`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/numbers.py](../little_tinker_rig/snippets/python/numbers.py); advanced; expression → number; inline expansion.
@@ -604,6 +656,8 @@ Round a number to the nearest integer.
 
 
 ### python/numbers/minimum
+
+Catalog path: Values and calculations. Card title: **Minimum / maximum**.
 
 **`python/numbers/minimum`** — Keep family entry.
 
@@ -636,6 +690,8 @@ Choose the larger value.
 
 ### python/objects/character_code
 
+Catalog path: Values and calculations. Card title: **Character code**.
+
 **`python/objects/character_code`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/objects.py](../little_tinker_rig/snippets/python/objects.py); advanced; expression → int; inline expansion.
@@ -651,6 +707,8 @@ Read the numeric code of one character.
 
 ### python/objects/constant
 
+Catalog path: Values and calculations. Card title: **Integer constant**.
+
 **`python/objects/constant`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/objects.py](../little_tinker_rig/snippets/python/objects.py); expert; expression → int; inline expansion.
@@ -665,6 +723,8 @@ Declare a MicroPython integer constant.
 
 
 ### pybricks/hub_measurements/axis_vector
+
+Catalog path: Values and calculations. Card title: **Axis vector**.
 
 **`pybricks/hub_measurements/axis_vector`** — Keep family entry.
 
@@ -682,6 +742,8 @@ Make a three-dimensional vector for the hub's mounting or measurement axis.
 
 
 ### pybricks/randomness/random_integer
+
+Catalog path: Values and calculations. Card title: **Random integer**.
 
 **`pybricks/randomness/random_integer`** — Keep family entry.
 
@@ -702,6 +764,8 @@ BOOST Move Hub firmware does not include urandom.
 
 ### pybricks/randomness/random_item
 
+Catalog path: Values and calculations. Card title: **Random item**.
+
 **`pybricks/randomness/random_item`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/randomness.py](../little_tinker_rig/snippets/pybricks/randomness.py); intermediate; expression → inferred Python value; inline expansion.
@@ -718,6 +782,8 @@ Available on Inventor, SPIKE Prime and Technic hubs; not on BOOST.
 
 
 ### pybricks/sensor_values/color_h_s_v
+
+Catalog path: Values and calculations. Card title: **Create HSV color**.
 
 **`pybricks/sensor_values/color_h_s_v`** — Keep family entry.
 
@@ -738,6 +804,8 @@ Create a color from hue, saturation and brightness. Options: h, s, v.
 
 ### python/basics/assign
 
+Catalog path: Variables and collections. Card title: **Store value**.
+
 **`python/basics/assign`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/basics.py](../little_tinker_rig/snippets/python/basics.py); intermediate; statement; inline expansion.
@@ -757,6 +825,8 @@ Use this name in later blocks.
 
 ### python/basics/add_to
 
+Catalog path: Variables and collections. Card title: **Change variable**.
+
 **`python/basics/add_to`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/basics.py](../little_tinker_rig/snippets/python/basics.py); intermediate; statement; inline expansion.
@@ -772,6 +842,8 @@ Increase a variable value.
 
 
 ### python/data/store
+
+Catalog path: Variables and collections. Card title: **Assign value**.
 
 **`python/data/store`** — Keep family entry.
 
@@ -792,6 +864,8 @@ The simpler assignment block renames one variable and its references.
 
 ### python/data/make_list
 
+Catalog path: Variables and collections. Card title: **Create list**.
+
 **`python/data/make_list`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/data.py](../little_tinker_rig/snippets/python/data.py); advanced; statement; inline expansion.
@@ -811,6 +885,8 @@ Use append to grow the list one value at a time.
 
 ### python/data/append
 
+Catalog path: Variables and collections. Card title: **Append to list**.
+
 **`python/data/append`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/data.py](../little_tinker_rig/snippets/python/data.py); advanced; statement; inline expansion.
@@ -826,6 +902,8 @@ Append a value to a list.
 
 
 ### python/data/item
+
+Catalog path: Variables and collections. Card title: **Read item**.
 
 **`python/data/item`** — Keep family entry.
 
@@ -846,6 +924,8 @@ For a dictionary, use a key instead of a numeric index.
 
 ### python/data/set_item
 
+Catalog path: Variables and collections. Card title: **Replace item**.
+
 **`python/data/set_item`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/data.py](../little_tinker_rig/snippets/python/data.py); advanced; statement; inline expansion.
@@ -865,6 +945,8 @@ A list index must already exist. A dictionary key may be new.
 
 ### python/data/length
 
+Catalog path: Variables and collections. Card title: **Length**.
+
 **`python/data/length`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/data.py](../little_tinker_rig/snippets/python/data.py); advanced; expression → number; inline expansion.
@@ -879,6 +961,8 @@ Count the items in a collection or text.
 
 
 ### python/data/make_dictionary
+
+Catalog path: Variables and collections. Card title: **Create dictionary**.
 
 **`python/data/make_dictionary`** — Keep family entry.
 
@@ -899,6 +983,8 @@ Add entries with the item-assignment block, or edit the dictionary in Python.
 
 ### python/data/slice_items
 
+Catalog path: Variables and collections. Card title: **Slice sequence**.
+
 **`python/data/slice_items`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/data.py](../little_tinker_rig/snippets/python/data.py); advanced; expression → inferred Python value; inline expansion.
@@ -918,6 +1004,8 @@ The start is included and the stop is excluded. The original is unchanged.
 
 ### python/data/contains
 
+Catalog path: Variables and collections. Card title: **Contains value**.
+
 **`python/data/contains`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/data.py](../little_tinker_rig/snippets/python/data.py); advanced; expression → bool; inline expansion.
@@ -935,6 +1023,8 @@ For dictionaries, this checks keys. For text, it checks substrings.
 
 
 ### python/data/map_values
+
+Catalog path: Variables and collections. Card title: **Build list**.
 
 **`python/data/map_values`** — Keep family entry.
 
@@ -955,6 +1045,8 @@ when you need filtering or a more complex expression.
 
 ### python/objects/next_value
 
+Catalog path: Variables and collections. Card title: **Next value**.
+
 **`python/objects/next_value`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/objects.py](../little_tinker_rig/snippets/python/objects.py); expert; expression → inferred Python value; inline expansion.
@@ -969,6 +1061,8 @@ Advance a generator once; raises StopIteration at its end.
 
 
 ### python/objects/all_values
+
+Catalog path: Variables and collections. Card title: **All / any values**.
 
 **`python/objects/all_values`** — Keep family entry.
 
@@ -999,6 +1093,8 @@ Check whether any value is true; stop at the first true value.
 
 ### python/objects/map_iterator
 
+Catalog path: Variables and collections. Card title: **Map iterator**.
+
 **`python/objects/map_iterator`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/objects.py](../little_tinker_rig/snippets/python/objects.py); expert; expression → inferred Python value; inline expansion.
@@ -1014,6 +1110,8 @@ Apply a function lazily as each item is consumed.
 
 
 ### python/objects/zip_iterators
+
+Catalog path: Variables and collections. Card title: **Zip iterators**.
 
 **`python/objects/zip_iterators`** — Keep family entry.
 
@@ -1031,6 +1129,8 @@ Advance two iterators together until the shorter one ends.
 
 ### python/objects/sum_items
 
+Catalog path: Variables and collections. Card title: **Sum items**.
+
 **`python/objects/sum_items`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/objects.py](../little_tinker_rig/snippets/python/objects.py); advanced; expression → number; inline expansion.
@@ -1046,6 +1146,8 @@ Add all values from an iterable.
 
 ### python/objects/reversed_items
 
+Catalog path: Variables and collections. Card title: **Reverse iteration**.
+
 **`python/objects/reversed_items`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/objects.py](../little_tinker_rig/snippets/python/objects.py); advanced; expression → inferred Python value; inline expansion.
@@ -1060,6 +1162,8 @@ Iterate through a sequence in reverse order.
 
 
 ### python/objects/dictionary_items
+
+Catalog path: Variables and collections. Card title: **Dictionary entries**.
 
 **`python/objects/dictionary_items`** — Keep family entry.
 
@@ -1078,6 +1182,8 @@ Iterate over dictionary keys and values together.
 
 ### python/basics/define_function
 
+Catalog path: Functions. Card title: **Define function**.
+
 **`python/basics/define_function`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/basics.py](../little_tinker_rig/snippets/python/basics.py); intermediate; statement; inline expansion.
@@ -1090,6 +1196,8 @@ Edit its name and add parameters. Drag actions into its body.
 
 
 ### python/basics/call_function
+
+Catalog path: Functions. Card title: **Call function**.
 
 **`python/basics/call_function`** — Keep family entry.
 
@@ -1108,6 +1216,8 @@ Choose a function and add or remove its arguments.
 
 ### python/basics/return_value
 
+Catalog path: Functions. Card title: **Return value**.
+
 **`python/basics/return_value`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/basics.py](../little_tinker_rig/snippets/python/basics.py); intermediate; statement; inline expansion.
@@ -1122,6 +1232,8 @@ Return a value from the current function.
 
 
 ### python/basics/call_value
+
+Catalog path: Functions. Card title: **Call for result**.
 
 **`python/basics/call_value`** — Keep family entry.
 
@@ -1141,6 +1253,8 @@ of a custom robot class or calls a method that returns a value.
 
 ### python/objects/define_class
 
+Catalog path: Functions. Card title: **Define class**.
+
 **`python/objects/define_class`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/objects.py](../little_tinker_rig/snippets/python/objects.py); expert; statement; inline expansion.
@@ -1154,6 +1268,8 @@ Class bodies remain ordinary editable Python.
 
 
 ### python/objects/yield_value
+
+Catalog path: Functions. Card title: **Yield value**.
 
 **`python/objects/yield_value`** — Keep family entry.
 
@@ -1180,6 +1296,8 @@ Pause a generator without returning a value.
 
 ### python/objects/is_subclass
 
+Catalog path: Functions. Card title: **Check subclass**.
+
 **`python/objects/is_subclass`** — Keep family entry.
 
 [little_tinker_rig/snippets/python/objects.py](../little_tinker_rig/snippets/python/objects.py); expert; expression → bool; inline expansion.
@@ -1196,6 +1314,8 @@ Check an exception or class hierarchy.
 
 ### pybricks/tasks/define_task
 
+Catalog path: Functions. Card title: **Define async task**.
+
 **`pybricks/tasks/define_task`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/tasks.py](../little_tinker_rig/snippets/pybricks/tasks.py); expert; statement; inline expansion.
@@ -1208,6 +1328,8 @@ Define an async task; use await for operations that take time.
 ## Motors and movement
 
 ### pybricks/drive/create_robot
+
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Set up drive base**.
 
 **`pybricks/drive/create_robot`** — Keep family entry.
 
@@ -1232,6 +1354,8 @@ Expand the block to change motor directions or reuse its individual motors.
 
 ### pybricks/drive/create_drive
 
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Create drive base**.
+
 **`pybricks/drive/create_drive`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/drive.py](../little_tinker_rig/snippets/pybricks/drive.py); intermediate; statement; inline expansion.
@@ -1251,6 +1375,8 @@ Create a two-wheel robot from the left and right motors.
 
 ### pybricks/drive/drive
 
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Drive continuously**.
+
 **`pybricks/drive/drive`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/drive.py](../little_tinker_rig/snippets/pybricks/drive.py); intermediate; statement; inline expansion.
@@ -1267,6 +1393,8 @@ Drive at the chosen speed and turn rate.
 
 
 ### pybricks/drive/brake
+
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Stop drive base**.
 
 **`pybricks/drive/brake`** — Keep family entry.
 
@@ -1297,6 +1425,8 @@ Release both wheels and let the robot coast.
 
 ### pybricks/drive/straight
 
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Drive straight**.
+
 **`pybricks/drive/straight`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/drive.py](../little_tinker_rig/snippets/pybricks/drive.py); beginner; statement; inline expansion.
@@ -1319,7 +1449,7 @@ The next action waits for the movement to finish.
 
 [little_tinker_rig/snippets/pybricks/drive_options.py](../little_tinker_rig/snippets/pybricks/drive_options.py); expert; statement; inline expansion.
 
-Variant: Wait setting.
+Variant: Wait or continue immediately.
 
 | Parameter | Type / units | Default | Card field | Shared family field |
 |---|---|---|---|---|
@@ -1333,7 +1463,7 @@ Drive straight with explicit completion options. Options: distance, wait.
 
 [little_tinker_rig/snippets/pybricks/drive_options.py](../little_tinker_rig/snippets/pybricks/drive_options.py); expert; statement; inline expansion.
 
-Variant: Stop setting.
+Variant: Choose stop behavior.
 
 | Parameter | Type / units | Default | Card field | Shared family field |
 |---|---|---|---|---|
@@ -1345,6 +1475,8 @@ Drive straight with explicit completion options. Options: distance, then.
 
 
 ### pybricks/drive/turn
+
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Turn drive base**.
 
 **`pybricks/drive/turn`** — Keep family entry.
 
@@ -1365,6 +1497,8 @@ The next action waits for the movement to finish.
 
 ### pybricks/drive/drive_distance
 
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Travelled distance**.
+
 **`pybricks/drive/drive_distance`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/drive.py](../little_tinker_rig/snippets/pybricks/drive.py); intermediate; expression → number[mm]; inline expansion.
@@ -1380,6 +1514,8 @@ Read the distance traveled by the robot.
 
 ### pybricks/drive/drive_angle
 
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Drive base angle**.
+
 **`pybricks/drive/drive_angle`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/drive.py](../little_tinker_rig/snippets/pybricks/drive.py); intermediate; expression → number[deg]; inline expansion.
@@ -1394,6 +1530,8 @@ Read the robot's turn angle.
 
 
 ### pybricks/drive/drive_settings
+
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Set drive speeds**.
 
 **`pybricks/drive/drive_settings`** — Keep family entry.
 
@@ -1446,6 +1584,8 @@ Read or set drive speeds and accelerations. Options: saved.
 
 ### pybricks/drive/curve
 
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Drive an arc**.
+
 **`pybricks/drive/curve`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/drive.py](../little_tinker_rig/snippets/pybricks/drive.py); advanced; statement; inline expansion.
@@ -1480,6 +1620,8 @@ Drive along an arc with the current Pybricks radius convention. Options: radius,
 
 ### pybricks/drive/reset_drive
 
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Reset odometry**.
+
 **`pybricks/drive/reset_drive`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/drive.py](../little_tinker_rig/snippets/pybricks/drive.py); advanced; statement; inline expansion.
@@ -1494,6 +1636,8 @@ Stop and reset the robot's distance and angle readings.
 
 
 ### pybricks/drive/create_car
+
+Catalog path: Motors and movement → Steering chassis. Card title: **Create steering car**.
 
 **`pybricks/drive/create_car`** — Keep family entry.
 
@@ -1516,6 +1660,8 @@ Steering calibration is not modeled by the virtual hub.
 
 ### pybricks/drive/steer_car
 
+Catalog path: Motors and movement → Steering chassis. Card title: **Steer car**.
+
 **`pybricks/drive/steer_car`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/drive.py](../little_tinker_rig/snippets/pybricks/drive.py); advanced; statement; inline expansion.
@@ -1531,6 +1677,8 @@ Set car steering between -100 and 100 percent.
 
 
 ### pybricks/drive/power_car
+
+Catalog path: Motors and movement → Steering chassis. Card title: **Power car**.
 
 **`pybricks/drive/power_car`** — Keep family entry.
 
@@ -1550,6 +1698,8 @@ This is motor power, not a measured vehicle speed.
 
 
 ### pybricks/drive/legacy_curve
+
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Drive arc (Pybricks 3)**.
 
 **`pybricks/drive/legacy_curve`** — Keep family entry.
 
@@ -1572,6 +1722,8 @@ input once. Use this when adapting an older curve(radius, angle) program.
 
 ### pybricks/drive_options/drive_gyro
 
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Use gyro steering**.
+
 **`pybricks/drive_options/drive_gyro`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/drive_options.py](../little_tinker_rig/snippets/pybricks/drive_options.py); expert; statement; inline expansion.
@@ -1588,6 +1740,8 @@ Use the hub gyro to maintain the driving heading.
 
 ### pybricks/drive_options/turn_to_heading
 
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Turn to heading**.
+
 **`pybricks/drive_options/turn_to_heading`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/drive_options.py](../little_tinker_rig/snippets/pybricks/drive_options.py); expert; statement; inline expansion.
@@ -1603,6 +1757,8 @@ Turn to an absolute heading; requires firmware with absolute turns.
 
 
 ### pybricks/drive_options/drive_from_motors
+
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Drive base value**.
 
 **`pybricks/drive_options/drive_from_motors`** — Keep family entry.
 
@@ -1637,6 +1793,8 @@ Create a drive base from two motors and its dimensions. Options: left, right, wh
 
 ### pybricks/drive_options/drive_settings
 
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Drive settings**.
+
 **`pybricks/drive_options/drive_settings`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/drive_options.py](../little_tinker_rig/snippets/pybricks/drive_options.py); expert; expression → tuple; inline expansion.
@@ -1651,6 +1809,8 @@ Read or set drive speeds and accelerations.
 
 
 ### pybricks/lessons/stop_at_line
+
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Stop at line**.
 
 **`pybricks/lessons/stop_at_line`** — Keep family entry.
 
@@ -1673,6 +1833,8 @@ the robot stays still. Stop cancels a wait for a line that never arrives.
 
 ### pybricks/lessons/stop_near_object
 
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Stop near object**.
+
 **`pybricks/lessons/stop_near_object`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/lessons.py](../little_tinker_rig/snippets/pybricks/lessons.py); intermediate; statement; function expansion.
@@ -1693,6 +1855,8 @@ instead; its distance reading is not measured in millimeters.
 
 
 ### pybricks/lessons/follow_for
+
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Follow line for time**.
 
 **`pybricks/lessons/follow_for`** — Keep family entry.
 
@@ -1717,6 +1881,8 @@ View the definition to inspect the timer, measurement and correction.
 
 ### pybricks/lessons/conveyor_transfer
 
+Catalog path: Motors and movement → Conveyors → BOOST Auto Builder. Card title: **Transfer conveyor part**.
+
 **`pybricks/lessons/conveyor_transfer`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/lessons.py](../little_tinker_rig/snippets/pybricks/lessons.py); beginner; statement; function expansion.
@@ -1737,6 +1903,8 @@ View the definition to study the lift, speeds, and two-second arm strokes.
 
 
 ### pybricks/lessons/draw_rectangle
+
+Catalog path: Motors and movement → Two-axis mechanisms. Card title: **Draw rectangle**.
 
 **`pybricks/lessons/draw_rectangle`** — Keep family entry.
 
@@ -1760,6 +1928,8 @@ drawing mechanism determine the physical size.
 
 ### pybricks/lessons/dance_turns
 
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Turn out and back**.
+
 **`pybricks/lessons/dance_turns`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/lessons.py](../little_tinker_rig/snippets/pybricks/lessons.py); beginner; statement; function expansion.
@@ -1775,6 +1945,8 @@ Turn one way and back, like Tricky's dance.
 
 
 ### pybricks/lessons/force_gripper
+
+Catalog path: Motors and movement → Grippers. Card title: **Control force gripper**.
 
 **`pybricks/lessons/force_gripper`** — Keep family entry.
 
@@ -1796,6 +1968,8 @@ so a new press is handled after opening finishes. Requires physical stops.
 
 ### pybricks/motor_control/motor_control_limits
 
+Catalog path: Motors and movement → Individual motors → Measurements. Card title: **Read motor limits**.
+
 **`pybricks/motor_control/motor_control_limits`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/motor_control.py](../little_tinker_rig/snippets/pybricks/motor_control.py); expert; expression → tuple; inline expansion.
@@ -1810,6 +1984,8 @@ Read or set motor speed, acceleration and torque limits.
 
 
 ### pybricks/motors/acceleration
+
+Catalog path: Motors and movement → Individual motors → Control tuning. Card title: **Set motor limits**.
 
 **`pybricks/motors/acceleration`** — Keep family entry.
 
@@ -1886,6 +2062,8 @@ Read or set motor speed, acceleration and torque limits. Options: speed, acceler
 
 ### pybricks/motor_control/motor_control_target_tolerances
 
+Catalog path: Motors and movement → Individual motors → Measurements. Card title: **Read motor tolerances**.
+
 **`pybricks/motor_control/motor_control_target_tolerances`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/motor_control.py](../little_tinker_rig/snippets/pybricks/motor_control.py); expert; expression → tuple; inline expansion.
@@ -1900,6 +2078,8 @@ Read or set motor completion tolerances.
 
 
 ### pybricks/motor_control/motor_control_target_tolerances_speed_position
+
+Catalog path: Motors and movement → Individual motors → Control tuning. Card title: **Set motor tolerances**.
 
 **`pybricks/motor_control/motor_control_target_tolerances_speed_position`** — Keep family entry.
 
@@ -1918,6 +2098,8 @@ Read or set motor completion tolerances. Options: speed, position.
 
 ### pybricks/motor_control/motor_control_pid
 
+Catalog path: Motors and movement → Individual motors → Measurements. Card title: **Read PID gains**.
+
 **`pybricks/motor_control/motor_control_pid`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/motor_control.py](../little_tinker_rig/snippets/pybricks/motor_control.py); expert; expression → tuple; inline expansion.
@@ -1932,6 +2114,8 @@ Read or tune motor PID gains.
 
 
 ### pybricks/motor_control/motor_control_pid_kp_ki
+
+Catalog path: Motors and movement → Individual motors → Control tuning. Card title: **Set PID gains**.
 
 **`pybricks/motor_control/motor_control_pid_kp_ki`** — Keep family entry.
 
@@ -1949,6 +2133,8 @@ Read or tune motor PID gains. Options: kp, ki.
 
 
 ### pybricks/motor_motion/geared_motor
+
+Catalog path: Motors and movement → Individual motors → Setup. Card title: **Motor value**.
 
 **`pybricks/motor_motion/geared_motor`** — Keep family entry.
 
@@ -2022,6 +2208,8 @@ Create a motor from a port, with optional direction or gears. Options: port, dir
 
 ### pybricks/motors/turn_motor
 
+Catalog path: Motors and movement → Individual motors → Motion. Card title: **Turn motor by angle**.
+
 **`pybricks/motors/turn_motor`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/motors.py](../little_tinker_rig/snippets/pybricks/motors.py); beginner; statement; inline expansion.
@@ -2042,7 +2230,7 @@ Turn a motor through an angle and wait until it finishes.
 
 [little_tinker_rig/snippets/pybricks/motor_motion.py](../little_tinker_rig/snippets/pybricks/motor_motion.py); expert; statement; inline expansion.
 
-Variant: Wait setting.
+Variant: Wait or continue immediately.
 
 | Parameter | Type / units | Default | Card field | Shared family field |
 |---|---|---|---|---|
@@ -2057,7 +2245,7 @@ Turn a motor through an angle with explicit motion options. Options: speed, rota
 
 [little_tinker_rig/snippets/pybricks/motor_motion.py](../little_tinker_rig/snippets/pybricks/motor_motion.py); expert; statement; inline expansion.
 
-Variant: Completion settings.
+Variant: Choose stop behavior and waiting.
 
 | Parameter | Type / units | Default | Card field | Shared family field |
 |---|---|---|---|---|
@@ -2073,7 +2261,7 @@ Turn a motor through an angle with explicit motion options. Options: speed, rota
 
 [little_tinker_rig/snippets/pybricks/motor_motion.py](../little_tinker_rig/snippets/pybricks/motor_motion.py); expert; statement; inline expansion.
 
-Variant: Stop setting.
+Variant: Choose stop behavior.
 
 | Parameter | Type / units | Default | Card field | Shared family field |
 |---|---|---|---|---|
@@ -2086,6 +2274,8 @@ Turn a motor through an angle with explicit motion options. Options: speed, rota
 
 
 ### pybricks/motors/motor_target
+
+Catalog path: Motors and movement → Individual motors → Motion. Card title: **Move motor to angle**.
 
 **`pybricks/motors/motor_target`** — Keep family entry.
 
@@ -2138,7 +2328,7 @@ Move to a target, then release the motor.
 
 [little_tinker_rig/snippets/pybricks/motor_motion.py](../little_tinker_rig/snippets/pybricks/motor_motion.py); expert; statement; inline expansion.
 
-Variant: Completion settings.
+Variant: Choose stop behavior and waiting.
 
 | Parameter | Type / units | Default | Card field | Shared family field |
 |---|---|---|---|---|
@@ -2154,7 +2344,7 @@ Move a motor to an angle with explicit motion options. Options: speed, target_an
 
 [little_tinker_rig/snippets/pybricks/motor_motion.py](../little_tinker_rig/snippets/pybricks/motor_motion.py); expert; statement; inline expansion.
 
-Variant: Stop setting.
+Variant: Choose stop behavior.
 
 | Parameter | Type / units | Default | Card field | Shared family field |
 |---|---|---|---|---|
@@ -2184,6 +2374,8 @@ Move a motor to an angle with explicit motion options. Options: speed, target_an
 
 ### pybricks/motor_motion/motor_reset_angle
 
+Catalog path: Motors and movement → Individual motors → Motion. Card title: **Use absolute encoder**.
+
 **`pybricks/motor_motion/motor_reset_angle`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/motor_motion.py](../little_tinker_rig/snippets/pybricks/motor_motion.py); expert; statement; inline expansion.
@@ -2198,6 +2390,8 @@ Reset the motor to its absolute encoder angle.
 
 
 ### pybricks/motor_motion/motor_track_target_target_angle
+
+Catalog path: Motors and movement → Individual motors → Motion. Card title: **Track target angle**.
 
 **`pybricks/motor_motion/motor_track_target_target_angle`** — Keep family entry.
 
@@ -2214,6 +2408,8 @@ Continuously track a changing target angle. Options: target_angle.
 
 
 ### pybricks/motors/motor_time
+
+Catalog path: Motors and movement → Individual motors → Motion. Card title: **Run motor for time**.
 
 **`pybricks/motors/motor_time`** — Keep family entry.
 
@@ -2235,7 +2431,7 @@ Run the motor for a set time, then stop.
 
 [little_tinker_rig/snippets/pybricks/motor_motion.py](../little_tinker_rig/snippets/pybricks/motor_motion.py); expert; statement; inline expansion.
 
-Variant: Wait setting.
+Variant: Wait or continue immediately.
 
 | Parameter | Type / units | Default | Card field | Shared family field |
 |---|---|---|---|---|
@@ -2248,6 +2444,8 @@ Run a motor for a time with explicit motion options. Options: speed, time, wait.
 
 
 ### pybricks/motors/stop_motor
+
+Catalog path: Motors and movement → Individual motors → Motion. Card title: **Stop motor**.
 
 **`pybricks/motors/stop_motor`** — Keep family entry.
 
@@ -2290,6 +2488,8 @@ Hold the motor at its current angle.
 
 ### pybricks/motor_motion/motor_done
 
+Catalog path: Motors and movement → Individual motors → Measurements. Card title: **Motor finished**.
+
 **`pybricks/motor_motion/motor_done`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/motor_motion.py](../little_tinker_rig/snippets/pybricks/motor_motion.py); expert; expression → bool; inline expansion.
@@ -2304,6 +2504,8 @@ Check whether the motor has finished its movement.
 
 
 ### pybricks/motor_motion/motor_stalled
+
+Catalog path: Motors and movement → Individual motors → Measurements. Card title: **Motor stalled**.
 
 **`pybricks/motor_motion/motor_stalled`** — Keep family entry.
 
@@ -2320,6 +2522,8 @@ Check whether the motor cannot follow its commanded motion.
 
 ### pybricks/motor_motion/motor_load
 
+Catalog path: Motors and movement → Individual motors → Measurements. Card title: **Motor load**.
+
 **`pybricks/motor_motion/motor_load`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/motor_motion.py](../little_tinker_rig/snippets/pybricks/motor_motion.py); expert; expression → number; inline expansion.
@@ -2334,6 +2538,8 @@ Read estimated motor load in millinewton meters.
 
 
 ### pybricks/motors/until_stalled
+
+Catalog path: Motors and movement → Individual motors → Measurements. Card title: **Run until stalled**.
 
 **`pybricks/motors/until_stalled`** — Keep family entry.
 
@@ -2397,7 +2603,7 @@ Run to a mechanical stop and read the resulting angle. Options: speed, then, dut
 
 [little_tinker_rig/snippets/pybricks/motor_motion.py](../little_tinker_rig/snippets/pybricks/motor_motion.py); expert; expression → number[deg]; inline expansion.
 
-Variant: Stop setting.
+Variant: Choose stop behavior.
 
 | Parameter | Type / units | Default | Card field | Shared family field |
 |---|---|---|---|---|
@@ -2409,6 +2615,8 @@ Run to a mechanical stop and read the resulting angle. Options: speed, then.
 
 
 ### pybricks/motor_motion/dcmotor_port
+
+Catalog path: Motors and movement → Individual motors → Setup. Card title: **DC motor value**.
 
 **`pybricks/motor_motion/dcmotor_port`** — Keep family entry.
 
@@ -2424,6 +2632,8 @@ Create a motor controlled by raw power. Options: port.
 
 
 ### pybricks/motors/create_motor
+
+Catalog path: Motors and movement → Individual motors → Setup. Card title: **Connect motor**.
 
 **`pybricks/motors/create_motor`** — Keep family entry.
 
@@ -2476,6 +2686,8 @@ not model this controller profile.
 
 ### pybricks/motors/run_motor
 
+Catalog path: Motors and movement → Individual motors → Motion. Card title: **Run motor**.
+
 **`pybricks/motors/run_motor`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/motors.py](../little_tinker_rig/snippets/pybricks/motors.py); intermediate; statement; inline expansion.
@@ -2495,6 +2707,8 @@ The motor keeps running until another command stops or changes it.
 
 ### pybricks/motors/reset_motor_angle
 
+Catalog path: Motors and movement → Individual motors → Motion. Card title: **Set motor angle**.
+
 **`pybricks/motors/reset_motor_angle`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/motors.py](../little_tinker_rig/snippets/pybricks/motors.py); intermediate; statement; inline expansion.
@@ -2511,6 +2725,8 @@ Set the angle reading at the current motor position.
 
 ### pybricks/motors/motor_angle
 
+Catalog path: Motors and movement → Individual motors → Measurements. Card title: **Motor angle**.
+
 **`pybricks/motors/motor_angle`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/motors.py](../little_tinker_rig/snippets/pybricks/motors.py); intermediate; expression → number[deg]; inline expansion.
@@ -2526,6 +2742,8 @@ Read the current motor angle.
 
 ### pybricks/motors/motor_speed
 
+Catalog path: Motors and movement → Individual motors → Measurements. Card title: **Motor speed**.
+
 **`pybricks/motors/motor_speed`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/motors.py](../little_tinker_rig/snippets/pybricks/motors.py); intermediate; expression → number[deg/s]; inline expansion.
@@ -2540,6 +2758,8 @@ Read the current motor speed.
 
 
 ### pybricks/motors/motor_power
+
+Catalog path: Motors and movement → Individual motors → Motion. Card title: **Set motor power**.
 
 **`pybricks/motors/motor_power`** — Keep family entry.
 
@@ -2558,6 +2778,8 @@ Power is a duty cycle, not regulated speed. Load changes the actual speed.
 
 
 ### pybricks/motors/home_motor
+
+Catalog path: Motors and movement → Individual motors → Motion. Card title: **Home motor**.
 
 **`pybricks/motors/home_motor`** — Keep family entry.
 
@@ -2578,6 +2800,8 @@ stop. Calibration requires a physical stop, not an arbitrary software zero.
 
 
 ### pybricks/remote/remote_drive
+
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Drive with remote**.
 
 **`pybricks/remote/remote_drive`** — Keep family entry.
 
@@ -2600,6 +2824,8 @@ action can run. A connection error also brakes before propagating.
 
 ### pybricks/remote/center_steering
 
+Catalog path: Motors and movement → Steering chassis. Card title: **Centre steering**.
+
 **`pybricks/remote/center_steering`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/remote.py](../little_tinker_rig/snippets/pybricks/remote.py); intermediate; statement; function expansion.
@@ -2618,6 +2844,8 @@ subsequent remote commands can immediately replace that target.
 
 
 ### pybricks/sensors/follow_edge
+
+Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Follow line edge**.
 
 **`pybricks/sensors/follow_edge`** — Keep family entry.
 
@@ -2643,6 +2871,8 @@ The loop continues until the program is stopped.
 
 ### pybricks/drive/create_clock
 
+Catalog path: Sensors and input → Time. Card title: **Create stopwatch**.
+
 **`pybricks/drive/create_clock`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/drive.py](../little_tinker_rig/snippets/pybricks/drive.py); intermediate; statement; inline expansion.
@@ -2657,6 +2887,8 @@ Create a stopwatch to measure time.
 
 
 ### pybricks/drive/elapsed
+
+Catalog path: Sensors and input → Time. Card title: **Elapsed time**.
 
 **`pybricks/drive/elapsed`** — Keep family entry.
 
@@ -2673,6 +2905,8 @@ Read elapsed milliseconds from the stopwatch.
 
 ### pybricks/drive/reset_clock
 
+Catalog path: Sensors and input → Time. Card title: **Reset stopwatch**.
+
 **`pybricks/drive/reset_clock`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/drive.py](../little_tinker_rig/snippets/pybricks/drive.py); intermediate; statement; inline expansion.
@@ -2688,6 +2922,8 @@ Restart the stopwatch.
 
 ### pybricks/drive_options/clock_value
 
+Catalog path: Sensors and input → Time. Card title: **Stopwatch value**.
+
 **`pybricks/drive_options/clock_value`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/drive_options.py](../little_tinker_rig/snippets/pybricks/drive_options.py); advanced; expression → StopWatch; inline expansion.
@@ -2698,6 +2934,8 @@ Create a stopwatch for an object attribute or expression.
 
 
 ### pybricks/hub_measurements/hub_imu_acceleration
+
+Catalog path: Sensors and input → Orientation and motion. Card title: **Acceleration vector**.
 
 **`pybricks/hub_measurements/hub_imu_acceleration`** — Keep family entry.
 
@@ -2713,6 +2951,8 @@ Read the accelerometer vector.
 
 
 ### pybricks/hub_measurements/hub_imu_angular_velocity_axis
+
+Catalog path: Sensors and input → Orientation and motion. Card title: **Rotation rate on axis**.
 
 **`pybricks/hub_measurements/hub_imu_angular_velocity_axis`** — Keep family entry.
 
@@ -2730,6 +2970,8 @@ Read gyroscope rotation rate. Options: axis.
 
 ### pybricks/hub_measurements/hub_imu_up
 
+Catalog path: Sensors and input → Orientation and motion. Card title: **Upward side**.
+
 **`pybricks/hub_measurements/hub_imu_up`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → Side; inline expansion.
@@ -2744,6 +2986,8 @@ Read which side of the hub faces up.
 
 
 ### pybricks/hub_measurements/hub_imu_tilt
+
+Catalog path: Sensors and input → Orientation and motion. Card title: **Pitch and roll**.
 
 **`pybricks/hub_measurements/hub_imu_tilt`** — Keep family entry.
 
@@ -2760,6 +3004,8 @@ Read the pitch and roll angles.
 
 ### pybricks/hub_measurements/hub_imu_angular_velocity
 
+Catalog path: Sensors and input → Orientation and motion. Card title: **Rotation rate vector**.
+
 **`pybricks/hub_measurements/hub_imu_angular_velocity`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → tuple; inline expansion.
@@ -2775,6 +3021,8 @@ Read gyroscope rotation rate.
 
 ### pybricks/hub_measurements/imu_ready
 
+Catalog path: Sensors and input → Orientation and motion. Card title: **Gyro ready**.
+
 **`pybricks/hub_measurements/imu_ready`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → bool; inline expansion.
@@ -2789,6 +3037,8 @@ Check that the gyro has finished calibrating before balancing.
 
 
 ### pybricks/hub_measurements/imu_rotation
+
+Catalog path: Sensors and input → Orientation and motion. Card title: **Gyro rotation**.
 
 **`pybricks/hub_measurements/imu_rotation`** — Keep family entry.
 
@@ -2806,6 +3056,8 @@ Read accumulated gyro rotation around an axis or vector.
 
 ### pybricks/hub_measurements/choose_program
 
+Catalog path: Sensors and input → Buttons and controllers. Card title: **Choose program**.
+
 **`pybricks/hub_measurements/choose_program`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); advanced; expression → inferred Python value; inline expansion.
@@ -2822,6 +3074,8 @@ Choose a symbol with the Prime/Inventor hub buttons and display.
 
 
 ### pybricks/hubs/button_pressed
+
+Catalog path: Sensors and input → Buttons and controllers. Card title: **Hub button pressed**.
 
 **`pybricks/hubs/button_pressed`** — Keep family entry.
 
@@ -2842,6 +3096,8 @@ program; use left/right on Prime or Inventor without changing that behavior.
 
 ### pybricks/hubs/tilted
 
+Catalog path: Sensors and input → Orientation and motion. Card title: **Hub orientation**.
+
 **`pybricks/hubs/tilted`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hubs.py](../little_tinker_rig/snippets/pybricks/hubs.py); intermediate; expression → bool; inline expansion.
@@ -2857,6 +3113,8 @@ Check which side of the hub faces upward.
 
 
 ### pybricks/hubs/heading
+
+Catalog path: Sensors and input → Orientation and motion. Card title: **Gyro heading**.
 
 **`pybricks/hubs/heading`** — Keep family entry.
 
@@ -2875,6 +3133,8 @@ Positive angles turn clockwise. BOOST has tilt sensing, not a gyro heading.
 
 ### pybricks/keyboard/input_byte
 
+Catalog path: Sensors and input → Terminal input. Card title: **Read terminal byte**.
+
 **`pybricks/keyboard/input_byte`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/keyboard.py](../little_tinker_rig/snippets/pybricks/keyboard.py); advanced; expression → inferred Python value; inline expansion.
@@ -2891,6 +3151,8 @@ Read a byte or character without waiting; optionally discard older buffered inpu
 
 ### pybricks/keyboard/read_key_code
 
+Catalog path: Sensors and input → Terminal input. Card title: **Read key code**.
+
 **`pybricks/keyboard/read_key_code`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/keyboard.py](../little_tinker_rig/snippets/pybricks/keyboard.py); advanced; expression → int | None; function expansion.
@@ -2905,6 +3167,8 @@ nonblocking equivalent of the old experimental getchar API.
 
 ### pybricks/keyboard/input_poller
 
+Catalog path: Sensors and input → Terminal input. Card title: **Create input poller**.
+
 **`pybricks/keyboard/input_poller`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/keyboard.py](../little_tinker_rig/snippets/pybricks/keyboard.py); expert; expression → inferred Python value; inline expansion.
@@ -2915,6 +3179,8 @@ Create a poll object for nonblocking terminal input.
 
 
 ### pybricks/keyboard/watch_input
+
+Catalog path: Sensors and input → Terminal input. Card title: **Watch terminal input**.
 
 **`pybricks/keyboard/watch_input`** — Keep family entry.
 
@@ -2930,6 +3196,8 @@ Register standard input with a poll object.
 
 
 ### pybricks/keyboard/ready_input
+
+Catalog path: Sensors and input → Terminal input. Card title: **Input ready**.
 
 **`pybricks/keyboard/ready_input`** — Keep family entry.
 
@@ -2947,6 +3215,8 @@ Check for input; zero milliseconds returns immediately.
 
 ### pybricks/keyboard/read_input
 
+Catalog path: Sensors and input → Terminal input. Card title: **Read terminal text**.
+
 **`pybricks/keyboard/read_input`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/keyboard.py](../little_tinker_rig/snippets/pybricks/keyboard.py); expert; expression → str; inline expansion.
@@ -2962,6 +3232,8 @@ Read characters after poll reports input ready.
 
 ### pybricks/remote/create_remote
 
+Catalog path: Sensors and input → Buttons and controllers → LEGO remote. Card title: **Connect LEGO remote**.
+
 **`pybricks/remote/create_remote`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/remote.py](../little_tinker_rig/snippets/pybricks/remote.py); advanced; statement; inline expansion.
@@ -2976,6 +3248,8 @@ Connect a LEGO Powered Up remote for your own control loop.
 
 
 ### pybricks/remote/remote_pressed
+
+Catalog path: Sensors and input → Buttons and controllers → LEGO remote. Card title: **Remote button pressed**.
 
 **`pybricks/remote/remote_pressed`** — Keep family entry.
 
@@ -2993,6 +3267,8 @@ Check a LEGO remote button in your own control loop.
 
 ### pybricks/remote/buttons
 
+Catalog path: Sensors and input → Buttons and controllers → LEGO remote. Card title: **Remote buttons**.
+
 **`pybricks/remote/buttons`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/remote.py](../little_tinker_rig/snippets/pybricks/remote.py); advanced; expression → set; inline expansion.
@@ -3009,6 +3285,8 @@ Save the result to make several decisions using the same input sample.
 
 
 ### pybricks/sensor_values/colorsensor_port
+
+Catalog path: Sensors and input. Card title: **Sensor value**.
 
 **`pybricks/sensor_values/colorsensor_port`** — Keep family entry.
 
@@ -3039,6 +3317,8 @@ Connect a distance sensor. Options: port.
 
 ### pybricks/sensor_values/sensor_hsv
 
+Catalog path: Sensors and input → Color and reflection. Card title: **Read HSV color**.
+
 **`pybricks/sensor_values/sensor_hsv`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/sensor_values.py](../little_tinker_rig/snippets/pybricks/sensor_values.py); advanced; expression → Color; inline expansion.
@@ -3053,6 +3333,8 @@ Read the measured hue, saturation and brightness.
 
 
 ### pybricks/sensor_values/sensor_detectable_colors_colors
+
+Catalog path: Sensors and input → Color and reflection. Card title: **Set detectable colors**.
 
 **`pybricks/sensor_values/sensor_detectable_colors_colors`** — Keep family entry.
 
@@ -3069,6 +3351,8 @@ Choose the colors the sensor should recognize. Options: colors.
 
 
 ### pybricks/sensors/color
+
+Catalog path: Sensors and input → Color and reflection. Card title: **Detected color**.
 
 **`pybricks/sensors/color`** — Keep family entry.
 
@@ -3100,6 +3384,8 @@ Read a recognized color. Options: surface.
 
 ### pybricks/sensor_values/sensor_ambient
 
+Catalog path: Sensors and input → Color and reflection. Card title: **Ambient light**.
+
 **`pybricks/sensor_values/sensor_ambient`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/sensor_values.py](../little_tinker_rig/snippets/pybricks/sensor_values.py); advanced; expression → number[%]; inline expansion.
@@ -3114,6 +3400,8 @@ Read ambient light intensity.
 
 
 ### pybricks/sensors/create_color_sensor
+
+Catalog path: Sensors and input. Card title: **Connect sensor**.
 
 **`pybricks/sensors/create_color_sensor`** — Keep family entry.
 
@@ -3172,6 +3460,8 @@ Connect a force sensor to measure presses.
 
 ### pybricks/sensors/reflection_below
 
+Catalog path: Sensors and input → Color and reflection. Card title: **Reflection below threshold**.
+
 **`pybricks/sensors/reflection_below`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); intermediate; expression → bool; inline expansion.
@@ -3188,6 +3478,8 @@ Check whether a surface is darker than a reflection threshold.
 
 ### pybricks/sensors/reflection
 
+Catalog path: Sensors and input → Color and reflection. Card title: **Reflection**.
+
 **`pybricks/sensors/reflection`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); intermediate; expression → number[%]; inline expansion.
@@ -3202,6 +3494,8 @@ Measure surface reflection from 0 to 100%.
 
 
 ### pybricks/sensors/distance
+
+Catalog path: Sensors and input → Distance sensing. Card title: **Distance**.
 
 **`pybricks/sensors/distance`** — Keep family entry.
 
@@ -3218,6 +3512,8 @@ Measure obstacle distance in millimeters.
 
 ### pybricks/sensors/boost_distance
 
+Catalog path: Sensors and input → Distance sensing. Card title: **BOOST relative distance**.
+
 **`pybricks/sensors/boost_distance`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); intermediate; expression → number[%]; inline expansion.
@@ -3232,6 +3528,8 @@ Measure relative distance with a BOOST sensor.
 
 
 ### pybricks/sensors/force
+
+Catalog path: Sensors and input → Force and contact. Card title: **Force**.
 
 **`pybricks/sensors/force`** — Keep family entry.
 
@@ -3248,6 +3546,8 @@ Measure pressing force in newtons.
 
 ### pybricks/sensors/pressed
 
+Catalog path: Sensors and input → Force and contact. Card title: **Force sensor pressed**.
+
 **`pybricks/sensors/pressed`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); intermediate; expression → bool; inline expansion.
@@ -3263,6 +3563,8 @@ Check whether the force sensor button is pressed.
 
 ### pybricks/xbox/xboxcontroller
 
+Catalog path: Sensors and input → Buttons and controllers → Xbox controller. Card title: **Connect Xbox controller**.
+
 **`pybricks/xbox/xboxcontroller`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/xbox.py](../little_tinker_rig/snippets/pybricks/xbox.py); advanced; expression → XboxController; inline expansion.
@@ -3273,6 +3575,8 @@ Connect a Bluetooth Xbox controller (Pybricks 3.5 or later).
 
 
 ### pybricks/xbox/controller_joystick_left
+
+Catalog path: Sensors and input → Buttons and controllers → Xbox controller. Card title: **Left joystick**.
 
 **`pybricks/xbox/controller_joystick_left`** — Keep family entry.
 
@@ -3289,6 +3593,8 @@ Read the left Xbox joystick horizontal and vertical percentages.
 
 ### pybricks/xbox/controller_triggers
 
+Catalog path: Sensors and input → Buttons and controllers → Xbox controller. Card title: **Controller triggers**.
+
 **`pybricks/xbox/controller_triggers`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/xbox.py](../little_tinker_rig/snippets/pybricks/xbox.py); advanced; expression → tuple; inline expansion.
@@ -3303,6 +3609,8 @@ Read the Xbox brake and acceleration trigger percentages.
 
 
 ### pybricks/xbox/controller_joystick_right
+
+Catalog path: Sensors and input → Buttons and controllers → Xbox controller. Card title: **Right joystick**.
 
 **`pybricks/xbox/controller_joystick_right`** — Keep family entry.
 
@@ -3319,6 +3627,8 @@ Read the right Xbox joystick horizontal and vertical percentages.
 
 ### pybricks/xbox/controller_buttons
 
+Catalog path: Sensors and input → Buttons and controllers → Xbox controller. Card title: **Controller buttons**.
+
 **`pybricks/xbox/controller_buttons`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/xbox.py](../little_tinker_rig/snippets/pybricks/xbox.py); advanced; expression → set; inline expansion.
@@ -3333,6 +3643,8 @@ Read the pressed Xbox buttons, including bumpers and the direction pad.
 
 
 ### pybricks/xbox/controller_dpad
+
+Catalog path: Sensors and input → Buttons and controllers → Xbox controller. Card title: **Direction pad**.
 
 **`pybricks/xbox/controller_dpad`** — Keep family entry.
 
@@ -3351,6 +3663,8 @@ Read Xbox direction 1–8 clockwise from up, or 0 when released.
 
 ### pybricks/hub_display/hub_display_orientation_up
 
+Catalog path: Light and sound → Display. Card title: **Display orientation**.
+
 **`pybricks/hub_display/hub_display_orientation_up`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hub_display.py](../little_tinker_rig/snippets/pybricks/hub_display.py); expert; statement; inline expansion.
@@ -3366,6 +3680,8 @@ Rotate the display for the way the hub is mounted. Options: up.
 
 
 ### pybricks/hub_display/hub_display_animate_frames_interval
+
+Catalog path: Light and sound → Display. Card title: **Animate display**.
 
 **`pybricks/hub_display/hub_display_animate_frames_interval`** — Keep family entry.
 
@@ -3383,6 +3699,8 @@ Animate brightness frames at a fixed interval. Options: frames, interval.
 
 
 ### pybricks/hub_display/hub_display_pixel_row_column_brightness
+
+Catalog path: Light and sound → Display. Card title: **Set pixel**.
 
 **`pybricks/hub_display/hub_display_pixel_row_column_brightness`** — Keep family entry.
 
@@ -3402,6 +3720,8 @@ Set the brightness of one display pixel. Options: row, column, brightness.
 
 ### pybricks/hub_display/hub_display_char_character
 
+Catalog path: Light and sound → Display. Card title: **Show character**.
+
 **`pybricks/hub_display/hub_display_char_character`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hub_display.py](../little_tinker_rig/snippets/pybricks/hub_display.py); expert; statement; inline expansion.
@@ -3417,6 +3737,8 @@ Display a single character. Options: character.
 
 
 ### pybricks/hub_display/hub_display_text_text
+
+Catalog path: Light and sound → Display. Card title: **Scroll text**.
 
 **`pybricks/hub_display/hub_display_text_text`** — Keep family entry.
 
@@ -3448,6 +3770,8 @@ Scroll text across the hub display. Options: text, on, off.
 
 
 ### pybricks/hubs/beep
+
+Catalog path: Light and sound → Sound. Card title: **Play tone**.
 
 **`pybricks/hubs/beep`** — Keep family entry.
 
@@ -3494,6 +3818,8 @@ Play a tone on the hub speaker. Options: frequency.
 
 ### pybricks/hub_feedback/hub_speaker_volume_volume
 
+Catalog path: Light and sound → Sound. Card title: **Set speaker volume**.
+
 **`pybricks/hub_feedback/hub_speaker_volume_volume`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hub_feedback.py](../little_tinker_rig/snippets/pybricks/hub_feedback.py); expert; statement; inline expansion.
@@ -3510,6 +3836,8 @@ Read or set the speaker volume. Options: volume.
 
 ### pybricks/hub_feedback/hub_speaker_volume
 
+Catalog path: Light and sound → Sound. Card title: **Speaker volume**.
+
 **`pybricks/hub_feedback/hub_speaker_volume`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hub_feedback.py](../little_tinker_rig/snippets/pybricks/hub_feedback.py); expert; expression → number[%]; inline expansion.
@@ -3524,6 +3852,8 @@ Read or set the speaker volume.
 
 
 ### pybricks/hub_feedback/hub_light_blink_color_durations
+
+Catalog path: Light and sound → Status lights. Card title: **Blink status light**.
 
 **`pybricks/hub_feedback/hub_light_blink_color_durations`** — Keep family entry.
 
@@ -3541,6 +3871,8 @@ Blink the status light with a list of on and off durations. Options: color, dura
 
 
 ### pybricks/hub_feedback/animate_light
+
+Catalog path: Light and sound → Status lights. Card title: **Animate status light**.
 
 **`pybricks/hub_feedback/animate_light`** — Keep family entry.
 
@@ -3573,6 +3905,8 @@ Animate the status light through a sequence of colors. Options: frames, interval
 
 ### pybricks/hub_feedback/hub_speaker_play_notes_notes_tempo
 
+Catalog path: Light and sound → Sound. Card title: **Play notes**.
+
 **`pybricks/hub_feedback/hub_speaker_play_notes_notes_tempo`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hub_feedback.py](../little_tinker_rig/snippets/pybricks/hub_feedback.py); expert; statement; inline expansion.
@@ -3589,6 +3923,8 @@ Play musical notes at a chosen tempo. Options: notes, tempo.
 
 
 ### pybricks/hubs/light
+
+Catalog path: Light and sound → Status lights. Card title: **Set status light**.
 
 **`pybricks/hubs/light`** — Keep family entry.
 
@@ -3617,6 +3953,8 @@ Turn off the hub status light.
 
 
 ### pybricks/hubs/icon
+
+Catalog path: Light and sound → Display. Card title: **Show image**.
 
 **`pybricks/hubs/icon`** — Keep family entry.
 
@@ -3652,6 +3990,8 @@ the simpler icon block.
 
 ### pybricks/hubs/display_number
 
+Catalog path: Light and sound → Display. Card title: **Show number**.
+
 **`pybricks/hubs/display_number`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hubs.py](../little_tinker_rig/snippets/pybricks/hubs.py); advanced; statement; inline expansion.
@@ -3668,6 +4008,8 @@ Show a number on the Prime or Inventor display.
 
 ### pybricks/hubs/display_off
 
+Catalog path: Light and sound → Display. Card title: **Clear display**.
+
 **`pybricks/hubs/display_off`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hubs.py](../little_tinker_rig/snippets/pybricks/hubs.py); intermediate; statement; inline expansion.
@@ -3682,6 +4024,8 @@ Clear the hub display.
 
 
 ### pybricks/remote/remote_light
+
+Catalog path: Light and sound → Status lights. Card title: **Set remote light**.
 
 **`pybricks/remote/remote_light`** — Keep family entry.
 
@@ -3698,6 +4042,8 @@ Set the remote light to show the selected driving mode.
 
 
 ### pybricks/sensors/distance_lights
+
+Catalog path: Light and sound → Status lights. Card title: **Set distance sensor lights**.
 
 **`pybricks/sensors/distance_lights`** — Keep family entry.
 
@@ -3729,6 +4075,8 @@ Turn off the ultrasonic sensor eyes.
 
 ### pybricks/xbox/controller_rumble
 
+Catalog path: Light and sound. Card title: **Vibrate controller**.
+
 **`pybricks/xbox/controller_rumble`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/xbox.py](../little_tinker_rig/snippets/pybricks/xbox.py); advanced; statement; inline expansion.
@@ -3747,6 +4095,8 @@ Vibrate the Xbox controller for feedback while the program continues.
 ## Devices and communication
 
 ### pybricks/hub_measurements/primehub
+
+Catalog path: Devices and communication → Hub system. Card title: **Hub value**.
 
 **`pybricks/hub_measurements/primehub`** — Keep family entry.
 
@@ -3786,6 +4136,8 @@ Create the Prime hub in its mounted orientation. Options: top_side, front_side.
 
 ### pybricks/hub_measurements/hub_battery_current
 
+Catalog path: Devices and communication → Hub system. Card title: **Battery current**.
+
 **`pybricks/hub_measurements/hub_battery_current`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → int; inline expansion.
@@ -3800,6 +4152,8 @@ Read the battery current in milliamps.
 
 
 ### pybricks/hub_measurements/hub_charger_connected
+
+Catalog path: Devices and communication → Hub system. Card title: **Charger connected**.
 
 **`pybricks/hub_measurements/hub_charger_connected`** — Keep family entry.
 
@@ -3816,6 +4170,8 @@ Check whether a USB charger is connected.
 
 ### pybricks/hub_measurements/hub_charger_current
 
+Catalog path: Devices and communication → Hub system. Card title: **Charging current**.
+
 **`pybricks/hub_measurements/hub_charger_current`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → int; inline expansion.
@@ -3831,6 +4187,8 @@ Read the charging current in milliamps.
 
 ### pybricks/hub_measurements/hub_charger_status
 
+Catalog path: Devices and communication → Hub system. Card title: **Charger status**.
+
 **`pybricks/hub_measurements/hub_charger_status`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → int; inline expansion.
@@ -3845,6 +4203,8 @@ Read charger status: 0 idle, 1 charging, 2 full, 3 fault.
 
 
 ### pybricks/hub_measurements/hub_system_set_stop_button_buttons
+
+Catalog path: Devices and communication → Hub system. Card title: **Set stop buttons**.
 
 **`pybricks/hub_measurements/hub_system_set_stop_button_buttons`** — Keep family entry.
 
@@ -3862,6 +4222,8 @@ Set the button combination that stops the program. Options: buttons.
 
 ### pybricks/hub_measurements/hub_system_name
 
+Catalog path: Devices and communication → Hub system. Card title: **Hub Bluetooth name**.
+
 **`pybricks/hub_measurements/hub_system_name`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → str; inline expansion.
@@ -3877,6 +4239,8 @@ Read the hub Bluetooth name.
 
 ### pybricks/hub_measurements/hub_system_shutdown
 
+Catalog path: Devices and communication → Hub system. Card title: **Shut down hub**.
+
 **`pybricks/hub_measurements/hub_system_shutdown`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; statement; inline expansion.
@@ -3891,6 +4255,8 @@ Stop the program and turn the hub off.
 
 
 ### pybricks/hubs/prime_hub
+
+Catalog path: Devices and communication → Hub system. Card title: **Connect hub**.
 
 **`pybricks/hubs/prime_hub`** — Keep family entry.
 
@@ -3933,6 +4299,8 @@ Connect to the Technic Hub.
 
 ### pybricks/hubs/battery_voltage
 
+Catalog path: Devices and communication → Hub system. Card title: **Battery voltage**.
+
 **`pybricks/hubs/battery_voltage`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/hubs.py](../little_tinker_rig/snippets/pybricks/hubs.py); advanced; expression → number; inline expansion.
@@ -3948,6 +4316,8 @@ Read the battery voltage in millivolts.
 
 ### pybricks/messaging/broadcast_radio
 
+Catalog path: Devices and communication → Radio messages. Card title: **Create broadcaster**.
+
 **`pybricks/messaging/broadcast_radio`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/messaging.py](../little_tinker_rig/snippets/pybricks/messaging.py); expert; expression → BLERadio; inline expansion.
@@ -3962,6 +4332,8 @@ Create a Bluetooth broadcaster on channel 0–255; requires Pybricks 4.
 
 
 ### pybricks/messaging/observing_radio
+
+Catalog path: Devices and communication → Radio messages. Card title: **Create radio receiver**.
 
 **`pybricks/messaging/observing_radio`** — Keep family entry.
 
@@ -3979,6 +4351,8 @@ Create a radio that can receive the listed channels; requires Pybricks 4.
 
 ### pybricks/messaging/broadcast
 
+Catalog path: Devices and communication → Radio messages. Card title: **Broadcast message**.
+
 **`pybricks/messaging/broadcast`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/messaging.py](../little_tinker_rig/snippets/pybricks/messaging.py); expert; statement; inline expansion.
@@ -3994,6 +4368,8 @@ Broadcast a small value or list of values to other hubs.
 
 
 ### pybricks/messaging/observe
+
+Catalog path: Devices and communication → Radio messages. Card title: **Receive message**.
 
 **`pybricks/messaging/observe`** — Keep family entry.
 
@@ -4011,6 +4387,8 @@ Read the latest message, or None when the channel has no recent data.
 
 ### pybricks/messaging/app_data
 
+Catalog path: Devices and communication → External apps. Card title: **Create app buffers**.
+
 **`pybricks/messaging/app_data`** — Keep family entry.
 
 [little_tinker_rig/snippets/pybricks/messaging.py](../little_tinker_rig/snippets/pybricks/messaging.py); expert; expression → AppData; inline expansion.
@@ -4025,6 +4403,8 @@ Allocate host data buffers. Requires a compatible external app, such as Pybricks
 
 
 ### pybricks/messaging/configure_app
+
+Catalog path: Devices and communication → External apps. Card title: **Configure app processor**.
 
 **`pybricks/messaging/configure_app`** — Keep family entry.
 
@@ -4043,6 +4423,8 @@ Configure an external app processor; LittleTinker Rig does not provide camera pr
 
 
 ### pybricks/messaging/app_bytes
+
+Catalog path: Devices and communication → External apps. Card title: **Read app bytes**.
 
 **`pybricks/messaging/app_bytes`** — Keep family entry.
 

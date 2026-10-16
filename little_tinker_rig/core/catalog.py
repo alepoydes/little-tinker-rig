@@ -60,6 +60,10 @@ def families(snippets):
             raise ValueError(
                 f"{snippet.identity}: family variants need the same category"
             )
+        if snippet.family and snippet.group and snippet.group != primary.group:
+            raise ValueError(
+                f"{snippet.identity}: family variants inherit the primary group"
+            )
         groups.setdefault(identity, []).append(snippet)
     return tuple(
         Family(

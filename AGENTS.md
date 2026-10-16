@@ -21,3 +21,14 @@
 - Keep move validation shared by pointer and keyboard workflows. Cover moves
   across shared boundaries with an independently specified resulting program,
   including the final compound, an emptied body, and one-step Undo.
+
+## Catalog and parameter guidance
+
+- Keep descriptive titles, full help, and executable source separate. Preserve the
+  complete description when a short title replaces its first line in a view.
+- Derive creation candidates from public declarations and result contracts, not
+  from parameters consumed by an action. Unknown units are not confirmed reporter
+  compatibility; ordinary Python expressions remain editable.
+- Catalog filtering is explicit. Scalar selection and pointer hover must not
+  change discovery state. In nested trees, sorting compares both group and card
+  items with a total ordering, and filtering visits descendants before ancestors.

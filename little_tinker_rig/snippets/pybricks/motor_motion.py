@@ -11,6 +11,7 @@ __category__ = "movement"
     color="action",
     family="pybricks/motor_motion/geared_motor",
     variant="Port",
+    title="Motor value",
 )
 def motor_port(port: "Port" = Port.A) -> "Motor":
     """Create a motor from a port, with optional direction or gears. Options: port."""
@@ -27,6 +28,7 @@ def motor_port(port: "Port" = Port.A) -> "Motor":
     family="pybricks/motor_motion/geared_motor",
     variant="Gear list",
     advanced=("direction", "gears"),
+    title="Motor value",
 )
 def motor_port_direction_gears(
     port: "Port" = Port.A, direction: "Direction" = Direction.CLOCKWISE, gears=[12, 36]
@@ -45,6 +47,7 @@ def motor_port_direction_gears(
     family="pybricks/motor_motion/geared_motor",
     variant="Positive direction",
     advanced=("direction",),
+    title="Motor value",
 )
 def motor_port_direction(
     port: "Port" = Port.A, direction: "Direction" = Direction.CLOCKWISE
@@ -61,9 +64,10 @@ def motor_port_direction(
     icon="▶",
     color="action",
     family="pybricks/motors/turn_motor",
-    variant="Wait setting",
+    variant="Wait or continue immediately",
     bindings={"rotation_angle": "angle"},
     advanced=("wait",),
+    title="Turn motor by angle",
 )
 def motor_run_angle_speed_rotation_angle_wait(
     motor: "Motor" = motor,
@@ -80,9 +84,10 @@ def motor_run_angle_speed_rotation_angle_wait(
     icon="▶",
     color="action",
     family="pybricks/motors/turn_motor",
-    variant="Completion settings",
+    variant="Choose stop behavior and waiting",
     bindings={"rotation_angle": "angle"},
     advanced=("then", "wait"),
+    title="Turn motor by angle",
 )
 def motor_run_angle_speed_rotation_angle_then_wait(
     motor: "Motor" = motor,
@@ -102,9 +107,10 @@ def motor_run_angle_speed_rotation_angle_then_wait(
     icon="▶",
     color="action",
     family="pybricks/motors/motor_target",
-    variant="Completion settings",
+    variant="Choose stop behavior and waiting",
     bindings={"target_angle": "angle"},
     advanced=("wait", "then"),
+    title="Move motor to angle",
 )
 def motor_run_target_speed_target_angle_wait_then(
     motor: "Motor" = motor,
@@ -119,13 +125,25 @@ def motor_run_target_speed_target_angle_wait_then(
     motor.run_target(speed, target_angle, wait=wait, then=then)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    title="Use absolute encoder",
+    group=("Individual motors", "Motion"),
+)
 def motor_reset_angle(motor: "Motor" = motor):
     """Reset the motor to its absolute encoder angle."""
     motor.reset_angle()
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    title="Track target angle",
+    group=("Individual motors", "Motion"),
+)
 def motor_track_target_target_angle(
     motor: "Motor" = motor, target_angle: "number[deg]" = 0
 ):
@@ -138,9 +156,10 @@ def motor_track_target_target_angle(
     icon="▶",
     color="action",
     family="pybricks/motors/motor_time",
-    variant="Wait setting",
+    variant="Wait or continue immediately",
     bindings={"time": "duration"},
     advanced=("wait",),
+    title="Run motor for time",
 )
 def motor_run_time_speed_time_wait(
     motor: "Motor" = motor,
@@ -158,25 +177,44 @@ def motor_run_time_speed_time_wait(
     color="action",
     family="pybricks/motors/stop_motor",
     variant="Hold position",
+    title="Stop motor",
 )
 def motor_hold(motor: "Motor" = motor):
     """Hold the motor at its current angle."""
     motor.hold()
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    title="Motor finished",
+    group=("Individual motors", "Measurements"),
+)
 def motor_done(motor: "Motor | DriveBase" = motor) -> "bool":
     """Check whether the motor has finished its movement."""
     return motor.done()
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    title="Motor stalled",
+    group=("Individual motors", "Measurements"),
+)
 def motor_stalled(motor: "Motor | DriveBase" = motor) -> "bool":
     """Check whether the motor cannot follow its commanded motion."""
     return motor.stalled()
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    title="Motor load",
+    group=("Individual motors", "Measurements"),
+)
 def motor_load(motor: "Motor" = motor) -> "number":
     """Read estimated motor load in millinewton meters."""
     return motor.load()
@@ -189,6 +227,7 @@ def motor_load(motor: "Motor" = motor) -> "number":
     family="pybricks/motors/until_stalled",
     variant="Stop and power settings",
     advanced=("then",),
+    title="Run until stalled",
 )
 def motor_run_until_stalled_speed_then_duty_limit(
     motor: "Motor" = motor,
@@ -207,9 +246,10 @@ def motor_run_until_stalled_speed_then_duty_limit(
     icon="▶",
     color="action",
     family="pybricks/motors/motor_target",
-    variant="Stop setting",
+    variant="Choose stop behavior",
     bindings={"target_angle": "angle"},
     advanced=("then",),
+    title="Move motor to angle",
 )
 def motor_run_target_speed_target_angle_then(
     motor: "Motor" = motor,
@@ -230,6 +270,7 @@ def motor_run_target_speed_target_angle_then(
     family="pybricks/motors/motor_target",
     bindings={"target_angle": "angle"},
     advanced=("then", "wait"),
+    title="Move motor to angle",
 )
 def motor_run_target_speed_target_angle_then_wait(
     motor: "Motor" = motor,
@@ -249,8 +290,9 @@ def motor_run_target_speed_target_angle_then_wait(
     icon="▶",
     color="action",
     family="pybricks/motors/until_stalled",
-    variant="Stop setting",
+    variant="Choose stop behavior",
     advanced=("then",),
+    title="Run until stalled",
 )
 def motor_run_until_stalled_speed_then(
     motor: "Motor" = motor, speed: "number[deg/s]" = 300, then: "Stop" = Stop.HOLD
@@ -268,6 +310,7 @@ def motor_run_until_stalled_speed_then(
     family="pybricks/motor_motion/geared_motor",
     variant="Position profile",
     advanced=("direction", "profile"),
+    title="Motor value",
 )
 def motor_port_direction_profile(
     port: "Port" = Port.A,
@@ -286,9 +329,10 @@ def motor_port_direction_profile(
     icon="▶",
     color="action",
     family="pybricks/motors/turn_motor",
-    variant="Stop setting",
+    variant="Choose stop behavior",
     bindings={"rotation_angle": "angle"},
     advanced=("then",),
+    title="Turn motor by angle",
 )
 def motor_run_angle_speed_rotation_angle_then(
     motor: "Motor" = motor,
@@ -302,7 +346,13 @@ def motor_run_angle_speed_rotation_angle_then(
     motor.run_angle(speed, rotation_angle, then=then)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    title="DC motor value",
+    group=("Individual motors", "Setup"),
+)
 def dcmotor_port(port: "Port" = Port.A) -> "DCMotor":
     """Create a motor controlled by raw power. Options: port."""
     from pybricks.parameters import Port
@@ -317,6 +367,8 @@ def dcmotor_port(port: "Port" = Port.A) -> "DCMotor":
     color="value",
     variant="Gear train",
     advanced=("direction", "gears"),
+    title="Motor value",
+    group=("Individual motors", "Setup"),
 )
 def geared_motor(
     port: "Port" = Port.A, direction: "Direction" = Direction.CLOCKWISE, gears=None

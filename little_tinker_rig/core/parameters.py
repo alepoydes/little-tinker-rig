@@ -412,7 +412,7 @@ def _reporters(session, expected):
             snippet.expression
             and known_type(snippet.result_type) is not None
             and compatibility(expected, known_type(snippet.result_type))
-            is not Compatibility.INCOMPATIBLE
+            is Compatibility.COMPATIBLE
             and isinstance(body, ast.Call)
             and isinstance(body.func, ast.Attribute)
         ):

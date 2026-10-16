@@ -124,13 +124,10 @@ def test_qt_hidden_console_help_links_and_library_colors(tmp_path, qt_app):
     window.help_page.back()
     assert window.help_page.current == "INSTALL.md"
     snippets = {s.identity: s for s in window.session.snippets if not s.historical}
-    for index in range(window.library.topLevelItemCount()):
-        group = window.library.topLevelItem(index)
-        for child in range(group.childCount()):
-            card = group.child(child)
-            snippet = snippets[card.data(0, IDENTITY)]
-            assert card.data(0, COLOR) == PALETTE[snippet_role(snippet)]
-            assert ast.parse(card.data(0, PREVIEW))
+    for card in window.library.rows.values():
+        snippet = snippets[card.data(0, IDENTITY)]
+        assert card.data(0, COLOR) == PALETTE[snippet_role(snippet)]
+        assert ast.parse(card.data(0, PREVIEW))
     window.close()
 
 

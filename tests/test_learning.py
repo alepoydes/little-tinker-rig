@@ -75,11 +75,7 @@ def test_levels_are_cumulative_and_beginner_is_the_initial_view(tmp_path, qt_app
     try:
         assert window.level_filter.value == "beginner"
         before = window.session.document.state.source
-        items = [
-            window.library.topLevelItem(i).child(j)
-            for i in range(window.library.topLevelItemCount())
-            for j in range(window.library.topLevelItem(i).childCount())
-        ]
+        items = window.library.rows.values()
         sets = []
         for level in ("beginner", "intermediate", "advanced", "expert", "all"):
             window.level_filter.select(level)

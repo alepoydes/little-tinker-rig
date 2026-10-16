@@ -5,7 +5,7 @@ Small Python building blocks. Functions are static templates."""
 __category__ = "program"
 
 
-@inline_block(level="beginner", icon="▶", color="action")
+@inline_block(level="beginner", icon="▶", color="action", title="Display value")
 def display(value="Hello!"):
     """Display a value in the console.
 
@@ -15,7 +15,12 @@ def display(value="Hello!"):
 
 
 @inline_block(
-    level="intermediate", icon="▣", color="state", names=("name",), category="data"
+    level="intermediate",
+    icon="▣",
+    color="state",
+    names=("name",),
+    category="data",
+    title="Store value",
 )
 def assign(name=value, value=0):
     """Remember a value under a name.
@@ -32,6 +37,7 @@ def assign(name=value, value=0):
     names=("i",),
     variant="Count",
     bindings={"count": "stop"},
+    title="Repeat with counter",
 )
 def repeat(count: "number" = 10):
     """Repeat actions with a counter.
@@ -44,7 +50,9 @@ def repeat(count: "number" = 10):
         pass
 
 
-@inline_block(level="intermediate", icon="◇", color="control", variant="If")
+@inline_block(
+    level="intermediate", icon="◇", color="control", variant="If", title="If / else"
+)
 def condition(test: "bool" = True):
     """Choose actions with a condition.
 
@@ -59,6 +67,7 @@ def condition(test: "bool" = True):
     color="loop",
     family="python/basics/while_condition",
     variant="Forever",
+    title="While loop",
 )
 def forever():
     """Repeat actions until the program stops.
@@ -75,6 +84,7 @@ def forever():
     category="values",
     variant="Less than",
     bindings={"value": "left", "threshold": "right"},
+    title="Compare values",
 )
 def compare(value: "number" = 0, threshold: "number" = 0) -> "bool":
     """Compare two values.
@@ -89,6 +99,7 @@ def compare(value: "number" = 0, threshold: "number" = 0) -> "bool":
     color="control",
     family="python/basics/condition",
     variant="If / else",
+    title="If / else",
 )
 def condition_else(test: "bool" = True):
     """Choose between two actions using a condition."""
@@ -99,7 +110,11 @@ def condition_else(test: "bool" = True):
 
 
 @inline_block(
-    level="intermediate", icon="⟳", color="loop", variant="While a condition holds"
+    level="intermediate",
+    icon="⟳",
+    color="loop",
+    variant="While a condition holds",
+    title="While loop",
 )
 def while_condition(test: "bool" = True):
     """Repeat actions in a while loop.
@@ -110,7 +125,12 @@ def while_condition(test: "bool" = True):
 
 
 @inline_block(
-    level="intermediate", icon="▣", color="state", names=("name",), category="data"
+    level="intermediate",
+    icon="▣",
+    color="state",
+    names=("name",),
+    category="data",
+    title="Change variable",
 )
 def add_to(name=value, amount: "number" = 1):
     """Increase a variable value."""
@@ -124,6 +144,7 @@ def add_to(name=value, amount: "number" = 1):
     category="values",
     family="python/basics/compare",
     variant="Equal to",
+    title="Compare values",
 )
 def equal(left=0, right=0) -> "bool":
     """Check whether two values are equal."""
@@ -131,7 +152,12 @@ def equal(left=0, right=0) -> "bool":
 
 
 @inline_block(
-    level="intermediate", icon="＝", color="value", category="values", variant="And"
+    level="intermediate",
+    icon="＝",
+    color="value",
+    category="values",
+    variant="And",
+    title="Combine conditions",
 )
 def both(left: "bool" = True, right: "bool" = True) -> "bool":
     """Combine two conditions.
@@ -147,13 +173,20 @@ def both(left: "bool" = True, right: "bool" = True) -> "bool":
     category="values",
     family="python/basics/both",
     variant="Or",
+    title="Combine conditions",
 )
 def either(left: "bool" = True, right: "bool" = False) -> "bool":
     """Check that at least one condition is true."""
     return left or right
 
 
-@inline_block(level="intermediate", icon="＝", color="value", category="values")
+@inline_block(
+    level="intermediate",
+    icon="＝",
+    color="value",
+    category="values",
+    title="Negate condition",
+)
 def opposite(test: "bool" = True) -> "bool":
     """Negate a condition."""
     return not test
@@ -166,6 +199,7 @@ def opposite(test: "bool" = True) -> "bool":
     names=("i",),
     family="python/basics/repeat",
     variant="Start, stop and step",
+    title="Repeat with counter",
 )
 def count_range(start: "number" = 0, stop: "number" = 10, step: "number" = 1):
     """Repeat over a range with a start, exclusive stop and step.
@@ -181,6 +215,7 @@ def count_range(start: "number" = 0, stop: "number" = 10, step: "number" = 1):
     color="definition",
     names=("action",),
     category="functions",
+    title="Define function",
 )
 def define_function():
     """Define your own function.
@@ -191,7 +226,13 @@ def define_function():
         pass
 
 
-@inline_block(level="intermediate", icon="▶", color="action", category="functions")
+@inline_block(
+    level="intermediate",
+    icon="▶",
+    color="action",
+    category="functions",
+    title="Call function",
+)
 def call_function(function=action):
     """Call a function.
 
@@ -205,6 +246,7 @@ def call_function(function=action):
     color="control",
     kind="statement",
     category="functions",
+    title="Return value",
 )
 def return_value(value=0):
     """Return a value from the current function."""
@@ -212,7 +254,12 @@ def return_value(value=0):
 
 
 @inline_block(
-    level="intermediate", icon="＝", color="value", category="values", variant="Add"
+    level="intermediate",
+    icon="＝",
+    color="value",
+    category="values",
+    variant="Add",
+    title="Calculate",
 )
 def sum_values(left=0, right=0):
     """Calculate with two values.
@@ -228,6 +275,7 @@ def sum_values(left=0, right=0):
     category="values",
     family="python/basics/sum_values",
     variant="Subtract",
+    title="Calculate",
 )
 def difference(left=0, right=0):
     """Subtract one value from another."""
@@ -241,6 +289,7 @@ def difference(left=0, right=0):
     category="values",
     family="python/basics/sum_values",
     variant="Multiply",
+    title="Calculate",
 )
 def product(left=1, right=1):
     """Multiply two values."""
@@ -254,13 +303,20 @@ def product(left=1, right=1):
     category="values",
     family="python/basics/sum_values",
     variant="Divide",
+    title="Calculate",
 )
 def quotient(left=1, right=1):
     """Divide one value by another."""
     return left / right
 
 
-@inline_block(level="advanced", icon="ƒ", color="value", category="functions")
+@inline_block(
+    level="advanced",
+    icon="ƒ",
+    color="value",
+    category="functions",
+    title="Call for result",
+)
 def call_value(function=action):
     """Call a function or class and use its result.
 

@@ -5,7 +5,13 @@ Pybricks 4 radio messages and external host data; not simulated by LittleTinker 
 __category__ = "devices"
 
 
-@inline_block(level="expert", icon="▣", color="state")
+@inline_block(
+    level="expert",
+    icon="▣",
+    color="state",
+    title="Create broadcaster",
+    group=("Radio messages",),
+)
 def broadcast_radio(channel: "int" = 5) -> "BLERadio":
     """Create a Bluetooth broadcaster on channel 0–255; requires Pybricks 4."""
     from pybricks.messaging import BLERadio
@@ -13,7 +19,13 @@ def broadcast_radio(channel: "int" = 5) -> "BLERadio":
     return BLERadio(broadcast_channel=channel)
 
 
-@inline_block(level="expert", icon="▣", color="state")
+@inline_block(
+    level="expert",
+    icon="▣",
+    color="state",
+    title="Create radio receiver",
+    group=("Radio messages",),
+)
 def observing_radio(channel: "int | None" = 0, channels: "list" = [5]) -> "BLERadio":
     """Create a radio that can receive the listed channels; requires Pybricks 4."""
     from pybricks.messaging import BLERadio
@@ -21,19 +33,37 @@ def observing_radio(channel: "int | None" = 0, channels: "list" = [5]) -> "BLERa
     return BLERadio(broadcast_channel=channel, observe_channels=channels)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    title="Broadcast message",
+    group=("Radio messages",),
+)
 def broadcast(radio: "BLERadio" = radio, data=(0, 0, 0)):
     """Broadcast a small value or list of values to other hubs."""
     radio.broadcast(data)
 
 
-@inline_block(level="expert", icon="＝", color="value")
+@inline_block(
+    level="expert",
+    icon="＝",
+    color="value",
+    title="Receive message",
+    group=("Radio messages",),
+)
 def observe(radio: "BLERadio" = radio, channel: "int" = 5):
     """Read the latest message, or None when the channel has no recent data."""
     return radio.observe(channel)
 
 
-@inline_block(level="expert", icon="▣", color="state")
+@inline_block(
+    level="expert",
+    icon="▣",
+    color="state",
+    title="Create app buffers",
+    group=("External apps",),
+)
 def app_data(modes: "list" = [(0, 4)]) -> "AppData":
     """Allocate host data buffers. Requires a compatible external app, such as Pybricks Code vision."""
     from pybricks.messaging import AppData
@@ -41,7 +71,13 @@ def app_data(modes: "list" = [(0, 4)]) -> "AppData":
     return AppData(modes)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    title="Configure app processor",
+    group=("External apps",),
+)
 def configure_app(
     app: "AppData" = app, mode: "int" = 0, parameter: "int" = 0, value=b"\x00"
 ):
@@ -49,7 +85,13 @@ def configure_app(
     app.configure(mode, parameter, value)
 
 
-@inline_block(level="expert", icon="＝", color="value")
+@inline_block(
+    level="expert",
+    icon="＝",
+    color="value",
+    title="Read app bytes",
+    group=("External apps",),
+)
 def app_bytes(app: "AppData" = app, mode: "int" = 0) -> "bytes":
     """Read the bytes last received from the external app."""
     return app.get_bytes(mode)

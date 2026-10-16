@@ -546,7 +546,10 @@ class Analysis(Scopes):
                 scope = scope.parent
             if not found:
                 result.append(
-                    Diagnostic(self.syntax.spans[node], f"Name {name!r} is not defined")
+                    Diagnostic(
+                        self.syntax.spans[node],
+                        tr("Name {name!r} is not defined before this use", name=name),
+                    )
                 )
         for node in ast.walk(self.syntax.tree):
             if isinstance(node, ast.Constant) and node.value is Ellipsis:

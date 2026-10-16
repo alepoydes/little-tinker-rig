@@ -30,14 +30,16 @@ def add(window, identity):
     before = window.session.document.state
     library = window.library
     item = next(
-        library.topLevelItem(i).child(j)
-        for i in range(library.topLevelItemCount())
-        for j in range(library.topLevelItem(i).childCount())
-        if library.topLevelItem(i).child(j).data(0, FAMILY)
-        == library.snippets[identity].catalog_id
+        row
+        for row in library.rows.values()
+        if row.data(0, FAMILY) == library.snippets[identity].catalog_id
     )
     assert not item.isHidden() and not item.parent().isHidden()
-    library.expandItem(item.parent())
+    parent = item.parent()
+    while parent is not None:
+        assert not parent.isHidden()
+        library.expandItem(parent)
+        parent = parent.parent()
     QApplication.processEvents()
     library.scrollToItem(item)
     QApplication.processEvents()
@@ -319,6 +321,8 @@ def test_mouse_drag_first_block_scratch_return_and_undo(tmp_path, qt_app):
             QPoint(100, 40),
         )
         assert window.document_page.text == 'print("Hello!")\n'
+        QTest.mouseClick(window.scratch_button, Qt.MouseButton.LeftButton)
+        qt_app.processEvents()
         before = window.session.document.state
         drag(
             window.source.viewport(),
