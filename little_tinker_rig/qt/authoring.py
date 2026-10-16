@@ -3,6 +3,7 @@
 import ast
 import keyword
 import tomllib
+from dataclasses import replace
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer, QUrl, Signal
@@ -620,7 +621,7 @@ class BlockEditor(QWidget):
             self.preview.session = Session.fragment(expansion.source + "\n", (snippet,))
             self.preview.refresh_source()
             self.limit_preview()
-            self.card.load((snippet,))
+            self.card.load((replace(snippet, family=""),))
             heading = self.card.takeTopLevelItem(0)
             self.card.addTopLevelItem(heading.takeChild(0))
 
@@ -751,7 +752,7 @@ class BlockEditor(QWidget):
         self.preview.session = Session.fragment(expansion.source + "\n", (snippet,))
         self.preview.refresh_source()
         self.limit_preview()
-        self.card.load((snippet,))
+        self.card.load((replace(snippet, family=""),))
         # Display the same library card without a redundant group heading.
         heading = self.card.takeTopLevelItem(0)
         self.card.addTopLevelItem(heading.takeChild(0))

@@ -99,7 +99,7 @@ The beginner palette stays unchanged; task, radio and external-app blocks are Ex
 **Beginner** adds four complete actions: transfer a conveyor part, draw a rectangle,
 turn one way and back, and operate a force-controlled gripper. These are ordinary
 Python fragments, recognized in the example programs and available independently
-in **Robot activities**. The initial palette now has twenty blocks.
+in **Motors and movement**. The initial palette has nineteen family cards.
 
 **Intermediate** adds limited-power homing, measured steering centering, coasting,
 ultrasonic eye brightness and clearing the display. Homing needs a physical stop;

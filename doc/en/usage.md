@@ -138,6 +138,50 @@ A successful transfer commits once; Undo restores both program and Scratch.
 Attached Python comments move with the block. Syntax validity does not prove that
 a moved program still has the intended meaning.
 
+## Finding and reusing blocks
+
+The library has separate buttons for difficulty and view. **Beginner**,
+**Intermediate**, **Advanced**, and **Expert** include earlier levels; **All**
+shows every level. Hover over a view icon for its name, or reach it with Tab and
+activate it with Space. The selected view's name appears above the icons.
+
+**Catalog** groups cards into Program, Values and calculations, Variables and
+collections, Functions, Motors and movement, Sensors and input, Light and sound,
+and Devices and communication. Open a branch or search by an action, description,
+or Python API name. Search includes English names in every interface language.
+Direct title matches appear before incidental matches within each category.
+Clearing search restores the previous selection and open branches. A message
+explains matches hidden by the level, lesson palette, or selected parameter.
+
+A card represents a family of related operations. Select it to choose a
+**Variant** below the list; its preview shows the Python that will be inserted.
+The context menu offers the same choices. The level, lesson palette, and selected
+input also filter variants. Changing a catalog variant does not edit code already
+in the program. Drag the card, double-click it, or use **Add selected block**.
+
+- **Favorites:** use the star button or the card's context menu to add or remove a
+  link. **Move up** and **Move down** in the context menu set its order. Favorites
+  have no twelve-card limit. Missing definitions remain listed and recover when
+  their collection or document becomes available again.
+- **Recent:** the last twelve distinct families. Inserting another variant of a
+  family moves the same entry to the front. **Clear recent** clears this list.
+- **Frequent:** up to twelve families ranked by successful insertions over the
+  current and previous 29 UTC calendar days, then latest use and stable identity.
+  The order stays fixed until you leave and return to the view. **Reset usage
+  history** clears Recent and Frequent while preserving Favorites.
+- **For this lesson:** the blocks permitted by the current stage, regardless of
+  the ordinary level filter. Without an open lesson, the view explains how to
+  populate it. **Show all blocks** retains its existing exploration behavior.
+
+Personal lists stay on this computer and do not change project files. Only
+successful catalog insertions count, including insertions into Scratch. Opening,
+running, recognizing, and redoing code do not count; Undo keeps the original use.
+Lists remember families, not previous parameter values or ports. Functions defined
+in a program belong to that file's path: equal function names in different files
+have separate links and statistics. Save As starts a different function scope.
+
+![Category branches, level buttons, and independent library views](images/library.png)
+
 ## Library, Scratch and help
 
 Search the library by name, category or description. The level filter combines

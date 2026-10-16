@@ -5,8 +5,12 @@ Status: in progress. Baseline date: October 16, 2026.
 The source-derived [inventory](BLOCK_LIBRARY_INVENTORY.md) accounts for all 253
 templates. Initial consolidation defines 191 families, with 250 selectable forms
 and three compatibility aliases. Family metadata, validation, and exact-variant
-filtering are implemented in the core. The desktop still needs to expose these
-families, variant editing, and personal navigation; the pilot is not yet complete.
+filtering are implemented in the core. The desktop exposes families, exact variant
+selection for insertion, category branches, and independent level/view buttons.
+Favorites, Recent, and Frequent use local family references and successful
+insertion records, including both Scratch paths. Existing-program variant editing,
+compact additional parameters, authoring controls, and the final catalog content
+review remain incomplete; the pilot and final integration gate are not yet complete.
 
 The objective is a smaller, easier-to-find set of block cards with explicit
 operation variants, predictable Python behavior, and personal navigation.

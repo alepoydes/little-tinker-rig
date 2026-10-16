@@ -493,8 +493,8 @@ The user can always switch to generic Python editing, at which point the snippet
 
 A Python definition is the sole source of block behavior and metadata. Modules
 are parsed statically; loading never executes decorators, imports, defaults or
-bodies. Each module defines a group, with its docstring providing the group title
-and description. A function docstring provides block help and search text.
+bodies. Each module defines a help group, with its docstring providing the group
+title and description. Catalog categories and families can group cards across modules. A function docstring provides block help and search text.
 
 ```python
 @inline_block(level="beginner", icon="⚙", color="state", names=("motor",))
@@ -1716,7 +1716,7 @@ The project should feel like ordinary Python that has acquired structure, constr
 
 Every block has one decorator level: beginner, intermediate, advanced, or expert. All exists only
 as a filter choice. Levels are cumulative and a fresh installation starts at
-Beginner: twenty blocks for motor/sensor and robot setup, bounded moves, waits,
+Beginner: nineteen family cards for motor/sensor and robot setup, bounded moves, waits,
 repetition, console feedback and complete line/remote activities. Intermediate
 adds decisions, readings, hub feedback, variables, arithmetic and reusable
 functions. Advanced adds collections, numeric helpers, curves, steering cars and
@@ -1725,8 +1725,17 @@ Legacy standard settings and manifests migrate to intermediate. Above Beginner,
 groups start collapsed; search expands matching groups and restores their prior
 expansion when cleared. Python view is the
 path to broader language/API features; levels never restrict editable source.
-Search, groups and the persisted level filter combine; help
-uses the same metadata. Display-only titles place the action symbol before text,
+Search, category branches, and the persisted level buttons combine; help retains
+module groups and the same source definitions. Independent view buttons open
+Catalog, Favorites, Recent, Frequent, and For this lesson. Exact variants are
+filtered before a family produces one card. Personal records are local family
+references; document functions use their resolved source path as scope. Recent
+and Frequent show at most twelve families. Daily counts cover the current and
+previous 29 UTC days; ties use latest insertion time and identity. Frequent stays
+a snapshot until the view is entered again. All successful catalog insertion
+paths, including both Scratch paths, record a use after the edit succeeds.
+Undo retains that use, and redo does not create another. Favorites retain their
+manual ordering and unavailable references independently of usage resets. Display-only titles place the action symbol before text,
 use the owning block's color, and preserve enclosing indentation bands. Titles
 precede all owned comments and use the editor's normal font size.
 

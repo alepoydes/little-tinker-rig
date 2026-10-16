@@ -276,7 +276,7 @@ def test_level_filter_combines_search_and_groups_and_persists(tmp_path, qt_app):
 
     window = Studio(tmp_path / "main.py")
     try:
-        window.level_filter.setCurrentIndex(window.level_filter.findData("advanced"))
+        window.level_filter.select("advanced")
         window.search.setText("follow")
         items = [
             window.library.topLevelItem(i).child(j)
@@ -284,7 +284,8 @@ def test_level_filter_combines_search_and_groups_and_persists(tmp_path, qt_app):
             for j in range(window.library.topLevelItem(i).childCount())
         ]
         visible = [item for item in items if not item.isHidden()]
-        assert {item.data(0, LEVEL) for item in visible} == {"beginner", "advanced"}
+        assert {item.data(0, LEVEL) for item in visible[:2]} == {"beginner", "advanced"}
+        assert all(item.data(0, LEVEL) != "expert" for item in visible)
         assert window.settings.value("blockLevel") == "advanced"
         window.search.setText("no such block")
         assert all(

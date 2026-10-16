@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LittleTinker Rig 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-16 19:17+0300\n"
+"POT-Creation-Date: 2026-10-16 19:35+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -73,7 +73,7 @@ msgstr "Не удалось загрузить нужный модуль. Про
 msgid "Acceleration"
 msgstr "Ускорение"
 
-#: little_tinker_rig/qt/authoring.py:223 little_tinker_rig/qt/authoring.py:939
+#: little_tinker_rig/qt/authoring.py:224 little_tinker_rig/qt/authoring.py:940
 msgid "Action"
 msgstr "Действие"
 
@@ -93,6 +93,10 @@ msgstr "Сложить все значения из перебираемой п�
 msgid "Add decorator"
 msgstr "Добавить декоратор"
 
+#: little_tinker_rig/qt/library.py:47
+msgid "Add favorite blocks with the star button or the context menu."
+msgstr "Добавляйте избранные блоки кнопкой со звездой или через контекстное меню."
+
 #: little_tinker_rig/qt/structure.py:50 little_tinker_rig/qt/structure.py:216
 msgid "Add item"
 msgstr "Добавить элемент"
@@ -100,6 +104,10 @@ msgstr "Добавить элемент"
 #: little_tinker_rig/qt/structure.py:68 little_tinker_rig/qt/structure.py:193
 msgid "Add named argument"
 msgstr "Добавить именованный аргумент"
+
+#: little_tinker_rig/qt/app.py:722
+msgid "Add to Favorites"
+msgstr "Добавить в избранное"
 
 #: little_tinker_rig/snippets/python/basics.py:207
 msgid "Add two values."
@@ -113,7 +121,7 @@ msgstr "Продвинуть генератор на один шаг; в кон�
 msgid "Advance two iterators together until the shorter one ends."
 msgstr "Продвигать два итератора вместе до завершения короткого."
 
-#: little_tinker_rig/qt/library.py:27
+#: little_tinker_rig/qt/library.py:34
 msgid "Advanced"
 msgstr "Продвинутый"
 
@@ -178,7 +186,7 @@ msgstr "Применить"
 msgid "Apply a function lazily as each item is consumed."
 msgstr "Применять функцию к каждому элементу по мере его чтения."
 
-#: little_tinker_rig/qt/authoring.py:1099
+#: little_tinker_rig/qt/authoring.py:1100
 #, python-brace-format
 msgid ""
 "Archive saved version {version} before editing the next version. Save or discard "
@@ -270,7 +278,7 @@ msgstr "Расстояние BOOST, %"
 msgid "Back to task"
 msgstr "Назад к заданию"
 
-#: little_tinker_rig/qt/library.py:25
+#: little_tinker_rig/qt/library.py:32
 msgid "Beginner"
 msgstr "Начинающий"
 
@@ -289,23 +297,23 @@ msgstr ""
 "Мигать индикатором по списку длительностей включения и выключения. Параметры: color, "
 "durations."
 
-#: little_tinker_rig/qt/app.py:535 little_tinker_rig/qt/navigation.py:69
+#: little_tinker_rig/qt/app.py:575 little_tinker_rig/qt/navigation.py:130
 msgid "Block Editor"
 msgstr "Редактор блоков"
 
-#: little_tinker_rig/qt/app.py:603
+#: little_tinker_rig/qt/app.py:643
 msgid "Block color"
 msgstr "Цвет блоков"
 
-#: little_tinker_rig/qt/authoring.py:273
+#: little_tinker_rig/qt/authoring.py:274
 msgid "Block icon · stored in the decorator"
 msgstr "Значок блока · хранится в декораторе"
 
-#: little_tinker_rig/qt/app.py:140
+#: little_tinker_rig/qt/app.py:143
 msgid "Block level"
 msgstr "Уровень блоков"
 
-#: little_tinker_rig/qt/authoring.py:268
+#: little_tinker_rig/qt/authoring.py:269
 msgid "Block level · stored in the decorator"
 msgstr "Уровень блока · хранится в декораторе"
 
@@ -313,7 +321,7 @@ msgstr "Уровень блока · хранится в декораторе"
 msgid "Block library"
 msgstr "Библиотека блоков"
 
-#: little_tinker_rig/qt/app.py:500 little_tinker_rig/qt/document.py:67
+#: little_tinker_rig/qt/app.py:540 little_tinker_rig/qt/document.py:67
 #: little_tinker_rig/qt/scratch.py:74
 msgid "Blocks"
 msgstr "Блоки"
@@ -336,15 +344,15 @@ msgstr ""
 "Имя Bluetooth-хаба или последовательный USB-порт, например /dev/ttyACM0 или COM3. "
 "Оставьте пустым для автоматического поиска."
 
-#: little_tinker_rig/qt/app.py:1507
+#: little_tinker_rig/qt/app.py:1594
 msgid "Bluetooth, USB or virtual hub"
 msgstr "Bluetooth, USB или виртуальный хаб"
 
-#: little_tinker_rig/qt/authoring.py:683
+#: little_tinker_rig/qt/authoring.py:684
 msgid "Body: an ordinary helper function with private local variables."
 msgstr "Тело: обычная вспомогательная функция с собственными локальными переменными."
 
-#: little_tinker_rig/qt/authoring.py:680
+#: little_tinker_rig/qt/authoring.py:681
 msgid "Body: the Python inserted into the program."
 msgstr "Тело: код Python, вставляемый в программу."
 
@@ -385,7 +393,7 @@ msgstr ""
 msgid "Built-in icon"
 msgstr "Встроенный значок"
 
-#: little_tinker_rig/qt/authoring.py:436
+#: little_tinker_rig/qt/authoring.py:437
 #, python-brace-format
 msgid "Built-in · {name}"
 msgstr "Встроенная · {name}"
@@ -416,12 +424,12 @@ msgstr ""
 msgid "Call: …(…)"
 msgstr "Вызов: …(…)"
 
-#: little_tinker_rig/qt/lessons.py:710 little_tinker_rig/tui/dialogs.py:45
+#: little_tinker_rig/qt/lessons.py:717 little_tinker_rig/tui/dialogs.py:45
 #: little_tinker_rig/tui/dialogs.py:81
 msgid "Cancel"
 msgstr "Отмена"
 
-#: little_tinker_rig/qt/app.py:1493 little_tinker_rig/qt/app.py:1499
+#: little_tinker_rig/qt/app.py:1580 little_tinker_rig/qt/app.py:1586
 #: little_tinker_rig/qt/device.py:199
 msgid "Cancel connection"
 msgstr "Отменить подключение"
@@ -430,7 +438,7 @@ msgstr "Отменить подключение"
 msgid "Cancel download"
 msgstr "Отменить загрузку"
 
-#: little_tinker_rig/qt/app.py:470
+#: little_tinker_rig/qt/app.py:510
 msgid "Cancel move"
 msgstr "Отменить перенос"
 
@@ -441,6 +449,10 @@ msgstr "Не удалось изменить выражение"
 #: little_tinker_rig/qt/structure.py:239
 msgid "Cannot change this list"
 msgstr "Не удалось изменить список"
+
+#: little_tinker_rig/qt/library.py:40
+msgid "Catalog"
+msgstr "Каталог"
 
 #: little_tinker_rig/qt/controls.py:269
 msgid "Center, °"
@@ -561,11 +573,11 @@ msgstr "Проверить, равны ли два значения."
 msgid "Check which side of the hub faces upward."
 msgstr "Проверить, какая сторона хаба направлена вверх."
 
-#: little_tinker_rig/qt/authoring.py:565
+#: little_tinker_rig/qt/authoring.py:566
 msgid "Checking… · showing the last valid preview"
 msgstr "Проверка… · показан последний корректный предпросмотр"
 
-#: little_tinker_rig/qt/app.py:442
+#: little_tinker_rig/qt/app.py:482
 msgid "Child"
 msgstr "Потомок"
 
@@ -574,7 +586,7 @@ msgstr "Потомок"
 msgid "Choose a USB port: {ports}"
 msgstr "Выберите USB-порт: {ports}"
 
-#: little_tinker_rig/qt/authoring.py:946
+#: little_tinker_rig/qt/authoring.py:947
 msgid "Choose a block to inspect its definition."
 msgstr "Выберите блок, чтобы изучить его определение."
 
@@ -660,7 +672,7 @@ msgstr ""
 "\n"
 "Конструкции Python уровня «Эксперт» для моделей роботов и совместного управления."
 
-#: little_tinker_rig/qt/app.py:289
+#: little_tinker_rig/qt/app.py:328
 msgid "Clear"
 msgstr "Очистить"
 
@@ -668,7 +680,11 @@ msgstr "Очистить"
 msgid "Clear expression"
 msgstr "Очистить выражение"
 
-#: little_tinker_rig/qt/app.py:840
+#: little_tinker_rig/qt/app.py:727
+msgid "Clear recent"
+msgstr "Очистить недавние"
+
+#: little_tinker_rig/qt/app.py:919
 msgid "Clear recent files"
 msgstr "Очистить список"
 
@@ -693,7 +709,7 @@ msgstr ""
 "Повторяется до остановки программы. Открывание ждёт остановки об упор,\n"
 "поэтому новое нажатие проверяется после его завершения. Нужны физические упоры."
 
-#: little_tinker_rig/qt/app.py:388
+#: little_tinker_rig/qt/app.py:428
 msgid "Close document"
 msgstr "Закрыть документ"
 
@@ -909,17 +925,17 @@ msgstr "Подключение отменено."
 msgid "Connections match the lesson."
 msgstr "Подключения соответствуют уроку."
 
-#: little_tinker_rig/qt/app.py:563
+#: little_tinker_rig/qt/app.py:603
 msgid "Connect…"
 msgstr "Подключить…"
 
-#: little_tinker_rig/qt/app.py:305 little_tinker_rig/qt/app.py:588
-#: little_tinker_rig/qt/app.py:713 little_tinker_rig/qt/app.py:1099
+#: little_tinker_rig/qt/app.py:344 little_tinker_rig/qt/app.py:628
+#: little_tinker_rig/qt/app.py:792 little_tinker_rig/qt/app.py:1179
 #: little_tinker_rig/tui/app.py:65 little_tinker_rig/tui/app.py:178
 msgid "Console"
 msgstr "Консоль"
 
-#: little_tinker_rig/qt/app.py:713 little_tinker_rig/qt/app.py:1094
+#: little_tinker_rig/qt/app.py:792 little_tinker_rig/qt/app.py:1174
 #, python-brace-format
 msgid "Console · {p0}"
 msgstr "Консоль · {p0}"
@@ -932,7 +948,7 @@ msgstr "Продолжить сразу"
 msgid "Continuously track a changing target angle. Options: target_angle."
 msgstr "Непрерывно следовать за изменяющимся целевым углом. Параметры: target_angle."
 
-#: little_tinker_rig/qt/navigation.py:67
+#: little_tinker_rig/qt/navigation.py:128
 msgid "Control"
 msgstr "Управление"
 
@@ -954,7 +970,7 @@ msgstr ""
 "\n"
 "Выполняйте несколько действий робота одновременно с асинхронными функциями Pybricks."
 
-#: little_tinker_rig/qt/app.py:279
+#: little_tinker_rig/qt/app.py:318
 msgid "Copy error"
 msgstr "Копировать ошибку"
 
@@ -962,11 +978,11 @@ msgstr "Копировать ошибку"
 msgid "Copy expression"
 msgstr "Копировать выражение"
 
-#: little_tinker_rig/qt/authoring.py:258
+#: little_tinker_rig/qt/authoring.py:259
 msgid "Copy to my collection"
 msgstr "Копировать в мою коллекцию"
 
-#: little_tinker_rig/qt/authoring.py:1006
+#: little_tinker_rig/qt/authoring.py:1007
 msgid "Correct this module's draft or choose another group before adding a block."
 msgstr "Исправьте черновик модуля или выберите другую группу перед добавлением блока."
 
@@ -1090,7 +1106,7 @@ msgstr "Создать задачу, ожидающую завершения о�
 msgid "Create a two-wheel robot from the left and right motors."
 msgstr "Создать двухколёсного робота из левого и правого моторов."
 
-#: little_tinker_rig/qt/app.py:493
+#: little_tinker_rig/qt/app.py:533
 msgid "Create block from selection"
 msgstr "Создать блок из выделения"
 
@@ -1122,7 +1138,7 @@ msgstr "Менять цвета индикатора через заданный
 msgid "Declare a MicroPython integer constant."
 msgstr "Объявить целочисленную константу MicroPython."
 
-#: little_tinker_rig/qt/authoring.py:691
+#: little_tinker_rig/qt/authoring.py:692
 msgid "Decorator: insertion mode, level, appearance and editable names."
 msgstr "Декоратор: способ вставки, уровень, оформление и редактируемые имена."
 
@@ -1222,28 +1238,28 @@ msgstr "Словарь: {key: value}"
 msgid "Discard"
 msgstr "Не сохранять"
 
-#: little_tinker_rig/qt/authoring.py:1123
+#: little_tinker_rig/qt/authoring.py:1124
 msgid "Discard draft"
 msgstr "Отбросить черновик"
 
-#: little_tinker_rig/qt/authoring.py:264
+#: little_tinker_rig/qt/authoring.py:265
 msgid "Discard this module draft and reload its saved definition"
 msgstr "Отбросить черновик модуля и загрузить сохранённое определение"
 
-#: little_tinker_rig/qt/authoring.py:1125
+#: little_tinker_rig/qt/authoring.py:1126
 msgid "Discard this module's changes and reopen the saved definition?"
 msgstr "Отбросить изменения этого модуля и открыть сохранённое определение?"
 
-#: little_tinker_rig/qt/app.py:564
+#: little_tinker_rig/qt/app.py:604
 msgid "Disconnect"
 msgstr "Отключить"
 
-#: little_tinker_rig/qt/app.py:1495 little_tinker_rig/qt/device.py:147
+#: little_tinker_rig/qt/app.py:1582 little_tinker_rig/qt/device.py:147
 #: little_tinker_rig/qt/device.py:201 little_tinker_rig/tui/app.py:171
 msgid "Disconnect hub"
 msgstr "Отключить хаб"
 
-#: little_tinker_rig/qt/app.py:1505
+#: little_tinker_rig/qt/app.py:1592
 #, python-brace-format
 msgid "Disconnect {name}"
 msgstr "Отключить {name}"
@@ -1252,7 +1268,7 @@ msgstr "Отключить {name}"
 msgid "Disconnected"
 msgstr "Отключён"
 
-#: little_tinker_rig/qt/app.py:1490 little_tinker_rig/qt/app.py:1502
+#: little_tinker_rig/qt/app.py:1577 little_tinker_rig/qt/app.py:1589
 #: little_tinker_rig/tui/app.py:226
 msgid "Disconnecting…"
 msgstr "Отключение…"
@@ -1316,7 +1332,7 @@ msgstr "Разделить одно значение на другое."
 msgid "Division by zero is not allowed. Check the divisor."
 msgstr "Делить на ноль нельзя. Проверьте делитель."
 
-#: little_tinker_rig/qt/authoring.py:696
+#: little_tinker_rig/qt/authoring.py:697
 msgid "Docstring: the block description and search text."
 msgstr "Строка документации: описание блока и текст для поиска."
 
@@ -1333,7 +1349,7 @@ msgstr "Документ изменился; выберите выражение
 msgid "Document changed; choose the list again"
 msgstr "Документ изменился; выберите список заново"
 
-#: little_tinker_rig/qt/app.py:1138
+#: little_tinker_rig/qt/app.py:1218
 msgid "Document or definitions changed; review the upgrade again"
 msgstr "Документ или определения изменились; проверьте обновление заново"
 
@@ -1342,11 +1358,11 @@ msgstr "Документ или определения изменились; п�
 msgid "Downloading firmware {version}…"
 msgstr "Скачивание прошивки {version}…"
 
-#: little_tinker_rig/qt/authoring.py:934
+#: little_tinker_rig/qt/authoring.py:935
 msgid "Draft"
 msgstr "Черновик"
 
-#: little_tinker_rig/qt/scratch.py:233 little_tinker_rig/qt/scratch.py:281
+#: little_tinker_rig/qt/scratch.py:234 little_tinker_rig/qt/scratch.py:282
 msgid ""
 "Drag a block here to set it aside.\n"
 "Return it to the program when you need it."
@@ -1528,11 +1544,11 @@ msgstr ""
 "отпустите «Вправо», когда появится Updating. Подключите один EV3 по USB. "
 "Восстановление LEGO для EV3 не предусмотрено."
 
-#: little_tinker_rig/qt/app.py:393
+#: little_tinker_rig/qt/app.py:433
 msgid "Edit"
 msgstr "Правка"
 
-#: little_tinker_rig/qt/app.py:1245
+#: little_tinker_rig/qt/app.py:1332
 msgid "Edit Python fragment"
 msgstr "Редактировать фрагмент Python"
 
@@ -1591,7 +1607,7 @@ msgstr "Равно"
 msgid "Error: {detail}"
 msgstr "Ошибка: {detail}"
 
-#: little_tinker_rig/qt/app.py:375
+#: little_tinker_rig/qt/app.py:415
 msgid "Examples"
 msgstr "Примеры"
 
@@ -1600,11 +1616,11 @@ msgstr "Примеры"
 msgid "Executed program · {name}"
 msgstr "Запущенная программа · {name}"
 
-#: little_tinker_rig/qt/app.py:449 little_tinker_rig/qt/structure.py:331
+#: little_tinker_rig/qt/app.py:489 little_tinker_rig/qt/structure.py:331
 msgid "Expand block"
 msgstr "Раскрыть блок"
 
-#: little_tinker_rig/qt/authoring.py:313
+#: little_tinker_rig/qt/authoring.py:314
 msgid "Expand preview"
 msgstr "Развернуть предпросмотр"
 
@@ -1613,11 +1629,11 @@ msgstr "Развернуть предпросмотр"
 msgid "Expected {expected}, got {actual}"
 msgstr "Ожидается {expected}, получено {actual}"
 
-#: little_tinker_rig/qt/library.py:28
+#: little_tinker_rig/qt/library.py:35
 msgid "Expert"
 msgstr "Эксперт"
 
-#: little_tinker_rig/qt/lessons.py:690 little_tinker_rig/qt/lessons.py:712
+#: little_tinker_rig/qt/lessons.py:697 little_tinker_rig/qt/lessons.py:719
 msgid "Export lesson project with resources"
 msgstr "Экспортировать проект урока с ресурсами"
 
@@ -1625,20 +1641,24 @@ msgstr "Экспортировать проект урока с ресурсам
 msgid "Export lesson project with resources…"
 msgstr "Экспортировать проект урока с ресурсами…"
 
-#: little_tinker_rig/qt/lessons.py:701
+#: little_tinker_rig/qt/lessons.py:708
 msgid "Export to a separate project file"
 msgstr "Экспортируйте в отдельный файл проекта"
 
-#: little_tinker_rig/qt/lessons.py:741
+#: little_tinker_rig/qt/lessons.py:748
 #, python-brace-format
 msgid "Exported {path}"
 msgstr "Экспортировано: {path}"
 
-#: little_tinker_rig/qt/authoring.py:224 little_tinker_rig/qt/authoring.py:937
+#: little_tinker_rig/qt/authoring.py:225 little_tinker_rig/qt/authoring.py:938
 msgid "Expression"
 msgstr "Выражение"
 
-#: little_tinker_rig/qt/app.py:355
+#: little_tinker_rig/qt/library.py:41
+msgid "Favorites"
+msgstr "Избранное"
+
+#: little_tinker_rig/qt/app.py:395
 msgid "File"
 msgstr "Файл"
 
@@ -1654,7 +1674,7 @@ msgstr "Заполните это поле перед запуском прог�
 msgid "Filtered list comprehension"
 msgstr "Генератор списка с условием"
 
-#: little_tinker_rig/qt/app.py:490 little_tinker_rig/tui/app.py:86
+#: little_tinker_rig/qt/app.py:530 little_tinker_rig/tui/app.py:86
 #: little_tinker_rig/tui/app.py:142
 msgid "Find"
 msgstr "Найти"
@@ -1663,11 +1683,11 @@ msgstr "Найти"
 msgid "Find / replace"
 msgstr "Поиск и замена"
 
-#: little_tinker_rig/qt/app.py:137
+#: little_tinker_rig/qt/app.py:138
 msgid "Find a block…"
 msgstr "Найти блок…"
 
-#: little_tinker_rig/qt/authoring.py:216
+#: little_tinker_rig/qt/authoring.py:217
 msgid "Find a definition…"
 msgstr "Найти определение…"
 
@@ -1721,7 +1741,7 @@ msgstr ""
 "\n"
 "Условие value % 2 == 0 проверяет чётность целого числа. Делитель не может быть нулём."
 
-#: little_tinker_rig/qt/app.py:465
+#: little_tinker_rig/qt/app.py:505
 msgid "Finish move"
 msgstr "Завершить перенос"
 
@@ -1791,11 +1811,11 @@ msgstr "Пакет прошивки слишком велик"
 msgid "Firmware saved for offline use: {path}"
 msgstr "Прошивка сохранена для работы без интернета: {path}"
 
-#: little_tinker_rig/qt/app.py:571
+#: little_tinker_rig/qt/app.py:611
 msgid "Firmware…"
 msgstr "Прошивка…"
 
-#: little_tinker_rig/qt/app.py:480
+#: little_tinker_rig/qt/app.py:520
 msgid "Fold region"
 msgstr "Свернуть область"
 
@@ -1825,6 +1845,10 @@ msgstr ""
 "target — отражение на границе светлого и тёмного, gain — сила коррекции.\n"
 "Цикл продолжается до остановки программы."
 
+#: little_tinker_rig/qt/library.py:44
+msgid "For this lesson"
+msgstr "Для этой лабораторной"
+
 #: little_tinker_rig/pybricks/devices.py:18
 #: little_tinker_rig/snippets/pybricks/sensors.py:77
 msgid "Force sensor"
@@ -1839,7 +1863,7 @@ msgstr "Сила: {p0:g} Н"
 msgid "Forever"
 msgstr "Бесконечно"
 
-#: little_tinker_rig/qt/app.py:486
+#: little_tinker_rig/qt/app.py:526
 msgid "Format Python"
 msgstr "Форматировать Python"
 
@@ -1855,11 +1879,15 @@ msgstr "Частота"
 msgid "Frequency and duration"
 msgstr "Частота и длительность"
 
+#: little_tinker_rig/qt/library.py:43
+msgid "Frequent"
+msgstr "Часто используемые"
+
 #: little_tinker_rig/snippets/pybricks/hub_measurements.py:37
 msgid "Front direction"
 msgstr "Направление вперёд"
 
-#: little_tinker_rig/qt/app.py:530
+#: little_tinker_rig/qt/app.py:570
 msgid "Full screen"
 msgstr "Полный экран"
 
@@ -1903,7 +1931,7 @@ msgstr ""
 msgid "Go to error"
 msgstr "Перейти к ошибке"
 
-#: little_tinker_rig/qt/authoring.py:229
+#: little_tinker_rig/qt/authoring.py:230
 msgid "Group / module"
 msgstr "Группа / модуль"
 
@@ -1923,12 +1951,12 @@ msgstr ""
 "Поместите операцию в try, восстановление после ошибки — в except.\n"
 "Выберите ожидаемое исключение, чтобы не скрывать все ошибки."
 
-#: little_tinker_rig/qt/app.py:534 little_tinker_rig/qt/navigation.py:68
+#: little_tinker_rig/qt/app.py:574 little_tinker_rig/qt/navigation.py:129
 #: little_tinker_rig/qt/structure.py:325
 msgid "Help"
 msgstr "Помощь"
 
-#: little_tinker_rig/qt/authoring.py:657
+#: little_tinker_rig/qt/authoring.py:658
 msgid "Helper: shared ordinary Python; it does not appear in the block library."
 msgstr "Вспомогательная функция: общий код Python; в библиотеке блоков не показывается."
 
@@ -1948,7 +1976,7 @@ msgstr "Удерживать положение"
 msgid "Hold the motor at its current angle."
 msgstr "Удерживать мотор в текущем положении."
 
-#: little_tinker_rig/qt/app.py:538
+#: little_tinker_rig/qt/app.py:578
 msgid "Hub"
 msgstr "Хаб"
 
@@ -1962,7 +1990,7 @@ msgstr ""
 "\n"
 "Радиосообщения Pybricks 4 и данные внешнего хоста; LittleTinker Rig их не моделирует."
 
-#: little_tinker_rig/qt/app.py:329
+#: little_tinker_rig/qt/app.py:369
 msgid "Hub and devices"
 msgstr "Хаб и устройства"
 
@@ -2024,7 +2052,7 @@ msgstr "Имя хаба / USB-порт"
 msgid "Hub name / USB port (empty: automatic)"
 msgstr "Имя хаба / USB-порт (пусто: автоматически)"
 
-#: little_tinker_rig/qt/app.py:595
+#: little_tinker_rig/qt/app.py:635
 msgid "Hub operation in progress"
 msgstr "Выполняется операция с хабом"
 
@@ -2053,25 +2081,25 @@ msgstr "Если"
 msgid "If / else"
 msgstr "Если / иначе"
 
-#: little_tinker_rig/qt/app.py:488 little_tinker_rig/qt/app.py:1254
-#: little_tinker_rig/qt/app.py:1259
+#: little_tinker_rig/qt/app.py:528 little_tinker_rig/qt/app.py:1341
+#: little_tinker_rig/qt/app.py:1346
 msgid "Import module…"
 msgstr "Импортировать модуль…"
 
-#: little_tinker_rig/qt/authoring.py:1030
+#: little_tinker_rig/qt/authoring.py:1031
 #, python-brace-format
 msgid "Import names conflict: {names}. Choose another group or use aliases."
 msgstr "Конфликт имён импорта: {names}. Выберите другую группу или используйте псевдонимы."
 
-#: little_tinker_rig/qt/authoring.py:699
+#: little_tinker_rig/qt/authoring.py:700
 msgid "Imports: dependencies added automatically on insertion."
 msgstr "Импорты: зависимости, автоматически добавляемые при вставке."
 
-#: little_tinker_rig/qt/authoring.py:306
+#: little_tinker_rig/qt/authoring.py:307
 msgid "In the library"
 msgstr "В библиотеке"
 
-#: little_tinker_rig/qt/authoring.py:306
+#: little_tinker_rig/qt/authoring.py:307
 msgid "In the program"
 msgstr "В программе"
 
@@ -2083,7 +2111,7 @@ msgstr "Неполная запись по USB"
 msgid "Increase a variable value."
 msgstr "Увеличить значение переменной."
 
-#: little_tinker_rig/qt/app.py:460
+#: little_tinker_rig/qt/app.py:500
 msgid "Indent"
 msgstr "Внутрь"
 
@@ -2095,9 +2123,13 @@ msgstr "Орган управления"
 msgid "Insert before selected item"
 msgstr "Вставить перед выбранным элементом"
 
-#: little_tinker_rig/qt/editor.py:801 little_tinker_rig/qt/scratch.py:344
+#: little_tinker_rig/qt/editor.py:801 little_tinker_rig/qt/scratch.py:345
 msgid "Insert here"
 msgstr "Вставить здесь"
+
+#: little_tinker_rig/qt/library.py:48
+msgid "Inserted blocks will appear here, without duplicates."
+msgstr "Здесь появятся вставленные блоки без повторов."
 
 #: little_tinker_rig/qt/firmware.py:69 little_tinker_rig/tui/firmware.py:70
 msgid "Install Pybricks"
@@ -2113,7 +2145,7 @@ msgstr ""
 "Установщик: инструменты прошивки Pybricks и загрузчик, сохранённые в кеше из "
 "официального репозитория."
 
-#: little_tinker_rig/qt/library.py:26
+#: little_tinker_rig/qt/library.py:33
 msgid "Intermediate"
 msgstr "Средний"
 
@@ -2134,7 +2166,7 @@ msgstr "Недопустимый размер образа прошивки"
 msgid "Invalid hub capabilities"
 msgstr "Некорректные сведения о возможностях хаба"
 
-#: little_tinker_rig/qt/authoring.py:744
+#: little_tinker_rig/qt/authoring.py:745
 #, python-brace-format
 msgid "Invalid test value: {error} · showing the last valid preview"
 msgstr "Ошибка проверочного значения: {error} · показан последний корректный предпросмотр"
@@ -2191,7 +2223,7 @@ msgstr "В пакете восстановления LEGO поле firmware-type
 msgid "Lambda"
 msgstr "Лямбда-функция"
 
-#: little_tinker_rig/qt/app.py:512 little_tinker_rig/tui/app.py:180
+#: little_tinker_rig/qt/app.py:552 little_tinker_rig/tui/app.py:180
 #: little_tinker_rig/tui/app.py:621 little_tinker_rig/tui/app.py:625
 msgid "Language"
 msgstr "Язык"
@@ -2247,7 +2279,11 @@ msgstr "Урок завершён. Сохрани проект, чтобы со�
 msgid "Lessons"
 msgstr "Уроки"
 
-#: little_tinker_rig/qt/app.py:157
+#: little_tinker_rig/qt/app.py:154
+msgid "Library view"
+msgstr "Представление библиотеки"
+
+#: little_tinker_rig/qt/app.py:161
 msgid "Library · drag a block into the program"
 msgstr "Библиотека · перетащите блок в программу"
 
@@ -2259,7 +2295,7 @@ msgstr "Свет и звук"
 msgid "Limit power"
 msgstr "Ограничить мощность"
 
-#: little_tinker_rig/qt/authoring.py:592
+#: little_tinker_rig/qt/authoring.py:593
 #, python-brace-format
 msgid "Line {line}: {error} · showing the last valid preview"
 msgstr "Строка {line}: {error} · показан последний корректный предпросмотр"
@@ -2307,7 +2343,7 @@ msgstr "Циклы"
 msgid "Make a three-dimensional vector for the hub's mounting or measurement axis."
 msgstr "Создать трёхмерный вектор для ориентации хаба или оси измерения."
 
-#: little_tinker_rig/qt/app.py:565 little_tinker_rig/qt/controls.py:319
+#: little_tinker_rig/qt/app.py:605 little_tinker_rig/qt/controls.py:319
 msgid "Manual control"
 msgstr "Ручное управление"
 
@@ -2355,11 +2391,11 @@ msgstr "Минимум"
 msgid "Mode"
 msgstr "Режим"
 
-#: little_tinker_rig/qt/app.py:1254
+#: little_tinker_rig/qt/app.py:1341
 msgid "Module"
 msgstr "Модуль"
 
-#: little_tinker_rig/qt/authoring.py:231
+#: little_tinker_rig/qt/authoring.py:232
 msgid "Module in your collection; its functions form one block group."
 msgstr "Модуль вашей коллекции; его функции образуют одну группу блоков."
 
@@ -2446,6 +2482,10 @@ msgstr ""
 "Повернуть мотор к углу с заданными параметрами движения. Параметры: speed, "
 "target_angle, wait, then."
 
+#: little_tinker_rig/qt/library.py:523
+msgid "Move down"
+msgstr "Переместить ниже"
+
 #: little_tinker_rig/qt/structure.py:52
 msgid "Move item left"
 msgstr "Переместить элемент влево"
@@ -2462,11 +2502,15 @@ msgstr "Переместить в черновик"
 msgid "Move to a target, then release the motor."
 msgstr "Дойти до заданного угла и отпустить мотор."
 
+#: little_tinker_rig/qt/library.py:522
+msgid "Move up"
+msgstr "Переместить выше"
+
 #: little_tinker_rig/qt/appearance.py:44
 msgid "Movement"
 msgstr "Движение"
 
-#: little_tinker_rig/qt/authoring.py:225
+#: little_tinker_rig/qt/authoring.py:226
 msgid "Multi-command action"
 msgstr "Последовательность команд"
 
@@ -2478,7 +2522,7 @@ msgstr "Умножить"
 msgid "Multiply two values."
 msgstr "Перемножить два значения."
 
-#: little_tinker_rig/qt/authoring.py:438
+#: little_tinker_rig/qt/authoring.py:439
 #, python-brace-format
 msgid "My collection · {name}"
 msgstr "Моя коллекция · {name}"
@@ -2495,7 +2539,7 @@ msgstr "Н"
 msgid "Name"
 msgstr "Имя"
 
-#: little_tinker_rig/qt/app.py:536
+#: little_tinker_rig/qt/app.py:576
 msgid "Name diagnostics"
 msgstr "Диагностика имён"
 
@@ -2507,7 +2551,7 @@ msgstr "Именованные размеры"
 msgid "Named resource"
 msgstr "Именованный ресурс"
 
-#: little_tinker_rig/qt/app.py:1259
+#: little_tinker_rig/qt/app.py:1346
 msgid "Names (leave empty to import the module)"
 msgstr "Имена (оставьте пустым для импорта модуля)"
 
@@ -2515,7 +2559,7 @@ msgstr "Имена (оставьте пустым для импорта моду
 msgid "Negate a condition."
 msgstr "Изменить условие на противоположное."
 
-#: little_tinker_rig/qt/app.py:359 little_tinker_rig/tui/app.py:56
+#: little_tinker_rig/qt/app.py:399 little_tinker_rig/tui/app.py:56
 msgid "New"
 msgstr "Новый"
 
@@ -2532,7 +2576,7 @@ msgstr ""
 "установки бета-версии нужен libusb; запасной путь через dfu-util доступен только для "
 "старых прошивок."
 
-#: little_tinker_rig/qt/authoring.py:233
+#: little_tinker_rig/qt/authoring.py:234
 msgid "New block"
 msgstr "Новый блок"
 
@@ -2560,7 +2604,7 @@ msgstr "Следующая подсказка"
 msgid "Next iteration"
 msgstr "Следующее повторение"
 
-#: little_tinker_rig/qt/app.py:447
+#: little_tinker_rig/qt/app.py:487
 msgid "Next node / target"
 msgstr "Следующий узел / цель"
 
@@ -2576,11 +2620,15 @@ msgstr "Следующий шаг"
 msgid "No Python suggestions here"
 msgstr "Здесь нет подсказок Python"
 
+#: little_tinker_rig/qt/library.py:461
+msgid "No blocks match these filters."
+msgstr "Нет блоков, соответствующих этим фильтрам."
+
 #: little_tinker_rig/pybricks/devices.py:41
 msgid "No device"
 msgstr "Нет устройства"
 
-#: little_tinker_rig/qt/app.py:818
+#: little_tinker_rig/qt/app.py:897
 msgid "No examples found"
 msgstr "Примеры не найдены"
 
@@ -2592,7 +2640,7 @@ msgstr "Хаб не подключён"
 msgid "No matching hub found in Bluetooth bootloader mode"
 msgstr "Подходящий хаб в режиме загрузчика Bluetooth не найден"
 
-#: little_tinker_rig/qt/app.py:825
+#: little_tinker_rig/qt/app.py:904
 msgid "No recent files"
 msgstr "Нет недавних файлов"
 
@@ -2604,7 +2652,7 @@ msgstr ""
 "USB-хаб не отвечает. Проверьте, что установлена совместимая бета-прошивка Pybricks и "
 "порт не занят другим приложением."
 
-#: little_tinker_rig/qt/app.py:1303
+#: little_tinker_rig/qt/app.py:1390
 msgid "No unknown names found.\n"
 msgstr "Неизвестных имён не найдено.\n"
 
@@ -2628,7 +2676,7 @@ msgstr "Выключить"
 msgid "On"
 msgstr "Включить"
 
-#: little_tinker_rig/qt/app.py:367 little_tinker_rig/tui/app.py:55
+#: little_tinker_rig/qt/app.py:407 little_tinker_rig/tui/app.py:55
 #: little_tinker_rig/tui/app.py:300
 msgid "Open"
 msgstr "Открыть"
@@ -2641,6 +2689,10 @@ msgstr "Открыть пошаговую 3D-инструкцию"
 msgid "Open USB connection help for setup instructions."
 msgstr "Инструкции по настройке находятся в разделе «Помощь с подключением USB»."
 
+#: little_tinker_rig/qt/library.py:458
+msgid "Open a lesson to see its current blocks."
+msgstr "Откройте лабораторную, чтобы увидеть блоки её текущего этапа."
+
 #: little_tinker_rig/qt/assembly.py:560
 msgid "Open a robot.json file to follow assembly steps without a lesson."
 msgstr "Открой файл robot.json, чтобы пройти шаги сборки без урока."
@@ -2649,7 +2701,7 @@ msgstr "Открой файл robot.json, чтобы пройти шаги сб�
 msgid "Open assembly"
 msgstr "Открыть сборку"
 
-#: little_tinker_rig/qt/authoring.py:246
+#: little_tinker_rig/qt/authoring.py:247
 msgid "Open blocks folder"
 msgstr "Открыть папку блоков"
 
@@ -2657,7 +2709,7 @@ msgstr "Открыть папку блоков"
 msgid "Open controls"
 msgstr "Открыть управление"
 
-#: little_tinker_rig/qt/help.py:78 little_tinker_rig/qt/library.py:263
+#: little_tinker_rig/qt/help.py:78 little_tinker_rig/qt/library.py:540
 #: little_tinker_rig/qt/structure.py:321
 msgid "Open definition"
 msgstr "Открыть определение"
@@ -2699,11 +2751,11 @@ msgstr "Открыть монитор портов"
 msgid "Open program"
 msgstr "Открыть программу"
 
-#: little_tinker_rig/qt/app.py:1397
+#: little_tinker_rig/qt/app.py:1484
 msgid "Open program or lesson"
 msgstr "Открыть программу или урок"
 
-#: little_tinker_rig/qt/app.py:373
+#: little_tinker_rig/qt/app.py:413
 msgid "Open recent"
 msgstr "Открыть недавние"
 
@@ -2732,11 +2784,11 @@ msgstr "Операнды: {operator}"
 msgid "Or"
 msgstr "Или"
 
-#: little_tinker_rig/qt/app.py:455
+#: little_tinker_rig/qt/app.py:495
 msgid "Outdent"
 msgstr "Наружу"
 
-#: little_tinker_rig/qt/authoring.py:278
+#: little_tinker_rig/qt/authoring.py:279
 msgid "Palette role or #RRGGBB · stored in the decorator"
 msgstr "Роль палитры или #RRGGBB · хранится в декораторе"
 
@@ -2744,7 +2796,7 @@ msgstr "Роль палитры или #RRGGBB · хранится в декор
 msgid "Parameter (name, optionally = default)"
 msgstr "Параметр (имя, при необходимости = значение)"
 
-#: little_tinker_rig/qt/app.py:414 little_tinker_rig/qt/help.py:62
+#: little_tinker_rig/qt/app.py:454 little_tinker_rig/qt/help.py:62
 msgid "Parameters"
 msgstr "Параметры"
 
@@ -2753,7 +2805,7 @@ msgstr "Параметры"
 msgid "Parameters: {name}"
 msgstr "Параметры: {name}"
 
-#: little_tinker_rig/qt/app.py:437
+#: little_tinker_rig/qt/app.py:477
 msgid "Parent"
 msgstr "Родитель"
 
@@ -2860,20 +2912,20 @@ msgstr "Загрузить и проверить"
 msgid "Prepare local file"
 msgstr "Подготовить файл"
 
-#: little_tinker_rig/qt/lessons.py:710
+#: little_tinker_rig/qt/lessons.py:717
 msgid "Preparing offline resources…"
 msgstr "Подготовка ресурсов для работы без сети…"
 
-#: little_tinker_rig/qt/authoring.py:599 little_tinker_rig/qt/authoring.py:797
-#: little_tinker_rig/qt/authoring.py:948
+#: little_tinker_rig/qt/authoring.py:600 little_tinker_rig/qt/authoring.py:798
+#: little_tinker_rig/qt/authoring.py:949
 msgid "Preview only; template code is never executed."
 msgstr "Только предпросмотр; код шаблона не выполняется."
 
-#: little_tinker_rig/qt/authoring.py:767
+#: little_tinker_rig/qt/authoring.py:768
 msgid "Preview value only; does not change the definition default."
 msgstr "Только для предпросмотра; значение по умолчанию в определении не меняется."
 
-#: little_tinker_rig/qt/app.py:446
+#: little_tinker_rig/qt/app.py:486
 msgid "Previous node / target"
 msgstr "Предыдущий узел / цель"
 
@@ -2889,8 +2941,8 @@ msgstr "Предыдущий шаг"
 msgid "Prime / Inventor Hub"
 msgstr "Хаб Prime / Inventor"
 
-#: little_tinker_rig/core/block_metadata.py:15 little_tinker_rig/qt/app.py:350
-#: little_tinker_rig/qt/navigation.py:66
+#: little_tinker_rig/core/block_metadata.py:15 little_tinker_rig/qt/app.py:390
+#: little_tinker_rig/qt/navigation.py:127
 msgid "Program"
 msgstr "Программа"
 
@@ -2906,7 +2958,7 @@ msgstr "Ввод для программы на хабе Bluetooth или USB. �
 msgid "Program is too large for this hub"
 msgstr "Программа слишком велика для этого хаба"
 
-#: little_tinker_rig/qt/app.py:276
+#: little_tinker_rig/qt/app.py:315
 msgid "Program output and messages"
 msgstr "Вывод программы и сообщения"
 
@@ -2949,7 +3001,7 @@ msgstr "Выражение Python"
 msgid "Python file"
 msgstr "Файл Python"
 
-#: little_tinker_rig/qt/app.py:420
+#: little_tinker_rig/qt/app.py:460
 msgid "Python fragment"
 msgstr "Фрагмент Python"
 
@@ -3224,9 +3276,13 @@ msgstr "Узнать цвет поверхности под датчиком."
 msgid "Read which side of the hub faces up."
 msgstr "Прочитать, какая сторона хаба направлена вверх."
 
-#: little_tinker_rig/qt/authoring.py:932
+#: little_tinker_rig/qt/authoring.py:933
 msgid "Read-only"
 msgstr "Только чтение"
+
+#: little_tinker_rig/qt/library.py:42
+msgid "Recent"
+msgstr "Недавние"
 
 #: little_tinker_rig/qt/assembly.py:154
 msgid "Recommended view"
@@ -3236,7 +3292,7 @@ msgstr "Рекомендуемый вид"
 msgid "Recover work"
 msgstr "Восстановить работу"
 
-#: little_tinker_rig/qt/app.py:404
+#: little_tinker_rig/qt/app.py:444
 msgid "Redo"
 msgstr "Повторить"
 
@@ -3295,11 +3351,15 @@ msgstr ""
 "\n"
 "Пульт LEGO Powered Up; прямое управление без протокола компьютера и системы событий."
 
+#: little_tinker_rig/qt/app.py:722
+msgid "Remove from Favorites"
+msgstr "Убрать из избранного"
+
 #: little_tinker_rig/qt/structure.py:51
 msgid "Remove item"
 msgstr "Удалить элемент"
 
-#: little_tinker_rig/qt/authoring.py:262
+#: little_tinker_rig/qt/authoring.py:263
 msgid "Reopen saved"
 msgstr "Открыть сохранённое"
 
@@ -3388,13 +3448,17 @@ msgstr "Заменить на"
 msgid "Replaces the running program with the port monitor. Motors remain stopped."
 msgstr "Запустит монитор вместо текущей программы. Моторы останутся остановленными."
 
-#: little_tinker_rig/qt/authoring.py:323
+#: little_tinker_rig/qt/authoring.py:324
 msgid "Reset test values"
 msgstr "Сбросить проверочные значения"
 
 #: little_tinker_rig/snippets/pybricks/motor_motion.py:123
 msgid "Reset the motor to its absolute encoder angle."
 msgstr "Установить угол мотора по абсолютной метке энкодера."
+
+#: little_tinker_rig/qt/app.py:729
+msgid "Reset usage history"
+msgstr "Сбросить историю использования"
 
 #: little_tinker_rig/snippets/pybricks/drive.py:107
 msgid "Restart the stopwatch."
@@ -3436,7 +3500,7 @@ msgstr "Вернуть значение из текущей функции."
 msgid "Reverse"
 msgstr "Реверс"
 
-#: little_tinker_rig/qt/app.py:1142
+#: little_tinker_rig/qt/app.py:1222
 msgid "Review block upgrade"
 msgstr "Проверка обновления блока"
 
@@ -3486,7 +3550,7 @@ msgstr "Вращение, °/с"
 msgid "Round a number to the nearest integer."
 msgstr "Округлить число до ближайшего целого."
 
-#: little_tinker_rig/qt/app.py:549 little_tinker_rig/tui/app.py:62
+#: little_tinker_rig/qt/app.py:589 little_tinker_rig/tui/app.py:62
 msgid "Run"
 msgstr "Запустить"
 
@@ -3526,7 +3590,7 @@ msgstr ""
 "Поместите операции в try, а завершение, например остановку мотора, — в finally.\n"
 "Принудительное завершение программы может прервать эти действия."
 
-#: little_tinker_rig/qt/app.py:567
+#: little_tinker_rig/qt/app.py:607
 msgid "Run stored program"
 msgstr "Запустить сохранённую программу"
 
@@ -3582,17 +3646,17 @@ msgstr "Выполнить с обработкой ошибок"
 msgid "Running"
 msgstr "Выполняется программа"
 
-#: little_tinker_rig/qt/app.py:379 little_tinker_rig/tui/app.py:57
+#: little_tinker_rig/qt/app.py:419 little_tinker_rig/tui/app.py:57
 #: little_tinker_rig/tui/app.py:164 little_tinker_rig/tui/app.py:249
 #: little_tinker_rig/tui/dialogs.py:79
 msgid "Save"
 msgstr "Сохранить"
 
-#: little_tinker_rig/qt/app.py:1417
+#: little_tinker_rig/qt/app.py:1504
 msgid "Save Python"
 msgstr "Сохранить Python"
 
-#: little_tinker_rig/qt/authoring.py:260
+#: little_tinker_rig/qt/authoring.py:261
 msgid "Save and apply"
 msgstr "Сохранить и применить"
 
@@ -3601,7 +3665,7 @@ msgstr "Сохранить и применить"
 msgid "Save as"
 msgstr "Сохранить как"
 
-#: little_tinker_rig/qt/app.py:385
+#: little_tinker_rig/qt/app.py:425
 msgid "Save as…"
 msgstr "Сохранить как…"
 
@@ -3609,11 +3673,11 @@ msgstr "Сохранить как…"
 msgid "Save changes before continuing?"
 msgstr "Сохранить изменения перед продолжением?"
 
-#: little_tinker_rig/qt/lessons.py:639
+#: little_tinker_rig/qt/lessons.py:646
 msgid "Save lesson project"
 msgstr "Сохранить проект урока"
 
-#: little_tinker_rig/qt/app.py:894
+#: little_tinker_rig/qt/app.py:973
 #, python-brace-format
 msgid ""
 "Save lesson project {name} before closing? Saving includes all open programs in this "
@@ -3622,12 +3686,12 @@ msgstr ""
 "Сохранить проект урока {name} перед закрытием? Будут сохранены все открытые программы"
 " этого проекта."
 
-#: little_tinker_rig/qt/app.py:902
+#: little_tinker_rig/qt/app.py:981
 #, python-brace-format
 msgid "Save {p0} before closing?"
 msgstr "Сохранить {p0} перед закрытием?"
 
-#: little_tinker_rig/qt/authoring.py:934
+#: little_tinker_rig/qt/authoring.py:935
 msgid "Saved"
 msgstr "Сохранено"
 
@@ -3635,7 +3699,7 @@ msgstr "Сохранено"
 msgid "Scale"
 msgstr "Масштаб"
 
-#: little_tinker_rig/qt/app.py:315 little_tinker_rig/qt/app.py:600
+#: little_tinker_rig/qt/app.py:355 little_tinker_rig/qt/app.py:640
 msgid "Scratch"
 msgstr "Черновики"
 
@@ -3663,11 +3727,11 @@ msgstr "Поиск в руководстве и блоках…"
 msgid "Searching for a matching hub in Bluetooth bootloader mode…"
 msgstr "Поиск подходящего хаба в режиме загрузчика Bluetooth…"
 
-#: little_tinker_rig/qt/app.py:1669
+#: little_tinker_rig/qt/app.py:1756
 msgid "Select Python source to create a block."
 msgstr "Выделите исходник Python для создания блока."
 
-#: little_tinker_rig/qt/app.py:1008
+#: little_tinker_rig/qt/app.py:1088
 msgid "Select a block"
 msgstr "Выберите блок"
 
@@ -3850,7 +3914,7 @@ msgstr "Показать блок"
 msgid "Show future parts as outlines"
 msgstr "Показать контуры будущих деталей"
 
-#: little_tinker_rig/qt/authoring.py:687
+#: little_tinker_rig/qt/authoring.py:688
 msgid "Signature: block name, parameters, defaults and units/types."
 msgstr "Сигнатура: имя блока, параметры, значения по умолчанию и единицы/типы."
 
@@ -3914,7 +3978,7 @@ msgstr "Включить ручной режим"
 msgid "Start monitor"
 msgstr "Запустить монитор"
 
-#: little_tinker_rig/qt/app.py:453
+#: little_tinker_rig/qt/app.py:493
 msgid "Start move"
 msgstr "Начать перенос"
 
@@ -3930,11 +3994,11 @@ msgstr ""
 "Следующие действия выполняются во время движения мотора. Новая команда\n"
 "заменяет предыдущую цель."
 
-#: little_tinker_rig/qt/authoring.py:1097
+#: little_tinker_rig/qt/authoring.py:1098
 msgid "Start next version"
 msgstr "Начать следующую версию"
 
-#: little_tinker_rig/qt/authoring.py:255
+#: little_tinker_rig/qt/authoring.py:256
 msgid "Start next version…"
 msgstr "Начать следующую версию…"
 
@@ -3946,7 +4010,7 @@ msgstr "Начните с виртуального хаба или подклю�
 msgid "Start, stop and step"
 msgstr "Начало, конец и шаг"
 
-#: little_tinker_rig/qt/app.py:557 little_tinker_rig/tui/app.py:63
+#: little_tinker_rig/qt/app.py:597 little_tinker_rig/tui/app.py:63
 msgid "Stop"
 msgstr "Стоп"
 
@@ -4044,7 +4108,7 @@ msgstr "Получить модуль числа."
 msgid "Technic Hub"
 msgstr "Хаб Technic"
 
-#: little_tinker_rig/qt/authoring.py:316
+#: little_tinker_rig/qt/authoring.py:317
 msgid "Test values"
 msgstr "Проверочные значения"
 
@@ -4056,7 +4120,7 @@ msgstr "Текст не найден"
 msgid "The file already exists. Replace it?"
 msgstr "Файл уже существует. Заменить его?"
 
-#: little_tinker_rig/qt/app.py:163
+#: little_tinker_rig/qt/app.py:176
 msgid ""
 "The library is showing blocks for the selected input. Select its containing block to "
 "add the next action."
@@ -4108,13 +4172,21 @@ msgstr "Исходник изменён после запуска. Ошибка 
 msgid "This block has no editable parameters"
 msgstr "У этого блока нет изменяемых параметров"
 
-#: little_tinker_rig/qt/app.py:1166
+#: little_tinker_rig/qt/app.py:1262 little_tinker_rig/qt/scratch.py:375
+msgid "This block is no longer available."
+msgstr "Этот блок больше недоступен."
+
+#: little_tinker_rig/qt/app.py:1246 little_tinker_rig/qt/scratch.py:369
 msgid "This block is outside the current lesson palette. Enable Show all blocks to use it."
 msgstr ""
 "Этого блока нет в палитре текущего этапа. Включи «Показать все блоки», чтобы "
 "использовать его."
 
-#: little_tinker_rig/qt/app.py:1428
+#: little_tinker_rig/qt/library.py:224
+msgid "This favorite is unavailable in the current document or collections."
+msgstr "Этот избранный блок недоступен в текущем документе или коллекциях."
+
+#: little_tinker_rig/qt/app.py:1515
 msgid "This file is already open in another tab"
 msgstr "Этот файл уже открыт в другой вкладке"
 
@@ -4152,7 +4224,7 @@ msgstr ""
 "Этот процесс уже входит в группу порта. Попросите системного администратора проверить"
 " ACL порта и системные ограничения доступа."
 
-#: little_tinker_rig/qt/lessons.py:652
+#: little_tinker_rig/qt/lessons.py:659
 msgid "This project is already open. Choose another file."
 msgstr "Этот проект уже открыт. Выбери другой файл."
 
@@ -4168,7 +4240,7 @@ msgstr "Переменная используется до присваиван�
 msgid "Time"
 msgstr "Время"
 
-#: little_tinker_rig/qt/app.py:426
+#: little_tinker_rig/qt/app.py:466
 msgid "To Scratch"
 msgstr "В черновики"
 
@@ -4271,7 +4343,7 @@ msgstr ""
 "только один хаб. В Linux нужны libusb и разрешения udev; запасной способ использует "
 "dfu-util."
 
-#: little_tinker_rig/qt/app.py:285 little_tinker_rig/qt/device.py:81
+#: little_tinker_rig/qt/app.py:324 little_tinker_rig/qt/device.py:81
 msgid "USB connection help"
 msgstr "Помощь с подключением USB"
 
@@ -4296,7 +4368,7 @@ msgstr "Ультразвуковой датчик"
 msgid "Unassigned"
 msgstr "Не назначен"
 
-#: little_tinker_rig/qt/app.py:396
+#: little_tinker_rig/qt/app.py:436
 msgid "Undo"
 msgstr "Отменить"
 
@@ -4316,7 +4388,7 @@ msgstr "Распаковать именованные аргументы"
 msgid "Unpack positional arguments"
 msgstr "Распаковать позиционные аргументы"
 
-#: little_tinker_rig/qt/app.py:906
+#: little_tinker_rig/qt/app.py:985
 msgid "Unsaved changes"
 msgstr "Несохранённые изменения"
 
@@ -4344,11 +4416,11 @@ msgstr "Без имени"
 msgid "Unwrap: keep an operand"
 msgstr "Оставить один операнд"
 
-#: little_tinker_rig/qt/app.py:475
+#: little_tinker_rig/qt/app.py:515
 msgid "Upgrade block"
 msgstr "Обновить блок"
 
-#: little_tinker_rig/qt/app.py:541 little_tinker_rig/tui/app.py:61
+#: little_tinker_rig/qt/app.py:581 little_tinker_rig/tui/app.py:61
 msgid "Upload"
 msgstr "Отправить на хаб"
 
@@ -4370,7 +4442,7 @@ msgstr "Загрузка {name}…"
 msgid "Use Python: {text}"
 msgstr "Вставить Python: {text}"
 
-#: little_tinker_rig/qt/authoring.py:985
+#: little_tinker_rig/qt/authoring.py:986
 msgid "Use a Python module name, for example custom or robots/motors."
 msgstr "Используйте имя модуля Python, например custom или robots/motors."
 
@@ -4431,6 +4503,11 @@ msgstr "Переменные и коллекции"
 msgid "Variables and state"
 msgstr "Переменные и состояние"
 
+#: little_tinker_rig/qt/app.py:186 little_tinker_rig/qt/app.py:187
+#: little_tinker_rig/qt/app.py:190 little_tinker_rig/qt/library.py:526
+msgid "Variant"
+msgstr "Вариант"
+
 #: little_tinker_rig/qt/firmware.py:74 little_tinker_rig/tui/firmware.py:83
 msgid "Version"
 msgstr "Версия"
@@ -4439,7 +4516,7 @@ msgstr "Версия"
 msgid "Vibrate the Xbox controller for feedback while the program continues."
 msgstr "Включить вибрацию Xbox для обратной связи, продолжая программу."
 
-#: little_tinker_rig/qt/app.py:497
+#: little_tinker_rig/qt/app.py:537
 msgid "View"
 msgstr "Вид"
 
@@ -4451,7 +4528,7 @@ msgstr "Покажи всего робота или отдельно собра�
 msgid "View:"
 msgstr "Вид:"
 
-#: little_tinker_rig/qt/app.py:1505 little_tinker_rig/qt/device.py:159
+#: little_tinker_rig/qt/app.py:1592 little_tinker_rig/qt/device.py:159
 #: little_tinker_rig/tui/app.py:498
 msgid "Virtual hub"
 msgstr "Виртуальный хаб"
@@ -4533,7 +4610,7 @@ msgstr "Весь робот"
 msgid "Working…"
 msgstr "Выполняется…"
 
-#: little_tinker_rig/qt/navigation.py:73
+#: little_tinker_rig/qt/navigation.py:134
 msgid "Workspaces"
 msgstr "Режимы"
 
@@ -4570,6 +4647,10 @@ msgstr ""
 "Ваша учётная запись уже входит в группу {group}, но текущий сеанс ещё не использует "
 "эту группу."
 
+#: little_tinker_rig/qt/library.py:49
+msgid "Your most used blocks from the last 30 days will appear here."
+msgstr "Здесь появятся наиболее часто используемые блоки за последние 30 дней."
+
 #: little_tinker_rig/qt/parameters.py:27
 msgid "mm"
 msgstr "мм"
@@ -4594,6 +4675,11 @@ msgstr "Шаг range не может быть нулевым"
 msgid "s"
 msgstr "с"
 
+#: little_tinker_rig/qt/library.py:469
+#, python-brace-format
+msgid "{count} matching families hidden by level, lesson or selected input."
+msgstr "Подходящие семейства, скрытые уровнем, лабораторной или выбранным полем: {count}."
+
 #: little_tinker_rig/qt/editor.py:1147
 #, python-brace-format
 msgid "{name} · {count} uses"
@@ -4604,7 +4690,7 @@ msgstr "{name} · вхождений: {count}"
 msgid "{p0:g}°    {p1:g} °/s"
 msgstr "{p0:g}°    {p1:g} °/с"
 
-#: little_tinker_rig/qt/app.py:1012
+#: little_tinker_rig/qt/app.py:1092
 #, python-brace-format
 msgid "{p0} · warnings: {p1}"
 msgstr "{p0} · предупреждений: {p1}"
@@ -4617,7 +4703,7 @@ msgstr "°/с"
 msgid "°/s²"
 msgstr "°/с²"
 
-#: little_tinker_rig/qt/authoring.py:967
+#: little_tinker_rig/qt/authoring.py:968
 #, python-brace-format
 msgid "… {count} more lines"
 msgstr "… ещё строк: {count}"
@@ -4626,7 +4712,7 @@ msgstr "… ещё строк: {count}"
 msgid "← Back"
 msgstr "← Назад"
 
-#: little_tinker_rig/qt/app.py:160
+#: little_tinker_rig/qt/app.py:173
 msgid "← Back to whole blocks"
 msgstr "← К целым блокам"
 
@@ -4634,11 +4720,11 @@ msgstr "← К целым блокам"
 msgid "← Previous stage"
 msgstr "← Предыдущий этап"
 
-#: little_tinker_rig/qt/app.py:172
+#: little_tinker_rig/qt/app.py:203
 msgid "＋ Add selected block"
 msgstr "＋ Добавить выбранный блок"
 
-#: little_tinker_rig/qt/app.py:1495
+#: little_tinker_rig/qt/app.py:1582
 msgid "＋ Connect hub"
 msgstr "＋ Подключить хаб"
 

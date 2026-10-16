@@ -354,7 +354,7 @@ def test_imported_programs_open_with_their_blocks_available_in_the_panel(
     tmp_path, qt_app
 ):
     from little_tinker_rig.qt.app import Studio
-    from little_tinker_rig.qt.library import IDENTITY
+    from little_tinker_rig.qt.library import FAMILY
 
     for example in PROGRAMS:
         path = tmp_path / example.name
@@ -365,14 +365,14 @@ def test_imported_programs_open_with_their_blocks_available_in_the_panel(
         assert ast.dump(ast.parse(loaded)) == ast.dump(ast.parse(source))
         try:
             window.show()
-            window.level_filter.setCurrentIndex(window.level_filter.findData("all"))
+            window.level_filter.select("all")
             qt_app.processEvents()
             identities = {
-                window.library.topLevelItem(i).child(j).data(0, IDENTITY)
+                window.library.topLevelItem(i).child(j).data(0, FAMILY)
                 for i in range(window.library.topLevelItemCount())
                 for j in range(window.library.topLevelItem(i).childCount())
             }
-            assert {m.snippet.identity for m in window.session.matches} <= identities
+            assert {m.snippet.catalog_id for m in window.session.matches} <= identities
             assert window.session.document.state.source == loaded
         finally:
             window.close()

@@ -352,18 +352,13 @@ def test_library_search_uses_all_words_from_full_help_and_dynamic_functions(qt_a
             if not library.topLevelItem(i).child(j).isHidden()
         ]
         assert "python/basics/display" in visible
-        assert (
-            library.topLevelItem(library.topLevelItemCount() - 1).text(0)
-            == "My functions"
-        )
+        assert library.headings["functions"].text(0) == "Functions"
         owner.editor.commit("def wave():\n    pass\n")
         library.update_functions(owner.available_snippets)
         library.filter("wave")
-        assert (
-            library.topLevelItem(library.topLevelItemCount() - 1)
-            .child(0)
-            .data(0, IDENTITY)
-            == "document/functions/wave"
+        assert any(
+            item.data(0, IDENTITY) == "document/functions/wave" and not item.isHidden()
+            for item in library.rows.values()
         )
     finally:
         library.close()

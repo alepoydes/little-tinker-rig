@@ -65,9 +65,9 @@ from .document import DocumentPage
 from .editor import source_offset
 from .help import HelpPage
 from .lessons import Lessons
-from .library import IDENTITY, LEVEL_TITLES, Library
+from .library import IDENTITY, LEVEL_TITLES, REFERENCE, VIEW_TITLES, Library
 from .localization import localize, translate_standard_dialogs
-from .navigation import ModeList
+from .navigation import ChoiceButtons, ModeList
 from .recovery import Recovery
 from .runtime import RuntimePanel
 from .scratch import ScratchPane
@@ -130,33 +130,44 @@ class Studio(QMainWindow):
         self.documents.setTabsClosable(True)
         self.documents.setMovable(True)
         self.open_document(path or self.new_document_path(), unnamed=path is None)
-        self.library = Library(self.session.available_snippets)
+        self.library = Library(self.session.available_snippets, self.settings)
+        self.library.set_scope(self.session.project.path)
         self.library.definition_requested.connect(self.open_definition)
         self.library.itemDoubleClicked.connect(self.insert_selected)
         self.search = QLineEdit()
         self.search.setPlaceholderText(N_("Find a block…"))
         self.search.textChanged.connect(self.library.filter)
-        self.level_filter = QComboBox()
-        self.level_filter.setToolTip(N_("Block level"))
-        self.level_filter.addItem(N_("All"), "all")
-        for level in LEVELS:
-            self.level_filter.addItem(LEVEL_TITLES[level], level)
+        self.level_filter = ChoiceButtons({**LEVEL_TITLES, "all": N_("All")}, columns=2)
+        self.level_filter.setAccessibleName(N_("Block level"))
         saved_level = self.settings.value("blockLevel", "beginner")
         if saved_level == "standard":
             saved_level = "intermediate"
             self.settings.setValue("blockLevel", saved_level)
-        self.level_filter.setCurrentIndex(
-            self.level_filter.findData(
-                saved_level if saved_level in (*LEVELS, "all") else "beginner"
-            )
+        self.level_filter.select(
+            saved_level if saved_level in (*LEVELS, "all") else "beginner"
         )
-        self.block_level = self.level_filter.currentData()
-        self.level_filter.currentIndexChanged.connect(self.filter_level)
+        self.block_level = self.level_filter.value
+        self.level_filter.changed.connect(self.filter_level)
+        self.view_filter = ChoiceButtons(VIEW_TITLES)
+        self.view_filter.setAccessibleName(N_("Library view"))
+        self.view_filter.changed.connect(self.library.set_view)
+        self.view_filter.changed.connect(
+            lambda value: self.settings.setValue("blockView", value)
+        )
         library = QWidget()
         layout = QVBoxLayout(library)
         layout.addWidget(QLabel(N_("Library · drag a block into the program")))
         layout.addWidget(self.search)
         layout.addWidget(self.level_filter)
+        layout.addWidget(self.view_filter)
+        self.library_status = QLabel()
+        self.library_status.setWordWrap(True)
+        self.library_status.setProperty("translationSources", {})
+        self.library.status_changed.connect(self.library_status.setText)
+        self.library.status_changed.connect(
+            lambda text: self.library_status.setVisible(bool(text))
+        )
+        layout.addWidget(self.library_status)
         self.whole_blocks = QPushButton(N_("← Back to whole blocks"))
         self.whole_blocks.setToolTip(
             N_(
@@ -169,9 +180,35 @@ class Studio(QMainWindow):
         self.whole_blocks.hide()
         layout.addWidget(self.whole_blocks)
         layout.addWidget(self.library, 1)
+        self.variant_filter = QComboBox()
+        self.variant_filter.setAccessibleName(N_("Variant"))
+        self.variant_filter.setToolTip(N_("Variant"))
+        self.variant_filter.setProperty(
+            "translationSources",
+            {"toolTip": N_("Variant"), "accessibleName": N_("Variant")},
+        )
+        self.variant_filter.currentIndexChanged.connect(
+            lambda _: self.library.select_variant(self.variant_filter.currentData())
+        )
+        layout.addWidget(self.variant_filter)
+        row = QHBoxLayout()
+        self.favorite_button = QToolButton()
+        self.favorite_button.setText("☆")
+        self.favorite_button.setCheckable(True)
+        self.favorite_button.setProperty("translationSources", {})
+        self.favorite_button.clicked.connect(self.library.toggle_favorite)
+        row.addWidget(self.favorite_button)
         insert = QPushButton(N_("＋ Add selected block"))
         insert.clicked.connect(self.insert_selected)
-        layout.addWidget(insert)
+        row.addWidget(insert, 1)
+        layout.addLayout(row)
+        self.clear_usage = QPushButton()
+        self.clear_usage.setProperty("translationSources", {})
+        self.clear_usage.clicked.connect(self.library.clear_history)
+        layout.addWidget(self.clear_usage)
+        self.library.variants_changed.connect(self.update_library_controls)
+        self.view_filter.select(self.settings.value("blockView", "catalog"))
+        self.update_library_controls()
         self.library_pane = library
         self.program_page = QSplitter()
         self.program_page.addWidget(library)
@@ -309,6 +346,7 @@ class Studio(QMainWindow):
         self.scratch = ScratchPane()
         self.scratch.changed.connect(self.refresh_views)
         self.scratch.failed.connect(self.error)
+        self.scratch.snippet_inserted.connect(self.library.record_use)
         self.scratch.definition_requested.connect(self.open_definition)
         self.scratch.help_requested.connect(self.open_block_help)
         self.scratch_dock = self.dock(
@@ -644,8 +682,8 @@ class Studio(QMainWindow):
     def change_editor(self, index):
         self.document_page.change_mode(index)
 
-    def filter_level(self):
-        level = self.level_filter.currentData()
+    def filter_level(self, *_):
+        level = self.level_filter.value
         self.block_level = level
         self.settings.setValue("blockLevel", level)
         self.library.filter(self.search.text(), level)
@@ -653,6 +691,41 @@ class Studio(QMainWindow):
             self.editing_source.expression_level = level
         if hasattr(self, "lessons"):
             self.lessons.palette()
+
+    def update_library_controls(self):
+        choices = self.library.current_choices()
+        item = self.library.currentItem()
+        self.variant_filter.blockSignals(True)
+        self.variant_filter.clear()
+        for snippet in choices:
+            self.variant_filter.addItem(
+                (
+                    tr(snippet.variant)
+                    if snippet.variant
+                    else tr(snippet.help).splitlines()[0]
+                ),
+                snippet.identity,
+            )
+        if item:
+            self.variant_filter.setCurrentIndex(
+                self.variant_filter.findData(item.data(0, IDENTITY))
+            )
+        self.variant_filter.blockSignals(False)
+        self.variant_filter.setVisible(len(choices) > 1)
+        key = item.data(0, REFERENCE) if item else None
+        favorite = key in self.library.history.favorites
+        self.favorite_button.setEnabled(key is not None)
+        self.favorite_button.setChecked(favorite)
+        self.favorite_button.setText("★" if favorite else "☆")
+        title = tr("Remove from Favorites") if favorite else tr("Add to Favorites")
+        self.favorite_button.setToolTip(title)
+        self.favorite_button.setAccessibleName(title)
+        self.clear_usage.setVisible(self.library.view in ("recent", "frequent"))
+        self.clear_usage.setText(
+            tr("Clear recent")
+            if self.library.view == "recent"
+            else tr("Reset usage history")
+        )
 
     def commit_code(self):
         if self.pages.currentIndex() == 3:
@@ -667,8 +740,9 @@ class Studio(QMainWindow):
     def document_changed(self, *_):
         if self.document_page is None:
             return
+        self.library.set_scope(self.session.project.path)
         self.library.load(self.session.available_snippets)
-        self.library.filter(self.search.text(), self.level_filter.currentData())
+        self.library.filter(self.search.text(), self.level_filter.value)
         self.help_page.snippets = self.session.available_snippets
         self.help_page.retranslate()
         self.block_editor.configure(
@@ -689,6 +763,8 @@ class Studio(QMainWindow):
     def retranslate(self):
         translate_standard_dialogs()
         localize(self)
+        self.level_filter.retranslate()
+        self.view_filter.retranslate()
         for action in self.findChild(QToolBar, "programTools").actions():
             shortcut = action.shortcut().toString(
                 QKeySequence.SequenceFormat.NativeText
@@ -700,8 +776,9 @@ class Studio(QMainWindow):
             self.documents.widget(index).source.refresh_source()
         self.scratch.refresh(self.session)
         self.language_actions[language()].setChecked(True)
+        self.library.set_scope(self.session.project.path)
         self.library.load(self.session.available_snippets)
-        self.library.filter(self.search.text(), self.level_filter.currentData())
+        self.library.filter(self.search.text(), self.level_filter.value)
         self.help_page.retranslate()
         self.block_editor.retranslate()
         self.lessons.refresh()
@@ -994,9 +1071,10 @@ class Studio(QMainWindow):
     def refresh_status(self):
         if not hasattr(self, "undo_action"):
             return
-        self.editing_source.expression_level = self.level_filter.currentData()
+        self.editing_source.expression_level = self.level_filter.value
         if hasattr(self, "lessons"):
             self.lessons.palette()
+        self.library.set_scope(self.session.project.path)
         self.library.set_context(self.editing_session)
         self.whole_blocks.setVisible(
             isinstance(self.editing_session.editor.selection, ast.expr)
@@ -1171,10 +1249,16 @@ class Studio(QMainWindow):
         view = self.editing_source if target is None else self.source
         session = view.session
         snippet = next(
-            s
-            for s in session.available_snippets
-            if s.identity == identity and not s.historical
+            (
+                s
+                for s in session.available_snippets
+                if s.identity == identity and not s.historical
+            ),
+            None,
         )
+        if snippet is None:
+            self.error(tr("This block is no longer available."))
+            return
         syntax = session.document.syntax
         if not snippet.expression and isinstance(
             getattr(session.editor.selection, "ctx", None), ast.Store
@@ -1230,6 +1314,7 @@ class Studio(QMainWindow):
             session.insert_snippet(
                 snippet, default_bindings(session, snippet, offset), target
             )
+            self.library.record_use(identity)
             view.changed.emit()
             self.refresh_views()
             view.reveal(session.document.syntax.spans[session.editor.selection].start)

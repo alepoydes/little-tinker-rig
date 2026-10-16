@@ -190,10 +190,8 @@ class ScratchCell(QFrame):
         self.fit()
 
     def insert_snippet(self, identity, target=None):
-        snippet = next(
-            s for s in self.source.session.available_snippets if s.identity == identity
-        )
         try:
+            snippet = self.pane.catalog_snippet(identity)
             syntax = self.source.session.document.syntax
             offset = (
                 target_position(syntax, target)[0]
@@ -204,6 +202,7 @@ class ScratchCell(QFrame):
                 snippet, default_bindings(self.source.session, snippet, offset), target
             )
             self.structural_changed()
+            self.pane.snippet_inserted.emit(identity)
         except (ValueError, SyntaxError) as error:
             self.pane.failed.emit(str(error))
 
@@ -214,10 +213,12 @@ class ScratchPane(QScrollArea):
     failed = Signal(str)
     definition_requested = Signal(object)
     help_requested = Signal(str)
+    snippet_inserted = Signal(str)
 
     def __init__(self):
         super().__init__()
         self.session = None
+        self.allowed_ids = None
         self.cells = []
         self.setWidgetResizable(True)
         self.setAcceptDrops(True)
@@ -361,6 +362,18 @@ class ScratchPane(QScrollArea):
             self.drop_padding = None
             self.column.activate()
 
+    def catalog_snippet(self, identity):
+        if self.allowed_ids is not None and identity not in self.allowed_ids:
+            raise ValueError(
+                tr(
+                    "This block is outside the current lesson palette. Enable Show all blocks to use it."
+                )
+            )
+        for snippet in self.session.available_snippets:
+            if snippet.identity == identity and not snippet.historical:
+                return snippet
+        raise ValueError(tr("This block is no longer available."))
+
     def dropEvent(self, event):
         position = len(self.cells) if self.drop_position is None else self.drop_position
         self.dragLeaveEvent(event)
@@ -374,11 +387,7 @@ class ScratchPane(QScrollArea):
                 identity = bytes(
                     data.data("application/x-little-tinker-rig-snippet")
                 ).decode()
-                snippet = next(
-                    s
-                    for s in self.session.available_snippets
-                    if s.identity == identity and not s.historical
-                )
+                snippet = self.catalog_snippet(identity)
                 expansion = instantiate(
                     snippet, default_bindings(self.session, snippet)
                 )
@@ -387,6 +396,7 @@ class ScratchPane(QScrollArea):
                 self.session.editor.commit(
                     self.session.document.state.source, tuple(items)
                 )
+                self.snippet_inserted.emit(identity)
             event.acceptProposedAction()
             self.changed.emit()
         except (ValueError, SyntaxError) as error:

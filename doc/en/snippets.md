@@ -16,10 +16,14 @@ format = 2
 ```
 
 The manifest contains collection information and optional `[[history]]` entries
-with `version` and `path`. Each module defines a group. Its docstring supplies the
+with `version` and `path`. Each module defines a help group. Its docstring supplies the
 group title and description; each decorated function supplies a block. A block's
 identity is `collection/module/function`. Ordinary undecorated functions are
-helpers and do not appear in the library.
+helpers and do not appear in the library. Without catalog metadata, a module also
+provides its own category heading. `__category__ = "movement"`, for example, places
+its cards in Motors and movement; a decorator can override this with `category`.
+Related forms can name a primary identity with `family` and a translatable
+`variant` label. Keep every source form as a separate ordinary Python definition.
 
 Connect a collection with `little-tinker-rig --collection ./my_robot qt main.py`.
 Historical directories must stay inside the collection. Historical definitions

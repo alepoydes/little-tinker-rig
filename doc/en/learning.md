@@ -5,7 +5,9 @@ and **Expert**. **All** is a filter, not another level. Levels accumulate and yo
 choice is saved. Existing `Standard` settings and collection metadata migrate to
 `Intermediate`. A level filters new choices; it never restricts existing source.
 
-Beginner contains 20 blocks. At other levels, groups start collapsed so children
+Beginner contains 19 family cards, including both SPIKE and BOOST sensor setup
+variants. Use the separate level and view buttons described in the
+[library guide](usage.md#finding-and-reusing-blocks). At other levels, groups start collapsed so children
 can explore one topic at a time. Searching opens matching groups; clearing the
 search restores their previous expansion. Each help group describes its blocks
 together, with their introduction levels and complete Python source.
@@ -14,14 +16,12 @@ together, with their introduction levels and complete Python source.
 
 ## Beginner: connect, act, wait
 
-| Group | Available actions |
+| Category | Available actions |
 |---|---|
-| Python basics | Console output; repeat a number of times |
-| Motors | Connect a motor; turn through an angle; run for a set time |
-| Sensors and timing | Connect a SPIKE or BOOST color sensor; wait for color or time |
-| Drive bases and clocks | Set up a two-wheel robot; drive a distance; turn; brake |
-| Robot activities | Stop at a dark line; follow a line for a set time; transfer a conveyor part; draw a rectangle; dance; operate a gripper |
-| Remote control | Drive using a LEGO Powered Up remote |
+| Program | Repeat a number of times; wait for time |
+| Motors and movement | Connect a motor; finite motor moves; set up a two-wheel robot; drive, turn and brake; line following, conveyor, drawing, dance, gripper, and remote driving actions |
+| Sensors and input | Connect a SPIKE or BOOST color sensor; wait for a color |
+| Light and sound | Console output |
 
 Start with one motor and a finite movement. Change an angle from `90` to `-90`,
 put two movements in sequence, and repeat them. Next add a sensor wait. Try

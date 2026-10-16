@@ -569,10 +569,17 @@ class Lessons(QObject):
         ids = frozenset(project.stage.get("blocks", [])) if restricted else None
         level = "all" if project else window.block_level
         window.level_filter.blockSignals(True)
-        window.level_filter.setCurrentIndex(window.level_filter.findData(level))
+        window.level_filter.select(level)
         window.level_filter.blockSignals(False)
         window.level_filter.setEnabled(project is None)
-        if window.library.lesson_ids != ids or window.library.level != level:
+        stage_ids = frozenset(project.stage.get("blocks", [])) if project else None
+        window.scratch.allowed_ids = ids
+        if (
+            window.library.lesson_ids != ids
+            or window.library.stage_ids != stage_ids
+            or window.library.level != level
+        ):
+            window.library.stage_ids = stage_ids
             window.library.lesson_ids = ids
             window.library.filter(window.search.text(), level)
             if restricted:

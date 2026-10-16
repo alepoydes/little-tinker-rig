@@ -400,7 +400,7 @@ retaining the hue. Verify both the color transform and rendered nested
 notes/code; descendants retain their own hues under an active ancestor.
 
 Library levels describe introduction order and accumulate. Keep the initial
-twenty-block motor/sensor/robot path usable without advanced cards. Verify generated
+nineteen-family motor/sensor/robot path usable without advanced cards. Verify generated
 expansions, contextual insertion and complete learning examples on all three
 virtual profiles. Host-installed MicroPython shims must not enable unsupported
 firmware modules (in particular `urandom` on BOOST). Virtual drive-base moves
@@ -545,3 +545,18 @@ tree, including a direct wheel build. The local `AI/` working notes are excluded
 from version control and distributions; maintained decisions belong in the design
 specification or developer documentation. Original lesson materials use the
 project's MIT license; external parts retain their own license notices.
+
+## Catalog navigation invariants
+
+Filter exact variants by level, lesson identity, and insertion type before choosing
+a representative card. A primary identity must not grant access to siblings in a
+restricted lesson. Enforce the same palette at all catalog insertion entry points,
+including a new Scratch cell and insertion into an existing cell. Record usage
+only after a successful edit; transfer, recognition, Undo/Redo, and automatic helper
+management are not catalog use.
+
+Family grouping does not alter source, role colors, or help anchors. Sort tree
+children without detaching them: Qt item removal/reinsertion can lose hidden state.
+Search snapshots preserve selection and expansion across collection reloads and
+language changes. Personal views keep their own ordering; frequency is refreshed
+on entering the view, never while a card is being selected or dragged.

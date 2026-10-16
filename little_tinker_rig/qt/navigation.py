@@ -2,18 +2,84 @@
 
 from pathlib import Path
 
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
+    QButtonGroup,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
     QListWidget,
     QListWidgetItem,
     QSizePolicy,
     QStyle,
     QStyledItemDelegate,
     QStyleOptionViewItem,
+    QToolButton,
+    QVBoxLayout,
+    QWidget,
 )
 
-from little_tinker_rig.i18n import N_
+from little_tinker_rig.i18n import N_, tr
+
+
+class ChoiceButtons(QWidget):
+    """Exclusive compact choices with full localized labels and keyboard focus."""
+
+    changed = Signal(str)
+
+    def __init__(self, choices, *, columns=0):
+        super().__init__()
+        self.choices = choices
+        self.buttons = {}
+        self.value = next(iter(choices))
+        self.group = QButtonGroup(self)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(2)
+        self.caption = QLabel()
+        self.caption.setProperty("translationSources", {})
+        layout.addWidget(self.caption)
+        self.caption.setVisible(not columns)
+        row = QGridLayout() if columns else QHBoxLayout()
+        row.setSpacing(2)
+        layout.addLayout(row)
+        for index, (key, title) in enumerate(choices.items()):
+            button = QToolButton()
+            button.setCheckable(True)
+            button.setToolTip(title)
+            button.setAccessibleName(title)
+            button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+            button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            if columns:
+                button.setText(title)
+            else:
+                button.setIcon(
+                    QIcon(str(Path(__file__).with_name("icons") / f"{key}.svg"))
+                )
+                button.setIconSize(QSize(20, 20))
+            button.clicked.connect(lambda checked=False, key=key: self.select(key))
+            self.group.addButton(button)
+            self.buttons[key] = button
+            if columns:
+                row.addWidget(button, index // columns, index % columns)
+            else:
+                row.addWidget(button)
+        self.buttons[self.value].setChecked(True)
+        self.retranslate()
+
+    def select(self, value):
+        if value not in self.buttons:
+            return
+        changed = value != self.value
+        self.value = value
+        self.buttons[value].setChecked(True)
+        self.retranslate()
+        if changed:
+            self.changed.emit(value)
+
+    def retranslate(self):
+        self.caption.setText(tr(self.choices[self.value]))
 
 
 class ModeDelegate(QStyledItemDelegate):

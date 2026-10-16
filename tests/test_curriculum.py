@@ -37,7 +37,7 @@ def test_old_level_setting_migrates_and_groups_limit_visual_load(tmp_path, qt_ap
     QSettings().setValue("blockLevel", "standard")
     window = Studio(tmp_path / "main.py")
     try:
-        assert window.level_filter.currentData() == "intermediate"
+        assert window.level_filter.value == "intermediate"
         groups = [
             window.library.topLevelItem(i)
             for i in range(window.library.topLevelItemCount())
@@ -49,11 +49,11 @@ def test_old_level_setting_migrates_and_groups_limit_visual_load(tmp_path, qt_ap
         window.search.clear()
         assert all(not group.isExpanded() for group in groups)
         assert QSettings().value("blockLevel") == "intermediate"
-        window.level_filter.setCurrentIndex(window.level_filter.findData("beginner"))
+        window.level_filter.select("beginner")
         window.search.setText("speaker")
-        window.level_filter.setCurrentIndex(window.level_filter.findData("advanced"))
+        window.level_filter.select("advanced")
         window.search.clear()
-        assert all(not group.isExpanded() for group in groups)
+        assert all(group.isExpanded() for group in groups)
     finally:
         window.close()
 

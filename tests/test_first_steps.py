@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
 
 from little_tinker_rig.qt.app import Studio
 from little_tinker_rig.qt.device import ConnectDialog
-from little_tinker_rig.qt.library import IDENTITY
+from little_tinker_rig.qt.library import FAMILY, IDENTITY
 
 
 def wait_until(predicate):
@@ -34,7 +34,8 @@ def add(window, identity):
         library.topLevelItem(i).child(j)
         for i in range(library.topLevelItemCount())
         for j in range(library.topLevelItem(i).childCount())
-        if library.topLevelItem(i).child(j).data(0, IDENTITY) == identity
+        if library.topLevelItem(i).child(j).data(0, FAMILY)
+        == library.snippets[identity].catalog_id
     )
     assert not item.isHidden() and not item.parent().isHidden()
     library.expandItem(item.parent())
@@ -54,6 +55,11 @@ def add(window, identity):
         item.parent().isExpanded(),
     )
     QTest.mouseClick(library.viewport(), Qt.MouseButton.LeftButton, pos=rect.center())
+    if item.data(0, IDENTITY) != identity:
+        choice = window.variant_filter.findData(identity)
+        assert choice >= 0
+        window.variant_filter.setCurrentIndex(choice)
+    assert item.data(0, IDENTITY) == identity
     assert library.currentItem() is item, (
         identity,
         library.currentItem().data(0, IDENTITY),
@@ -169,7 +175,7 @@ def test_first_lesson_build_save_run_and_reopen(tmp_path, qt_app, monkeypatch):
     window.show()
     qt_app.processEvents()
     try:
-        assert window.library.topLevelItem(0).text(0) == "Python basics"
+        assert window.library.topLevelItem(0).text(0) == "Program"
         add(window, "python/basics/repeat")
         field(window, "10", "3")
         select_line(window, "pass")
@@ -228,9 +234,7 @@ def test_motor_lesson_from_blocks_on_each_hub(tmp_path, qt_app, model):
         wait_until(lambda: not window.hub_info.running and not window.hub_is_busy)
         assert window.hub_info.ports["A"]["speed"] == 0
         assert not window.runtime_panel.problem
-        window.level_filter.setCurrentIndex(
-            window.level_filter.findData("intermediate")
-        )
+        window.level_filter.select("intermediate")
         select_line(window, "for i in range(3):")
         add(window, "python/basics/forever")
         select_line(window, "pass")
@@ -260,7 +264,7 @@ def test_route_lesson_lists_iteration_and_measured_results(tmp_path, qt_app):
     qt_app.processEvents()
     try:
         connect(window)
-        window.level_filter.setCurrentIndex(window.level_filter.findData("advanced"))
+        window.level_filter.select("advanced")
         add(window, "pybricks/drive/create_robot")
         add(window, "python/data/make_list")
         add(window, "python/flow/for_each")
@@ -414,9 +418,7 @@ def test_sensor_condition_built_from_library_and_changed_live(tmp_path, qt_app):
     qt_app.processEvents()
     try:
         connect(window)
-        window.level_filter.setCurrentIndex(
-            window.level_filter.findData("intermediate")
-        )
+        window.level_filter.select("intermediate")
         add(window, "pybricks/sensors/create_color_sensor")
         add(window, "python/basics/condition_else")
         slot = next(
@@ -461,9 +463,7 @@ def test_function_lesson_add_parameter_body_calls_and_rename(tmp_path, qt_app):
     qt_app.processEvents()
     try:
         connect(window)
-        window.level_filter.setCurrentIndex(
-            window.level_filter.findData("intermediate")
-        )
+        window.level_filter.select("intermediate")
         add(window, "python/basics/define_function")
         field(window, "action", "greet")
         select_line(window, "def greet():")

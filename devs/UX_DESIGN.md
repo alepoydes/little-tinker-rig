@@ -26,8 +26,8 @@ Every frontend uses the same document model and core editing operations.
 
 ## Library redesign target
 
-The following is the agreed direction for the next library revision, not a
-description of the current controls:
+The catalog navigation now implements the following layout. Existing-program
+variant editing and compact additional-argument controls remain in progress:
 
 - Use one exclusive button group for Beginner, Intermediate, Advanced, Expert,
   and All. Preserve cumulative level filtering and the separate All choice.
@@ -48,8 +48,9 @@ teaching of functions are future curriculum work. Function blocks remain ordinar
 language tools; they do not prescribe the architecture of every program.
 
 The [catalog research](BLOCK_CATALOG_RESEARCH.md#14-catalog-reduction-and-personal-navigation-proposal)
-records consolidation candidates and personal-view semantics. Detailed category
-membership and variant metadata still require design before changing their contracts.
+records consolidation candidates and personal-view semantics. The
+[inventory](BLOCK_LIBRARY_INVENTORY.md) records implemented family membership;
+[family metadata](DESIGN_SPEC.md#191-catalog-family-metadata) defines its contracts.
 The [block library work plan](BLOCK_LIBRARY_PLAN.md) defines the implementation
 sequence, dependencies, and completion criteria.
 
@@ -190,7 +191,7 @@ metadata. The persisted level filter combines with search and groups; All is an
 unrestricted level filter. First launch selects Beginner, and subsequent levels
 accumulate earlier ones. The [learning guide](../doc/en/learning.md) describes the
 current palette. The [catalog reduction and personal navigation proposal](BLOCK_CATALOG_RESEARCH.md#14-catalog-reduction-and-personal-navigation-proposal)
-describes planned alternatives, not implemented behavior. The Python view remains
+records the rationale for family cards and the implemented personal views. The Python view remains
 available at every level. Selection and hover increase saturation at fixed hue and lightness in both
 library cards and source; nested blocks retain their own semantic colors.
 
