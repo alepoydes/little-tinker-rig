@@ -24,6 +24,7 @@ Navigation:
 - [Current project coverage](#11-current-littletinker-rig-coverage),
   [proposed library organization](#12-proposed-library-organization),
   [criteria before implementation](#13-readiness-criteria-before-implementation).
+- [Catalog reduction and personal navigation](#14-catalog-reduction-and-personal-navigation-proposal).
 
 ## 1. Scope and evidence
 
@@ -802,16 +803,21 @@ tires, or collisions. Lessons must distinguish algorithm checks from mechanical 
 
 | Learner-facing section | Contents | Concepts |
 |---|---|---|
-| **Program** | Sequence, printing, waiting, repetition, conditions, loop exit | Execution order and control |
+| **Program** | Sequence, printing, waiting, repetition, conditions, loop exit; advanced tasks and cancellation | Execution order, control, and lifecycle |
 | **Values and calculations** | Numbers, strings, comparison, logic, formulas, randomness | Expressions, types, results |
-| **Names and collections** | Assignment, lists, dictionaries, indexing, iteration | State and data organization |
+| **Variables and collections** | Assignment, lists, dictionaries, indexing, iteration | Names, state, and data organization |
 | **Functions** | Definition, parameters, invocation, return | Decomposition and contracts |
-| **Devices** | Hub, motor, sensor, and drive configuration | Objects, resources, physical units |
-| **Movement** | Motor, drive base, steering car, settings, stopping | Actuation and trajectories |
-| **Measurements and input** | Sensors, buttons, time, remotes | Observation, conditions, events |
+| **Motors and movement** | Motor, drive base, and steering car setup, actions, settings, stopping | Actuation, objects, and physical units |
+| **Sensors and input** | Sensor setup and measurements, buttons, stopwatch, remotes | Observation, conditions, events |
 | **Light and sound** | Indicators, matrix, tones | Observable output |
-| **Concurrency and communication** | Tasks, joining, cancellation, messages | Coordination and lifecycle |
-| **Model actions** | Approach, grip, transfer, follow a line | Supplied functions for a particular build |
+| **Devices and communication** | Hub setup and status, connections, radio, application data | Resources and communication contracts |
+
+These eight sections are stable task-oriented destinations, not Python module
+names. A lesson or selected model supplies a separate contextual view containing
+its composite actions, such as gripping or following a line. Those actions remain
+searchable and available through the complete catalog; model-specific exercises
+should not fill the general beginner palette. Functions defined in the current
+program belong in a contextual subsection of Functions.
 
 This is a design hypothesis to evaluate with tasks. A stopwatch should be found
 through time, measurement, or timeout terminology without becoming three independent
@@ -884,3 +890,169 @@ Unresolved evidence must remain explicit:
 The next design priority is **categories and contracts for existing operations →
 a few complete learning routes → specific missing capabilities**. Add model actions
 and external services in response to needs demonstrated by those projects.
+
+## 14. Catalog reduction and personal navigation proposal
+
+This section is a concrete design proposal, not implemented behavior or an
+approved change to the snippet format. Counts refer to the repository snapshot
+in section 11. Reducing visible choices and changing an operation's behavior
+are separate decisions.
+
+### 14.1. What causes the current overload
+
+There are **253 templates**, of which **147 have the action presentation role**;
+147 is not the total catalog size. The current 23 headings follow source modules.
+For example, related motor choices span `motors`, `motor_motion`, and
+`motor_control`, while stopwatch operations share a module with drive bases.
+
+Several cards expose the same API operation with a different subset of optional
+arguments. This makes API coverage look like a larger set of concepts than it is.
+The beginner palette has 20 cards, including six composite activities from
+`pybricks/lessons` and a separate remote-driving activity. These belong to
+different builds; a learner does not need all of them for a first project.
+
+Keep four distinct measures: source templates, operation families, available
+catalog cards, and choices shown for the current lesson. A target for one is not
+a quota for the others. Do not select a final catalog size before checking that
+the teaching projects remain complete.
+
+### 14.2. First consolidation candidates
+
+The following six families currently occupy **23 cards**. They are candidates
+for six catalog entries with explicit variants, a reduction of 17 visible entries
+in this subset. Their source forms and behavior are not all interchangeable.
+
+| Proposed entry | Current cards | Existing variants to account for | Required visible distinction |
+|---|---:|---|---|
+| Turn motor by angle | 4 | `turn_motor`; three `motor_run_angle_*` templates | Relative angle, speed, waiting, final stop mode |
+| Move motor to position | 6 | `motor_target`, `target_background`, `target_coast`; three `motor_run_target_*` templates | Absolute target; waiting versus continuing immediately; final stop mode |
+| Run motor for time | 2 | `motor_time`; `motor_run_time_speed_time_wait` | Milliseconds, speed, waiting |
+| Run motor until stalled | 5 | `until_stalled`, `stall_hold`, `stall_limited`; two `motor_run_until_stalled_*` templates | Physical stop, duty limit, final stop mode, returned angle |
+| Stop motor | 3 | `stop_motor`, `coast_motor`, `motor_hold` | Brake, coast, and active hold; hold requires a compatible motor |
+| Drive a distance | 3 | `straight`; two `drive_straight_*` templates | Millimeters, waiting, final stop mode |
+
+Definitions are in [motors.py](../little_tinker_rig/snippets/pybricks/motors.py),
+[motor_motion.py](../little_tinker_rig/snippets/pybricks/motor_motion.py),
+[drive.py](../little_tinker_rig/snippets/pybricks/drive.py), and
+[drive_options.py](../little_tinker_rig/snippets/pybricks/drive_options.py).
+The two target templates that differ in keyword order are especially strong
+candidates for a single catalog choice. Preserve existing argument evaluation
+order when recognizing saved source: argument expressions can have side effects.
+
+Show essential arguments first. Optional settings can expand in the same card;
+an active non-default setting must remain visible when the editor is collapsed.
+In particular, a command that continues immediately must not look identical to
+one that waits. Show the actual resulting Python call before insertion.
+
+Review the remaining inventory with the following dispositions:
+
+| Disposition | Criterion | Example |
+|---|---|---|
+| Keep as a core operation | A distinct concept or useful project action | Read a measurement; compare; repeat; define a function |
+| Consolidate as variants | Same purpose with optional arguments or explicit modes | Motor motion options; controller limit setters |
+| Move to a lesson/model view | Assumes a particular build or teaches a composite algorithm | Conveyor transfer; gripper; remote driving |
+| Place in advanced discovery | Requires concepts beyond the basic route | PID tuning; raw input polling; iterators and generators |
+| Remove a redundant catalog entry | Another entry expresses the same operation and its required options | Duplicate keyword-order variants |
+
+Preserve meaningful distinctions: read settings versus change settings, reset
+coordinates versus move to zero, expression versus assignment, finite motion
+versus continuous control, relative angle versus absolute position. A universal
+card with many unrelated modes can be harder to learn than several small cards.
+Changing a variant must recheck result type, insertion context, and hardware
+capabilities. Different units must never acquire the same unlabeled field.
+
+Existing saved Python and helper definitions must retain their behavior. Catalog
+consolidation does not authorize automatic source rewriting or deleting recognition
+patterns. A complete audit must map each existing identity to its proposed family
+or destination before implementation; this six-family table is the first subset.
+
+### 14.3. Stable categories and personal views
+
+Use the eight subject categories in section 12.1, with a stable order. Personal
+views are alternative ways to reach the same cards, not three expanded lists
+prepended to every category. Display one selected view at a time.
+
+| View | Proposed behavior |
+|---|---|
+| Favorites | User-controlled links, added with a star or context action; manual order; persistent until removed |
+| Recent | Last 12 distinct operation families; using one again moves it to the front without adding another row |
+| Frequent | Up to 12 families ranked by successful insertions during the last 30 days; ties use latest use and then stable catalog order |
+| For this lesson/model | Relevant basic operations and composite actions, ordered by the lesson author |
+| Categories | Stable subject navigation, independent of personal usage |
+
+The limits and 30-day window are initial design choices to evaluate, not established
+learning results. Favorites should not have a small automatic eviction limit.
+Frequent needs an honest empty state before usage exists; do not label supplied
+recommendations as the learner's own frequent choices.
+
+A family occurs once within a view and once in global search results. It may
+belong to both Favorites and Recent without disappearing from its subject category.
+Do not hide it globally merely because another view contains a link. Statistics
+aggregate across argument variants; a saved parameter preset would be a separate
+feature and is outside this proposal. Ordinary cards keep documented defaults
+and contextual device binding rather than silently reusing an old project's ports.
+
+Freeze the displayed order during selection, editing, and dragging. Refresh
+usage-based order when entering the view again. Personalization must not continually
+rearrange the stable categories that learners are trying to remember.
+
+### 14.4. Usage and persistence semantics
+
+- Count one successful explicit insertion from the catalog, regardless of whether
+  it uses dragging, double-click, or the insertion button, in a document or Scratch.
+- Do not count hovers, searches, cancelled or rejected drops, opening a file,
+  recognition of existing code, execution of a program, or automatic helper insertion.
+- Undo does not erase an actual use; redo does not add a second use. Moving or
+  copying existing source is not a new catalog choice.
+- Keep bounded per-day counts for the frequency window and a distinct recent list.
+  Store personalization locally for the current application user; do not write it
+  into programs or send it to a service. Provide clear history and reset statistics.
+- Store references by stable catalog identity, never translated titles. Preserve
+  links when changing language or upgrading a collection; retain unavailable
+  favorites as clearly unavailable links so reinstalling a collection can restore them.
+- Built-in and installed collection cards can be shared across this user's projects.
+  Current-document functions need project/document scope: identical function names
+  in two files must not share statistics or favorites accidentally. Their persistence
+  requires an identity decision before extending this feature to them.
+
+Use existing application settings where appropriate. Catalog metadata remains
+the source for descriptions and code; personal views store references and usage,
+not duplicate block definitions. Both document and Scratch insertion paths need
+the same success semantics; a view refresh is not an insertion event.
+
+### 14.5. Search and learning context
+
+Search across the catalog, not only the currently open category. Match localized
+titles, English API names, curated synonyms, and then descriptions. Rank exact
+titles and API names above incidental words inside a long code example. Each
+result shows its subject and relevant variant; a favorite star is a badge on
+that result, not an additional result. For example, searching for “stop” should
+expose motor and drive stopping with their physical meanings intact.
+
+Respect insertion type and lesson scope in every view, including personal ones.
+When the level or lesson filter hides matches, say so and offer the existing
+explicit way to broaden the palette. Remember hidden favorites rather than
+discarding them. Do not hide disconnected-device operations merely because the
+learner is designing a program offline. Known hardware incompatibilities need
+an explanation; unknown hardware is not proof of incompatibility.
+
+The initial lesson should show only the operations needed for its experiment,
+while the complete categories remain an intentional navigation choice. Validate
+the palette by asking learners to find a finite motor move, stop a drive, read a
+distance, wait for a condition, and define a reusable action. Also check that they
+can explain waiting, units, and return values after selecting a variant. The
+acceptance evidence is successful discovery and understanding, not a reduced count
+by itself.
+
+As an implementation-independent precedent, Blockly distinguishes category
+toolboxes from a single always-visible block list and supports categories whose
+contents depend on the current workspace.
+[Blockly toolbox documentation](https://docs.blockly.com/guides/configure/toolboxes/toolbox/),
+[dynamic categories](https://docs.blockly.com/guides/configure/toolboxes/dynamic/).
+This supports the feasibility of separate stable and contextual views; it does
+not establish an optimal category count or justify adopting Blockly in this project.
+
+Recommended delivery order: complete the identity-to-family audit and contracts;
+implement stable categories, consolidated entries, and search; add Favorites and
+Recent; then add Frequent using the same successful-insertion tracking. Evaluate
+these changes with the first connected learning route before extending the catalog.

@@ -156,11 +156,13 @@ after a compound. An insertion row cannot move the hovered source row relative
 to the pointer. Invalid contexts have no target; only empty parameters accept
 compatible expressions. One accepted gesture creates one Undo operation.
 
-Cards and help show beginner, standard or expert from collection metadata. The
-persisted All/Beginner/Standard/Expert filter combines with search and groups.
-The first launch selects Beginner's nine motor/sensor sequencing blocks. Standard
-and Expert accumulate earlier levels. The Python view remains available at every
-level. Selection and hover increase saturation at fixed hue and lightness in both
+Cards and help show Beginner, Intermediate, Advanced, or Expert from collection
+metadata. The persisted level filter combines with search and groups; All is an
+unrestricted level filter. First launch selects Beginner, and subsequent levels
+accumulate earlier ones. The [learning guide](../doc/en/learning.md) describes the
+current palette. The [catalog reduction and personal navigation proposal](BLOCK_CATALOG_RESEARCH.md#14-catalog-reduction-and-personal-navigation-proposal)
+describes planned alternatives, not implemented behavior. The Python view remains
+available at every level. Selection and hover increase saturation at fixed hue and lightness in both
 library cards and source; nested blocks retain their own semantic colors.
 
 The toolbar keeps file, history and hub actions. Structural commands remain in
