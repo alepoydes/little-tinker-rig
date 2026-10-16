@@ -50,6 +50,8 @@ language tools; they do not prescribe the architecture of every program.
 The [catalog research](BLOCK_CATALOG_RESEARCH.md#14-catalog-reduction-and-personal-navigation-proposal)
 records consolidation candidates and personal-view semantics. Detailed category
 membership and variant metadata still require design before changing their contracts.
+The [block library work plan](BLOCK_LIBRARY_PLAN.md) defines the implementation
+sequence, dependencies, and completion criteria.
 
 ## Hubs and controls
 

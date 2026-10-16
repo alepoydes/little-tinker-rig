@@ -12,6 +12,8 @@ The [block catalog and learning research](BLOCK_CATALOG_RESEARCH.md)
 compares Pybricks, SPIKE, and MINDSTORMS and proposes a Python learning progression.
 Its catalog and curriculum proposals are research inputs, not changes to the
 implemented contracts described here.
+The [block library work plan](BLOCK_LIBRARY_PLAN.md) covers the next catalog and
+block-variant revision, including compatibility and verification requirements.
 
 ---
 
