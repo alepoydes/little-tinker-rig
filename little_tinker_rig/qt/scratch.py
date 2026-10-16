@@ -56,6 +56,8 @@ class Grip(QLabel):
 
 
 class ScratchCell(QFrame):
+    mode_changed = Signal()
+
     def __init__(self, pane, index, text):
         super().__init__()
         self.pane, self.index, self.text = pane, index, text
@@ -138,6 +140,7 @@ class ScratchCell(QFrame):
         if not code:
             self.error.hide()
         self.fit()
+        self.mode_changed.emit()
 
     def show_drag_origin(self, transfer):
         self.whole_drag = True
@@ -270,6 +273,7 @@ class ScratchPane(QScrollArea):
                 self.cells[index].fit()
                 continue
             cell = ScratchCell(self, index, text)
+            cell.mode_changed.connect(self.changed)
             if index < len(self.cells):
                 old = self.cells[index]
                 self.column.removeWidget(old)

@@ -617,10 +617,10 @@ class Session:
             focus=edit.map_offset(self.document.state.source, source, match.span.start),
         )
 
-    def _replace_match(self, match: Match, source: str) -> str:
+    def _replace_match(self, match: Match, source: str, *, changes=()) -> str:
         syntax = self.document.syntax
         if match.snippet.expression:
-            return edit.replace_expressions(syntax, [(match.span, source)])
+            return edit.replace_expressions(syntax, [(match.span, source), *changes])
         nodes = self._match_nodes(match)
         suite, span, _ = edit.statement_group(syntax, nodes)
         indent = syntax.position(match.span.start)[1]
@@ -630,7 +630,9 @@ class Session:
             and not isinstance(suite.owner, ast.Module)
         ):
             source = "pass"
-        return edit.patches(syntax.source, [(span, edit.reindent(source, indent))])
+        return edit.patches(
+            syntax.source, [(span, edit.reindent(source, indent)), *changes]
+        )
 
     def _match_nodes(self, match: Match) -> tuple[ast.stmt, ...]:
         syntax = self.document.syntax

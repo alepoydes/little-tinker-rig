@@ -13,6 +13,68 @@ def selected(source, snippets):
     return session, session.selected_match()
 
 
+def test_variant_dialog_renames_declaration_and_references_atomically(tmp_path, qt_app):
+    from little_tinker_rig.qt.editor import SourceView
+    from little_tinker_rig.qt.variants import VariantDialog
+
+    path = tmp_path / "main.py"
+    path.write_text(
+        "from pybricks.pupdevices import Motor\nfrom pybricks.parameters import Port\n"
+        'left: "Motor" = Motor(Port.A)\nleft.run(300)\n'
+        "def sample(left):\n    return left\n"
+    )
+    session = Session(path)
+    session.editor.selection = session.document.syntax.tree.body[2]
+    view = SourceView(session)
+    view.expression_level = "all"
+    dialog = VariantDialog(view)
+    before = session.document.state
+    try:
+        dialog.fields["name"].setCurrentText("sample")
+        assert not dialog.update_preview()
+        assert session.document.state is before
+        dialog.fields["name"].setCurrentText("wheel")
+        dialog.variant.setCurrentIndex(
+            dialog.variant.findData("pybricks/motors/create_oriented_motor")
+        )
+        assert dialog.update_preview()
+        assert session.document.state is before
+        candidate = dialog.candidate
+        dialog.apply()
+        assert session.document.state.source == candidate
+        assert "wheel.run(300)" in candidate and "left.run(300)" not in candidate
+        assert "def sample(left):\n    return left" in candidate
+        assert "from pybricks.parameters import Direction" in candidate
+        assert not session.analysis.diagnostics()
+        session.editor.undo()
+        assert session.document.state is before and not session.document.can_undo
+    finally:
+        dialog.close()
+        view.close()
+
+
+def test_variant_rename_updates_unchanged_inputs_and_earlier_references():
+    snippets = load_module(
+        '@inline_block(names=("name",))\ndef assign(name=value, initial=0):\n    name = initial\n',
+        "test/values",
+        "1",
+    )
+    session = Session.fragment(
+        "counter = 1\ncounter = counter + 1\nresult = counter\n", snippets
+    )
+    session.editor.selection = session.document.syntax.tree.body[1]
+    match = session.selected_match()
+    values = variant_bindings(session, match, match.snippet)
+    values["name"] = "steps"
+    before = session.document.state
+    session.change_variant(match.snippet, values)
+    result = {}
+    exec(session.document.state.source, result)
+    assert result["result"] == result["steps"] == 2 and "counter" not in result
+    session.editor.undo()
+    assert session.document.state is before
+
+
 def test_optional_variant_preserves_fixed_behavior_names_and_one_undo():
     snippets = builtin_snippets()
     session, match = selected("wheel.run_target(600, 90, wait=False)", snippets)

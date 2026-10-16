@@ -14,6 +14,8 @@ from .expressions import accepts
 from .parameters import suggestions
 from .snippets import Expansion, instantiate, instantiate_tree
 from .source_text import rewrite
+from .structure import rename_changes
+from .syntax import Span
 from .types import Compatibility, compatibility, known_type
 
 
@@ -168,6 +170,31 @@ def variant_source(session, match, snippet, values):
     if match.snippet.historical or snippet.historical:
         raise ValueError(N_("Upgrade a historical block before changing its variant"))
     syntax = session.document.syntax
+    old_fields = {
+        field_key(match.snippet, name): node for name, node in match.bindings.items()
+    }
+    renames = [
+        change
+        for name in snippet.names
+        if isinstance(node := old_fields.get(field_key(snippet, name)), ast.Name)
+        and (value := values.get(name, node.id)) != node.id
+        for change in rename_changes(session, node, value)
+    ]
+    # Untouched inputs can contain references to a renamed declaration. Preserve
+    # explicit field edits; migrate only values copied from the original block.
+    for parameter in snippet.parameters:
+        node = old_fields.get(field_key(snippet, parameter.name))
+        if node is None or values.get(parameter.name) != syntax.text(node):
+            continue
+        span = syntax.spans[node]
+        values[parameter.name] = edit.patches(
+            syntax.text(node),
+            [
+                (Span(part.start - span.start, part.end - span.start), value)
+                for part, value in renames
+                if span.start <= part.start and part.end <= span.end
+            ],
+        )
     if snippet.expression:
         node = next(
             n
@@ -226,7 +253,15 @@ def variant_source(session, match, snippet, values):
         replacement = "\n".join([*missing, replacement])
         if snippet.expression:
             replacement = "(\n" + replacement + "\n)"
-    source = session._replace_match(match, replacement)
+    source = session._replace_match(
+        match,
+        replacement,
+        changes=[
+            (span, value)
+            for span, value in renames
+            if not match.span.contains(span.start)
+        ],
+    )
     suggested = supplied + [
         value
         for parameter in snippet.parameters
@@ -239,7 +274,7 @@ def variant_source(session, match, snippet, values):
     ]
     prepared = session.prepare_insertion(
         source,
-        match.span.start,
+        edit.map_offset(syntax.source, source, match.span.start),
         (
             *expansion.imports,
             *(entry for value in suggested for entry in value.imports),

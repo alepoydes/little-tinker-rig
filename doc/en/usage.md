@@ -197,6 +197,10 @@ preserved by recovery and transferred to its path on the first save. Later
 
 ## Changing an inserted block's variant
 
+Changing a declared variable's name in the dialog also renames its resolved uses
+in the current program or Scratch fragment. Conflicting names are rejected, and
+Undo restores the declaration, references and other field edits together.
+
 Right-click a recognized block in the program or Scratch and choose **Variant**
 for an immediate switch. The current form is checked, and the other choices
 follow the level and lesson palette. Compatible field values are retained;
@@ -417,6 +421,8 @@ button restores your previous view and search. Editing the program ends the sear
 The same workflow works in Scratch and stays pinned when focus moves to the
 catalog. Drag a result onto the searched input or double-click its card to replace
 that value. The replacement and any required imports form one Undo operation.
+Switching the originating program or Scratch cell to Python ends the search;
+return to blocks and start a new search after editing the text.
 Quick measurement suggestions contain declared readouts, such as `motor.angle()`;
 motor movements remain explicit catalog actions even when they return a number.
 
@@ -430,6 +436,7 @@ Straight-line reads before assignment are diagnosed inside functions too, includ
 an initial `value = value + 1`. A closure's outer values may be initialized after
 the closure is defined. Nested calls retain their input contracts: the sensor in
 `force = sensor.force()` offers the same creation help as a standalone reading.
+Value searches and drops also respect the type of that nested input.
 
 Large catalog branches have nested mechanism or input groups. Individual motors,
 two-wheel bases and steering chassis have separate branches; model-dependent

@@ -39,7 +39,16 @@
 - Keep pinned searches attached to their source view and revision, independent
   of keyboard focus. Replacing a filled input by dragging requires an explicit
   search for that exact input; ordinary drops retain their existing protection.
+  Switching that source to Python ends the search before a draft can diverge
+  from its structural projection. Saved Scratch must match its visible text.
 - Keep inner expression contracts available beneath a containing block's display
   ownership. Editing an inner value still updates the containing linked field.
+  Catalog filtering and drop/variant validation must use these same contracts.
+- Rename declarations through the shared lexical rename operation in every UI,
+  including variant dialogs. References and the block edit form one transaction.
 - Check name initialization in evaluation order, separately from lexical scope
   ownership. Same-scope reads precede assignment writes; closures may run later.
+  A deferred write is not initialization merely because its function exists.
+  Class-local reads before initialization can fall back to global names; preserve
+  those dependencies during cleanup. Include parameter and return annotations,
+  including quoted nested types, when retaining imports.

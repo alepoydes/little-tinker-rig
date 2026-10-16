@@ -48,6 +48,14 @@ def name_span(syntax, node):
 
 def rename(session, node, name):
     """Rename a lexical definition and its resolved references in one revision."""
+    syntax = session.document.syntax
+    result = edit.patches(syntax.source, rename_changes(session, node, name))
+    syntax.validate(result)
+    return result
+
+
+def rename_changes(session, node, name):
+    """Validate one rename and return source patches for an atomic larger edit."""
     if not name.isidentifier() or keyword.iskeyword(name):
         raise ValueError(tr("Enter a Python identifier"))
     syntax, analysis = session.document.syntax, session.analysis
@@ -144,9 +152,7 @@ def rename(session, node, name):
                     for item in call.keywords
                     if item.arg == old
                 )
-    result = edit.patches(syntax.source, changes)
-    syntax.validate(result)
-    return result
+    return changes
 
 
 def declare_scope(session, node, name, kind):

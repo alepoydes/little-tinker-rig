@@ -68,6 +68,8 @@ def test_measurement_suggestions_preserve_dependencies_and_undo(tmp_path, qt_app
 
 
 def test_nested_receiver_contract_keeps_outer_linked_edit(tmp_path, qt_app):
+    from little_tinker_rig.core.expressions import accepts, expected
+    from little_tinker_rig.core.types import known_type
     from little_tinker_rig.qt.editor import SourceView
     from little_tinker_rig.qt.structure import block_menu
 
@@ -84,6 +86,9 @@ def test_nested_receiver_contract_keeps_outer_linked_edit(tmp_path, qt_app):
             if session.document.syntax.text(s.node) == "sensor"
         )
         assert slot.parameter.annotation == "ForceSensor"
+        assert expected(session, slot.node) == "ForceSensor"
+        assert not accepts(session, slot.node, known_type("int"))
+        assert accepts(session, slot.node, known_type("ForceSensor"))
         menu = block_menu(view, view.parameter_rect(slot).center().toPoint())
         assert "Find creation blocks" in [a.text() for a in menu.actions()]
         menu.deleteLater()
@@ -107,7 +112,7 @@ def test_scratch_search_survives_catalog_focus_and_applies_to_origin(tmp_path, q
     window.show()
     try:
         window.level_filter.select("all")
-        window.session.set_scratch(None, "motor.run(300)\n")
+        window.session.set_scratch(None, "motor.run(300)")
         window.refresh_views()
         window.scratch_dock.show()
         window.scratch_dock.raise_()
@@ -131,6 +136,61 @@ def test_scratch_search_survives_catalog_focus_and_applies_to_origin(tmp_path, q
         assert window.input_search is None
         window.session.editor.undo()
         assert window.session.document.state is before
+    finally:
+        window.confirm_close = lambda *_: True
+        window.close()
+
+
+def test_scratch_python_mode_invalidates_search_and_saves_visible_text(
+    tmp_path, qt_app
+):
+    from little_tinker_rig.qt.app import Studio
+
+    path = tmp_path / "main.py"
+    window = Studio(path)
+    window.show()
+    try:
+        window.session.set_scratch(None, "motor.run(300)\n")
+        window.refresh_views()
+        cell = window.scratch.cells[0]
+        slot = next(
+            s for s in cell.source.parameter_slots if s.parameter.name == "speed"
+        )
+        cell.source.search_input(slot)
+        assert window.input_search
+        cell.change_mode(True)
+        assert window.input_search is None
+        assert cell.source.input_target is None
+        cell.code.selectAll()
+        cell.code.insertPlainText("motor.run(750)\n")
+        window.session.project.save()
+        reopened = Session(path)
+        assert reopened.document.state.scratch == (cell.code.toPlainText(),)
+        cell.change_mode(False)
+        assert cell.source.session.document.state.source == "motor.run(750)\n"
+        window.session.editor.undo()
+        assert window.session.document.state.scratch == ("motor.run(300)\n",)
+    finally:
+        window.confirm_close = lambda *_: True
+        window.close()
+
+
+def test_nested_input_search_filters_incompatible_results(tmp_path, qt_app):
+    from little_tinker_rig.qt.app import Studio
+
+    path = tmp_path / "main.py"
+    path.write_text("force = sensor.force()\n")
+    window = Studio(path)
+    window.show()
+    try:
+        window.level_filter.select("all")
+        slot = next(
+            s
+            for s in window.source.parameter_slots
+            if s.parameter.annotation == "ForceSensor"
+        )
+        window.source.search_input(slot)
+        assert window.library.rows[reference("python/data/length")].isHidden()
     finally:
         window.confirm_close = lambda *_: True
         window.close()

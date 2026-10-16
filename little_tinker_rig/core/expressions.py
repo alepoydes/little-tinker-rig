@@ -130,6 +130,8 @@ def expected(session, node):
         annotation = binding[1].annotation
     elif isinstance(parent, ast.AnnAssign) and parent.value is node:
         annotation = annotation_text(parent.annotation)
+    if not annotation:
+        annotation = session.input_contracts.get(session.document.syntax.spans[node])
     if annotation:
         try:
             annotation_types(annotation)

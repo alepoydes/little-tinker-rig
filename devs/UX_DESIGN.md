@@ -156,6 +156,9 @@ not a mandatory program architecture. Existing compatible objects come first.
 After insertion, reassess the original input; bind a new name only when that
 change is explicitly included in the reviewed edit. Document revision changes
 invalidate stale suggestions.
+Switching the originating program or Scratch cell to Python also ends a pinned
+search, even before its text changes. Hidden block projections cannot receive
+replacements while the user edits the corresponding text draft.
 
 Availability diagnostics cover missing names and straight-line reads before
 assignment in the same execution scope, including function locals and assignment
@@ -170,6 +173,8 @@ A module variable used by a function need not precede the function definition;
 it must exist when the function executes. Start with clear straight-line cases,
 and describe uncertainty rather than claiming full definite-assignment analysis.
 Warnings should explain the needed ordering: creation executes before use.
+The same input contract governs quick suggestions, catalog filtering, drops and
+variant validation. An inner receiver keeps its device contract under an assignment.
 
 The pinned filter survives moving the pointer to the catalog. A compact existing
 status/back control identifies the input and restores the previous catalog view,

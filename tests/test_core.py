@@ -17,6 +17,11 @@ from little_tinker_rig.core.syntax import Syntax, parse
         "def f():\n    print(len([]))\n    len = 1\nf()\n",
         "value: int\nprint(value)\n",
         "value += 1\n",
+        "print(value)\ndef setup():\n    global value\n    value = 1\n",
+        "def setup():\n    global value\n    value = 1\nprint(value)\n",
+        "def setup():\n    global value\n    value = 1\nprint(value, setup())\n",
+        "def setup():\n    global value\n    value = 1\nstr(1)\nprint(value)\n",
+        "class Example:\n    global value\n    value = value + 1\n",
     ],
 )
 def test_reads_before_initialization_match_python_failures(source):
@@ -42,6 +47,10 @@ def test_reads_before_initialization_match_python_failures(source):
         "values = (value for _ in range(1))\nvalue = 3\nnext(values)\n",
         "def setup():\n    global value\n    value = 1\nsetup()\nprint(value)\n",
         "from __future__ import annotations\nclass Node:\n    child: Node\n",
+        "value = 1\nclass Example:\n    value = value + 1\nassert Example.value == 2\n",
+        "value = 1\nclass Example:\n    value: int\n    result = value\nassert Example.result == 1\n",
+        "class Example:\n    global value\n    value = 1\nassert value == 1\n",
+        "value = 1\ndef outer():\n    value = 2\n    class Example:\n        value = value\n    return Example.value\nassert outer() == 1\n",
     ],
 )
 def test_initialized_values_and_deferred_closures_are_not_flagged(source):

@@ -1090,6 +1090,16 @@ class Studio(QMainWindow):
             self.library.view_states[view] = state
             self.library.render()
 
+    def input_search_current(self):
+        view, slot = self.input_search
+        if view.session.document.syntax is not slot.syntax:
+            return False
+        if view is self.source:
+            return not self.code_active
+        return any(
+            cell.source is view and not cell.code_active for cell in self.scratch.cells
+        )
+
     def refresh_status(self):
         if not hasattr(self, "undo_action"):
             return
@@ -1098,15 +1108,7 @@ class Studio(QMainWindow):
             self.lessons.palette()
         self.library.set_scope(self.document_page.catalog_scope)
         if self.input_search:
-            view, slot = self.input_search
-            if (
-                view.session.document.syntax is not slot.syntax
-                or not (
-                    view is self.source
-                    or any(cell.source is view for cell in self.scratch.cells)
-                )
-                or self.library.context_key is None
-            ):
+            if not self.input_search_current() or self.library.context_key is None:
                 self.clear_input_search()
         match = self.session.selected_match()
         selection = (
@@ -1260,6 +1262,9 @@ class Studio(QMainWindow):
         item = self.library.currentItem()
         if item and item.data(0, IDENTITY):
             if self.input_search:
+                if not self.input_search_current():
+                    self.clear_input_search()
+                    return
                 view, slot = self.input_search
                 if (
                     view.input_target is slot

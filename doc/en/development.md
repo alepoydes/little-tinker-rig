@@ -594,14 +594,30 @@ edit commits. Inline fields and variant changes must use those same dependencies
 Automatic measurement candidates opt in with `readout=True`; returning a numeric
 value does not make a blocking motor action a measurement. Recognized inner calls
 retain input contracts even when a larger block owns their display and linked edits.
+Catalog filtering, drops and variant validation use those same nested contracts.
+Declaration changes in variant dialogs reuse lexical rename patches, including
+references outside the replaced block and unchanged input expressions inside it.
+Conflicts reject the whole edit; preview and application include one Undo transaction.
 
 Pinned searches are owned by a source view and revision, not keyboard focus.
 Test browsing from Scratch through applying a result and one Undo. Ordinary drops
 protect filled values; replacement is authorized only for the exact searched input.
 Keep scalar edits and hovering independent of catalog discovery.
+Switching the originating document or Scratch cell to Python invalidates the search
+immediately. A hidden structural projection must never overwrite a visible draft;
+verify the displayed text through save, reopen and a switch back to blocks.
 
 Name diagnostics distinguish lexical ownership from initialization during ordered
 evaluation. Visit assignment values before writes and loop iterables before targets.
 Reads in the same execution scope must have a preceding value; deferred functions
 may reference outer values created later. This is not control-flow analysis across
 branches or a proof of runtime initialization.
+Deferred global/nonlocal writes are possible initializers only after a call to their
+known function in the same execution scope. Merely defining the function does not
+suppress an earlier missing-name warning. Calls inside deferred bodies do not
+initialize module values at definition time.
+
+Class-local reads before their first value fall back to globals, not a shadowed
+enclosing function variable. Use the same lookup for diagnostics, renaming and
+dependency retention. Managed imports also retain names in quoted parameter and
+return annotations, including quoted types nested inside generic annotations.

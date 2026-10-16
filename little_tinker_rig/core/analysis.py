@@ -90,7 +90,8 @@ class Scopes:
         self.defined_scopes: dict[ast.AST, Scope] = {}
         self.references: list[tuple[ast.Name, Scope]] = []
         self.reference_bindings: dict[ast.Name, Scope | None] = {}
-        self.deferred_writes = set()
+        self.class_fallbacks: dict[ast.Name, bool] = {}
+        self.deferred_writes = {}
         self._visit(tree, self.root)
         # Declarations govern an entire lexical scope. Resolve after all outer
         # bindings are known, visiting enclosing scopes before their children.
@@ -104,16 +105,50 @@ class Scopes:
                 if owner:
                     offset = scope.bindings.pop(name)
                     owner.bindings[name] = min(owner.bindings.get(name, offset), offset)
-                    self.deferred_writes.add((id(owner), name))
+                    writer = self.execution_scope(scope)
+                    if writer is not self.execution_scope(owner):
+                        self.deferred_writes.setdefault(writer.node, set()).add(
+                            (id(owner), name)
+                        )
+        for node, scope in self.references:
+            initialized = self.reference_bindings[node]
+            if node in self.class_fallbacks and node.id in scope.bindings:
+                initialized = self.root if self.class_fallbacks[node] else None
+            self.reference_bindings[node] = (
+                self._resolve(initialized, node.id) if initialized else None
+            )
+
+    @staticmethod
+    def execution_scope(scope):
+        """Group eager class/comprehension execution with its enclosing scope."""
+        while isinstance(
+            scope.node, (ast.ClassDef, ast.ListComp, ast.SetComp, ast.DictComp)
+        ):
+            scope = scope.parent
+        return scope
 
     def _bind(self, scope: Scope, name: str, node: ast.AST, *, initialize=True) -> None:
         offset = self.positions.get(node, Span(0, 0)).start
         scope.bindings[name] = min(scope.bindings.get(name, offset), offset)
         if initialize:
             scope.initialized.add(name)
+            if name in scope.global_names | scope.nonlocal_names:
+                owner = (
+                    self.root
+                    if name in scope.global_names
+                    else self._resolve(scope, name)
+                )
+                if owner and self.execution_scope(scope) is self.execution_scope(owner):
+                    owner.initialized.add(name)
 
     def _reference(self, node, scope):
         self.references.append((node, scope))
+        if (
+            isinstance(scope.node, ast.ClassDef)
+            and node.id not in scope.initialized
+            and node.id not in scope.global_names | scope.nonlocal_names
+        ):
+            self.class_fallbacks[node] = node.id in self.root.initialized
         while scope and node.id not in scope.initialized:
             scope = scope.parent
         self.reference_bindings[node] = scope
@@ -242,6 +277,13 @@ class Scopes:
 
     def resolve(self, node: ast.AST, name: str) -> Scope | None:
         scope = self.scopes[node]
+        # A class-local load before its first value falls back to globals, even
+        # when an enclosing function has a binding with the same spelling.
+        if node in self.class_fallbacks and node.id == name and name in scope.bindings:
+            scope = self.root
+        return self._resolve(scope, name)
+
+    def _resolve(self, scope, name):
         if name in scope.global_names:
             scope = self.root
         elif name in scope.nonlocal_names:
@@ -573,6 +615,16 @@ class Analysis(Scopes):
     def _diagnostics(self) -> tuple[Diagnostic, ...]:
         result = []
         contracts = list(self.contracts)
+        initializations = {}
+        for call in ast.walk(self.syntax.tree) if self.deferred_writes else ():
+            if not isinstance(call, ast.Call):
+                continue
+            writes = self.deferred_writes.get(self.call_definition(call), ())
+            frame = id(self.execution_scope(self.scopes[call]))
+            for owner, name in writes:
+                key = frame, owner, name
+                end = self.syntax.spans[call].end
+                initializations[key] = min(initializations.get(key, end), end)
         deferred_annotations = (
             annotation_nodes(self.syntax.tree)
             if any(
@@ -606,7 +658,11 @@ class Analysis(Scopes):
                     deferred
                     or node in deferred_annotations
                     or self.reference_bindings.get(node) is owner
-                    or (id(owner), name) in self.deferred_writes
+                    or initializations.get(
+                        (id(self.execution_scope(origin)), id(owner), name),
+                        len(self.syntax.source) + 1,
+                    )
+                    <= self.syntax.spans[node].start
                 )
             else:
                 found = name in vars(builtins) or name in {

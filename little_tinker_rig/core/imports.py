@@ -4,7 +4,7 @@ import ast
 import io
 import tokenize
 
-from .analysis import Scopes, identifiers
+from .analysis import Scopes, annotation_nodes, identifiers
 from .edit import patches
 from .syntax import Span, Syntax
 
@@ -102,8 +102,7 @@ def manage_imports(
         except (tokenize.TokenError, IndentationError):
             pass  # Tokens before an unfinished fragment still retain their imports.
     assignments = set(scopes.root.bindings)
-    for node in ast.walk(syntax.tree):
-        annotation = getattr(node, "annotation", None)
+    for annotation in annotation_nodes(syntax.tree):
         if isinstance(annotation, ast.Constant) and isinstance(annotation.value, str):
             try:
                 used.update(identifiers(ast.parse(annotation.value, mode="eval")))

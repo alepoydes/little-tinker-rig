@@ -10,6 +10,57 @@ from little_tinker_rig.core.snippets import load_module
 from little_tinker_rig.core.syntax import Syntax
 
 
+@pytest.mark.parametrize(
+    "body",
+    [
+        "class C:\n    pi = pi\nresult = C.pi\n",
+        "class C:\n    pi: float\n    result = pi\nresult = C.result\n",
+        "def outer():\n    pi = 42\n    class C:\n        pi = pi\n    return C.pi\nresult = outer()\n",
+    ],
+)
+def test_class_fallback_keeps_global_import_on_unrelated_edits(tmp_path, body):
+    source = (
+        "# --- automatically managed imports ---\nfrom math import pi\n"
+        "# --- user imports ---\n" + body
+    )
+    path = tmp_path / "main.py"
+    path.write_text(source)
+    session = Session(path)
+    before = session.document.state
+    original = {}
+    exec(before.source, original)
+    session.editor.commit(before.source + "unrelated = 1\n")
+    edited = {}
+    exec(session.document.state.source, edited)
+    assert edited["result"] == original["result"]
+    assert not session.analysis.diagnostics()
+    session.editor.undo()
+    assert session.document.state is before
+
+
+@pytest.mark.parametrize("annotation", ['"Counter"', 'list["Counter"]'])
+def test_return_annotation_keeps_managed_dependency(tmp_path, annotation):
+    from typing import get_type_hints
+
+    source = (
+        "# --- automatically managed imports ---\nfrom collections import Counter\n"
+        f"# --- user imports ---\ndef make() -> {annotation}:\n    return None\n"
+    )
+    path = tmp_path / "main.py"
+    path.write_text(source)
+    session = Session(path)
+    before = session.document.state
+    original = {}
+    exec(before.source, original)
+    expected = get_type_hints(original["make"])
+    session.editor.commit(before.source + "unrelated = 1\n")
+    edited = {}
+    exec(session.document.state.source, edited)
+    assert get_type_hints(edited["make"]) == expected
+    session.editor.undo()
+    assert session.document.state is before
+
+
 def test_source_without_final_newline_has_correct_end_position():
     syntax = Syntax("answer = 42")
     assert syntax.position(len(syntax.source)) == (1, len(syntax.source))
