@@ -1664,6 +1664,17 @@ class SourceView(QTextEdit):
 
     def pointer_target(self, point):
         syntax = self.session.document.syntax
+        last = self.document().lastBlock()
+        while not last.isVisible() and last.previous().isValid():
+            last = last.previous()
+        rect = self.cursorRect(QTextCursor(last))
+        # The visual tail is outside the final compound, independent of x.
+        # Its body still accepts drops over the lower half of its last row.
+        if point.y() > rect.bottom() or (
+            not last.text().strip() and point.y() >= rect.top()
+        ):
+            suite = next(s for s in syntax.suites if s.owner is syntax.tree)
+            return edit.Target(suite, len(suite.statements))
         line, column = self.target_coordinates(point)
         if self.origin_span is not None and self.origin_span.contains(
             syntax.offset(line)

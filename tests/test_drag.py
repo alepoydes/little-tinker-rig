@@ -154,6 +154,83 @@ def test_return_to_origin_has_no_undo_and_drop_commits_once(qt_app):
         view.close()
 
 
+@pytest.mark.parametrize("scratch", [False, True])
+@pytest.mark.parametrize(
+    "source",
+    [
+        "while True:\n    print(2)\n",
+        "while True:\n    if True:\n        print(1)\n        print(2)\n",
+        "for i in range(2):\n    print(1)\nelse:\n    print(2)\n",
+    ],
+)
+def test_drag_below_final_compound_leaves_its_body_and_undo_restores_it(
+    tmp_path, qt_app, source, scratch
+):
+    from PySide6.QtCore import QPoint
+    from PySide6.QtGui import QCursor
+
+    from little_tinker_rig.qt.drag import cancel_drag, drag_block
+    from little_tinker_rig.qt.scratch import ScratchPane
+
+    owner = Session(tmp_path / "main.py")
+    if scratch:
+        owner.set_scratch(None, source)
+        widget = ScratchPane()
+        widget.refresh(owner)
+        view = widget.cells[0].source
+    else:
+        widget = view = view_for(qt_app, source)
+        owner = view.session
+    widget.resize(900, 650)
+    widget.show()
+    qt_app.processEvents()
+    try:
+        original = owner.document.state
+        had_undo = owner.document.can_undo
+        syntax = view.session.document.syntax
+        node = next(
+            n
+            for n in ast.walk(syntax.tree)
+            if isinstance(n, ast.Expr) and ast.unparse(n) == "print(2)"
+        )
+        view.session.editor.selection = node
+        transfer = (
+            Transfer.capture(owner, index=0, fragment=view.session)
+            if scratch
+            else Transfer.capture(owner)
+        )
+        QCursor.setPos(
+            view.viewport().mapToGlobal(view._rect(node.lineno, 0).center().toPoint())
+        )
+        gesture = drag_block(view, transfer)
+        # The empty tail belongs to the program even when the pointer is far
+        # to the right of every indentation band. No synthetic sibling is needed.
+        tail = view._rect(len(syntax.lines) + 1, 0)
+        point = view.viewport().mapToGlobal(QPoint(500, round(tail.center().y())))
+        for _ in range(3):
+            gesture.move(point)
+            assert gesture.accepted
+            assert view.drop_target.suite.owner is syntax.tree
+            assert view.drop_target.index == len(syntax.tree.body)
+            assert owner.document.state is original
+        gesture.finish(True)
+        result = (
+            owner.document.state.scratch[0] if scratch else owner.document.state.source
+        )
+        tree = ast.parse(result)
+        assert len(tree.body) == 2 and ast.unparse(tree.body[-1]) == "print(2)"
+        assert not any(
+            isinstance(n, ast.Expr) and ast.unparse(n) == "print(2)"
+            for n in ast.walk(tree.body[0])
+        )
+        assert owner.editor.undo()
+        assert owner.document.state is original
+        assert owner.document.can_undo == had_undo
+    finally:
+        cancel_drag()
+        widget.close()
+
+
 def test_incompatible_drop_is_not_offered_and_filled_parameter_is_preserved(
     tmp_path, qt_app
 ):

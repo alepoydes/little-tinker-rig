@@ -439,7 +439,10 @@ async def test_program_built_from_library_runs_on_virtual_hubs(
         await hub.disconnect()
 
 
-def test_qt_drop_into_empty_line_uses_pointer_indentation(tmp_path, qt_app):
+@pytest.mark.parametrize("inside", [False, True])
+def test_qt_final_body_and_empty_tail_have_distinct_drop_destinations(
+    tmp_path, qt_app, inside
+):
     from PySide6.QtCore import QMimeData, QPoint
 
     from little_tinker_rig.qt.app import Studio
@@ -451,7 +454,8 @@ def test_qt_drop_into_empty_line_uses_pointer_indentation(tmp_path, qt_app):
     qt_app.processEvents()
     try:
         view = window.source
-        blank = view._rect(view.document().blockCount(), 4)
+        original = window.session.document.state
+        rect = view._rect(2 if inside else view.document().blockCount(), 0)
         data = QMimeData()
         data.setData(
             "application/x-little-tinker-rig-snippet", b"pybricks/sensors/wait_ms"
@@ -460,10 +464,15 @@ def test_qt_drop_into_empty_line_uses_pointer_indentation(tmp_path, qt_app):
             qt_app,
             view.viewport(),
             data,
-            QPoint(int(blank.left()), int(blank.center().y())),
+            QPoint(500, round(rect.center().y()) + int(inside)),
         )
-        loop = window.session.document.syntax.tree.body[-1]
-        assert isinstance(loop, ast.While)
-        assert [ast.unparse(node) for node in loop.body] == ["print(1)", "wait(1000)"]
+        body = window.session.document.syntax.tree.body
+        loop = next(node for node in body if isinstance(node, ast.While))
+        assert [ast.unparse(node) for node in loop.body] == (
+            ["print(1)", "wait(1000)"] if inside else ["print(1)"]
+        )
+        assert body[-1] is loop if inside else ast.unparse(body[-1]) == "wait(1000)"
+        assert window.session.editor.undo()
+        assert window.session.document.state is original
     finally:
         close_window(window)

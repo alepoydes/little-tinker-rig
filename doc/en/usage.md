@@ -125,8 +125,11 @@ while the mouse button remains held. Returning to the amber row changes nothing.
 
 Hover the upper half of a source row to insert above it, or the lower half to
 insert below it. Below a loop or `if` header means the beginning of its body. To
-insert after a compound block, hover the next outside block or a following blank
-line; horizontal position selects nesting on blank lines. A green **Insert here**
+insert after the final loop or other compound, drag into the empty space below
+the program. This selects the program's end regardless of horizontal position.
+Use the lower half of the last body row to stay inside the compound. Between
+blocks, the next outside block offers insertion after a compound; horizontal
+position selects nesting on interior blank lines. A green **Insert here**
 row opens space before the destination's descriptions. Its appearance keeps the
 same source row and relative point under the pointer. Edges scroll the view;
 dragging does not fold code automatically.

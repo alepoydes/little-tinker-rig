@@ -342,9 +342,30 @@ def replace(syntax: Syntax, node: ast.AST, fragment: str) -> str:
     return result
 
 
+def check_move_target(
+    syntax: Syntax, nodes: ast.stmt | tuple[ast.stmt, ...], target: Target
+):
+    """Reject overlap and no-op moves before validating the destination's context."""
+    nodes = (nodes,) if isinstance(nodes, ast.stmt) else nodes
+    suite, span, count = statement_group(syntax, nodes)
+    offset, _ = target_position(syntax, target)
+    start = suite.statements.index(nodes[0])
+    # Adjacent suites can share a text offset while requiring different indents.
+    if span.start < offset < span.end or (
+        target.suite is suite and start <= target.index <= start + count
+    ):
+        raise ValueError("Cannot move a block into itself or to the same position")
+
+
 def move(
     syntax: Syntax, node: ast.AST | tuple[ast.stmt, ...], target: Target | ast.expr
 ) -> str:
+    if (
+        isinstance(node, ast.expr)
+        and isinstance(target, Target)
+        and isinstance(syntax.parent.get(node), ast.Expr)
+    ):
+        node = syntax.parent[node]
     if isinstance(node, ast.expr):
         removed = _removal(syntax, node)
         text = block_text(syntax, node)
@@ -364,11 +385,9 @@ def move(
         return result
     if not isinstance(target, Target):
         raise ValueError("Only expressions fit in parameters")
+    check_move_target(syntax, node, target)
     removed = _removal(syntax, node)
     span = removed[0]
-    offset, _ = target_position(syntax, target)
-    if span.start <= offset <= span.end:
-        raise ValueError("Cannot move a block into itself or to the same position")
     insertion = _insertion(syntax, target, syntax.source[span.start : span.end])
     result = patches(syntax.source, [removed, insertion])
     syntax.validate(result)

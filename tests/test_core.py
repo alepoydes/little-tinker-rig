@@ -73,6 +73,31 @@ def test_move_preserves_comments_and_multiline_string_value():
     assert "pass" not in result
 
 
+@pytest.mark.parametrize("expression", [False, True])
+def test_shared_text_boundary_can_change_statement_suite(expression):
+    source = 'while True:\n    print(0)\n    # attached\n    print("kept")\n'
+    document = Document(source)
+    syntax = document.syntax
+    statement = syntax.tree.body[0].body[-1]
+    node = statement.value if expression else statement
+    target = edit.Target(syntax.suites[0], 1)
+    assert edit.target_position(syntax, target)[0] == syntax.block_span(statement).end
+    moved = edit.move(syntax, node, target)
+    assert moved == 'while True:\n    print(0)\n# attached\nprint("kept")\n'
+    editor = Editor(document)
+    editor.selection = statement
+    assert target in editor.begin_move().targets
+
+    syntax = Syntax(moved)
+    node = syntax.tree.body[-1]
+    target = edit.Target(syntax.suites[1], 1)
+    assert edit.target_position(syntax, target)[0] == syntax.block_span(node).start
+    assert edit.move(syntax, node.value if expression else node, target) == source
+    for index in (1, 2):
+        with pytest.raises(ValueError, match="same position"):
+            edit.move(syntax, node, edit.Target(syntax.suites[0], index))
+
+
 def test_move_rejects_break_outside_loop():
     editor = Editor(Document("while True:\n    break\nprint(1)\n"))
     editor.select(editor.document.state.source.index("break"))

@@ -70,6 +70,108 @@ records consolidation candidates and personal-view semantics. The
 The [block library work plan](BLOCK_LIBRARY_PLAN.md) defines the implementation
 sequence, dependencies, and completion criteria.
 
+### Planned nested groups
+
+Nested groups are the next catalog extension; the current implementation still
+has one category level. Keep purpose as the first level, then use a mechanism or
+input kind where it reduces a large list. A robot can contain several mechanisms;
+its model name is not a suitable root for shared motor, sensor, or Python blocks.
+
+Start with the two crowded branches, Movement (54 families) and Input (42):
+
+| Category | Proposed subgroups | Placement examples |
+|---|---|---|
+| Motors and movement | Individual motors; two-wheel drive bases; steering chassis; grippers; two-axis mechanisms; conveyors | Motor setup, motion, measurements and control tuning stay with motors. DriveBase setup, movement, gyro use, line following and remote driving stay with two-wheel bases. Car setup and steering calibration stay with steering chassis. |
+| Sensors and input | Color and reflection; distance; force and contact; orientation and motion; buttons and controllers; time; terminal input | Reads are grouped by what they measure. Stopwatch creation and readings stay together. LEGO remote and Xbox branches may separate their controls when the combined branch becomes crowded. |
+
+Creation families spanning several sensor kinds remain directly under Sensors
+and input. In particular, `create_color_sensor` already includes ultrasonic,
+force, and BOOST sensor variants; `colorsensor_port` also includes an ultrasonic
+value constructor. Placing either whole family only under Color would mislabel
+its other variants. Search and dependency help must select the matching exact
+variant without duplicating the card across branches.
+
+Use a third group only for a useful distinction, such as a model-specific
+mechanism implementation or an oversized motor-tuning section. Do not reproduce
+the whole category tree below each robot or add empty General/Models wrappers.
+Small categories can keep their cards directly under the category. New branches
+are justified by existing blocks, not by hypothetical future mechanisms.
+
+`conveyor_transfer` belongs under Conveyors / BOOST Auto Builder: its homing,
+geometry and sequence depend on that build. `draw_rectangle` needs a two-axis
+mechanism, and `force_gripper` needs a gripper with a force sensor and mechanical
+stops. `dance_turns` is a general DriveBase behavior; its Tricky example origin
+does not make it exclusive to Tricky. Keep these requirements separate from
+hub, port, accessory, and firmware compatibility.
+
+Model-specific branches should require an explicit model selection in project
+or lesson context. A project can select several mechanisms and models. Complete
+discovery remains available through a catalog context action; no persistent extra
+selector row is needed. Do not infer a chassis from its connected hub or treat an
+unknown project configuration as a confirmed hardware mismatch. Existing source
+and favorite references remain accessible when a branch is hidden.
+
+Each family retains one canonical path and its existing stable identity. Paths
+use stable keys and localized labels, independent of difficulty and personal
+views. Search examines descendants, their path labels, and all eligible variants;
+it expands matching ancestors and restores prior expansion when cleared. Group
+visibility and collapse/expand-all operate recursively. Favorites, Recent and
+Frequent keep their existing flat ordering. Exact lesson and level restrictions
+still apply to variants before a card becomes visible.
+
+### Proposed parameter dependency help
+
+This interaction is a proposal for the next implementation stage. Hover shows
+the expected type/unit, current name, and a concise availability diagnostic.
+Hover does not change the catalog. Clicking or using the parameter context menu
+offers these distinct actions:
+
+- Use an existing value: offer compatible variables accessible at this use site,
+  and compatible value-producing expressions.
+- Show a definition: navigate to a known declaration and explain if it is later
+  in the same execution sequence or outside the usable scope.
+- Find a creation block: pin a catalog filter to declarations or constructors
+  that provide the required type, selecting the matching family variant.
+
+An unset Motor parameter should lead to motor creation or an existing motor, not
+to every operation that takes a motor. A ForceSensor parameter should select the
+force-sensor variant of the shared creation card. Derive these relationships
+from existing parameter/result annotations and public inline declarations;
+function-helper locals are private. Do not maintain another manual list of
+device types or a parallel dependency catalog. Unknown types remain uncertain,
+not falsely compatible or erroneous. Units use the existing compatibility rules.
+
+Statement creators and value expressions have different insertion destinations.
+A creator such as `motor = Motor(Port.A)` is placed before the use in a scope where
+the binding is accessible. An expression constructor can fill the input, but its
+evaluation frequency matters: placing it inside a loop creates an object on every
+iteration. Do not automatically insert or move initialization, choose a hardware
+port, rename user variables, or satisfy an entire dependency chain. Show candidate
+placement and the resulting Python before an explicit edit. Use the established
+drag interaction and Undo; do not restore the removed Add block button.
+
+For a DriveBase input, help may expose the chain from drive base to left/right
+motors and ports one step at a time. A combined setup block is another candidate,
+not a mandatory program architecture. Existing compatible objects come first.
+After insertion, reassess the original input; bind a new name only when that
+change is explicitly included in the reviewed edit. Document revision changes
+invalidate stale suggestions.
+
+Availability must distinguish a missing name, a later binding in the same
+sequence, an inaccessible binding, and uncertain execution. Source order alone
+does not prove availability across branches, loops, closures or function calls.
+A module variable used by a function need not precede the function definition;
+it must exist when the function executes. Start with clear straight-line cases,
+and describe uncertainty rather than claiming full definite-assignment analysis.
+Warnings should explain the needed ordering: creation executes before use.
+
+The pinned filter survives moving the pointer to the catalog. A compact existing
+status/back control identifies the input and restores the previous catalog view,
+search, selection and expansion on exit. It must not silently widen lesson or
+level restrictions: explain when a provider is hidden and offer an explicit way
+to change the relevant filter. The existing selected-expression filter is not
+sufficient for statement creators and must not be reused as if they were values.
+
 ## Hubs and controls
 
 Connections offer Bluetooth, USB, and virtual hubs. The device panel shows hub
@@ -197,8 +299,12 @@ preservation of user data during language changes.
 ## Drag boundaries, levels and firmware
 
 Pointer halves choose before/after a row; the lower half of a compound header
-chooses the body. The next outside block or a following blank line offers insertion
-after a compound. An insertion row cannot move the hovered source row relative
+chooses the body. The empty visual tail chooses the end of the program, independent
+of horizontal position; the last body row still offers insertion inside a final
+compound. The next outside block or an interior blank line offers insertion after
+other compounds. A shared source offset does not make two suite destinations
+equivalent: moving the last child after its parent changes nesting. An insertion
+row cannot move the hovered source row relative
 to the pointer. Invalid contexts have no target; only empty parameters accept
 compatible expressions. One accepted gesture creates one Undo operation.
 

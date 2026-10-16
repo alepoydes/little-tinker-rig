@@ -110,7 +110,7 @@ class Editor:
 
     def begin_move(self, nodes: tuple[ast.stmt, ...] | None = None) -> Move:
         syntax, node = self.document.syntax, nodes or self.statement()
-        _, removed, _ = edit.statement_group(syntax, node)
+        edit.statement_group(syntax, node)
         # Within one statement list, compiler context is independent of position
         # except for declarations whose meaning depends on preceding statements.
         ordered = any(
@@ -123,9 +123,7 @@ class Editor:
         candidates = []
         for target in edit.targets(syntax):
             try:
-                offset, _ = edit.target_position(syntax, target)
-                if removed.start <= offset <= removed.end:
-                    continue
+                edit.check_move_target(syntax, node, target)
                 key = (id(target.suite.owner), target.suite.field)
                 if ordered or key not in valid_suites:
                     try:

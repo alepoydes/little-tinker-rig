@@ -1,6 +1,7 @@
 # Block library work plan
 
-Status: complete. Baseline and verification date: October 16, 2026.
+Status: initial delivery complete; follow-up catalog and dependency work is planned
+below. Baseline and verification date: October 16, 2026.
 
 The source-derived [inventory](BLOCK_LIBRARY_INVENTORY.md) accounts for all 253
 templates. Consolidation defines 191 families, with 250 selectable forms
@@ -27,7 +28,9 @@ using the findings in the [catalog research](BLOCK_CATALOG_RESEARCH.md).
 - Subject categories are expandable tree branches replacing module headings.
   The eight proposed categories are listed in the
   [research](BLOCK_CATALOG_RESEARCH.md#121-main-sections); detailed membership is
-  determined by the inventory. No extra Python/devices/model hierarchy is added.
+  determined by the inventory. No extra Python/devices/model hierarchy is added
+  above these categories. The initial delivery has no nested subgroups; the
+  follow-up below extends the tree within categories.
 - Related operation variants share a card. Essential arguments are prominent;
   additional options remain accessible, and active behavioral differences are visible.
 - Personal views reference the same block families without duplicates within a view.
@@ -345,3 +348,63 @@ Verification for this refinement: 14 focused variant/personal-view tests pass in
 complete lessons through the changed insertion controls. Native EN/RU checks
 verify icon rendering, tooltips, keyboard activation, both group actions, and the
 930 × 620 layout. Updated user guides and screenshots reflect the compact controls.
+
+## Follow-up: nested groups and dependency discovery
+
+The [nested-group design](UX_DESIGN.md#planned-nested-groups) and
+[parameter-help proposal](UX_DESIGN.md#proposed-parameter-dependency-help) describe
+the next stage. These are not implemented features. The initial delivery counts
+and verification above describe the existing flat category branches.
+
+1. Audit family destinations and applicability. Begin with Movement and Input;
+   retain shared sensor-creation families at their common category. Distinguish
+   mechanism requirements, genuine model-specific routines, example provenance,
+   and device/firmware support. Inventory every relocation without changing IDs,
+   source expansion, or personal references.
+2. Specify the smallest backward-compatible metadata extension for optional
+   subgroup paths, their localized names, and explicit applicability. Review the
+   contract before implementing it. Reuse lesson/project context where it carries
+   the required information; a hub connection alone does not identify a build.
+3. Implement nested rendering, descendant filtering, matching-path search,
+   recursive expansion, saved expansion state, and Block Editor controls together.
+   Preserve compact icon rows, flat personal views, family variants and exact
+   lesson palettes. Check EN/RU and narrow windows.
+4. Improve parameter guidance using the shared type/scope model. First expose
+   available values and actionable diagnostics for clear missing/later bindings.
+   Index public declarations and expression results from the current definitions;
+   filter exact provider variants before grouping them into cards.
+5. Implement an explicit pinned provider-search action and placement preview.
+   Distinguish an expression for the input from a statement that creates its
+   dependency. Keep hardware initialization frequency and lexical scope visible;
+   never silently add a chain of objects or relocate code. Apply an approved
+   source edit as one Undo operation and reject stale suggestions.
+
+Acceptance examples include a missing Motor, a ForceSensor variant within the
+shared sensor card, DriveBase creation requiring two motors, a compatible object
+declared later, a function parameter, a conditional/uncertain binding, and a
+provider hidden by the lesson palette. None should change the catalog merely
+because the pointer crossed a parameter.
+
+### Shared-boundary move correction
+
+The final child and its containing compound can end at the same source offset.
+Move validation now compares statement-list membership as well as offsets, so a
+child can leave its parent and an adjacent statement can enter the preceding
+body. Keyboard enumeration shares this validation. Standalone expressions use
+their statement boundary for statement moves. The empty visual tail selects the
+program/fragment end regardless of horizontal position. Empty bodies retain
+`pass`, and comments and one-step Undo are preserved.
+
+Regression coverage exercises these moves in both directions, final nested
+compounds and `for/else`, source and Scratch gestures, and keyboard destinations.
+The project rules now require suite-aware boundaries and observable resulting
+programs in structural regression checks.
+
+Validation: 50 core/drag checks pass in 8.80 seconds; 69 related expression,
+structure and Scratch checks pass, followed by both revised inside/tail library
+drop cases in 1.55 seconds. The broader interaction run exceeds the quick-test
+budget because the shared move operation also serves those editing paths.
+Ruff, Black, documentation links, UTF-8 without BOM and whitespace checks pass.
+Enumerating keyboard destinations in a 5,000-statement program takes about 64 ms
+in the development environment; no full-suite or physical-hardware run is claimed
+for this correction.
