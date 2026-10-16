@@ -24,6 +24,33 @@ Every frontend uses the same document model and core editing operations.
   F1 targets a stable section anchor, and search includes all blocks in the page.
   Source snippets are the only maintained block reference definitions.
 
+## Library redesign target
+
+The following is the agreed direction for the next library revision, not a
+description of the current controls:
+
+- Use one exclusive button group for Beginner, Intermediate, Advanced, Expert,
+  and All. Preserve cumulative level filtering and the separate All choice.
+- Use a separate exclusive button group for Catalog, Favorites, Recent, Frequent,
+  and For this lesson. View buttons use icons with localized names and tooltips,
+  accessible labels, and a visible active state. Level buttons keep readable names.
+- Display subject categories as expandable branches of the catalog tree, with
+  cards under them. These replace module-based headings. Do not add another
+  category button bar or an extra Python/devices/model hierarchy above them.
+- Personal views preserve their own manual, recent, or frequency order. They
+  reference the same cards and do not add duplicates inside a view.
+- For this lesson consumes the existing current-stage block selection. The stage
+  determines its palette without an unrelated level selection hiding required cards.
+
+Current work covers block operations, consolidation of variants, parameters,
+categories, and catalog navigation. New lesson sequences and changes to the
+teaching of functions are future curriculum work. Function blocks remain ordinary
+language tools; they do not prescribe the architecture of every program.
+
+The [catalog research](BLOCK_CATALOG_RESEARCH.md#14-catalog-reduction-and-personal-navigation-proposal)
+records consolidation candidates and personal-view semantics. Detailed category
+membership and variant metadata still require design before changing their contracts.
+
 ## Hubs and controls
 
 Connections offer Bluetooth, USB, and virtual hubs. The device panel shows hub

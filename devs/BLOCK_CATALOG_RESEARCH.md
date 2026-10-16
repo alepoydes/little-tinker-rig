@@ -5,6 +5,11 @@ library and lesson design. Proposals here do not change implemented editor contr
 Developer documentation is maintained in English only. End-user localization
 applies to the GUI, block descriptions, and lab/lesson content.
 
+Current development scope is block behavior and catalog design. Curriculum
+proposals below remain future work; implementing new lessons is not a prerequisite
+for revising blocks. The agreed navigation target is recorded in
+[Library redesign target](UX_DESIGN.md#library-redesign-target).
+
 The purpose is to identify the operations needed for complete projects, explain
 why apparently similar blocks exist separately, and connect the library to a
 learning progression. The comparison unit is an **operation or a family of related
@@ -581,6 +586,9 @@ should be explicit. A nearby Python editor alone does not ensure that transfer.
 ### 9.1. Principles
 
 This section proposes a course; it does not describe already implemented behavior.
+Functions are a focus of particular exercises, not a required architecture for
+every program or lesson. Straight-line programs, loops, and functions are chosen
+according to the problem. This curriculum is outside the current block revision.
 
 1. **Python is visible from the first action.** Labels aid reading, while function
    names, arguments, colons, and indentation remain actual Python.
@@ -824,8 +832,11 @@ through time, measurement, or timeout terminology without becoming three indepen
 templates. One operation has one implementation and can have several discovery paths.
 
 Subject, syntactic role, and difficulty should remain separate. No metadata schema
-is approved here: first establish the usefulness of this information in a small
-lesson set, then choose the smallest justified change to existing collection contracts.
+is approved here: define category membership and operation families first, then
+choose the smallest justified change to existing collection contracts. The subject
+categories replace the current module headings with tree branches. Python basics,
+device operations, and model actions describe library contents; they are not an
+additional parent hierarchy or a new difficulty field.
 
 ### 12.2. Card information
 
@@ -861,18 +872,19 @@ not become prerequisites for a simple complete project.
 
 ## 13. Readiness criteria before implementation
 
-This research supports choosing the catalog and learning structure. Before
-changing contracts and interfaces, define a concrete first subset—for example,
-T0–T4 on one drive base with a color sensor—and check the following.
+This research supports choosing block operations and catalog structure. Before
+changing their contracts, define a concrete first consolidation subset and check
+the following against existing examples and programs. New lab authoring and
+curriculum evaluation are separate future work.
 
 | Criterion | Sufficient evidence |
 |---|---|
-| Project completeness | The subset supports a courier, barrier, and line stop, including termination |
-| Learning coherence | Every new construct has a prerequisite, experiment, and independent task |
+| Operation coverage | Existing useful operations have a documented destination after consolidation |
+| Variant behavior | Each choice has defined arguments, units, result, completion, and device effects |
 | Discovery | Operations can be found by task without knowing Pybricks module names |
-| Distinctions | Learners explain start/complete, read/wait, and set/change |
-| Transparency | A supplied action opens as readable Python with one function definition |
-| Transfer | Learners edit the same algorithm as text and solve an equivalent non-robot problem |
+| Distinctions | Cards visibly distinguish start/complete, read/wait, and set/change |
+| Transparency | Cards expose their actual Python; existing source and helper behavior are preserved |
+| Navigation | Level buttons, view buttons, and category branches work independently with search |
 | Execution | Units, completion, and hardware support are checked on the selected profile; physical claims are tested separately |
 
 Unresolved evidence must remain explicit:
@@ -887,14 +899,15 @@ Unresolved evidence must remain explicit:
 - Actual learner comprehension of names, the initial palette, and the T0–T9 order.
   Lessons with learners establish this, not card counts.
 
-The next design priority is **categories and contracts for existing operations →
-a few complete learning routes → specific missing capabilities**. Add model actions
-and external services in response to needs demonstrated by those projects.
+The current design priority is **operation-family audit → variant contracts and
+categories → catalog navigation**. Evaluate the proposed learning routes in later
+curriculum work. New model actions and external services need a demonstrated use.
 
 ## 14. Catalog reduction and personal navigation proposal
 
-This section is a concrete design proposal, not implemented behavior or an
-approved change to the snippet format. Counts refer to the repository snapshot
+This section combines the agreed navigation direction with consolidation proposals;
+it does not describe implemented behavior or approve a new snippet format.
+Counts refer to the repository snapshot
 in section 11. Reducing visible choices and changing an operation's behavior
 are separate decisions.
 
@@ -944,6 +957,12 @@ an active non-default setting must remain visible when the editor is collapsed.
 In particular, a command that continues immediately must not look identical to
 one that waits. Show the actual resulting Python call before insertion.
 
+Reuse existing parameter mechanisms: API enums such as `Stop` and `Direction`,
+Boolean values, editable expressions, and optional arguments. A choice between
+operations such as `motor.stop()`, `motor.brake()`, and `motor.hold()` selects an
+ordinary Python operation; it does not require a new runtime enum in user code.
+The shared representation of card variants still needs a concrete design.
+
 Review the remaining inventory with the following dispositions:
 
 | Disposition | Criterion | Example |
@@ -972,13 +991,19 @@ Use the eight subject categories in section 12.1, with a stable order. Personal
 views are alternative ways to reach the same cards, not three expanded lists
 prepended to every category. Display one selected view at a time.
 
+Use separate button groups for levels and views, and expandable tree branches
+for subject categories. Keep Beginner, Intermediate, Advanced, Expert, and All;
+Favorites and Recent are views, not additional difficulty levels. View buttons
+use icons with localized names and tooltips; level buttons retain readable names.
+Categories replace module headings without adding an extra parent hierarchy.
+
 | View | Proposed behavior |
 |---|---|
 | Favorites | User-controlled links, added with a star or context action; manual order; persistent until removed |
 | Recent | Last 12 distinct operation families; using one again moves it to the front without adding another row |
 | Frequent | Up to 12 families ranked by successful insertions during the last 30 days; ties use latest use and then stable catalog order |
-| For this lesson/model | Relevant basic operations and composite actions, ordered by the lesson author |
-| Categories | Stable subject navigation, independent of personal usage |
+| For this lesson | The existing current-stage palette, without requiring new lessons for this revision |
+| Catalog | Stable subject branches in a tree, independent of personal usage |
 
 The limits and 30-day window are initial design choices to evaluate, not established
 learning results. Favorites should not have a small automatic eviction limit.
@@ -1053,6 +1078,7 @@ This supports the feasibility of separate stable and contextual views; it does
 not establish an optimal category count or justify adopting Blockly in this project.
 
 Recommended delivery order: complete the identity-to-family audit and contracts;
-implement stable categories, consolidated entries, and search; add Favorites and
-Recent; then add Frequent using the same successful-insertion tracking. Evaluate
-these changes with the first connected learning route before extending the catalog.
+implement consolidated entries, category branches, separate level/view buttons,
+and search; add Favorites and Recent; then add Frequent using the same successful
+insertion tracking. Connect the lesson view to existing stage palettes. New
+educational sequences and function-focused assignments remain future work.
