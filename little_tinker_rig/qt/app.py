@@ -41,6 +41,7 @@ from little_tinker_rig.core.edit import target_position
 from little_tinker_rig.core.expressions import navigate as navigate_expression
 from little_tinker_rig.core.lessons import localized
 from little_tinker_rig.core.parameters import default_bindings
+from little_tinker_rig.core.project import ExternalChangeError
 from little_tinker_rig.core.snippets import LEVELS, load_collection
 from little_tinker_rig.core.transfer import Transfer
 from little_tinker_rig.examples import examples_directory
@@ -61,7 +62,6 @@ from .controls import ControlsPage
 from .device import ConnectDialog, DevicePanel
 from .dialogs import EditDialog
 from .document import DocumentPage
-from .editor import source_offset
 from .help import HelpPage
 from .lessons import Lessons
 from .library import IDENTITY, LEVEL_TITLES, VIEW_TITLES, Library, snippet_title
@@ -133,7 +133,9 @@ class Studio(QMainWindow):
         self.library = Library(self.session.available_snippets, self.settings)
         self.library.set_scope(self.document_page.catalog_scope)
         self.library.definition_requested.connect(self.open_definition)
-        self.library.itemDoubleClicked.connect(self.insert_selected)
+        self.library.insert_requested.connect(
+            lambda: self.perform(self.insert_selected)
+        )
         self.search = QLineEdit()
         self.search.setPlaceholderText(N_("Find a block…"))
         self.search.textChanged.connect(self.library.filter)
@@ -267,6 +269,7 @@ class Studio(QMainWindow):
         header_layout.addWidget(self.title_bar)
         header_layout.addWidget(menu)
         self.setMenuWidget(header)
+        self.active_document = self.document_page
         self.documents.currentChanged.connect(self.document_changed)
         self.documents.tabCloseRequested.connect(self.close_document)
         self.refresh_views()
@@ -344,6 +347,7 @@ class Studio(QMainWindow):
         self.console_dock.visibilityChanged.connect(self.console_visibility)
         self.console_dock.hide()
         self.scratch = ScratchPane()
+        self.active_cell = None
         self.scratch.changed.connect(self.refresh_views)
         self.scratch.failed.connect(self.error)
         self.scratch.snippet_inserted.connect(self.library.record_use)
@@ -423,6 +427,9 @@ class Studio(QMainWindow):
             ("document-save", "SP_DialogSaveButton"),
         )
         self._action(file, N_("Save as…"), "Ctrl+Shift+S", self.save_as)
+        self.reload_action = self._action(
+            file, N_("Reload from disk…"), None, self.reload_document
+        )
         self._action(
             file,
             N_("Close document"),
@@ -523,11 +530,13 @@ class Studio(QMainWindow):
             ),
         ):
             self.structural_actions.append(self._action(edit, label, key, callback))
-        self._action(edit, N_("Format Python"), "Ctrl+Alt+L", self.commit_code)
+        self.format_action = self._action(
+            edit, N_("Format Python"), "Ctrl+Alt+L", self.format_python
+        )
         self.structural_actions.append(
             self._action(edit, N_("Import module…"), None, self.import_module)
         )
-        self._action(edit, N_("Find"), "Ctrl+F", self.show_find)
+        self.find_action = self._action(edit, N_("Find"), "Ctrl+F", self.show_find)
         self.create_block_action = self._action(
             edit,
             N_("Create block from selection"),
@@ -673,16 +682,37 @@ class Studio(QMainWindow):
         return self.document_page.find_bar
 
     @property
+    def editing_page(self):
+        if self.pages.currentIndex() != 0:
+            return None
+        if self.active_cell in self.scratch.cells and self.scratch_dock.isVisible():
+            return self.active_cell
+        return self.document_page
+
+    @property
     def editing_source(self):
-        cell = self.scratch.focused_cell()
-        return cell.source if cell is not None and not cell.code_active else self.source
+        page = self.editing_page
+        return page.source if page is not None else self.source
 
     @property
     def editing_session(self):
         return self.editing_source.session
 
     def change_editor(self, index):
-        self.document_page.change_mode(index)
+        if page := self.editing_page:
+            page.change_mode(index)
+
+    def format_python(self):
+        from little_tinker_rig.core.formatting import format_source
+
+        editor = self.text_editor()
+        if editor is not None and not editor.isReadOnly():
+            editor.replace_formatted(
+                format_source(
+                    editor.toPlainText(),
+                    fragment=self.editing_page in self.scratch.cells,
+                )
+            )
 
     def filter_level(self, *_):
         level = self.level_filter.value
@@ -719,6 +749,19 @@ class Studio(QMainWindow):
     def document_changed(self, *_):
         if self.document_page is None:
             return
+        requested = self.document_page
+        previous = self.active_document
+        if previous is not requested and self.documents.indexOf(previous) >= 0:
+            self.documents.blockSignals(True)
+            self.documents.setCurrentWidget(previous)
+            self.documents.blockSignals(False)
+            if not self.finish_parameters():
+                return
+            self.documents.blockSignals(True)
+            self.documents.setCurrentWidget(requested)
+            self.documents.blockSignals(False)
+        self.active_document = requested
+        self.active_cell = None
         self.library.set_scope(self.document_page.catalog_scope)
         self.library.load(self.session.available_snippets)
         self.library.filter(self.search.text(), self.level_filter.value)
@@ -733,6 +776,8 @@ class Studio(QMainWindow):
         self.refresh_views()
 
     def change_language(self, code):
+        if not self.finish_parameters():
+            return
         set_language(code)
         application_settings().setValue("language", code)
         for window in QApplication.topLevelWidgets():
@@ -752,8 +797,11 @@ class Studio(QMainWindow):
         self.title_bar.update_state()
         for index in range(self.documents.count()):
             self.documents.widget(index).update_mode()
+            self.documents.widget(index).finder.retranslate()
             self.documents.widget(index).source.refresh_source()
         self.scratch.refresh(self.session)
+        for cell in self.scratch.cells:
+            cell.finder.retranslate()
         self.language_actions[language()].setChecked(True)
         self.library.set_scope(self.document_page.catalog_scope)
         self.library.load(self.session.available_snippets)
@@ -815,7 +863,6 @@ class Studio(QMainWindow):
         page.help_requested.connect(self.open_block_help)
         page.input_search_requested.connect(self.find_input_blocks)
         page.mode_changed.connect(self.document_mode_changed)
-        page.find_bar.returnPressed.connect(self.find_next)
         index = self.documents.addTab(page, path.name)
         self.documents.setTabToolTip(index, str(path))
         self.documents.setCurrentIndex(index)
@@ -934,6 +981,8 @@ class Studio(QMainWindow):
         super().mouseMoveEvent(event)
 
     def confirm_close(self, page):
+        if not self.finish_parameters():
+            return False
         project = page.lesson_project
         pages = (
             [
@@ -991,12 +1040,34 @@ class Studio(QMainWindow):
 
     def scratch_visibility(self, visible):
         if self.pages.currentIndex() == 0:
+            if not visible:
+                # Finish after Qt has hidden the dock's children; restoring it
+                # inside visibilityChanged would leave those children hidden.
+                QTimer.singleShot(0, self, self.finish_scratch_hide)
             # An inactive dock tab emits visibilityChanged(False) without being
             # closed. Preserve the user's choice when switching tabs or modes.
             self.scratch_visible = not self.scratch_dock.isHidden()
 
+    def finish_scratch_hide(self):
+        if (
+            self.pages.currentIndex() != 0
+            or not self.scratch_dock.visibleRegion().isEmpty()
+        ):
+            return
+        for cell in self.scratch.cells:
+            if not cell.source.finish_parameter():
+                self.scratch_dock.show()
+                self.scratch_dock.raise_()
+                cell.source.parameter_editor.line_edit.setFocus()
+                break
+
     def set_mode(self, index):
         if index < 0 or self.modes.item(index).isHidden():
+            return
+        if not self.finish_parameters():
+            self.modes.blockSignals(True)
+            self.modes.setCurrentRow(self.pages.currentIndex())
+            self.modes.blockSignals(False)
             return
         self.pages.setCurrentIndex(index)
         if self.document_page.lesson_project:
@@ -1037,15 +1108,18 @@ class Studio(QMainWindow):
 
     def focus_changed(self, old, new):
         if hasattr(self, "undo_action"):
+            cell = self.scratch.focused_cell()
+            if cell is not None:
+                self.active_cell = cell
+            elif new is self.document_page or self.document_page.isAncestorOf(new):
+                self.active_cell = None
             self.refresh_status()
 
     def text_editor(self):
         if self.pages.currentIndex() == 3:
             return self.block_editor.code or self.block_editor.empty
-        cell = self.scratch.focused_cell()
-        if cell is not None:
-            return cell.code if cell.code_active else None
-        return self.code if self.code_active else None
+        page = self.editing_page
+        return page.code if page is not None and page.code_active else None
 
     def find_input_blocks(self, view, slot, providers):
         if not self.input_search:
@@ -1110,17 +1184,23 @@ class Studio(QMainWindow):
         if self.input_search:
             if not self.input_search_current() or self.library.context_key is None:
                 self.clear_input_search()
-        match = self.session.selected_match()
+        page = self.editing_page
+        session = self.editing_session
+        match = session.selected_match()
         selection = (
             snippet_title(match.snippet)
             if match and match.snippet.help
-            else "Python" if self.code_active else tr("Select a block")
+            else "Python" if page and page.code_active else tr("Select a block")
         )
         self.statusBar().showMessage(
-            tr(
+            tr("Python · changes not checked")
+            if page
+            and page.code_active
+            and page.code.toPlainText() != session.document.state.source
+            else tr(
                 "{p0} · warnings: {p1}",
                 p0=selection,
-                p1=len(self.session.analysis.diagnostics()),
+                p1=len(session.analysis.diagnostics()),
             )
         )
         project = self.document_page.lesson_project
@@ -1135,20 +1215,37 @@ class Studio(QMainWindow):
         self.setWindowTitle(f'{"● " if dirty else ""}{name} — LittleTinker Rig')
         text_editor = self.text_editor()
         self.undo_action.setEnabled(
-            text_editor.document().isUndoAvailable()
-            if text_editor
-            else self.session.document.can_undo
+            (
+                text_editor.document().isUndoAvailable()
+                if text_editor
+                else self.session.document.can_undo
+            )
+            and self.pages.currentIndex() in (0, 3)
         )
         self.redo_action.setEnabled(
-            text_editor.document().isRedoAvailable()
-            if text_editor
-            else self.session.document.can_redo
+            (
+                text_editor.document().isRedoAvailable()
+                if text_editor
+                else self.session.document.can_redo
+            )
+            and self.pages.currentIndex() in (0, 3)
         )
         for action in self.structural_actions:
             action.setEnabled(text_editor is None and self.pages.currentIndex() == 0)
         self.create_block_action.setEnabled(self.pages.currentIndex() == 0)
         for action in self.editor_actions:
-            action.setEnabled(self.pages.currentIndex() != 3)
+            action.setEnabled(page is not None)
+        if page:
+            self.editor_actions[int(page.code_active)].setChecked(True)
+        self.find_action.setEnabled(self.pages.currentIndex() in (0, 2, 3))
+        self.format_action.setEnabled(
+            text_editor is not None and not text_editor.isReadOnly()
+        )
+        self.reload_action.setEnabled(
+            self.pages.currentIndex() == 0
+            and not self.document_page.unnamed
+            and self.document_page.lesson_project is None
+        )
         if self.pages.currentIndex() == 3:
             self.statusBar().showMessage(self.block_editor.caption.text())
         for index in range(self.documents.count()):
@@ -1159,8 +1256,16 @@ class Studio(QMainWindow):
             self.documents.setTabToolTip(index, str(page.session.project.path))
         self.source.viewport().update()
 
+    def finish_parameters(self):
+        views = [self.documents.widget(i).source for i in range(self.documents.count())]
+        if hasattr(self, "scratch"):
+            views.extend(cell.source for cell in self.scratch.cells)
+        return all(view.finish_parameter() for view in views)
+
     def perform(self, callback):
-        cell = self.scratch.focused_cell()
+        if not self.finish_parameters():
+            return
+        cell = self.editing_page if self.editing_page in self.scratch.cells else None
         revision = cell.source.session.document.state if cell is not None else None
         try:
             callback()
@@ -1279,6 +1384,15 @@ class Studio(QMainWindow):
         from little_tinker_rig.core.expressions import targets
 
         if (
+            view is None
+            and target is None
+            and self.editing_page
+            and self.editing_page.code_active
+        ):
+            raise ValueError(
+                tr("Switch this editor to Blocks before inserting a block.")
+            )
+        if (
             self.library.lesson_ids is not None
             and identity not in self.library.lesson_ids
         ):
@@ -1365,7 +1479,7 @@ class Studio(QMainWindow):
             self.error(str(error))
 
     def edit_python(self):
-        cell = self.scratch.focused_cell()
+        cell = self.editing_page if self.editing_page in self.scratch.cells else None
         if cell is not None:
             cell.change_mode(True)
             return
@@ -1393,7 +1507,7 @@ class Studio(QMainWindow):
         self.editing_source.edit_parameters()
 
     def to_scratch(self):
-        cell = self.scratch.focused_cell()
+        cell = self.editing_page if self.editing_page in self.scratch.cells else None
         if cell is not None and not cell.code_active:
             transfer = Transfer.capture(
                 self.session, index=cell.index, fragment=cell.source.session
@@ -1411,7 +1525,7 @@ class Studio(QMainWindow):
             return
         item = self.library.currentItem() if self.library.hasFocus() else None
         identity = item.data(0, IDENTITY) if item else None
-        match = self.session.selected_match()
+        match = self.editing_session.selected_match()
         self.help_page.show_page(
             identity or (match.snippet.identity if match else "tutorial/first.md")
         )
@@ -1432,27 +1546,21 @@ class Studio(QMainWindow):
         self.console_dock.show()
 
     def show_find(self):
-        if self.pages.currentIndex() == 3:
-            self.block_editor.search.setFocus()
-            self.block_editor.search.selectAll()
+        if self.pages.currentIndex() in (2, 3):
+            search = (
+                self.help_page.search
+                if self.pages.currentIndex() == 2
+                else self.block_editor.search
+            )
+            search.setFocus()
+            search.selectAll()
             return
-        self.set_mode(0)
-        self.find_bar.show()
-        self.find_bar.setFocus()
-        self.find_bar.selectAll()
+        if page := self.editing_page:
+            page.finder.open()
 
     def find_next(self):
-        editor = self.code if self.code_active else self.source
-        if not editor.find(self.find_bar.text()):
-            editor.moveCursor(QTextCursor.MoveOperation.Start)
-            editor.find(self.find_bar.text())
-        if not self.code_active:
-            self.session.editor.select(
-                source_offset(
-                    editor.toPlainText(), editor.textCursor().selectionStart()
-                )
-            )
-            self.refresh_status()
+        if page := self.editing_page:
+            page.finder.find()
 
     def set_intensity(self, value):
         self.source.intensity = value / 100
@@ -1463,10 +1571,14 @@ class Studio(QMainWindow):
         editor.navigate_move(step) if editor.moving else editor.sibling(step)
 
     def undo(self):
+        if self.pages.currentIndex() not in (0, 3):
+            return
         editor = self.text_editor()
         editor.undo() if editor else self.session.editor.undo()
 
     def redo(self):
+        if self.pages.currentIndex() not in (0, 3):
+            return
         editor = self.text_editor()
         editor.redo() if editor else self.session.editor.redo()
 
@@ -1477,14 +1589,63 @@ class Studio(QMainWindow):
         return self.save_document(self.document_page)
 
     def save_document(self, page):
+        if not self.finish_parameters():
+            return False
         if page.lesson_project:
             return self.lessons.save(page.lesson_project)
         if page.unnamed:
             return self.save_as(page=page)
-        page.save()
+        try:
+            page.save()
+        except ExternalChangeError as error:
+            dialog = QMessageBox(self)
+            dialog.setWindowTitle(tr("File changed on disk"))
+            dialog.setIcon(QMessageBox.Icon.Warning)
+            dialog.setText(str(error))
+            dialog.setInformativeText(
+                tr(
+                    "Reload replaces this document and its Scratch with the saved version. Save a copy keeps your edits in another file."
+                )
+            )
+            reload = dialog.addButton(
+                tr("Reload from disk"), QMessageBox.ButtonRole.DestructiveRole
+            )
+            copy = dialog.addButton(
+                tr("Save a copy…"), QMessageBox.ButtonRole.ActionRole
+            )
+            cancel = dialog.addButton(QMessageBox.StandardButton.Cancel)
+            dialog.setDefaultButton(cancel)
+            dialog.exec()
+            if dialog.clickedButton() is copy:
+                return self.save_as(page=page, copy_only=True)
+            if dialog.clickedButton() is reload:
+                page.reload()
+                self.document_changed()
+            return False
         self.remember_file(page.session.project.path)
         self.recovery.flush()
         return True
+
+    def reload_document(self):
+        page = self.document_page
+        if page.unnamed or page.lesson_project:
+            return
+        if (
+            page.dirty
+            and QMessageBox.question(
+                self,
+                tr("Reload from disk"),
+                tr(
+                    "Replace this document and its Scratch with the saved version? Unsaved changes will be discarded."
+                ),
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel,
+                QMessageBox.StandardButton.Cancel,
+            )
+            != QMessageBox.StandardButton.Yes
+        ):
+            return
+        page.reload()
+        self.document_changed()
 
     def new_document_path(self, parent=None):
         if parent is None or parent.is_relative_to(examples_directory().resolve()):
@@ -1531,7 +1692,7 @@ class Studio(QMainWindow):
         if paths and Path(paths[-1]).suffix == ".py":
             self.set_mode(0)
 
-    def save_as(self, *, page=None):
+    def save_as(self, *, page=None, copy_only=False):
         if page is None and self.pages.currentIndex() == 3:
             self.block_editor.copy_block()
             return True
@@ -1551,6 +1712,8 @@ class Studio(QMainWindow):
             from little_tinker_rig.core.project import Project
 
             destination = Path(path).resolve()
+            if copy_only and destination == session.project.path:
+                raise ValueError(tr("Choose another file to keep both versions."))
             for index in range(self.documents.count()):
                 other = self.documents.widget(index)
                 if other is not page and other.session.project.path == destination:

@@ -1264,6 +1264,10 @@ class SourceView(QTextEdit):
         field.begin()
         self.viewport().update()
 
+    def finish_parameter(self):
+        field = self.parameter_editor
+        return field is None or field.apply(focus=False)
+
     def edit_parameters(self):
         syntax = self.session.document.syntax
         match = self.session.selected_match()
@@ -1486,6 +1490,9 @@ class SourceView(QTextEdit):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
+            if not self.finish_parameter():
+                event.accept()
+                return
             self.setFocus()
             point = event.position().toPoint()
             block = self.mode_at(point)
@@ -1931,8 +1938,8 @@ class SourceView(QTextEdit):
 
     def hideEvent(self, event):
         self.pulse.stop()
-        if self.parameter_editor:
-            self.parameter_editor.close()
+        if self.parameter_editor and self.parameter_editor.completer:
+            self.parameter_editor.completer.popup().hide()
         super().hideEvent(event)
 
     def fold_selection(self):

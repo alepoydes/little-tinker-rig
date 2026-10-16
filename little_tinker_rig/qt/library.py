@@ -6,6 +6,7 @@ from PySide6.QtCore import QEvent, QMimeData, QRect, QSize, Qt, Signal
 from PySide6.QtGui import (
     QActionGroup,
     QColor,
+    QContextMenuEvent,
     QFontDatabase,
     QFontMetrics,
     QIcon,
@@ -164,6 +165,7 @@ class CardItem(QTreeWidgetItem):
 
 
 class Library(QTreeWidget):
+    insert_requested = Signal()
     definition_requested = Signal(str)
     variants_changed = Signal()
     status_changed = Signal(str)
@@ -196,6 +198,7 @@ class Library(QTreeWidget):
         self.snapshot = []
         self.favorite_press = None
         self.currentItemChanged.connect(lambda *_: self.variants_changed.emit())
+        self.itemDoubleClicked.connect(lambda *_: self.insert_requested.emit())
         self.load(snippets)
 
     def remember_view(self):
@@ -736,7 +739,25 @@ class Library(QTreeWidget):
             )
         return menu
 
+    def keyPressEvent(self, event):
+        item = self.currentItem()
+        if (
+            event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter)
+            and item
+            and item.data(0, IDENTITY)
+        ):
+            self.insert_requested.emit()
+            return
+        super().keyPressEvent(event)
+
     def contextMenuEvent(self, event):
-        if menu := self.context_menu(self.itemAt(event.pos())):
-            menu.exec(event.globalPos())
+        keyboard = event.reason() == QContextMenuEvent.Reason.Keyboard
+        item = self.currentItem() if keyboard else self.itemAt(event.pos())
+        if menu := self.context_menu(item):
+            point = (
+                self.viewport().mapToGlobal(self.visualItemRect(item).center())
+                if keyboard
+                else event.globalPos()
+            )
+            menu.exec(point)
             menu.deleteLater()

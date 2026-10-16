@@ -18,6 +18,21 @@ Assembly appear when the open project provides them.
 **Block Editor** (**Ctrl+Alt+3**) edits template definitions with a preview above
 the source; see [its guide](block-editor.md).
 
+Switching between Blocks and Python preserves the Python editor's undo history.
+Find, Format Python and the editor-mode shortcuts target the selected program or
+Scratch cell. Undo is unavailable in Help, Control and Assembly. In Help, Ctrl+F
+focuses the guide search. In a program or Scratch, Enter finds the next match,
+Shift+Enter the previous match, and Escape closes search. A missed search reports
+**Not found** without moving the cursor. Select a catalog block and press Enter
+to insert it at the current structural selection; double-clicking does the same.
+
+If a file or its Scratch metadata changes outside the editor, Save offers
+**Reload from disk**, **Save a copy…**, or Cancel. Reload explicitly replaces the
+open document and Scratch; copying preserves both versions. **File → Reload from
+disk…** is also available without first saving. Ordinary Open selects an existing
+tab and does not discard its edits. Reloading during a Run request cancels that
+run so you can inspect the newly loaded program first.
+
 The Python editor has syntax highlighting, line numbers, indentation with
 Tab/Shift+Tab, and search with Ctrl+F. Completion appears while typing names or
 after a dot; **Ctrl+Space** requests it explicitly. Choose with arrows and accept
@@ -40,8 +55,12 @@ input has no arrow. Declaration names are plain editable text. The editable fiel
 exists only while editing; the parameter name is a
 tooltip, and a read-only suffix shows its unit. Suggestions respect known types:
 conditions offer booleans and button readings, motor fields offer motor variables.
-Repeated occurrences change together. Enter or choosing an item applies; Escape
-dismisses. A structural selection uses the whole block background, including the
+Repeated occurrences change together. Enter, choosing an item or leaving the field
+applies valid input; Escape cancels it. Save and Run apply the active field first.
+Invalid input stays editable and prevents saving, running or leaving its document
+until corrected or cancelled. Uncommitted Python text shows **changes not checked**
+instead of a warning count from an earlier version.
+A structural selection uses the whole block background, including the
 remaining line width.
 
 Scratch and Hub and devices start hidden to leave room for your program.

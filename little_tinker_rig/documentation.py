@@ -1,7 +1,12 @@
-"""Markdown section names shared by offline help and documentation validation."""
+"""Documentation metadata shared by offline help and documentation validation."""
 
 import re
 import unicodedata
+from pathlib import Path
+
+DEVELOPER_PAGES = frozenset(
+    Path(name) for name in ("api.md", "architecture.md", "development.md")
+)
 
 
 def prose(text):

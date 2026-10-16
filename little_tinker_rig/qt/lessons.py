@@ -80,6 +80,9 @@ class Lessons(QObject):
         for name, theme, fallback in (
             ("hint", "help-hint", "SP_MessageBoxQuestion"),
             ("starter", "document-new", "SP_FileIcon"),
+            ("previous", "go-previous", "SP_ArrowBack"),
+            ("next", "go-next", "SP_ArrowForward"),
+            ("complete", "dialog-ok-apply", "SP_DialogApplyButton"),
         ):
             self.actions[name].setIcon(window._icon(theme, fallback))
 
@@ -88,7 +91,7 @@ class Lessons(QObject):
                 button = QToolButton()
                 action = self.actions[name]
                 button.setDefaultAction(action)
-                if name in ("hint", "starter"):
+                if name in ("hint", "starter", "previous", "next", "complete"):
                     button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
                     button.setAccessibleName(action.text())
                 # QToolButton shares text/enabled state, but not action visibility.
@@ -363,16 +366,6 @@ class Lessons(QObject):
         self.description.setMarkdown(text)
         self.description.style_document()
         self.description.verticalScrollBar().setValue(0)
-        self.task.setText(
-            tr(
-                "Stage {current} of {total} · {title}",
-                current=project.lesson.stages.index(stage) + 1,
-                total=len(project.lesson.stages),
-                title=localized(stage["title"], language()),
-            )
-            + "\n"
-            + localized(stage.get("goal", stage["title"]), language())
-        )
         self.explore.blockSignals(True)
         self.explore.setChecked(project.progress.get("explore", False))
         self.explore.blockSignals(False)
@@ -396,10 +389,29 @@ class Lessons(QObject):
         self.card.setVisible(
             self.current is not None
             and self.guidance.isChecked()
+            and mode in (0, 1, 4, 5)
             and (mode != 5 or self.assembly_host.showing_lesson)
         )
         self.open_lesson.setVisible(mode != 4)
         if self.current:
+            stage = self.current.stage
+            self.task.setText(
+                tr(
+                    "Stage {current} of {total} · {title}",
+                    current=self.current.lesson.stages.index(stage) + 1,
+                    total=len(self.current.lesson.stages),
+                    title=localized(stage["title"], language()),
+                )
+                + (
+                    "\n" + localized(stage.get("goal", stage["title"]), language())
+                    if mode == 4
+                    else ""
+                )
+            )
+            self.task.setToolTip(
+                localized(stage.get("goal", stage["title"]), language())
+            )
+            self.status.setVisible(mode == 4 or bool(stage.get("check")))
             target = {"program": 0, "control": 1, "assembly": 5}[
                 self.current.stage.get("mode", "program")
             ]

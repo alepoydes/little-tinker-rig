@@ -29,10 +29,25 @@ from PySide6.QtWidgets import (
 )
 
 from little_tinker_rig.core.snippets import snippet_groups
-from little_tinker_rig.documentation import heading_anchors
+from little_tinker_rig.documentation import DEVELOPER_PAGES, heading_anchors
 from little_tinker_rig.i18n import DEFAULT_LANGUAGE, LANGUAGES, N_, language, tr
 
 from .library import LEVEL_TITLES, group_title, snippet_title
+
+GUIDE_ORDER = (
+    "index.md",
+    "tutorial/first.md",
+    "INSTALL.md",
+    "learning.md",
+    "lessons.md",
+    "usage.md",
+    "robotics.md",
+    "usb.md",
+    "examples.md",
+    "snippets.md",
+    "block-editor.md",
+    "tui.md",
+)
 
 
 def group_document(identity, snippets):
@@ -248,20 +263,28 @@ class HelpPage(QWidget):
         self.tree.blockSignals(True)
         self.tree.clear()
         documents = QTreeWidgetItem(self.tree, [tr("Guide")])
+        templates = QTreeWidgetItem(self.tree, [tr("Block library")])
+        developers = QTreeWidgetItem(self.tree, [tr("Developer reference")])
         english = self.base_root / DEFAULT_LANGUAGE
         identities = {
             str(path.relative_to(root))
             for root in (english, self.root)
             for path in root.rglob("*.md")
         }
-        for identity in sorted(identities):
+        for identity in (*GUIDE_ORDER, *sorted(identities - set(GUIDE_ORDER))):
+            if identity not in identities:
+                continue
             path = self.root / identity
             if not path.is_file():
                 path = english / identity
             text = path.read_text(encoding="utf-8")
-            self.add_page(documents, identity, text.splitlines()[0].lstrip("# "), text)
+            self.add_page(
+                developers if Path(identity) in DEVELOPER_PAGES else documents,
+                identity,
+                text.splitlines()[0].lstrip("# "),
+                text,
+            )
             self.page_paths[identity] = path
-        templates = QTreeWidgetItem(self.tree, [tr("Block library")])
         for group, members in self.groups.items():
             identity = "library/" + group
             self.add_page(
@@ -276,6 +299,7 @@ class HelpPage(QWidget):
                     identity + "#" + snippet.identity.rsplit("/", 1)[1]
                 )
         self.tree.expandAll()
+        developers.setExpanded(False)
         self.tree.blockSignals(False)
         self.history = [key for key in history if key.partition("#")[0] in self.pages]
         self.show_page(
@@ -304,6 +328,8 @@ class HelpPage(QWidget):
         text, item = self.pages[page]
         self.tree.blockSignals(True)
         self.tree.setCurrentItem(item)
+        item.parent().setExpanded(True)
+        self.tree.scrollToItem(item)
         self.tree.blockSignals(False)
         if previous is None or previous.partition("#")[0] != page:
             self.browser.document().setBaseUrl(
@@ -338,6 +364,13 @@ class HelpPage(QWidget):
     def filter(self, query):
         for identity, (text, item) in self.pages.items():
             item.setHidden(query.casefold() not in (identity + text).casefold())
+        for index in range(self.tree.topLevelItemCount()):
+            group = self.tree.topLevelItem(index)
+            group.setHidden(
+                all(group.child(i).isHidden() for i in range(group.childCount()))
+            )
+            if query and not group.isHidden():
+                group.setExpanded(True)
 
     def follow_link(self, url):
         if url.scheme() == "little-tinker-rig-definition":

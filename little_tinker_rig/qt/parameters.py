@@ -43,6 +43,7 @@ class ParameterEditor(QWidget):
         self.session, self.slot = view.session, slot
         self.view = view
         self.error = ""
+        self.finished = False
         self.options = (
             suggestions(self.session, slot.parameter, slot.span.start)
             if view.parameter_choices[slot.span]
@@ -103,7 +104,9 @@ class ParameterEditor(QWidget):
         self.line_edit.setText(text)
         self.apply()
 
-    def apply(self, *_):
+    def apply(self, *_, focus=True):
+        if self.finished:
+            return True
         try:
             text = self.line_edit.text()
             change_parameter(self.session, self.slot, self.options.get(text, text))
@@ -115,12 +118,19 @@ class ParameterEditor(QWidget):
             )
             self.line_edit.setFocus()
             return False
-        self.applied.emit()
         self.close()
-        self.view.setFocus()
+        self.applied.emit()
+        if focus:
+            self.view.setFocus()
         return True
 
     def eventFilter(self, watched, event):
+        if (
+            event.type() == QEvent.Type.ShortcutOverride
+            and event.key() == Qt.Key.Key_Escape
+        ):
+            event.accept()
+            return True
         if event.type() == QEvent.Type.KeyPress and event.key() in (
             Qt.Key.Key_Return,
             Qt.Key.Key_Enter,
@@ -146,18 +156,27 @@ class ParameterEditor(QWidget):
             )
         if event.type() == QEvent.Type.KeyPress and event.key() == Qt.Key.Key_Escape:
             self.close()
+            self.view.setFocus()
             return True
         if event.type() == QEvent.Type.FocusOut:
             QTimer.singleShot(0, self, self.finish_unfocused)
         return super().eventFilter(watched, event)
 
     def finish_unfocused(self):
+        if self.finished or not self.isVisible():
+            return
         focus = QApplication.focusWidget()
-        popup = self.completer and self.completer.popup().isVisible()
-        if not popup and focus is not self and not self.isAncestorOf(focus):
-            self.close()
+        popup = self.completer.popup() if self.completer else None
+        if focus is self or self.isAncestorOf(focus):
+            return
+        if popup and (focus is popup or popup.isAncestorOf(focus)):
+            return
+        self.apply(focus=False)
 
     def closeEvent(self, event):
+        self.finished = True
+        if self.view.parameter_editor is self:
+            self.view.parameter_editor = None
         if self.completer:
             self.completer.popup().hide()
         super().closeEvent(event)

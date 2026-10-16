@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QSlider,
+    QStyle,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -21,6 +22,8 @@ from PySide6.QtWidgets import (
 from little_tinker_rig.i18n import N_, tr
 from little_tinker_rig.pybricks.control import ControlState, Gamepad
 from little_tinker_rig.pybricks.devices import SOURCES, MotorBinding, motor_commands
+
+from .navigation import tool_button
 
 
 class Joystick(QWidget):
@@ -106,6 +109,28 @@ class Joystick(QWidget):
         super().focusOutEvent(event)
 
 
+class Trigger(QSlider):
+    """A momentary input returns to neutral on release, including the keyboard."""
+
+    def __init__(self):
+        super().__init__(Qt.Orientation.Horizontal)
+        self.setRange(0, 100)
+        self.sliderReleased.connect(lambda: self.setValue(0))
+
+    def keyReleaseEvent(self, event):
+        super().keyReleaseEvent(event)
+        if not event.isAutoRepeat():
+            self.setValue(0)
+
+    def focusOutEvent(self, event):
+        self.setValue(0)
+        super().focusOutEvent(event)
+
+    def wheelEvent(self, event):
+        # A wheel has no release event and cannot operate a momentary control.
+        event.ignore()
+
+
 class Controller(QWidget):
     def __init__(self):
         super().__init__()
@@ -118,20 +143,20 @@ class Controller(QWidget):
             "min-width: 30px; min-height: 20px; padding: 2px 7px; border-radius: 11px; font-weight: bold; }"
             "QPushButton:pressed { background: #71d1bd; color: #172a3e; }"
         )
-        layout = QGridLayout(self)
+        layout = self.grid = QGridLayout(self)
         layout.setContentsMargins(24, 12, 24, 12)
         layout.setVerticalSpacing(4)
         self.left = Joystick((Qt.Key.Key_A, Qt.Key.Key_D, Qt.Key.Key_W, Qt.Key.Key_S))
         self.right = Joystick()
         self.triggers = []
+        self.trigger_panels = []
         self.buttons = {}
         for column, label in ((0, "LT"), (2, "RT")):
-            slider = QSlider(Qt.Orientation.Horizontal)
-            slider.setRange(0, 100)
-            slider.sliderReleased.connect(lambda s=slider: s.setValue(0))
+            slider = Trigger()
             slider.setToolTip(label + N_(" · release to return to zero"))
             self.triggers.append(slider)
             panel = QWidget()
+            self.trigger_panels.append(panel)
             row = QHBoxLayout(panel)
             row.setContentsMargins(0, 0, 0, 0)
             row.addWidget(QLabel(label))
@@ -139,18 +164,12 @@ class Controller(QWidget):
             layout.addWidget(panel, 0, column)
         layout.addWidget(self.left, 2, 0, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.right, 3, 2, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(
+        self.stick_labels = [
             QLabel(N_("Left stick · WASD")),
-            4,
-            0,
-            alignment=Qt.AlignmentFlag.AlignCenter,
-        )
-        layout.addWidget(
             QLabel(N_("Right stick · arrows")),
-            4,
-            2,
-            alignment=Qt.AlignmentFlag.AlignCenter,
-        )
+        ]
+        for column, label in zip((0, 2), self.stick_labels, strict=True):
+            layout.addWidget(label, 4, column, alignment=Qt.AlignmentFlag.AlignCenter)
         for column, number, label in ((0, 9, "LB"), (2, 10, "RB")):
             button = QPushButton(label)
             self.buttons[number] = button
@@ -208,6 +227,22 @@ class Controller(QWidget):
             self.buttons[number] = button
             layout.addWidget(button, 5, column, alignment=Qt.AlignmentFlag.AlignCenter)
 
+    def compact(self, enabled):
+        essentials = (self.left, self.right, *self.trigger_panels, *self.stick_labels)
+        for index in range(self.grid.count()):
+            widget = self.grid.itemAt(index).widget()
+            widget.setVisible(not enabled or widget in essentials)
+        for widget, row, column in (
+            (self.left, 1 if enabled else 2, 0),
+            (self.right, 1 if enabled else 3, 2),
+            (self.stick_labels[0], 2 if enabled else 4, 0),
+            (self.stick_labels[1], 2 if enabled else 4, 2),
+        ):
+            self.grid.addWidget(
+                widget, row, column, alignment=Qt.AlignmentFlag.AlignCenter
+            )
+        self.setMaximumHeight(180 if enabled else 350)
+
     def state(self):
         return ControlState(
             self.left.x_value,
@@ -246,14 +281,18 @@ class ControlsPage(QWidget):
         self.gamepad = None
         self.controller = Controller()
         self.state_label = QLabel()
+        self.state_label.setWordWrap(True)
         self.notice = QLabel(N_("Connect a virtual or physical hub at the top right."))
         self.notice.setWordWrap(True)
-        self.start = QPushButton(N_("Start manual control"))
+        self.start = tool_button(
+            N_("Start manual control"), QStyle.StandardPixmap.SP_MediaPlay
+        )
         self.start.setToolTip(N_("Stops the user program and starts the port monitor"))
         self.start.clicked.connect(self.monitor_requested)
-        self.armed = QCheckBox(N_("Enable motor commands"))
+        self.armed = QCheckBox(N_("Enable commands"))
         self.armed.toggled.connect(self._armed)
-        self.physical = QCheckBox(N_("Physical Xbox / SDL controller"))
+        self.physical = QCheckBox(N_("Physical controller"))
+        self.physical.setToolTip(N_("Physical Xbox / SDL controller"))
         self.physical.toggled.connect(self._physical)
         self.target = QComboBox()
         self.target.addItem(N_("Assign motors to sticks and triggers"), "motors")
@@ -335,17 +374,18 @@ class ControlsPage(QWidget):
         body.addStretch()
         layout.addLayout(body, 1)
         layout.addWidget(self.state_label)
-        layout.addWidget(
-            QLabel(
-                N_(
-                    "Assign motors to axes or triggers. Scale sets the speed or the angle relative to the center."
-                )
+        self.assignment_hint = QLabel(
+            N_(
+                "Assign motors to axes or triggers. Scale sets the speed or the angle relative to the center."
             )
         )
+        self.assignment_hint.setWordWrap(True)
+        layout.addWidget(self.assignment_hint)
         layout.addWidget(self.table)
         self.timer = QTimer(self)
         self.timer.setInterval(50)
         self.timer.timeout.connect(self.sample)
+        self.controller.compact(True)
 
     def bindings(self):
         return tuple(
@@ -391,14 +431,16 @@ class ControlsPage(QWidget):
             )
         )
         for row, port in enumerate("ABCDEF"):
-            self.table.setRowHidden(row, bool(info.ports) and port not in info.ports)
             data = info.ports.get(port, {})
             motor = data.get("type") == "motor"
+            self.table.setRowHidden(row, not motor)
             self.table.item(row, 0).setText(
                 port + (f" · {data.get('angle', 0):g}°" if motor else " · —")
             )
             self.rows[port][0].setEnabled(motor)
         visible_rows = sum(not self.table.isRowHidden(row) for row in range(6))
+        self.table.setVisible(bool(visible_rows) and not program)
+        self.assignment_hint.setVisible(bool(visible_rows) and not program)
         self.table.setFixedHeight(
             self.table.horizontalHeader().height() + visible_rows * 30 + 4
         )
@@ -413,6 +455,7 @@ class ControlsPage(QWidget):
 
     def _target_changed(self):
         self.armed.setChecked(False)
+        self.controller.compact(self.target.currentData() == "motors")
         if self.info:
             self.update_info(self.info)
 

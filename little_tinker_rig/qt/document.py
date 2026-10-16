@@ -8,7 +8,6 @@ from PySide6.QtGui import QAction, QActionGroup, QIcon
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
-    QLineEdit,
     QStackedWidget,
     QStyle,
     QToolButton,
@@ -22,6 +21,7 @@ from little_tinker_rig.i18n import N_, tr
 
 from .code import CodeEdit
 from .editor import SourceView
+from .find import FindBar
 
 
 class DocumentPage(QWidget):
@@ -52,15 +52,15 @@ class DocumentPage(QWidget):
         self.source.input_search_requested.connect(self.input_search_requested)
         self.code = CodeEdit(path)
         self.code.setAcceptDrops(False)
+        self.code.setPlainText(self.session.document.state.source)
         self.code.textChanged.connect(self.changed)
         self.editor_stack = QStackedWidget()
         self.editor_stack.addWidget(self.source)
         self.editor_stack.addWidget(self.code)
         self.message = QLabel()
         self.message.setWordWrap(True)
-        self.find_bar = QLineEdit()
-        self.find_bar.setPlaceholderText(N_("Find in program · Enter — next match"))
-        self.find_bar.hide()
+        self.finder = FindBar(lambda: self.code if self.code_active else self.source)
+        self.find_bar = self.finder.query
         row = QHBoxLayout()
         row.addWidget(self.message, 1)
         self.mode_actions = []
@@ -94,7 +94,7 @@ class DocumentPage(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 4, 0, 0)
         layout.addLayout(row)
-        layout.addWidget(self.find_bar)
+        layout.addWidget(self.finder)
         layout.addWidget(self.editor_stack, 1)
         if self.session.project.draft is not None:
             self.code_active = True
@@ -115,6 +115,8 @@ class DocumentPage(QWidget):
         )
 
     def prepare_save(self):
+        if not self.source.finish_parameter():
+            raise ValueError(tr("Correct the highlighted parameter before continuing."))
         source = utf8_source(self.text)
         if not self.code_active:
             if source != self.text:
@@ -131,6 +133,28 @@ class DocumentPage(QWidget):
     def save(self):
         self.prepare_save()
         self.session.project.save()
+
+    def reload(self):
+        if not self.session.project.path.is_file():
+            raise FileNotFoundError(self.session.project.path)
+        session = Session(
+            self.session.project.path, self.session.collection_paths, allow_draft=True
+        )
+        self.session = self.source.session = session
+        self.session.editor.select(0)
+        self.source.display_modes.clear()
+        self.source.runtime_problem = self.code.runtime_problem = None
+        self.code_active = self.code_active or session.project.draft is not None
+        self.code.setPlainText(
+            session.project.draft
+            if session.project.draft is not None
+            else session.document.state.source
+        )
+        self.source.refresh_source()
+        self.editor_stack.setCurrentIndex(int(self.code_active))
+        self.update_mode()
+        self.mode_changed.emit()
+        self.changed.emit()
 
     @property
     def catalog_scope(self):
@@ -192,10 +216,13 @@ class DocumentPage(QWidget):
         if bool(index) == self.code_active:
             return
         try:
+            if not self.source.finish_parameter():
+                self.update_mode()
+                return
             if index == 0:
                 self.commit_code()
             else:
-                self.code.setPlainText(self.session.document.state.source)
+                self.code.replace_formatted(self.session.document.state.source)
             self.code_active = bool(index)
             self.editor_stack.setCurrentIndex(index)
             (self.code if index else self.source).setFocus()

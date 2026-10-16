@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QSplitter,
     QStackedWidget,
+    QStyle,
     QTextEdit,
     QToolButton,
     QTreeWidget,
@@ -51,6 +52,7 @@ from .code import CodeEdit
 from .editor import SourceView, qt_offset
 from .library import LEVEL_TITLES, Library, group_title, snippet_title
 from .localization import localize
+from .navigation import tool_button
 
 
 class DefinitionCode(CodeEdit):
@@ -258,11 +260,17 @@ class BlockEditor(QWidget):
         self.version_button = QPushButton(N_("Start next version…"))
         self.version_button.clicked.connect(lambda: self.attempt(self.start_version))
         layout.addWidget(self.version_button)
-        self.copy_button = QPushButton(N_("Copy to my collection"))
+        self.copy_button = tool_button(
+            N_("Copy to my collection"), QStyle.StandardPixmap.SP_FileLinkIcon
+        )
         self.copy_button.clicked.connect(lambda: self.attempt(self.copy_block))
-        self.save_button = QPushButton(N_("Save and apply"))
+        self.save_button = tool_button(
+            N_("Save and apply"), QStyle.StandardPixmap.SP_DialogSaveButton
+        )
         self.save_button.clicked.connect(lambda: self.attempt(self.save))
-        self.reopen_button = QPushButton(N_("Reopen saved"))
+        self.reopen_button = tool_button(
+            N_("Reopen saved"), QStyle.StandardPixmap.SP_BrowserReload
+        )
         self.reopen_button.setToolTip(
             N_("Discard this module draft and reload its saved definition")
         )
@@ -320,17 +328,23 @@ class BlockEditor(QWidget):
         self.preview_more = QLabel()
         self.preview_more.setProperty("translationSources", {})
         self.preview_more.setFixedHeight(self.fontMetrics().height())
-        self.expand = QPushButton(N_("Expand preview"))
+        self.expand = tool_button(
+            N_("Expand preview"), QStyle.StandardPixmap.SP_TitleBarMaxButton
+        )
         self.expand.setCheckable(True)
         self.expand.toggled.connect(self.resize_preview)
-        self.tests = QPushButton(N_("Test values"))
+        self.tests = tool_button(
+            N_("Test values"), QStyle.StandardPixmap.SP_FileDialogDetailedView
+        )
         self.tests.setCheckable(True)
         self.test_panel = QScrollArea()
         self.test_panel.setWidgetResizable(True)
         self.test_panel.setMaximumHeight(160)
         self.test_panel.hide()
         self.tests.toggled.connect(self.test_panel.setVisible)
-        self.reset_tests = QPushButton(N_("Reset test values"))
+        self.reset_tests = tool_button(
+            N_("Reset test values"), QStyle.StandardPixmap.SP_BrowserReload
+        )
         self.reset_tests.clicked.connect(self.reset_values)
         self.test_fields = {}
         top = QWidget()

@@ -5,8 +5,11 @@ an independent student project. Ordinary Python editing works as before.
 
 The **Lesson** workspace presents the goal, stages and progressive hints.
 **Open program**, **Open controls** or **Open assembly** opens the stage's workspace.
-The task and its controls stay together at the top, including in the Lesson
-workspace. **Mark complete** records the result without changing workspace;
+The task and its controls stay together at the top in Program, Control, Lesson
+and the lesson's Assembly. Help and Block Editor use the full height. Outside
+Lesson, the card shows a compact stage title; its tooltip contains the goal.
+Previous, next and complete actions use icons with tooltips.
+**Mark complete** records the result without changing workspace;
 completed stages get green checkmarks in the list. **← Previous stage** and
 **Next stage →** open neighboring descriptions, even before completion.
 **Open lesson** returns to the overview. Hide the task card with **×** and restore

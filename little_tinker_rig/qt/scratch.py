@@ -27,6 +27,7 @@ from little_tinker_rig.i18n import N_, tr
 from .code import CodeEdit
 from .drag import BlockMime, drag_block
 from .editor import SourceView
+from .find import FindBar
 from .localization import localize
 
 
@@ -107,6 +108,10 @@ class ScratchCell(QFrame):
         )
         self.stack.addWidget(self.origin_marker)
         self.whole_drag = False
+        self.finder = FindBar(lambda: self.code if self.code_active else self.source)
+        self.finder.visibility_changed.connect(self.fit)
+        self.find_bar = self.finder.query
+        layout.addWidget(self.finder)
         layout.addWidget(self.stack)
         self.error = QLabel()
         self.error.setWordWrap(True)
@@ -118,6 +123,8 @@ class ScratchCell(QFrame):
         localize(self)
 
     def change_mode(self, code):
+        if not self.source.finish_parameter():
+            return
         if not code:
             try:
                 self.source.session = Session.fragment(
@@ -131,7 +138,7 @@ class ScratchCell(QFrame):
                 self.error.show()
         else:
             self.code.blockSignals(True)
-            self.code.setPlainText(self.text)
+            self.code.replace_formatted(self.text)
             self.code.blockSignals(False)
         self.code_active = code
         self.stack.setCurrentIndex(int(code))
@@ -140,6 +147,7 @@ class ScratchCell(QFrame):
         if not code:
             self.error.hide()
         self.fit()
+        (self.code if code else self.source).setFocus()
         self.mode_changed.emit()
 
     def show_drag_origin(self, transfer):

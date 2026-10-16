@@ -65,13 +65,18 @@ percentages; ultrasonic distance is in millimeters.
 
 Select **Control → Assign motors to sticks and triggers**. Start manual control,
 assign a motor to an axis or trigger, choose its mode/scale, then enable commands.
+This mode shows the two sticks and triggers; the assignment table lists detected
+motors. **Send controller input to my program** shows the complete controller,
+including buttons. Both layouts fit the available width.
 
 Rotation scale is degrees per second at full input. Servo scale is an angle added
 to its center: RT with scale 90 and center 20 requests 20–110°. Sticks range from
 −1 to +1, triggers from 0 to 1; up is positive Y. Reverse flips the input sign.
 Unassigned motors remain stopped. Assignments remain in the current window.
 
-Release the mouse to center a stick or reset a trigger. With a stick focused,
+Release the mouse or keyboard control to center a stick or reset a trigger.
+Moving keyboard focus away also returns the input to neutral. Trigger sliders
+ignore the mouse wheel because it has no release action. With a stick focused,
 WASD controls the left stick and arrow keys the right. A neutral rotation input
 stops the motor; a neutral servo input returns it to its center. Disabling commands
 brakes both modes. Changing assignments, leaving Control, losing window focus or

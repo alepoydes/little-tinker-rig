@@ -20,6 +20,16 @@ from PySide6.QtWidgets import (
 from little_tinker_rig.i18n import N_, tr
 
 
+def tool_button(title, icon):
+    button = QToolButton()
+    button.setText(title)
+    button.setToolTip(title)
+    button.setAccessibleName(title)
+    button.setIcon(button.style().standardIcon(icon))
+    button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
+    return button
+
+
 class ChoiceButtons(QWidget):
     """Exclusive icon choices with localized tooltips and keyboard focus."""
 

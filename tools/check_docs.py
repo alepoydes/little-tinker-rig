@@ -5,12 +5,9 @@ import re
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
-from little_tinker_rig.documentation import heading_anchors, prose
+from little_tinker_rig.documentation import DEVELOPER_PAGES, heading_anchors, prose
 
 ROOT = Path(__file__).resolve().parents[1]
-DEVELOPER_PAGES = {
-    Path(name) for name in ("api.md", "architecture.md", "development.md")
-}
 
 
 def check(root=ROOT):

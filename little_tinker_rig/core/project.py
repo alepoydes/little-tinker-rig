@@ -7,9 +7,23 @@ import os
 import tokenize
 from pathlib import Path
 
+from little_tinker_rig.i18n import tr
+
 from .document import Document, State
 from .source_file import atomic_write as atomic_write
 from .source_file import utf8_source
+
+
+class ExternalChangeError(ValueError):
+    """Saving requires a decision about a file changed since its last read."""
+
+    def __init__(self, path, *, workspace=False):
+        self.path = path
+        super().__init__(
+            tr("Workspace changed outside LittleTinker Rig: {path}", path=path)
+            if workspace
+            else tr("File changed outside LittleTinker Rig: {path}", path=path)
+        )
 
 
 class Project:
@@ -144,9 +158,7 @@ class Project:
     def save_collections(self) -> None:
         """Persist library connections independently of unsaved program/scratch text."""
         if self._hash(self.workspace_path) != self._workspace_hash:
-            raise ValueError(
-                "Workspace changed outside LittleTinker Rig; reopen it first"
-            )
+            raise ExternalChangeError(self.workspace_path, workspace=True)
         metadata = (
             json.loads(self.workspace_path.read_text(encoding="utf-8"))
             if self.workspace_path.exists()
@@ -162,13 +174,9 @@ class Project:
     def save(self) -> None:
         """Refuse to overwrite a file changed externally since opening/saving."""
         if self._hash(self.path) != self._disk_hash:
-            raise ValueError(
-                "File changed outside LittleTinker Rig; reopen it or save to another path"
-            )
+            raise ExternalChangeError(self.path)
         if self._hash(self.workspace_path) != self._workspace_hash:
-            raise ValueError(
-                "Workspace changed outside LittleTinker Rig; reopen it or save to another path"
-            )
+            raise ExternalChangeError(self.workspace_path, workspace=True)
         source = utf8_source(self.state.source)
         if self.draft is not None:
             self.draft = source
