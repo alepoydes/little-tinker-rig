@@ -40,7 +40,7 @@ def hub_display_char_character(hub: "PrimeHub" = hub, character: "str" = "!"):
 
 @inline_block(level="expert", icon="▶", color="action", variant="Default timing")
 def hub_display_text_text(hub: "PrimeHub" = hub, text: "str" = "Hello"):
-    """Scroll text across the hub display. Options: text."""
+    """Scroll text on the hub display."""
     hub.display.text(text)
 
 

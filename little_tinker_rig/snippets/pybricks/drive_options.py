@@ -130,7 +130,7 @@ def drive_from_motors(
     wheel: "number[mm]" = 56,
     track: "number[mm]" = 112,
 ) -> "DriveBase":
-    """Build a drive base for a robot attribute or expression."""
+    """Create a drive base value."""
     from pybricks.robotics import DriveBase
 
     return DriveBase(left, right, wheel_diameter=wheel, axle_track=track)

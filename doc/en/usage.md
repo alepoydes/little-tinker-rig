@@ -150,6 +150,7 @@ collections, Functions, Motors and movement, Sensors and input, Light and sound,
 and Devices and communication. Open a branch or search by an action, description,
 or Python API name. Search includes English names in every interface language.
 Direct title matches appear before incidental matches within each category.
+Search previews the best matching variant; you can still choose another variant.
 Clearing search restores the previous selection and open branches. A message
 explains matches hidden by the level, lesson palette, or selected parameter.
 
@@ -178,9 +179,37 @@ successful catalog insertions count, including insertions into Scratch. Opening,
 running, recognizing, and redoing code do not count; Undo keeps the original use.
 Lists remember families, not previous parameter values or ports. Functions defined
 in a program belong to that file's path: equal function names in different files
-have separate links and statistics. Save As starts a different function scope.
+have separate links and statistics. Each unnamed draft also has its own records,
+preserved by recovery and transferred to its path on the first save. Later
+**Save As** starts a different function scope.
 
 ![Category branches, level buttons, and independent library views](images/library.png)
+
+## Changing an inserted block's variant
+
+Select a recognized family block in the program or Scratch and press **F3**, or
+choose **Variants and parameters…** from its context menu. Choose an operation
+and edit its Python expressions. Shared fields retain compatible values; newly
+exposed options retain fixed behavior such as `wait=False`. The current form stays
+available even if it is above the selected level. Other choices follow the level
+and lesson palette.
+
+**Additional settings** holds optional fields. Existing non-default values open
+the section initially and remain visible in a summary when you collapse it.
+Enum and Boolean suggestions use Python values such as `Stop.HOLD` and `False`.
+They do not translate or execute your expressions.
+
+Read the operation description and **Python changes** before accepting: changing
+the operation can change waiting, units, stop behavior, or remove a field. **OK**
+applies one edit, including needed imports; Undo restores it. **Cancel** leaves
+the program unchanged. Invalid expressions, incompatible result types, or changes
+that cannot preserve argument evaluation order prevent acceptance.
+
+The dialog is available for recognized templates. After adding a body to a generic
+loop or condition, use its ordinary structural fields or Python view if it no
+longer matches the original construction template.
+
+![Reviewing a motor variant and its additional settings](images/block-variants.png)
 
 ## Library, Scratch and help
 

@@ -34,7 +34,9 @@ def assign(name=value, value=0):
     bindings={"count": "stop"},
 )
 def repeat(count: "number" = 10):
-    """Repeat actions a given number of times.
+    """Repeat actions with a counter.
+
+    Repeat actions a given number of times.
 
     Replace pass with blocks dragged into the loop.
     The counter i starts at zero."""
@@ -44,7 +46,9 @@ def repeat(count: "number" = 10):
 
 @inline_block(level="intermediate", icon="◇", color="control", variant="If")
 def condition(test: "bool" = True):
-    """Run actions when a condition is true."""
+    """Choose actions with a condition.
+
+    Run actions when a condition is true."""
     if test:
         pass
 
@@ -73,7 +77,9 @@ def forever():
     bindings={"value": "left", "threshold": "right"},
 )
 def compare(value: "number" = 0, threshold: "number" = 0) -> "bool":
-    """Check whether a value is below a threshold."""
+    """Compare two values.
+
+    Check whether a value is below a threshold."""
     return value < threshold
 
 
@@ -96,7 +102,9 @@ def condition_else(test: "bool" = True):
     level="intermediate", icon="⟳", color="loop", variant="While a condition holds"
 )
 def while_condition(test: "bool" = True):
-    """Repeat actions while the condition is true."""
+    """Repeat actions in a while loop.
+
+    Repeat actions while the condition is true."""
     while test:
         pass
 
@@ -126,7 +134,9 @@ def equal(left=0, right=0) -> "bool":
     level="intermediate", icon="＝", color="value", category="values", variant="And"
 )
 def both(left: "bool" = True, right: "bool" = True) -> "bool":
-    """Check that both conditions are true."""
+    """Combine two conditions.
+
+    Check that both conditions are true."""
     return left and right
 
 
@@ -205,7 +215,9 @@ def return_value(value=0):
     level="intermediate", icon="＝", color="value", category="values", variant="Add"
 )
 def sum_values(left=0, right=0):
-    """Add two values."""
+    """Calculate with two values.
+
+    Add two values."""
     return left + right
 
 

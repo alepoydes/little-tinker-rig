@@ -131,7 +131,7 @@ class Studio(QMainWindow):
         self.documents.setMovable(True)
         self.open_document(path or self.new_document_path(), unnamed=path is None)
         self.library = Library(self.session.available_snippets, self.settings)
-        self.library.set_scope(self.session.project.path)
+        self.library.set_scope(self.document_page.catalog_scope)
         self.library.definition_requested.connect(self.open_definition)
         self.library.itemDoubleClicked.connect(self.insert_selected)
         self.search = QLineEdit()
@@ -740,7 +740,7 @@ class Studio(QMainWindow):
     def document_changed(self, *_):
         if self.document_page is None:
             return
-        self.library.set_scope(self.session.project.path)
+        self.library.set_scope(self.document_page.catalog_scope)
         self.library.load(self.session.available_snippets)
         self.library.filter(self.search.text(), self.level_filter.value)
         self.help_page.snippets = self.session.available_snippets
@@ -776,7 +776,7 @@ class Studio(QMainWindow):
             self.documents.widget(index).source.refresh_source()
         self.scratch.refresh(self.session)
         self.language_actions[language()].setChecked(True)
-        self.library.set_scope(self.session.project.path)
+        self.library.set_scope(self.document_page.catalog_scope)
         self.library.load(self.session.available_snippets)
         self.library.filter(self.search.text(), self.level_filter.value)
         self.help_page.retranslate()
@@ -1074,7 +1074,7 @@ class Studio(QMainWindow):
         self.editing_source.expression_level = self.level_filter.value
         if hasattr(self, "lessons"):
             self.lessons.palette()
-        self.library.set_scope(self.session.project.path)
+        self.library.set_scope(self.document_page.catalog_scope)
         self.library.set_context(self.editing_session)
         self.whole_blocks.setVisible(
             isinstance(self.editing_session.editor.selection, ast.expr)
@@ -1504,6 +1504,7 @@ class Studio(QMainWindow):
             "Python (*.py)",
         )
         if path:
+            old_scope, was_unnamed = page.catalog_scope, page.unnamed
             from little_tinker_rig.core.project import Project
 
             destination = Path(path).resolve()
@@ -1523,6 +1524,8 @@ class Studio(QMainWindow):
                 session.project = project
                 page.code.path = destination
             page.unnamed = False
+            if was_unnamed:
+                self.library.relocate_scope(old_scope, page.catalog_scope)
             self.settings.setValue("programDirectory", str(destination.parent))
             self.remember_file(destination)
             self.recovery.flush()

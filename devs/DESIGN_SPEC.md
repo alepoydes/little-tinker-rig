@@ -695,6 +695,30 @@ preserves its effective category, so the copy is a usable standalone definition.
 Handwritten collections may opt into grouping without migrating their existing
 source bodies or adding a parallel catalog file.
 
+For an inserted, currently recognized family block, F3 or **Variants and
+parameters…** opens an explicit edit dialog. Compatible shared fields retain
+their expressions; newly exposed fixed API options retain the old source value.
+Other new fields use the definition default or `...`, without evaluating it.
+Additional settings are collapsed unless their current values differ from defaults;
+a collapsed section still summarizes active differences. Enum and Boolean choices
+use the existing parameter suggestions and allow ordinary Python expressions.
+
+The dialog previews the complete Python diff, including imports and helpers.
+Applying revalidates the selected source revision and commits one undoable edit;
+Cancel and invalid input leave source, Scratch, and history intact. Existing forms
+remain selectable even when above the current level or retained only as aliases.
+Other choices obey exact lesson and level restrictions. Returned values must fit
+the parent input's known type. Declaration names, literal contents, comments, and
+the evaluation order of retained call arguments survive the edit. When compatible
+keyword spelling can preserve that order, it is retained; otherwise the edit is
+rejected with an explicit message. Changes to the operation itself, removed fields,
+units, waiting, and stop behavior remain visible in the description and diff.
+
+This operation requires a recognized template. A filled generic loop or condition
+may cease to match its empty construction template; its existing structural and
+Python editing tools remain available. Family grouping does not add wildcard
+recognition of arbitrary program bodies.
+
 ### 19.2 Block Editor workspace
 
 The desktop has a separate text-based definition editor. Collections, modules and
@@ -705,6 +729,11 @@ Typing does not resize or move the editor. Preview values are independent of
 template defaults and are never executed.
 
 Built-in definitions are read-only examples with a copy-to-user-collection action.
+The Catalog properties button edits category, family primary, variant label,
+shared field keys, and optional additional fields in the same decorator source.
+The dialog validates the module before one text edit; Save and apply validates
+family references across the complete collection. Preview and ordinary text Undo
+use the same source as all other property controls.
 User modules have ordinary text editing, undo, template-aware highlighting,
 context hints, source-located validation errors and recoverable invalid drafts.
 Preview parameter/description clicks navigate to their declarations/docstrings.
@@ -1729,7 +1758,10 @@ Search, category branches, and the persisted level buttons combine; help retains
 module groups and the same source definitions. Independent view buttons open
 Catalog, Favorites, Recent, Frequent, and For this lesson. Exact variants are
 filtered before a family produces one card. Personal records are local family
-references; document functions use their resolved source path as scope. Recent
+references; saved document functions use their resolved source path as scope.
+An unnamed document uses a unique recovery-persisted identifier. Its first save
+moves personal references and counts to the saved path; later Save As starts a
+separate scope. Recent
 and Frequent show at most twelve families. Daily counts cover the current and
 previous 29 UTC days; ties use latest insertion time and identity. Frequent stays
 a snapshot until the view is entered again. All successful catalog insertion

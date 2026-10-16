@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+- Consolidate 253 block templates into 191 family cards in eight categories,
+  retaining every source form and exact lesson restriction. Action cards decrease
+  from 147 to 105; Beginner shows 19 families.
+- Separate difficulty and view buttons. Add local Favorites, Recent, Frequent,
+  and For this lesson views, with distinct document-function records.
+- Edit recognized block variants and compact optional parameters with an explicit
+  Python diff and one Undo. Preserve compatible arguments, declaration names,
+  comments, and retained argument evaluation order.
+- Edit family metadata through Catalog properties in Block Editor. Keep Python
+  definitions authoritative, with English and Russian user help and descriptions.
+- Add a complete source-derived inventory and checks for all default family
+  transitions, typed results, personal records, and document/Scratch integration.
+
 ## 0.1.1 — 2026-09-28
 
 ### User-visible changes

@@ -547,9 +547,10 @@ class Session:
             return syntax.block_span(statements[0]).start
         return edit.target_position(syntax, target)[0]
 
-    def commit_insertion(
+    def prepare_insertion(
         self, source, offset, required=(), scratch=None, *, helpers=()
     ):
+        """Prepare helper and import edits without changing document state."""
         prepared = source
         if helpers and not self.document.fragment:
             definitions = {
@@ -582,9 +583,28 @@ class Session:
                 retain=self.document.state.scratch if scratch is None else scratch,
                 required=definitions,
             )
-        imported = self.with_imports(prepared, required)
+        return self.with_imports(prepared, required)
+
+    def commit_insertion(
+        self, source, offset, required=(), scratch=None, *, helpers=()
+    ):
+        imported = self.prepare_insertion(
+            source, offset, required, scratch, helpers=helpers
+        )
         self.editor.commit(
             imported, scratch, focus=edit.map_offset(source, imported, offset)
+        )
+
+    def change_variant(self, snippet, bindings):
+        from .variants import variant_source
+
+        match = self.selected_match()
+        if match is None:
+            raise ValueError("Select a recognized block")
+        source = variant_source(self, match, snippet, bindings)
+        self.editor.commit(
+            source,
+            focus=edit.map_offset(self.document.state.source, source, match.span.start),
         )
 
     def _replace_match(self, match: Match, source: str) -> str:

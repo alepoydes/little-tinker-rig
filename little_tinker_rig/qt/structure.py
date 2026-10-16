@@ -317,6 +317,8 @@ def block_menu(view, point):
         (m for m in session.matches if m.span.contains(syntax.spans[node].start)), None
     )
     if definition:
+        if match and not match.snippet.historical:
+            menu.addAction(tr("Variants and parameters…"), view.edit_variant)
         menu.addAction(
             tr("Open definition"),
             lambda: view.definition_requested.emit(definition.snippet),

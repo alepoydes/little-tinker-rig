@@ -17,7 +17,9 @@ def wait_ms(duration: "number[ms]" = 1000):
     level="beginner", icon="◉", color="state", names=("name",), variant="Color sensor"
 )
 def create_color_sensor(name=sensor, port: "Port" = Port.C):
-    """Connect a color sensor to a hub port."""
+    """Connect a sensor to a hub port.
+
+    Connect a color sensor to a hub port."""
     from pybricks.parameters import Port
     from pybricks.pupdevices import ColorSensor
 
@@ -132,7 +134,9 @@ def pressed(sensor: "ForceSensor" = button) -> "bool":
 
 @inline_block(level="intermediate", icon="◉", color="action", variant="Surface color")
 def color(sensor: "ColorSensor | ColorDistanceSensor" = sensor) -> "Color":
-    """Read the surface color under the sensor."""
+    """Read a detected color.
+
+    Read the surface color under the sensor."""
     return sensor.color()
 
 
@@ -170,7 +174,9 @@ def distance_lights(
     sensor: "UltrasonicSensor | ColorSensor" = distance,
     brightness: "number[%] | list | tuple" = 100,
 ):
-    """Set the ultrasonic sensor eye brightness."""
+    """Control the ultrasonic sensor lights.
+
+    Set the ultrasonic sensor eye brightness."""
     sensor.lights.on(brightness)
 
 

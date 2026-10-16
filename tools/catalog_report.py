@@ -6,7 +6,9 @@ from pathlib import Path
 
 from little_tinker_rig.core.block_metadata import CATEGORIES, LEVELS
 from little_tinker_rig.core.catalog import families
-from little_tinker_rig.core.snippets import builtin_snippets
+from little_tinker_rig.core.session import Session
+from little_tinker_rig.core.snippets import builtin_snippets, instantiate
+from little_tinker_rig.core.variants import variant_bindings, variant_source
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT = ROOT / "devs/BLOCK_LIBRARY_INVENTORY.md"
@@ -120,6 +122,7 @@ def report():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true")
+    parser.add_argument("--verify-transitions", action="store_true")
     args = parser.parse_args()
     text = report()
     if args.check:
@@ -129,6 +132,41 @@ def main():
     else:
         REPORT.write_text(text, encoding="utf-8")
         print(REPORT.relative_to(ROOT))
+    if args.verify_transitions:
+        count = 0
+        for family in families(builtin_snippets()):
+            if len(family.members) < 2:
+                continue
+            for original in family.members:
+                source = instantiate(
+                    original,
+                    {p.name: p.name for p in original.parameters if p.default is None},
+                ).source
+                session = Session.fragment(source, family.members)
+                before = session.document.state
+                session.editor.selection = session.document.syntax.tree.body[-1]
+                match = session.selected_match()
+                if match is None:
+                    raise ValueError(f"Unrecognized family form: {original.identity}")
+                for target in family.choices():
+                    prepared = variant_source(
+                        session, match, target, variant_bindings(session, match, target)
+                    )
+                    checked = Session.fragment(prepared, family.members)
+                    if (
+                        not checked.matches
+                        or checked.matches[0].snippet.catalog_id != family.identity
+                    ):
+                        raise ValueError(
+                            f"Unrecognized transition: {original.identity} → {target.identity}"
+                        )
+                    if (
+                        session.document.state is not before
+                        or session.document.can_undo
+                    ):
+                        raise ValueError("A transition preview changed document state")
+                    count += 1
+        print(f"Verified {count} variant transitions with default bindings")
 
 
 if __name__ == "__main__":

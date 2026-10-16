@@ -54,7 +54,9 @@ def run_motor(motor: "Motor" = motor, speed: "number[deg/s]" = 500):
 
 @inline_block(level="intermediate", icon="↻", color="action", variant="Brake")
 def stop_motor(motor: "Motor | DCMotor" = motor):
-    """Stop a motor with braking."""
+    """Stop a motor.
+
+    Stop a motor with braking."""
     motor.brake()
 
 
@@ -62,7 +64,9 @@ def stop_motor(motor: "Motor | DCMotor" = motor):
 def turn_motor(
     motor: "Motor" = motor, angle: "number[deg]" = 90, speed: "number[deg/s]" = 300
 ):
-    """Turn a motor through an angle and wait until it finishes."""
+    """Turn a motor by an angle.
+
+    Turn a motor through an angle and wait until it finishes."""
     motor.run_angle(speed, angle)
 
 
@@ -72,7 +76,9 @@ def turn_motor(
 def motor_target(
     motor: "Motor" = motor, angle: "number[deg]" = 0, speed: "number[deg/s]" = 300
 ):
-    """Turn the motor to a target position and wait until it finishes."""
+    """Move a motor to a position.
+
+    Turn the motor to a target position and wait until it finishes."""
     motor.run_target(speed, angle)
 
 
@@ -80,7 +86,9 @@ def motor_target(
 def motor_time(
     motor: "Motor" = motor, duration: "number[ms]" = 1000, speed: "number[deg/s]" = 300
 ):
-    """Run the motor for a set time, then stop."""
+    """Run a motor for a duration.
+
+    Run the motor for a set time, then stop."""
     motor.run_time(speed, duration)
 
 
@@ -137,7 +145,9 @@ def create_profiled_motor(
 
 @inline_block(level="advanced", icon="↻", color="action", variant="Acceleration")
 def acceleration(motor: "Motor" = motor, acceleration: "number[deg/s²] | tuple" = 1000):
-    """Set the motor acceleration limit.
+    """Set motor control limits.
+
+    Set the motor acceleration limit.
 
     This changes how quickly regulated motion starts and stops on a real motor."""
     motor.control.limits(acceleration=acceleration)

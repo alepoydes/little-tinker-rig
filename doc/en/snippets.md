@@ -108,6 +108,11 @@ LittleTinker Rig runtime dependency.
 | `names` | Renameable declarations in an inline block; default empty |
 | `kind` | Optional `statement` or `expression` override |
 | `context` | Optional `loop` or `async` wrapper for context-dependent inline statements |
+| `category` | Subject branch; inherits module `__category__`, otherwise uses the module heading |
+| `family` | Complete primary identity, such as `my_blocks/motors/turn`; empty for a separate primary card |
+| `variant` | Translatable form label; a family member without a label is a recognition/lesson compatibility alias |
+| `advanced` | Tuple of optional parameter names to place under Additional settings |
+| `bindings` | Mapping from parameter names to shared family field keys; omitted names keep their own keys |
 
 Palette roles are `control`, `loop`, `action`, `value`, `state`, `definition`,
 `placeholder`, `snippet`, and `warning`. Metadata values must be literals.
@@ -119,6 +124,15 @@ The signature supplies expression fields and defaults. Defaults such as
 Provide defaults to allow insertion without a dialog. A docstring supplies help
 and search text. English is the source language; gettext provides translations
 for descriptions and group documentation.
+
+Family members must have compatible statement/expression and context requirements
+and point directly to a primary in the same collection; chains are rejected.
+Each form keeps its own signature, level, body and identity. Category moves and
+translations do not change saved programs or personal links. Values transfer
+between compatible shared fields only during an explicit variant edit. Optional
+omission remains distinct from passing `None` or evaluating a default.
+Use [Catalog properties in Block Editor](block-editor.md#save-recover-and-share)
+to edit these literal fields with preview and text Undo.
 
 ## Types and units
 

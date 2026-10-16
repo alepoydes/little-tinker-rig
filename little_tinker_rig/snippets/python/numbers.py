@@ -35,7 +35,9 @@ def remainder(value: "number" = 10, divisor: "number" = 3) -> "number":
 
 @inline_block(level="advanced", icon="▶", color="action", variant="Minimum")
 def minimum(left: "number" = 0, right: "number" = 100) -> "number":
-    """Choose the smaller value."""
+    """Choose the smallest or largest value.
+
+    Choose the smaller value."""
     return min(left, right)
 
 

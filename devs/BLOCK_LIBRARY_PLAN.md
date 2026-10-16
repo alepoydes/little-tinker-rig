@@ -1,16 +1,17 @@
 # Block library work plan
 
-Status: in progress. Baseline date: October 16, 2026.
+Status: complete. Baseline and verification date: October 16, 2026.
 
 The source-derived [inventory](BLOCK_LIBRARY_INVENTORY.md) accounts for all 253
-templates. Initial consolidation defines 191 families, with 250 selectable forms
+templates. Consolidation defines 191 families, with 250 selectable forms
 and three compatibility aliases. Family metadata, validation, and exact-variant
 filtering are implemented in the core. The desktop exposes families, exact variant
 selection for insertion, category branches, and independent level/view buttons.
 Favorites, Recent, and Frequent use local family references and successful
-insertion records, including both Scratch paths. Existing-program variant editing,
-compact additional parameters, authoring controls, and the final catalog content
-review remain incomplete; the pilot and final integration gate are not yet complete.
+insertion records, including both Scratch paths. Explicit existing-program variant
+editing, compact additional parameters, and Block Editor catalog controls are
+implemented. Titles and descriptions cover the family operations, with English
+and Russian user help. The final integration evidence is recorded below.
 
 The objective is a smaller, easier-to-find set of block cards with explicit
 operation variants, predictable Python behavior, and personal navigation.
@@ -36,10 +37,10 @@ using the findings in the [catalog research](BLOCK_CATALOG_RESEARCH.md).
 - Developer artifacts are English-only. GUI, block descriptions, and affected
   user help retain English and Russian support under the [project rules](../AGENTS.md).
 
-The current catalog has 253 templates in 23 module groups, including 147 with the
-action role. These counts are a baseline, not a target size. Final family and
-visible-card counts follow from the audit; no useful operation is removed merely
-to meet a numerical quota.
+The baseline catalog had 253 templates in 23 module groups, including 147 with the
+action role. The resulting catalog has 191 families, including 105 action families.
+These counts follow from the audit; no useful operation was removed merely to
+meet a numerical quota.
 
 ## Delivery sequence
 
@@ -274,3 +275,58 @@ the baseline, appropriate checks pass, and the result is saved in local commits.
 
 These are integration points to inspect, not a requirement to introduce a new
 service or abstraction for each concern.
+
+## Delivery audit
+
+| Phase | Implemented result and evidence |
+|---|---|
+| 1. Inventory | The [generated inventory](BLOCK_LIBRARY_INVENTORY.md) records all 253 identities, source links, parameters, units, defaults, levels, variants, categories, and authored behavior. No source identity was removed. |
+| 2. Contracts | [Family metadata and editing](DESIGN_SPEC.md#191-catalog-family-metadata) define inheritance, aliases, exact filtering, shared fields, explicit edits, and compatibility. Older uncategorized collections retain their module headings. |
+| 3. Pilot | The six motor/drive families account for all 23 audited forms. Defaults, fixed options, enum choices, returned expressions, imports, typed inputs, and one-edit Undo use the shared variant mechanism. |
+| 4. Full catalog | All 23 source modules are classified into eight branches and 191 families; 250 forms remain ordinarily selectable and three are compatibility aliases. Families retain distinct reads/writes, assignment/value forms, and reset/movement semantics. Introduction levels remain attached to exact forms. |
+| 5. Navigation | Separate level/view buttons, category branches, localized/API search, matching variant previews, keyboard access, and exact lesson-stage palettes are implemented. EN/RU screenshots cover the new navigation and editing controls. |
+| 6. Personal records | Family references support ordered Favorites, unique Recent, all successful program/Scratch insertion paths, independent clearing, persistence, unavailable links, and recovery-safe document scopes. First save transfers unnamed-document links and counts. |
+| 7. Frequent | One local insertion record supplies the latest 30 UTC calendar days; deterministic ranking is capped at twelve entries and remains fixed until the view is entered again. |
+| 8. Integration | User guides, definition-format help, developer contracts, translations, screenshots, inventory checks, and CI are updated. Final verification results follow below. |
+
+The eight branch sizes are 18 Program, 15 Values, 19 Variables/collections,
+8 Functions, 54 Movement, 42 Input, 18 Output, and 17 Devices/communication.
+Cumulative family counts are **19 / 66 / 124 / 191** for Beginner through Expert;
+All also shows 191. Grouping reduces ordinary cards by 62 (24.5%) and action cards
+by 42 (28.6%). There is no additional hierarchy above the category branches.
+
+Comparison with the captured pre-consolidation definitions confirms identical
+identities, introduction levels, default expanded Python, imports, and helper
+bodies for all 253 templates. `tools/catalog_report.py --check --verify-transitions`
+also prepares and re-recognizes all **305** built-in family transitions with default
+bindings while checking that previews preserve state and Undo history.
+
+Focused behavioral checks cover side-effectful argument ordering, declaration
+names, comments and string values, typed results, invalid/stale edits, exact lesson
+aliases, personal ordering/counting/expiration, document isolation, and text/structural
+Undo. Native Qt checks additionally exercised a Scratch variant edit with parent
+Undo, keyboard activation, saved-settings startup, and Russian labels in a
+930 × 620 window. Hardware evidence is unchanged: the revision uses source and
+virtual-runtime checks and makes no new claim about physical robots.
+
+Final verification:
+
+- Full integration suite: **654 passed, 2 skipped**, 394.39 seconds. The run exceeds
+  the quick-test budget because it includes the complete Qt/TUI, virtual-hub,
+  firmware, lesson, and example-compilation suites. Eight warnings originate in
+  the dependency's deprecated `semver.compare` call.
+- The final argument-order safeguard was checked separately: **9 variant tests
+  passed** in 2.16 seconds; all 305 default transitions still pass. No later
+  application changes followed these checks.
+- Ruff, Black (all 176 Python files), documentation links and language boundaries,
+  translation coverage/compiled catalogs, UTF-8 without BOM, inventory freshness,
+  and `git diff --check` pass. CI now checks the inventory and transitions too.
+- Offline wheel and source-distribution builds succeed. Packaged source,
+  translations, icons, help, and screenshots match the working tree. The source
+  archive includes the inventory, tests, and documentation.
+- The wheel installed in an isolated **Python 3.11.16** environment outside the
+  repository passes catalog loading, variant preview/apply/Undo, Ruff formatting,
+  localized-resource discovery, and virtual motor movement/completion checks.
+  Core dependencies match the development versions.
+
+The implementation is saved in local commits; publication is outside this plan.

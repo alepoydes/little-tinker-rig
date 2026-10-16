@@ -13,7 +13,9 @@ def hub_imu_acceleration(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "tuple
 
 @inline_block(level="expert", icon="▶", color="action", variant="Default mounting")
 def primehub() -> "PrimeHub":
-    """Create the Prime hub in its mounted orientation."""
+    """Create a Prime or Inventor hub value.
+
+    Create the Prime hub in its mounted orientation."""
     from pybricks.hubs import PrimeHub
 
     return PrimeHub()

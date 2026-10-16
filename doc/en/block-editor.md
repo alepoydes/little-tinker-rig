@@ -56,6 +56,21 @@ inside functions, and undecorated helpers may be shared by several blocks.
 A placeholder default such as `motor=motor` is valid here; it is not evaluated.
 See [the template format](snippets.md) for supported Python patterns.
 
+The **Catalog properties…** icon beside the level, icon and color controls opens
+category and family settings. Choose a category, optionally enter the complete
+primary block identity, and give the form a variant label. Leave the family empty
+for a separate card; an unlabeled family member is a compatibility alias.
+Shared field keys connect equivalent parameters with different names across
+variants. **Additional** is available only for parameters with defaults and puts
+them in the compact editing dialog's additional section.
+
+Accepting edits the decorator once, with ordinary text Undo. **Save and apply**
+checks the complete collection, including primary references. Copying a built-in
+variant creates an independent card with its category retained; join it to a family
+in your own collection explicitly when needed.
+
+![Editing category, family and shared parameter fields](images/catalog-properties.png)
+
 Edits are retained as drafts after a short pause, including invalid Python, and
 recovered on reopening the module. Switching modules preserves their text undo
 histories during the session. **Reopen saved** discards the current module draft

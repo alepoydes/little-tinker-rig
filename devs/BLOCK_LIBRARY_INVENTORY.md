@@ -58,6 +58,8 @@ Variant: Count.
 |---|---|---|---|---|
 | count | number | `10` | Essential | stop |
 
+Repeat actions with a counter.
+
 Repeat actions a given number of times.
 
 Replace pass with blocks dragged into the loop.
@@ -92,6 +94,8 @@ Variant: If.
 |---|---|---|---|---|
 | test | bool | `True` | Essential | test |
 
+Choose actions with a condition.
+
 Run actions when a condition is true.
 
 **`python/basics/condition_else`** — Consolidate variant.
@@ -118,6 +122,8 @@ Variant: While a condition holds.
 | Parameter | Type / units | Default | Card field | Shared family field |
 |---|---|---|---|---|
 | test | bool | `True` | Essential | test |
+
+Repeat actions in a while loop.
 
 Repeat actions while the condition is true.
 
@@ -364,6 +370,8 @@ Variant: Wait for all.
 | first | Python expression | `task1()` | Essential | first |
 | second | Python expression | `task2()` | Essential | second |
 
+Combine asynchronous operations.
+
 Create a task that waits for both operations to finish.
 
 **`pybricks/tasks/race_tasks`** — Consolidate variant.
@@ -395,6 +403,8 @@ Variant: Less than.
 | value | number | `0` | Essential | left |
 | threshold | number | `0` | Essential | right |
 
+Compare two values.
+
 Check whether a value is below a threshold.
 
 **`python/basics/equal`** — Consolidate variant.
@@ -423,6 +433,8 @@ Variant: And.
 |---|---|---|---|---|
 | left | bool | `True` | Essential | left |
 | right | bool | `True` | Essential | right |
+
+Combine two conditions.
 
 Check that both conditions are true.
 
@@ -467,6 +479,8 @@ Variant: Add.
 |---|---|---|---|---|
 | left | Python expression | `0` | Essential | left |
 | right | Python expression | `0` | Essential | right |
+
+Calculate with two values.
 
 Add two values.
 
@@ -601,6 +615,8 @@ Variant: Minimum.
 |---|---|---|---|---|
 | left | number | `0` | Essential | left |
 | right | number | `100` | Essential | right |
+
+Choose the smallest or largest value.
 
 Choose the smaller value.
 
@@ -964,6 +980,8 @@ Variant: All values.
 |---|---|---|---|---|
 | values | Python expression | `(True, True)` | Essential | values |
 
+Test values in a collection.
+
 Check that every value is true; stop at the first false value.
 
 **`python/objects/any_value`** — Consolidate variant.
@@ -1147,6 +1165,8 @@ Variant: Yield a value.
 |---|---|---|---|---|
 | value | Python expression | `None` | Essential | value |
 
+Pause and resume a generator.
+
 Yield a value from a generator, resuming here on its next iteration.
 
 **`python/objects/yield_control`** — Consolidate variant.
@@ -1258,6 +1278,8 @@ Variant: Brake.
 |---|---|---|---|---|
 | drive | DriveBase | `drive` | Essential | drive |
 
+Stop both robot wheels.
+
 Brake both robot wheels.
 
 **`pybricks/drive_options/coast_drive`** — Consolidate variant.
@@ -1285,6 +1307,8 @@ Variant: Wait until finished.
 |---|---|---|---|---|
 | drive | DriveBase | `drive` | Essential | drive |
 | distance | number[mm] | `200` | Essential | distance |
+
+Drive a measured distance.
 
 Drive a distance, then stop.
 
@@ -1384,6 +1408,8 @@ Variant: Speed and acceleration.
 | acceleration | Python expression | `400` | Essential | acceleration |
 | turn_rate | number[deg/s] | `90` | Essential | turn_rate |
 | turn_acceleration | Python expression | `180` | Additional | turn_acceleration |
+
+Configure finite robot movements.
 
 Set the speed and acceleration of finite robot moves.
 
@@ -1591,7 +1617,7 @@ Variant: Named dimensions.
 | wheel | number[mm] | `56` | Essential | wheel |
 | track | number[mm] | `112` | Essential | track |
 
-Build a drive base for a robot attribute or expression.
+Create a drive base value.
 
 **`pybricks/drive_options/drivebase_left_right_wheel_diameter_axle_track`** — Retain compatibility alias.
 
@@ -1796,6 +1822,8 @@ Variant: Acceleration.
 | motor | Motor | `motor` | Essential | motor |
 | acceleration | number[deg/s²] &#124; tuple | `1000` | Essential | acceleration |
 
+Set motor control limits.
+
 Set the motor acceleration limit.
 
 This changes how quickly regulated motion starts and stops on a real motor.
@@ -1934,6 +1962,8 @@ Variant: Gear train.
 | direction | Direction | `Direction.CLOCKWISE` | Additional | direction |
 | gears | Python expression | `None` | Additional | gears |
 
+Create a motor value.
+
 Connect a motor and account for its gears in every movement.
 
 **`pybricks/motor_motion/motor_port`** — Consolidate variant.
@@ -2004,6 +2034,8 @@ Variant: Wait until finished.
 | angle | number[deg] | `90` | Essential | angle |
 | speed | number[deg/s] | `300` | Essential | speed |
 
+Turn a motor by an angle.
+
 Turn a motor through an angle and wait until it finishes.
 
 **`pybricks/motor_motion/motor_run_angle_speed_rotation_angle_wait`** — Consolidate variant.
@@ -2066,6 +2098,8 @@ Variant: Wait until finished.
 | motor | Motor | `motor` | Essential | motor |
 | angle | number[deg] | `0` | Essential | angle |
 | speed | number[deg/s] | `300` | Essential | speed |
+
+Move a motor to a position.
 
 Turn the motor to a target position and wait until it finishes.
 
@@ -2193,6 +2227,8 @@ Variant: Wait until finished.
 | duration | number[ms] | `1000` | Essential | duration |
 | speed | number[deg/s] | `300` | Essential | speed |
 
+Run a motor for a duration.
+
 Run the motor for a set time, then stop.
 
 **`pybricks/motor_motion/motor_run_time_speed_time_wait`** — Consolidate variant.
@@ -2222,6 +2258,8 @@ Variant: Brake.
 | Parameter | Type / units | Default | Card field | Shared family field |
 |---|---|---|---|---|
 | motor | Motor &#124; DCMotor | `motor` | Essential | motor |
+
+Stop a motor.
 
 Stop a motor with braking.
 
@@ -2982,6 +3020,8 @@ Variant: Color sensor.
 |---|---|---|---|---|
 | port | Port | `Port.A` | Essential | port |
 
+Create a sensor value.
+
 Connect a color sensor. Options: port.
 
 **`pybricks/sensor_values/ultrasonicsensor_port`** — Consolidate variant.
@@ -3040,6 +3080,8 @@ Variant: Surface color.
 |---|---|---|---|---|
 | sensor | ColorSensor &#124; ColorDistanceSensor | `sensor` | Essential | sensor |
 
+Read a detected color.
+
 Read the surface color under the sensor.
 
 **`pybricks/sensor_values/sensor_color_surface`** — Consolidate variant.
@@ -3083,6 +3125,8 @@ Variant: Color sensor.
 |---|---|---|---|---|
 | name | Python expression | `sensor` | Essential | name |
 | port | Port | `Port.C` | Essential | port |
+
+Connect a sensor to a hub port.
 
 Connect a color sensor to a hub port.
 
@@ -3385,7 +3429,7 @@ Variant: Default timing.
 | hub | PrimeHub | `hub` | Essential | hub |
 | text | str | `'Hello'` | Essential | text |
 
-Scroll text across the hub display. Options: text.
+Scroll text on the hub display.
 
 **`pybricks/hub_display/hub_display_text_text_on_off`** — Consolidate variant.
 
@@ -3585,6 +3629,8 @@ Variant: Built-in icon.
 | hub | PrimeHub &#124; InventorHub | `hub` | Essential | hub |
 | icon | Icon | `Icon.HEART` | Essential | icon |
 
+Show an image on the hub display.
+
 Show an icon on the Prime or Inventor display.
 
 **`pybricks/hubs/display_pattern`** — Consolidate variant.
@@ -3664,6 +3710,8 @@ Variant: On.
 | sensor | UltrasonicSensor &#124; ColorSensor | `distance` | Essential | sensor |
 | brightness | number[%] &#124; list &#124; tuple | `100` | Essential | brightness |
 
+Control the ultrasonic sensor lights.
+
 Set the ultrasonic sensor eye brightness.
 
 **`pybricks/sensors/distance_lights_off`** — Consolidate variant.
@@ -3705,6 +3753,8 @@ Vibrate the Xbox controller for feedback while the program continues.
 [little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → PrimeHub; inline expansion.
 
 Variant: Default mounting.
+
+Create a Prime or Inventor hub value.
 
 Create the Prime hub in its mounted orientation.
 
@@ -3851,6 +3901,8 @@ Variant: Prime / Inventor Hub.
 | Parameter | Type / units | Default | Card field | Shared family field |
 |---|---|---|---|---|
 | name | Python expression | `hub` | Essential | name |
+
+Connect to a programmable hub.
 
 Connect to the SPIKE Prime or Robot Inventor hub.
 

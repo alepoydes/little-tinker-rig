@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from little_tinker_rig.i18n import N_
 
 from . import edit
+from .analysis import annotation_text
 from .parameters import ENUM_VALUES, default_bindings, slots
 from .snippets import LEVELS
 from .structure import OPERATORS
@@ -123,15 +124,18 @@ def children(session, node):
 
 def expected(session, node):
     binding = session.field_binding(node)
+    parent = session.document.syntax.parent.get(node)
+    annotation = None
     if binding and binding[2] is node:
         annotation = binding[1].annotation
+    elif isinstance(parent, ast.AnnAssign) and parent.value is node:
+        annotation = annotation_text(parent.annotation)
+    if annotation:
         try:
             annotation_types(annotation)
         except ValueError:
             return None  # Ordinary function annotations can exceed block contracts.
-        if annotation:
-            return annotation
-    parent = session.document.syntax.parent.get(node)
+        return annotation
     if isinstance(parent, ast.Call) and parent.func is node:
         return "function | type"
     return None

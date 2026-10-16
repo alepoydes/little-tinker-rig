@@ -26,8 +26,7 @@ Every frontend uses the same document model and core editing operations.
 
 ## Library redesign target
 
-The catalog navigation now implements the following layout. Existing-program
-variant editing and compact additional-argument controls remain in progress:
+The catalog implements the following layout:
 
 - Use one exclusive button group for Beginner, Intermediate, Advanced, Expert,
   and All. Preserve cumulative level filtering and the separate All choice.
@@ -41,6 +40,14 @@ variant editing and compact additional-argument controls remain in progress:
   reference the same cards and do not add duplicates inside a view.
 - For this lesson consumes the existing current-stage block selection. The stage
   determines its palette without an unrelated level selection hiding required cards.
+
+Selecting a family exposes its allowed insertion variants below the tree. Search
+previews the best matching variant; a manual choice remains stable for that query.
+The inserted block's F3/context-menu dialog edits its operation and shared fields
+with a Python diff before acceptance. Additional settings collapse by default,
+while active non-default values stay visible in a summary. An existing form above
+the selected level remains editable. The Block Editor's Catalog properties button
+edits the same family metadata directly in the definition source.
 
 Current work covers block operations, consolidation of variants, parameters,
 categories, and catalog navigation. New lesson sequences and changes to the

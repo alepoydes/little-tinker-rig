@@ -1,5 +1,7 @@
 """Compact, colored source previews that remain recognizable after insertion."""
 
+from pathlib import Path
+
 from PySide6.QtCore import QMimeData, QSize, Qt, Signal
 from PySide6.QtGui import QColor, QFontDatabase, QFontMetrics, QPainter, QPen
 from PySide6.QtWidgets import QStyle, QStyledItemDelegate, QTreeWidget, QTreeWidgetItem
@@ -149,6 +151,7 @@ class Library(QTreeWidget):
         self.lesson_ids = None
         self.stage_ids = None
         self.selected_variants = {}
+        self.search_variants = {}
         self.view_states = {}
         self.search_states = {}
         self.rows = {}
@@ -272,8 +275,8 @@ class Library(QTreeWidget):
             return True
         return False
 
-    def set_scope(self, path):
-        scope = str(path.resolve())
+    def set_scope(self, scope):
+        scope = str(scope.resolve()) if isinstance(scope, Path) else scope
         if scope != self.scope:
             self.remember_view()
             self.scope = scope
@@ -296,9 +299,26 @@ class Library(QTreeWidget):
 
     def mutate_history(self, operation, *args):
         self.read_history()
-        getattr(self.history, operation)(*args)
+        result = getattr(self.history, operation)(*args)
         if self.settings is not None:
             self.settings.setValue("blockLibrary", self.history.dumps())
+        return result
+
+    def relocate_scope(self, before, after):
+        self.remember_view()
+        moved = self.mutate_history("relocate_scope", before, after)
+        self.snapshot = [moved.get(key, key) for key in self.snapshot]
+        self.view_states = {
+            view: (moved.get(key, key), scroll, expanded)
+            for view, (key, scroll, expanded) in self.view_states.items()
+        }
+        self.search_states = {
+            view: (expanded, moved.get(key, key), scroll)
+            for view, (expanded, key, scroll) in self.search_states.items()
+        }
+        if self.scope == before:
+            self.scope = after
+        self.render()
 
     def record_use(self, identity):
         snippet = self.snippets.get(identity)
@@ -363,6 +383,8 @@ class Library(QTreeWidget):
         for snippet in self.current_choices():
             if snippet.identity == identity:
                 self.selected_variants[snippet.catalog_id] = identity
+                if self.search:
+                    self.search_variants[snippet.catalog_id] = identity
                 self.paint_variant(item, snippet)
                 self.variants_changed.emit()
                 return
@@ -406,6 +428,8 @@ class Library(QTreeWidget):
                 self.verticalScrollBar().value(),
             )
         expanded, selected, scroll = self.search_states.get(self.view, ({}, None, 0))
+        if search != previous_search:
+            self.search_variants.clear()
         self.search = search
         words = search.casefold().split()
         hidden, visible = 0, 0
@@ -430,6 +454,19 @@ class Library(QTreeWidget):
             if choices:
                 wanted = self.selected_variants.get(family.identity)
                 snippet = next((s for s in choices if s.identity == wanted), choices[0])
+                if (
+                    words
+                    and self.search_variants.get(family.identity) != snippet.identity
+                ):
+
+                    def priority(choice, family=family, wanted=wanted):
+                        score = self.search_rank(family, words, (choice,))
+                        return (
+                            score if score is not None else 99,
+                            choice.identity != wanted,
+                        )
+
+                    snippet = min(choices, key=priority)
                 if item.data(0, IDENTITY) != snippet.identity:
                     self.paint_variant(item, snippet)
         for key, group in self.headings.items():

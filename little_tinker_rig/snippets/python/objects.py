@@ -57,7 +57,9 @@ def use_named_context(manager=resource, name=robot):
     variant="Yield a value",
 )
 def yield_value(value=None):
-    """Yield a value from a generator, resuming here on its next iteration."""
+    """Pause and resume a generator.
+
+    Yield a value from a generator, resuming here on its next iteration."""
     yield value
 
 
@@ -83,7 +85,9 @@ def next_value(iterator=steps):
 
 @inline_block(level="advanced", icon="＝", color="value", variant="All values")
 def all_values(values=(True, True)) -> "bool":
-    """Check that every value is true; stop at the first false value."""
+    """Test values in a collection.
+
+    Check that every value is true; stop at the first false value."""
     return all(values)
 
 

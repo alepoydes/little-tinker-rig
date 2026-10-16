@@ -33,6 +33,7 @@ jobs:
         run: |
           uv run --all-extras --locked python tools/translations.py check
           uv run --all-extras --locked python tools/check_docs.py
+          uv run --all-extras --locked python tools/catalog_report.py --check --verify-transitions
       - name: Test
         run: uv run --all-extras --locked pytest -q
       - name: Build distributions

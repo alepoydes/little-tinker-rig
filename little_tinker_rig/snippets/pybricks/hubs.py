@@ -13,7 +13,9 @@ __category__ = "devices"
     variant="Prime / Inventor Hub",
 )
 def prime_hub(name=hub):
-    """Connect to the SPIKE Prime or Robot Inventor hub."""
+    """Connect to a programmable hub.
+
+    Connect to the SPIKE Prime or Robot Inventor hub."""
     from pybricks.hubs import PrimeHub
 
     name: "PrimeHub" = PrimeHub()
@@ -83,7 +85,9 @@ def light_off(hub: "PrimeHub | InventorHub | MoveHub | TechnicHub" = hub):
     variant="Built-in icon",
 )
 def icon(hub: "PrimeHub | InventorHub" = hub, icon: "Icon" = Icon.HEART):
-    """Show an icon on the Prime or Inventor display."""
+    """Show an image on the hub display.
+
+    Show an icon on the Prime or Inventor display."""
     from pybricks.parameters import Icon
 
     hub.display.icon(icon)

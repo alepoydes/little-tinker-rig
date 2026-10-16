@@ -7,7 +7,9 @@ __category__ = "input"
 
 @inline_block(level="advanced", icon="▶", color="action", variant="Color sensor")
 def colorsensor_port(port: "Port" = Port.A) -> "ColorSensor":
-    """Connect a color sensor. Options: port."""
+    """Create a sensor value.
+
+    Connect a color sensor. Options: port."""
     from pybricks.parameters import Port
     from pybricks.pupdevices import ColorSensor
 

@@ -34,7 +34,9 @@ def start_task(operation=task()):
 
 @inline_block(level="expert", icon="⟳", color="control", variant="Wait for all")
 def parallel_tasks(first=task1(), second=task2()):
-    """Create a task that waits for both operations to finish."""
+    """Combine asynchronous operations.
+
+    Create a task that waits for both operations to finish."""
     from pybricks.tools import multitask
 
     return multitask(first, second)

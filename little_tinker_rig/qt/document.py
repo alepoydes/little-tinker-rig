@@ -1,6 +1,7 @@
 """One file owns its session, text draft, selection and undo histories."""
 
 from pathlib import Path
+from uuid import uuid4
 
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QAction, QActionGroup, QIcon
@@ -35,6 +36,7 @@ class DocumentPage(QWidget):
         super().__init__()
         self.session = Session(path, collections, allow_draft=True)
         self.unnamed = False
+        self.unsaved_scope = "unsaved:" + uuid4().hex
         self.lesson_project = None
         self.session.editor.select(0)
         self.code_active = False
@@ -128,12 +130,21 @@ class DocumentPage(QWidget):
         self.prepare_save()
         self.session.project.save()
 
+    @property
+    def catalog_scope(self):
+        return (
+            self.unsaved_scope
+            if self.unnamed
+            else str(self.session.project.path.resolve())
+        )
+
     def checkpoint(self):
         editor = self.code if self.code_active else self.source
         return dict(
             self.session.project.checkpoint(self.text),
             python=self.code_active,
             unnamed=self.unnamed,
+            catalog_scope=self.unsaved_scope,
             cursor=editor.textCursor().position(),
             scroll=editor.verticalScrollBar().value(),
             lesson_project=(
@@ -144,6 +155,9 @@ class DocumentPage(QWidget):
     def restore(self, checkpoint):
         self.session.project.restore(checkpoint)
         self.unnamed = checkpoint.get("unnamed", False)
+        scope = checkpoint.get("catalog_scope")
+        if isinstance(scope, str) and scope.startswith("unsaved:"):
+            self.unsaved_scope = scope
         self.session.editor.select(0)
         self.session.set_snippets(self.session.load_snippets())
         self.code_active = (

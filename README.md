@@ -33,6 +33,9 @@ uncached building resources need a connection.
 
 - **Blocks and Python:** drag blocks, edit expressions and parameters, use code
   completion, keep unfinished fragments in Scratch, and undo whole operations.
+- **A smaller catalog:** find operation families in eight category branches,
+  switch variants with a Python preview, and keep Favorites, Recent, Frequent,
+  and the current lesson's blocks separate from the difficulty buttons.
 - **Your own blocks:** inspect built-in definitions or write Python definitions
   with a live preview, editable arguments, icons, colors and learning levels.
 - **Robots:** connect to Pybricks hubs over Bluetooth or supported USB connections,

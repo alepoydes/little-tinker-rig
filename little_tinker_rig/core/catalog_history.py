@@ -131,6 +131,25 @@ class History:
             value["days"].clear()
             value["last"] = 0
 
+    def relocate_scope(self, before, after):
+        """Keep an unnamed document's links when it receives its first saved path."""
+        moved = {}
+        for key, value in list(self.entries.items()):
+            if value["scope"] != before:
+                continue
+            target = reference(value["identity"], after)
+            previous = self.entries.pop(key)
+            _, current = self.entry(value["identity"], after, value["title"])
+            current["last"] = max(current["last"], previous["last"])
+            for day, count in previous["days"].items():
+                current["days"][day] = current["days"].get(day, 0) + count
+            moved[key] = target
+        self.favorites = list(
+            dict.fromkeys(moved.get(key, key) for key in self.favorites)
+        )
+        self.recent = list(dict.fromkeys(moved.get(key, key) for key in self.recent))
+        return moved
+
     def dumps(self):
         self.prune()
         return json.dumps(

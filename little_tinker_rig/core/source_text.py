@@ -19,8 +19,11 @@ def rewrite(source, tree):
     changes = []
 
     def visit(old, new):
+        if not isinstance(new, ast.AST):
+            return False
         if ast.dump(old) == ast.dump(new):
-            return
+            return True
+        checkpoint = len(changes)
         if type(old) is type(new):
             fields = list(ast.iter_fields(old))
             scalars = [
@@ -47,15 +50,20 @@ def rewrite(source, tree):
                 not isinstance(value, list) or len(value) == len(getattr(new, key))
                 for key, value in fields
             ):
+                complete = True
                 for key, value in fields:
                     other = getattr(new, key)
                     if isinstance(value, ast.AST):
-                        visit(value, other)
+                        complete &= visit(value, other)
                     elif isinstance(value, list):
                         for a, b in zip(value, other, strict=True):
                             if isinstance(a, ast.AST):
-                                visit(a, b)
-                return
+                                complete &= visit(a, b)
+                if complete:
+                    return True
+        del changes[checkpoint:]
+        if old not in syntax.spans:
+            return False
         text = ast.unparse(new)
         if isinstance(
             new,
@@ -74,8 +82,10 @@ def rewrite(source, tree):
         ):
             text = f"({text})"
         changes.append((syntax.spans[old], text))
+        return True
 
-    visit(syntax.tree, tree)
+    if not visit(syntax.tree, tree):
+        raise ValueError("Cannot locate the changed Python structure")
     return patches(source, changes)
 
 

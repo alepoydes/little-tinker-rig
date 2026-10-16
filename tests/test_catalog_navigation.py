@@ -64,6 +64,15 @@ def test_family_navigation_filters_variants_and_retains_personal_links(
         assert library.currentItem() is library.rows[key]
         assert library.headings["movement"].isExpanded()
         assert not library.headings["program"].isExpanded()
+        library.filter("coast")
+        stop = library.rows[reference("pybricks/motors/stop_motor")]
+        assert library.snippets[stop.data(0, IDENTITY)].variant == "Coast"
+        library.setCurrentItem(stop)
+        library.select_variant("pybricks/motors/stop_motor")
+        library.filter("coast")
+        assert stop.data(0, IDENTITY) == "pybricks/motors/stop_motor"
+        library.filter("")
+        library.setCurrentItem(library.rows[key])
         library.toggle_favorite()
         library.record_use(identity)
         library.record_use(variant)
@@ -165,3 +174,50 @@ def test_catalog_insertions_count_once_in_program_and_both_scratch_paths(
             QMessageBox, "question", return_value=QMessageBox.StandardButton.Discard
         ):
             window.close()
+
+
+def test_unnamed_function_scope_survives_recovery_and_moves_on_first_save(
+    tmp_path, qt_app
+):
+    from PySide6.QtWidgets import QFileDialog
+
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.document import DocumentPage
+    from little_tinker_rig.qt.library import IDENTITY
+
+    window = Studio()
+    window.confirm_close = lambda *_: True
+    restored = DocumentPage(tmp_path / "recovery.py")
+    try:
+        window.session.editor.commit("def run():\n    pass\n")
+        window.refresh_views()
+        window.level_filter.select("all")
+        old_scope = window.document_page.catalog_scope
+        identity = "document/functions/run"
+        key = reference(identity, old_scope)
+        window.library.setCurrentItem(window.library.rows[key])
+        window.library.toggle_favorite()
+        window.insert_snippet(identity)
+        checkpoint = window.document_page.checkpoint()
+        restored.restore(checkpoint)
+        assert restored.catalog_scope == old_scope
+        destination = tmp_path / "saved.py"
+        with patch.object(
+            QFileDialog, "getSaveFileName", return_value=(str(destination), "")
+        ):
+            assert window.save_as()
+        saved_key = reference(identity, str(destination.resolve()))
+        assert window.library.history.favorites == [saved_key]
+        assert window.library.history.recent == [saved_key]
+        assert sum(window.library.history.entries[saved_key]["days"].values()) == 1
+        window.new_file()
+        assert window.document_page.catalog_scope != old_scope
+        window.session.editor.commit("def run():\n    pass\n")
+        window.refresh_views()
+        window.library.set_view("favorites")
+        assert window.library.topLevelItem(0).data(0, IDENTITY) is None
+        assert window.library.history.favorites == [saved_key]
+    finally:
+        restored.close()
+        restored.deleteLater()
+        window.close()

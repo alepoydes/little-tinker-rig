@@ -16,6 +16,7 @@ uv run --all-extras --locked ruff check little_tinker_rig tests tools build_supp
 uv run --all-extras --locked black --check little_tinker_rig tests tools build_support.py
 uv run --all-extras --locked python tools/translations.py check
 uv run --all-extras --locked python tools/check_docs.py
+uv run --all-extras --locked python tools/catalog_report.py --check --verify-transitions
 uv build
 ```
 
@@ -239,8 +240,9 @@ pages, and broken local links or anchors. The root README, code comments, docstr
 commit descriptions use English. Saved language choices remain authoritative;
 fresh or invalid preferences default to English.
 
-`snippet_groups()` derives groups from collection/module identities and excludes
-historical templates. The library and help use the same grouping. Each group has
+`snippet_groups()` derives help groups from collection/module identities and
+excludes historical templates. Catalog categories and families independently
+control discovery; they do not change help identities. Each help group has
 one generated reference page, with descriptions, parameters, code, and stable
 function-name anchors. F1 resolves a snippet identity to its group and anchor.
 No separate maintained Markdown copy of the block reference is needed. Search
@@ -560,3 +562,24 @@ children without detaching them: Qt item removal/reinsertion can lose hidden sta
 Search snapshots preserve selection and expansion across collection reloads and
 language changes. Personal views keep their own ordering; frequency is refreshed
 on entering the view, never while a card is being selected or dragged.
+
+Unnamed documents need unique, recovery-persisted catalog scopes: a placeholder
+filename cannot isolate equal function names in different drafts. First save
+migrates references and counts together, including selected personal-view rows;
+subsequent Save As keeps path-based isolation.
+
+Variant previews use the same preparation as acceptance without mutating the
+document. Revalidate the syntax and selected match before committing. Preserve
+compatible shared expressions, declaration names and comments; fixed options such
+as `wait=False` must not reset when a variant exposes them as editable fields.
+Validate the known result type against the parent input. Test side-effectful
+argument expressions by observing evaluation order and their received values,
+not by comparing formatting alone. Reordering templates may require retained
+keyword spelling; reject a switch if order cannot be preserved.
+
+AST operators, `withitem`, and absent optional children have no independent source
+span. Text rewriting must fall back to the nearest locatable changed ancestor and
+discard its partial descendant patches. Verify the resulting AST, parentheses,
+comments, and literal values. The catalog report's transition check exercises all
+built-in family transitions with defaults, including recognition after the edit;
+focused tests cover non-default values, evaluation order, stale dialogs, and Undo.

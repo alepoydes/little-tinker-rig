@@ -321,7 +321,9 @@ def dcmotor_port(port: "Port" = Port.A) -> "DCMotor":
 def geared_motor(
     port: "Port" = Port.A, direction: "Direction" = Direction.CLOCKWISE, gears=None
 ) -> "Motor":
-    """Connect a motor and account for its gears in every movement."""
+    """Create a motor value.
+
+    Connect a motor and account for its gears in every movement."""
     from pybricks.parameters import Direction, Port
     from pybricks.pupdevices import Motor
 

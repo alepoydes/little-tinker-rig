@@ -7,7 +7,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer, QUrl, Signal
-from PySide6.QtGui import QColor, QDesktopServices, QTextCharFormat, QTextCursor
+from PySide6.QtGui import QColor, QDesktopServices, QIcon, QTextCharFormat, QTextCursor
 from PySide6.QtWidgets import (
     QComboBox,
     QFormLayout,
@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
     QSplitter,
     QStackedWidget,
     QTextEdit,
+    QToolButton,
     QTreeWidget,
     QTreeWidgetItem,
     QVBoxLayout,
@@ -45,6 +46,7 @@ from little_tinker_rig.core.versions import next_version
 from little_tinker_rig.i18n import N_, tr
 
 from .appearance import AppearanceChoice
+from .catalog_properties import CatalogProperties
 from .code import CodeEdit
 from .editor import SourceView, qt_offset
 from .library import LEVEL_TITLES, Library, group_title, snippet_title
@@ -229,7 +231,7 @@ class BlockEditor(QWidget):
         self.module_name = QLineEdit("custom")
         self.module_name.setPlaceholderText(N_("Group / module"))
         self.module_name.setToolTip(
-            N_("Module in your collection; its functions form one block group.")
+            N_("Module in your collection; its functions share a help page.")
         )
         self.new_button = QPushButton(N_("New block"))
         self.new_button.clicked.connect(
@@ -280,6 +282,13 @@ class BlockEditor(QWidget):
         self.color.changed.connect(
             lambda value: self.attempt(lambda: self.change_metadata("color", value))
         )
+        self.catalog_button = QToolButton()
+        self.catalog_button.setIcon(
+            QIcon(str(Path(__file__).with_name("icons") / "catalog.svg"))
+        )
+        self.catalog_button.setToolTip(N_("Catalog properties…"))
+        self.catalog_button.setAccessibleName(N_("Catalog properties…"))
+        self.catalog_button.clicked.connect(lambda: self.attempt(self.edit_catalog))
         self.caption = QLabel()
         self.caption.setProperty("translationSources", {})
         self.caption.setTextInteractionFlags(
@@ -355,6 +364,7 @@ class BlockEditor(QWidget):
         row.addWidget(self.level)
         row.addWidget(self.icon)
         row.addWidget(self.color)
+        row.addWidget(self.catalog_button)
         row.addStretch()
         row.addWidget(self.reopen_button)
         row.addWidget(self.save_button)
@@ -918,6 +928,28 @@ class BlockEditor(QWidget):
             )
             self.check()
 
+    def edit_catalog(self):
+        code = self.code
+        if (
+            not code
+            or not code.tree
+            or code.draft.read_only
+            or not self.preview_snippet
+        ):
+            return
+        original = code.toPlainText()
+        dialog = CatalogProperties(
+            original, self.preview_snippet, (*self.snippets, *code.snippets), self
+        )
+        accepted = dialog.exec()
+        result = dialog.source
+        dialog.deleteLater()
+        if accepted:
+            if self.code is not code or code.toPlainText() != original:
+                raise ValueError(tr("Document changed; choose the block again"))
+            self.replace_source(result)
+            self.check()
+
     def update_status(self, *, keep_message=False):
         code = self.code
         editable = code is not None and not code.draft.read_only
@@ -927,6 +959,9 @@ class BlockEditor(QWidget):
         self.level.setEnabled(editable and self.function() is not None)
         self.icon.setEnabled(editable and self.function() is not None)
         self.color.setEnabled(editable and self.function() is not None)
+        self.catalog_button.setEnabled(
+            bool(editable and code.tree and self.preview_snippet)
+        )
         self.copy_button.setEnabled(self.function() is not None)
         if code:
             state = (

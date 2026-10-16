@@ -1176,6 +1176,20 @@ class SourceView(QTextEdit):
     def edit_parameters(self):
         syntax = self.session.document.syntax
         match = self.session.selected_match()
+        if (
+            match
+            and not match.snippet.historical
+            and (
+                match.snippet.advanced
+                or match.snippet.family
+                or any(
+                    s.family == match.snippet.identity
+                    for s in self.session.available_snippets
+                )
+            )
+        ):
+            self.edit_variant()
+            return
         selected = match.span if match else syntax.spans[self.session.editor.selection]
         slot = next(
             (
@@ -1189,6 +1203,21 @@ class SourceView(QTextEdit):
             self.show_parameter(slot)
         else:
             raise ValueError(tr("This block has no editable parameters"))
+
+    def edit_variant(self):
+        from .variants import VariantDialog
+
+        try:
+            dialog = VariantDialog(self)
+        except (ValueError, SyntaxError) as error:
+            self.failed.emit(str(error))
+            return
+        accepted = dialog.exec()
+        dialog.deleteLater()
+        if accepted:
+            self.refresh_source()
+            self.changed.emit()
+            self.reveal_selection()
 
     def mode_rect(self, block):
         if block.match.snippet.mode == "function":

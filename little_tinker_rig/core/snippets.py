@@ -142,7 +142,7 @@ def load_module(
             if node is tree.body[0] and group_help:
                 continue
             raise ValueError(
-                "Block modules contain only a docstring, imports and functions"
+                "Block modules contain only a docstring, imports, functions and a literal __category__"
             )
         for function in functions:
             if function.decorator_list and metadata(function) is None:
@@ -627,14 +627,13 @@ def builtin_snippets() -> tuple[Snippet, ...]:
     )
 
 
-def instantiate(
+def instantiate_tree(
     snippet: Snippet,
     bindings: dict[str, str | ast.expr],
     occupied: set[str] | None = None,
     *,
     local_names: dict[str, str] | None = None,
-    formatted: bool = False,
-) -> Expansion:
+) -> ast.AST:
     """Substitute expressions. Repeated parameters repeat evaluation, as in source."""
     values = {}
     parameter_names = {p.name for p in snippet.parameters}
@@ -722,6 +721,19 @@ def instantiate(
         else ast.Module(body=list(snippet.body), type_ignores=[])
     )
     tree = ast.fix_missing_locations(Substitute().visit(tree))
+    return tree
+
+
+def instantiate(
+    snippet: Snippet,
+    bindings: dict[str, str | ast.expr],
+    occupied: set[str] | None = None,
+    *,
+    local_names: dict[str, str] | None = None,
+    formatted: bool = False,
+) -> Expansion:
+    """Expand a template with its imports and shared helper definitions."""
+    tree = instantiate_tree(snippet, bindings, occupied, local_names=local_names)
     text = ast.unparse(tree)
     if formatted and snippet.definition and snippet.mode != "function":
         module = (

@@ -53,13 +53,17 @@ def drive(
 
 @inline_block(level="beginner", icon="➜", color="action", variant="Brake")
 def brake(drive: "DriveBase" = drive):
-    """Brake both robot wheels."""
+    """Stop both robot wheels.
+
+    Brake both robot wheels."""
     drive.brake()
 
 
 @inline_block(level="beginner", icon="➜", color="action", variant="Wait until finished")
 def straight(drive: "DriveBase" = drive, distance: "number[mm]" = 200):
-    """Drive a distance, then stop.
+    """Drive a measured distance.
+
+    Drive a distance, then stop.
 
     Distance is in millimeters. Negative values drive backward.
     The next action waits for the movement to finish."""
@@ -123,7 +127,9 @@ def drive_settings(
     turn_rate: "number[deg/s]" = 90,
     turn_acceleration=180,
 ):
-    """Set the speed and acceleration of finite robot moves.
+    """Configure finite robot movements.
+
+    Set the speed and acceleration of finite robot moves.
 
     Straight acceleration is in mm/s²; turn acceleration is in deg/s².
     Continuous drive commands use their own speed and turn rate."""
