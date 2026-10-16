@@ -142,8 +142,10 @@ a moved program still has the intended meaning.
 
 The library has separate buttons for difficulty and view. **Beginner**,
 **Intermediate**, **Advanced**, and **Expert** include earlier levels; **All**
-shows every level. Hover over a view icon for its name, or reach it with Tab and
-activate it with Space. The selected view's name appears above the icons.
+shows every level. Both groups use icons: increasing filled bars indicate the
+four levels, and infinity means All. Hover for localized names, or reach a button
+with Tab and activate it with Space. The active choice stays highlighted.
+The two chevron buttons beside the views collapse or expand all category branches.
 
 **Catalog** groups cards into Program, Values and calculations, Variables and
 collections, Functions, Motors and movement, Sensors and input, Light and sound,
@@ -154,22 +156,24 @@ Search previews the best matching variant; you can still choose another variant.
 Clearing search restores the previous selection and open branches. A message
 explains matches hidden by the level, lesson palette, or selected parameter.
 
-A card represents a family of related operations. Select it to choose a
-**Variant** below the list; its preview shows the Python that will be inserted.
-The context menu offers the same choices. The level, lesson palette, and selected
+A card represents a family of related operations. Right-click it and choose a
+**Variant**; the card's preview shows the Python that will be inserted.
+The level, lesson palette, and selected
 input also filter variants. Changing a catalog variant does not edit code already
-in the program. Drag the card, double-click it, or use **Add selected block**.
+in the program. Drag the card to the intended position. Double-click also inserts
+at the current selection.
 
-- **Favorites:** use the star button or the card's context menu to add or remove a
-  link. **Move up** and **Move down** in the context menu set its order. Favorites
+- **Favorites:** click the star on a card to add or remove its link; a filled star
+  means it is already a favorite. The context menu offers the same action and
+  **Move up** / **Move down** to set its order. Favorites
   have no twelve-card limit. Missing definitions remain listed and recover when
   their collection or document becomes available again.
 - **Recent:** the last twelve distinct families. Inserting another variant of a
-  family moves the same entry to the front. **Clear recent** clears this list.
+  family moves the same entry to the front. The **Clear recent** icon clears this list.
 - **Frequent:** up to twelve families ranked by successful insertions over the
   current and previous 29 UTC calendar days, then latest use and stable identity.
   The order stays fixed until you leave and return to the view. **Reset usage
-  history** clears Recent and Frequent while preserving Favorites.
+  history** icon clears Recent and Frequent while preserving Favorites.
 - **For this lesson:** the blocks permitted by the current stage, regardless of
   the ordinary level filter. Without an open lesson, the view explains how to
   populate it. **Show all blocks** retains its existing exploration behavior.
@@ -186,6 +190,11 @@ preserved by recovery and transferred to its path on the first save. Later
 ![Category branches, level buttons, and independent library views](images/library.png)
 
 ## Changing an inserted block's variant
+
+Right-click a recognized block in the program or Scratch and choose **Variant**
+for an immediate switch. The current form is checked, and the other choices
+follow the level and lesson palette. Compatible field values are retained;
+the switch uses one Undo and does not count as another catalog insertion.
 
 Select a recognized family block in the program or Scratch and press **F3**, or
 choose **Variants and parameters…** from its context menu. Choose an operation

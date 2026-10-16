@@ -318,6 +318,39 @@ def block_menu(view, point):
     )
     if definition:
         if match and not match.snippet.historical:
+            from little_tinker_rig.core.variants import variant_bindings
+
+            from .library import snippet_title
+            from .variants import variant_choices
+
+            choices = variant_choices(view, match)
+            if len(choices) > 1:
+                variants = menu.addMenu(tr("Variant"))
+                variants.setToolTipsVisible(True)
+
+                def change_variant(snippet):
+                    if session.selected_match() is not match:
+                        raise ValueError(tr("Document changed; choose the block again"))
+                    session.change_variant(
+                        snippet, variant_bindings(session, match, snippet)
+                    )
+
+                for snippet in choices:
+                    action = variants.addAction(
+                        tr(snippet.variant)
+                        if snippet.variant
+                        else snippet_title(snippet)
+                    )
+                    action.setData(snippet.identity)
+                    action.setCheckable(True)
+                    action.setChecked(snippet.identity == match.snippet.identity)
+                    action.setEnabled(not action.isChecked())
+                    action.setToolTip(tr(snippet.help))
+                    action.triggered.connect(
+                        lambda checked=False, snippet=snippet: perform(
+                            lambda: change_variant(snippet)
+                        )
+                    )
             menu.addAction(tr("Variants and parameters…"), view.edit_variant)
         menu.addAction(
             tr("Open definition"),

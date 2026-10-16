@@ -32,7 +32,10 @@ The catalog implements the following layout:
   and All. Preserve cumulative level filtering and the separate All choice.
 - Use a separate exclusive button group for Catalog, Favorites, Recent, Frequent,
   and For this lesson. View buttons use icons with localized names and tooltips,
-  accessible labels, and a visible active state. Level buttons keep readable names.
+  accessible labels, and a visible active state. Level buttons also use icons:
+  one to four filled bars, and infinity for All. Neither group has a persistent
+  caption. Collapse/expand-all icons share the view row; personal usage resets
+  appear there only when relevant.
 - Display subject categories as expandable branches of the catalog tree, with
   cards under them. These replace module-based headings. Do not add another
   category button bar or an extra Python/devices/model hierarchy above them.
@@ -41,10 +44,16 @@ The catalog implements the following layout:
 - For this lesson consumes the existing current-stage block selection. The stage
   determines its palette without an unrelated level selection hiding required cards.
 
-Selecting a family exposes its allowed insertion variants below the tree. Search
+Each card has an outlined or filled favorite star; clicking it toggles membership
+without insertion or dragging, including unavailable favorite references. The
+keyboard-accessible context menu provides the same action. There is no detached
+favorite button, variant selector, or Add selected block button under the tree.
+
+Right-clicking a family exposes its allowed insertion variants in a submenu. Search
 previews the best matching variant; a manual choice remains stable for that query.
-The inserted block's F3/context-menu dialog edits its operation and shared fields
-with a Python diff before acceptance. Additional settings collapse by default,
+An inserted block's Variant submenu switches immediately with one Undo, retaining
+compatible fields and applying the same validity checks. F3 or Variants and
+parameters opens the detailed editor with a Python diff. Additional settings collapse by default,
 while active non-default values stay visible in a summary. An existing form above
 the selected level remains editable. The Block Editor's Catalog properties button
 edits the same family metadata directly in the definition source.

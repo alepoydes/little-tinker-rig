@@ -40,6 +40,18 @@ def changed_default(value, default):
         return True
 
 
+def variant_choices(view, match):
+    current = match.snippet
+    members = tuple(
+        s
+        for s in view.session.available_snippets
+        if s.catalog_id == current.catalog_id and not s.historical
+    )
+    family = Family(next((s for s in members if not s.family), current), members)
+    available = family.choices(view.expression_level, view.expression_ids)
+    return available if current in available else (current, *available)
+
+
 class VariantDialog(QDialog):
     def __init__(self, view):
         super().__init__(view)
@@ -60,17 +72,7 @@ class VariantDialog(QDialog):
         layout = QVBoxLayout(self)
         self.variant = QComboBox()
         self.variant.setAccessibleName(tr("Variant"))
-        members = tuple(
-            s
-            for s in self.session.available_snippets
-            if s.catalog_id == self.snippet.catalog_id and not s.historical
-        )
-        family = Family(
-            next((s for s in members if not s.family), self.snippet), members
-        )
-        available = family.choices(view.expression_level, view.expression_ids)
-        if self.snippet not in available:
-            available = (self.snippet, *available)
+        available = variant_choices(view, self.match)
         self.variants = {s.identity: s for s in available}
         for snippet in available:
             self.variant.addItem(

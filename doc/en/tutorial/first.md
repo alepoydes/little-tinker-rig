@@ -20,11 +20,11 @@ It opens the example file itself; use **Save as** to keep your own variation.
 ## From an empty document
 
 Launch `uv run --extra qt little-tinker-rig-qt` without a filename, or choose **File → New**.
-The library starts with **Python basics** at Beginner level.
+The library starts at Beginner level. Open the **Program** category.
 
-1. Select **Repeat actions a given number of times** and click **Add selected block**.
+1. Drag **Repeat actions with a counter** into the empty program.
 2. Click `10`, type `3`, and press Enter.
-3. Click the `pass` row inside the loop, then add **Display a value in the console**.
+3. Drag **Display a value in the console** from **Light and sound** onto `pass` inside the loop.
    The action replaces `pass` inside the loop.
 4. Change `"Hello!"` to your own quoted message and press Enter.
 5. Choose **Connect hub → Virtual hub → Robot Inventor / SPIKE Prime → Connect**.
@@ -43,19 +43,19 @@ updates the Python source immediately. Invalid input stays in the inline field s
 you can correct it; the program is unchanged. Click outside or press Escape to cancel.
 
 Quoted text is a string. An unquoted word refers to a variable. A number such as
-`42` needs no quotes. F3 opens the first parameter of the selected block.
+`42` needs no quotes. F3 opens the selected block's parameter editor.
 
 ## Add and move actions
 
 Drag a library card into the program. A line and preview show the destination and
 indentation. Release to insert the default values immediately; no dialog appears.
 Click its parameter fields to adapt it. To insert a statement from the library
-without dragging, select its card and use **Add selected block**.
+without dragging, double-click its card; insertion uses the current selection.
 
 Drag an existing block to move it. A block's selected background slowly pulses;
 it has no selection border. Python rules still apply: a `break` cannot move outside
 a loop. Empty loop, condition and function bodies contain `pass`. Click that row
-before **Add selected block**, or drag onto it, to fill the body.
+before double-clicking a library card, or drag onto it, to fill the body.
 
 Ctrl+Z undoes an operation; Ctrl+Shift+Z redoes it. The Python icon opens an ordinary
 text editor. It accepts unfinished text and formats valid Python when you save,

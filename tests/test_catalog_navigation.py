@@ -122,6 +122,7 @@ def test_catalog_insertions_count_once_in_program_and_both_scratch_paths(
     from PySide6.QtWidgets import QMessageBox
 
     from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.library import FAVORITE, favorite_rect
 
     window = Studio(tmp_path / "main.py")
     identity = "python/basics/display"
@@ -164,9 +165,23 @@ def test_catalog_insertions_count_once_in_program_and_both_scratch_paths(
             window.view_filter.buttons["recent"], Qt.MouseButton.LeftButton
         )
         assert window.library.topLevelItemCount() == 1
-        window.library.setCurrentItem(window.library.topLevelItem(0))
-        QTest.mouseClick(window.favorite_button, Qt.MouseButton.LeftButton)
+        item = window.library.topLevelItem(0)
+        star = favorite_rect(window.library.visualItemRect(item)).center()
+        before = window.session.document.state
+        QTest.mouseClick(window.library.viewport(), Qt.MouseButton.LeftButton, pos=star)
         assert window.library.history.favorites == [key]
+        assert item.data(0, FAVORITE)
+        assert window.session.document.state is before and count() == 3
+        QTest.mouseClick(window.library.viewport(), Qt.MouseButton.LeftButton, pos=star)
+        assert not window.library.history.favorites and not item.data(0, FAVORITE)
+        QTest.mouseClick(window.library.viewport(), Qt.MouseButton.LeftButton, pos=star)
+        window.library.load(())
+        window.view_filter.select("favorites")
+        unavailable = window.library.topLevelItem(0)
+        star = favorite_rect(window.library.visualItemRect(unavailable)).center()
+        QTest.mouseClick(window.library.viewport(), Qt.MouseButton.LeftButton, pos=star)
+        assert not window.library.history.favorites
+        window.view_filter.select("recent")
         QTest.mouseClick(window.clear_usage, Qt.MouseButton.LeftButton)
         assert window.library.history.recent == [] and count() == 3
     finally:

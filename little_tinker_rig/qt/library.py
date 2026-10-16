@@ -2,9 +2,16 @@
 
 from pathlib import Path
 
-from PySide6.QtCore import QMimeData, QSize, Qt, Signal
-from PySide6.QtGui import QColor, QFontDatabase, QFontMetrics, QPainter, QPen
-from PySide6.QtWidgets import QStyle, QStyledItemDelegate, QTreeWidget, QTreeWidgetItem
+from PySide6.QtCore import QEvent, QMimeData, QRect, QSize, Qt, Signal
+from PySide6.QtGui import QColor, QFontDatabase, QFontMetrics, QIcon, QPainter, QPen
+from PySide6.QtWidgets import (
+    QStyle,
+    QStyledItemDelegate,
+    QStyleOptionViewItem,
+    QToolTip,
+    QTreeWidget,
+    QTreeWidgetItem,
+)
 
 from little_tinker_rig.core.block_metadata import CATEGORIES
 from little_tinker_rig.core.catalog import families
@@ -29,6 +36,7 @@ FAMILY = int(IDENTITY) + 7
 VARIANT = int(IDENTITY) + 8
 REFERENCE = int(IDENTITY) + 9
 ORDER = int(IDENTITY) + 10
+FAVORITE = int(IDENTITY) + 11
 
 LEVEL_TITLES = {
     "beginner": N_("Beginner"),
@@ -46,7 +54,7 @@ VIEW_TITLES = {
     "lesson": N_("For this lesson"),
 }
 EMPTY_VIEWS = {
-    "favorites": N_("Add favorite blocks with the star button or the context menu."),
+    "favorites": N_("Click a block's star to add it to Favorites."),
     "recent": N_("Inserted blocks will appear here, without duplicates."),
     "frequent": N_("Your most used blocks from the last 30 days will appear here."),
 }
@@ -66,10 +74,28 @@ def snippet_title(snippet):
     )
 
 
+def favorite_rect(rect):
+    return QRect(rect.right() - 29, rect.top() + 5, 22, 22)
+
+
 class CardDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.icons = {
+            key: QIcon(str(Path(__file__).with_name("icons") / f"{key}.svg"))
+            for key in (*LEVEL_TITLES, "favorites", "favorite-active")
+        }
+
     def paint(self, painter, option, index):
+        icon = "favorite-active" if index.data(FAVORITE) else "favorites"
         if not index.data(IDENTITY):
-            return super().paint(painter, option, index)
+            text = QStyleOptionViewItem(option)
+            if index.data(REFERENCE):
+                text.rect.adjust(0, 0, -30, 0)
+            super().paint(painter, text, index)
+            if index.data(REFERENCE):
+                self.icons[icon].paint(painter, favorite_rect(option.rect))
+            return
         painter.save()
         rect = option.rect.adjusted(3, 3, -4, -3)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -79,6 +105,7 @@ class CardDelegate(QStyledItemDelegate):
         painter.setBrush(saturated(color, 0.8 if selected else 0.45 if hovered else 0))
         painter.setPen(QPen(QColor("#c5d1da"), 1))
         painter.drawRoundedRect(rect, 6, 6)
+        self.icons[icon].paint(painter, favorite_rect(option.rect))
         painter.setClipRect(rect)
         painter.setPen(QColor("#203040"))
         description = index.data(ICON) + "  " + index.data(DESCRIPTION)
@@ -86,23 +113,25 @@ class CardDelegate(QStyledItemDelegate):
         font.setBold(True)
         painter.setFont(font)
         painter.drawText(
-            rect.adjusted(10, 7, -8, 0),
+            rect.adjusted(10, 7, -32, 0),
             Qt.AlignmentFlag.AlignTop,
             QFontMetrics(font).elidedText(
-                description, Qt.TextElideMode.ElideRight, rect.width() - 20
+                description, Qt.TextElideMode.ElideRight, rect.width() - 44
             ),
         )
         font.setBold(False)
         font.setPointSize(8)
         painter.setFont(font)
+        self.icons[index.data(LEVEL)].paint(
+            painter, QRect(rect.left() + 10, rect.top() + 25, 14, 14)
+        )
         painter.drawText(
-            rect.adjusted(10, 26, -8, 0),
+            rect.adjusted(30, 26, -8, 0),
             Qt.AlignmentFlag.AlignTop,
             QFontMetrics(font).elidedText(
-                tr(LEVEL_TITLES[index.data(LEVEL)])
-                + (" · " + index.data(VARIANT) if index.data(VARIANT) else ""),
+                index.data(VARIANT) or "",
                 Qt.TextElideMode.ElideRight,
-                rect.width() - 20,
+                rect.width() - 40,
             ),
         )
         painter.setFont(QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont))
@@ -118,7 +147,10 @@ class CardDelegate(QStyledItemDelegate):
             return QSize(
                 270, 69 + 17 * (min(2, len(index.data(PREVIEW).splitlines())) - 1)
             )
-        return super().sizeHint(option, index)
+        size = super().sizeHint(option, index)
+        if index.data(REFERENCE):
+            size.setHeight(max(32, size.height()))
+        return size
 
 
 class CardItem(QTreeWidgetItem):
@@ -157,6 +189,7 @@ class Library(QTreeWidget):
         self.rows = {}
         self.headings = {}
         self.snapshot = []
+        self.favorite_press = None
         self.currentItemChanged.connect(lambda *_: self.variants_changed.emit())
         self.load(snippets)
 
@@ -222,6 +255,7 @@ class Library(QTreeWidget):
                 elif self.view == "favorites":
                     item = QTreeWidgetItem(self, [tr(entry["title"]).splitlines()[0]])
                     item.setData(0, REFERENCE, key)
+                    item.setData(0, FAVORITE, True)
                     item.setToolTip(
                         0,
                         tr(
@@ -265,9 +299,17 @@ class Library(QTreeWidget):
             (DESCRIPTION, snippet_title(family.primary)),
             (DEFINITION, snippet.definition),
             (VARIANT, tr(snippet.variant) if snippet.variant else ""),
+            (FAVORITE, item.data(0, REFERENCE) in self.history.favorites),
         ):
             item.setData(0, role, value)
-        item.setToolTip(0, preview + "\n\n" + tr(snippet.help))
+        item.setToolTip(
+            0,
+            tr(LEVEL_TITLES[snippet.level])
+            + "\n"
+            + preview
+            + "\n\n"
+            + tr(snippet.help),
+        )
 
     def update_functions(self, snippets):
         if self.functions_key(snippets) != self.function_key:
@@ -348,7 +390,14 @@ class Library(QTreeWidget):
         if self.view == "favorites":
             self.remember_view()
             self.render()
+        else:
+            item.setData(0, FAVORITE, key in self.history.favorites)
         self.variants_changed.emit()
+
+    def expand_groups(self, expand):
+        for heading in self.headings.values():
+            heading.setExpanded(expand)
+        self.remember_view()
 
     def move_favorite(self, offset):
         item = self.currentItem()
@@ -542,14 +591,88 @@ class Library(QTreeWidget):
                 self.viewport().grab(self.visualItemRect(item)),
             )
 
-    def contextMenuEvent(self, event):
+    def favorite_at(self, point):
+        item = self.itemAt(point)
+        if (
+            item
+            and item.data(0, REFERENCE)
+            and favorite_rect(self.visualItemRect(item)).contains(point)
+        ):
+            return item
+
+    def mousePressEvent(self, event):
+        self.favorite_press = None
+        if event.button() == Qt.MouseButton.LeftButton:
+            if item := self.favorite_at(event.position().toPoint()):
+                self.favorite_press = item.data(0, REFERENCE)
+                self.setCurrentItem(item)
+                event.accept()
+                return
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self.favorite_press:
+            event.accept()
+            return
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if self.favorite_press and event.button() == Qt.MouseButton.LeftButton:
+            key, self.favorite_press = self.favorite_press, None
+            item = self.favorite_at(event.position().toPoint())
+            if item and item.data(0, REFERENCE) == key:
+                self.setCurrentItem(item)
+                self.toggle_favorite()
+            event.accept()
+            return
+        super().mouseReleaseEvent(event)
+
+    def mouseDoubleClickEvent(self, event):
+        if self.favorite_at(event.position().toPoint()):
+            self.mousePressEvent(event)
+            return
+        super().mouseDoubleClickEvent(event)
+
+    def viewportEvent(self, event):
+        if event.type() == QEvent.Type.ToolTip:
+            if item := self.favorite_at(event.pos()):
+                QToolTip.showText(
+                    event.globalPos(),
+                    tr(
+                        "Remove from Favorites"
+                        if item.data(0, FAVORITE)
+                        else "Add to Favorites"
+                    ),
+                    self.viewport(),
+                    favorite_rect(self.visualItemRect(item)),
+                )
+                return True
+        return super().viewportEvent(event)
+
+    def context_menu(self, item):
         from PySide6.QtWidgets import QMenu
 
-        item = self.itemAt(event.pos())
         if item is None or not item.data(0, REFERENCE):
             return
         self.setCurrentItem(item)
         menu = QMenu(self)
+        choices = self.current_choices()
+        if len(choices) > 1:
+            variants = menu.addMenu(tr("Variant"))
+            variants.setToolTipsVisible(True)
+            for snippet in choices:
+                action = variants.addAction(
+                    tr(snippet.variant) if snippet.variant else snippet_title(snippet)
+                )
+                action.setCheckable(True)
+                action.setChecked(snippet.identity == item.data(0, IDENTITY))
+                action.setData(snippet.identity)
+                action.setToolTip(tr(snippet.help))
+                action.triggered.connect(
+                    lambda checked=False, identity=snippet.identity: self.select_variant(
+                        identity
+                    )
+                )
         favorite = item.data(0, REFERENCE) in self.history.favorites
         menu.addAction(
             tr("Remove from Favorites" if favorite else "Add to Favorites"),
@@ -558,22 +681,13 @@ class Library(QTreeWidget):
         if self.view == "favorites":
             menu.addAction(tr("Move up"), lambda: self.move_favorite(-1))
             menu.addAction(tr("Move down"), lambda: self.move_favorite(1))
-        choices = self.current_choices()
-        if len(choices) > 1:
-            variants = menu.addMenu(tr("Variant"))
-            for snippet in choices:
-                action = variants.addAction(
-                    tr(snippet.variant) if snippet.variant else snippet_title(snippet)
-                )
-                action.setCheckable(True)
-                action.setChecked(snippet.identity == item.data(0, IDENTITY))
-                action.triggered.connect(
-                    lambda checked=False, identity=snippet.identity: self.select_variant(
-                        identity
-                    )
-                )
         if identity := item.data(0, IDENTITY):
             menu.addAction(
                 tr("Open definition"), lambda: self.definition_requested.emit(identity)
             )
-        menu.exec(event.globalPos())
+        return menu
+
+    def contextMenuEvent(self, event):
+        if menu := self.context_menu(self.itemAt(event.pos())):
+            menu.exec(event.globalPos())
+            menu.deleteLater()

@@ -302,3 +302,43 @@ def show(value=1, end="\\n"):
         assert editor.code.toPlainText() == original
     finally:
         window.close()
+
+
+def test_context_variant_is_immediate_undoable_filtered_and_rejects_stale_menu(qt_app):
+    from little_tinker_rig.qt.editor import SourceView
+    from little_tinker_rig.qt.structure import block_menu
+
+    session, _ = selected("wheel.brake()", builtin_snippets())
+    view = SourceView(session)
+    view.resize(700, 500)
+    view.show()
+    qt_app.processEvents()
+    errors, changes = [], []
+    view.failed.connect(errors.append)
+    view.changed.connect(lambda: changes.append(session.document.state))
+    menus = []
+    try:
+        point = view._rect(1, 2).center().toPoint()
+        before = session.document.state
+        menu = block_menu(view, point)
+        menus.append(menu)
+        variants = next(a.menu() for a in menu.actions() if a.text() == "Variant")
+        action = next(a for a in variants.actions() if a.text() == "Coast")
+        action.trigger()
+        assert not errors and len(changes) == 1
+        assert session.document.state.source == "wheel.stop()\n"
+        session.editor.undo()
+        assert session.document.state is before and not session.document.can_undo
+        view.refresh_source()
+        view.expression_ids = frozenset({"pybricks/motors/stop_motor"})
+        restricted = block_menu(view, point)
+        menus.append(restricted)
+        assert not any(a.text() == "Variant" for a in restricted.actions())
+        session.editor.commit("wheel.hold()")
+        changed = session.document.state
+        action.trigger()
+        assert errors and session.document.state is changed and len(changes) == 1
+    finally:
+        for menu in menus:
+            menu.deleteLater()
+        view.close()

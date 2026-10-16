@@ -695,7 +695,11 @@ preserves its effective category, so the copy is a usable standalone definition.
 Handwritten collections may opt into grouping without migrating their existing
 source bodies or adding a parallel catalog file.
 
-For an inserted, currently recognized family block, F3 or **Variants and
+For an inserted, currently recognized family block, the **Variant** context submenu
+applies a chosen form immediately with one Undo. The current form is checked;
+level and exact lesson restrictions filter the other forms. Stale source/selection
+and incompatible edits fail atomically. No extra insertion or usage is recorded.
+F3 or **Variants and
 parameters…** opens an explicit edit dialog. Compatible shared fields retain
 their expressions; newly exposed fixed API options retain the old source value.
 Other new fields use the definition default or `...`, without evaluating it.
@@ -1754,9 +1758,12 @@ Legacy standard settings and manifests migrate to intermediate. Above Beginner,
 groups start collapsed; search expands matching groups and restores their prior
 expansion when cleared. Python view is the
 path to broader language/API features; levels never restrict editable source.
-Search, category branches, and the persisted level buttons combine; help retains
+Search, category branches, and persisted icon-only level buttons combine; help retains
 module groups and the same source definitions. Independent view buttons open
 Catalog, Favorites, Recent, Frequent, and For this lesson. Exact variants are
+selected through context menus; category expansion controls share the view row.
+Names remain in localized tooltips and accessible labels. Each family card shows
+its own clickable favorite star, filled when selected. Exact variants are
 filtered before a family produces one card. Personal records are local family
 references; saved document functions use their resolved source path as scope.
 An unnamed document uses a unique recovery-persisted identifier. Its first save

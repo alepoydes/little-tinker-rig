@@ -11,7 +11,6 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QInputDialog,
     QMessageBox,
-    QPushButton,
     QToolButton,
 )
 
@@ -56,20 +55,16 @@ def add(window, identity):
     )
     QTest.mouseClick(library.viewport(), Qt.MouseButton.LeftButton, pos=rect.center())
     if item.data(0, IDENTITY) != identity:
-        choice = window.variant_filter.findData(identity)
-        assert choice >= 0
-        window.variant_filter.setCurrentIndex(choice)
+        menu = library.context_menu(item)
+        variants = next(a.menu() for a in menu.actions() if a.menu())
+        next(a for a in variants.actions() if a.data() == identity).trigger()
+        menu.deleteLater()
     assert item.data(0, IDENTITY) == identity
     assert library.currentItem() is item, (
         identity,
         library.currentItem().data(0, IDENTITY),
     )
-    button = next(
-        b
-        for b in window.library_pane.findChildren(QPushButton)
-        if "Add selected block" in b.text()
-    )
-    QTest.mouseClick(button, Qt.MouseButton.LeftButton)
+    QTest.mouseDClick(library.viewport(), Qt.MouseButton.LeftButton, pos=rect.center())
     QApplication.processEvents()
     assert window.session.document.state is not before, (
         identity,

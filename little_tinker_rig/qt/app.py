@@ -10,7 +10,6 @@ from PySide6.QtCore import QSettings, QSize, QStandardPaths, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QTextCursor
 from PySide6.QtWidgets import (
     QApplication,
-    QComboBox,
     QDialog,
     QDockWidget,
     QFileDialog,
@@ -65,7 +64,7 @@ from .document import DocumentPage
 from .editor import source_offset
 from .help import HelpPage
 from .lessons import Lessons
-from .library import IDENTITY, LEVEL_TITLES, REFERENCE, VIEW_TITLES, Library
+from .library import IDENTITY, LEVEL_TITLES, VIEW_TITLES, Library
 from .localization import localize, translate_standard_dialogs
 from .navigation import ChoiceButtons, ModeList
 from .recovery import Recovery
@@ -137,7 +136,7 @@ class Studio(QMainWindow):
         self.search = QLineEdit()
         self.search.setPlaceholderText(N_("Find a block…"))
         self.search.textChanged.connect(self.library.filter)
-        self.level_filter = ChoiceButtons({**LEVEL_TITLES, "all": N_("All")}, columns=2)
+        self.level_filter = ChoiceButtons({**LEVEL_TITLES, "all": N_("All")})
         self.level_filter.setAccessibleName(N_("Block level"))
         saved_level = self.settings.value("blockLevel", "beginner")
         if saved_level == "standard":
@@ -156,10 +155,35 @@ class Studio(QMainWindow):
         )
         library = QWidget()
         layout = QVBoxLayout(library)
-        layout.addWidget(QLabel(N_("Library · drag a block into the program")))
+        self.library.setAccessibleName(N_("Library · drag a block into the program"))
         layout.addWidget(self.search)
         layout.addWidget(self.level_filter)
-        layout.addWidget(self.view_filter)
+        row = QHBoxLayout()
+        row.setSpacing(2)
+        row.addWidget(self.view_filter, 1)
+        self.group_buttons = {}
+        for key, title, expand in (
+            ("collapse-all", N_("Collapse all groups"), False),
+            ("expand-all", N_("Expand all groups"), True),
+        ):
+            button = QToolButton()
+            button.setIcon(QIcon(str(Path(__file__).with_name("icons") / f"{key}.svg")))
+            button.setIconSize(QSize(20, 20))
+            button.setToolTip(title)
+            button.setAccessibleName(title)
+            button.clicked.connect(
+                lambda checked=False, expand=expand: self.library.expand_groups(expand)
+            )
+            row.addWidget(button)
+            self.group_buttons[key] = button
+        self.clear_usage = QToolButton()
+        self.clear_usage.setIcon(
+            QIcon(str(Path(__file__).with_name("icons") / "clear-history.svg"))
+        )
+        self.clear_usage.setProperty("translationSources", {})
+        self.clear_usage.clicked.connect(self.library.clear_history)
+        row.addWidget(self.clear_usage)
+        layout.addLayout(row)
         self.library_status = QLabel()
         self.library_status.setWordWrap(True)
         self.library_status.setProperty("translationSources", {})
@@ -180,32 +204,6 @@ class Studio(QMainWindow):
         self.whole_blocks.hide()
         layout.addWidget(self.whole_blocks)
         layout.addWidget(self.library, 1)
-        self.variant_filter = QComboBox()
-        self.variant_filter.setAccessibleName(N_("Variant"))
-        self.variant_filter.setToolTip(N_("Variant"))
-        self.variant_filter.setProperty(
-            "translationSources",
-            {"toolTip": N_("Variant"), "accessibleName": N_("Variant")},
-        )
-        self.variant_filter.currentIndexChanged.connect(
-            lambda _: self.library.select_variant(self.variant_filter.currentData())
-        )
-        layout.addWidget(self.variant_filter)
-        row = QHBoxLayout()
-        self.favorite_button = QToolButton()
-        self.favorite_button.setText("☆")
-        self.favorite_button.setCheckable(True)
-        self.favorite_button.setProperty("translationSources", {})
-        self.favorite_button.clicked.connect(self.library.toggle_favorite)
-        row.addWidget(self.favorite_button)
-        insert = QPushButton(N_("＋ Add selected block"))
-        insert.clicked.connect(self.insert_selected)
-        row.addWidget(insert, 1)
-        layout.addLayout(row)
-        self.clear_usage = QPushButton()
-        self.clear_usage.setProperty("translationSources", {})
-        self.clear_usage.clicked.connect(self.library.clear_history)
-        layout.addWidget(self.clear_usage)
         self.library.variants_changed.connect(self.update_library_controls)
         self.view_filter.select(self.settings.value("blockView", "catalog"))
         self.update_library_controls()
@@ -693,39 +691,16 @@ class Studio(QMainWindow):
             self.lessons.palette()
 
     def update_library_controls(self):
-        choices = self.library.current_choices()
-        item = self.library.currentItem()
-        self.variant_filter.blockSignals(True)
-        self.variant_filter.clear()
-        for snippet in choices:
-            self.variant_filter.addItem(
-                (
-                    tr(snippet.variant)
-                    if snippet.variant
-                    else tr(snippet.help).splitlines()[0]
-                ),
-                snippet.identity,
-            )
-        if item:
-            self.variant_filter.setCurrentIndex(
-                self.variant_filter.findData(item.data(0, IDENTITY))
-            )
-        self.variant_filter.blockSignals(False)
-        self.variant_filter.setVisible(len(choices) > 1)
-        key = item.data(0, REFERENCE) if item else None
-        favorite = key in self.library.history.favorites
-        self.favorite_button.setEnabled(key is not None)
-        self.favorite_button.setChecked(favorite)
-        self.favorite_button.setText("★" if favorite else "☆")
-        title = tr("Remove from Favorites") if favorite else tr("Add to Favorites")
-        self.favorite_button.setToolTip(title)
-        self.favorite_button.setAccessibleName(title)
+        for button in self.group_buttons.values():
+            button.setVisible(self.library.view in ("catalog", "lesson"))
         self.clear_usage.setVisible(self.library.view in ("recent", "frequent"))
-        self.clear_usage.setText(
+        title = (
             tr("Clear recent")
             if self.library.view == "recent"
             else tr("Reset usage history")
         )
+        self.clear_usage.setToolTip(title)
+        self.clear_usage.setAccessibleName(title)
 
     def commit_code(self):
         if self.pages.currentIndex() == 3:

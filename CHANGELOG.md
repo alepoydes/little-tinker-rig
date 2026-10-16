@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Keep library controls compact with icon-only levels/views and group expansion
+  buttons. Toggle favorites on each card and choose variants from context menus;
+  inserted blocks switch immediately with one Undo.
 - Consolidate 253 block templates into 191 family cards in eight categories,
   retaining every source form and exact lesson restriction. Action cards decrease
   from 147 to 105; Beginner shows 19 families.

@@ -108,9 +108,9 @@ Resolve the following together:
 - Search, level, view, and lesson interactions; unavailable states; restoration
   of selection and expansion after clearing search or changing language.
 
-Prepare a compact UI layout with separate level and view buttons and a category
-tree. Check readable English and Russian labels at the minimum sidebar width;
-allow wrapping where necessary rather than reverting to drop-down selectors.
+Prepare a compact UI layout with separate icon-only level and view buttons and a
+category tree. Keep English/Russian names in tooltips and accessible labels.
+Check both rows and group expansion controls at the minimum sidebar width.
 Specify icon tooltips, keyboard access, and active states. Personal views retain
 their own ordering rather than forcing chronological results into category order.
 
@@ -202,8 +202,8 @@ adding/removing links and explicit ordering. Recent contains distinct families;
 reusing one moves it to the front. Reuse across variants does not create duplicates.
 Unavailable favorites remain recognizable and can recover after collection reload.
 
-Record successful explicit catalog insertions through dragging, double-click,
-and the insertion button in both document and Scratch. Use one consistent success
+Record successful explicit catalog insertions through dragging and double-click
+in document and Scratch. Use one consistent success
 event; do not infer use from rendering, code recognition, or refreshes. Capture the
 bounded data needed by Frequent here so the two views do not develop separate counters.
 
@@ -309,15 +309,14 @@ Undo, keyboard activation, saved-settings startup, and Russian labels in a
 930 × 620 window. Hardware evidence is unchanged: the revision uses source and
 virtual-runtime checks and makes no new claim about physical robots.
 
-Final verification:
+Initial delivery verification (before the compact-navigation refinement below):
 
 - Full integration suite: **654 passed, 2 skipped**, 394.39 seconds. The run exceeds
   the quick-test budget because it includes the complete Qt/TUI, virtual-hub,
   firmware, lesson, and example-compilation suites. Eight warnings originate in
   the dependency's deprecated `semver.compare` call.
 - The final argument-order safeguard was checked separately: **9 variant tests
-  passed** in 2.16 seconds; all 305 default transitions still pass. No later
-  application changes followed these checks.
+  passed** in 2.16 seconds; all 305 default transitions still pass.
 - Ruff, Black (all 176 Python files), documentation links and language boundaries,
   translation coverage/compiled catalogs, UTF-8 without BOM, inventory freshness,
   and `git diff --check` pass. CI now checks the inventory and transitions too.
@@ -330,3 +329,19 @@ Final verification:
   Core dependencies match the development versions.
 
 The implementation is saved in local commits; publication is outside this plan.
+
+### Compact navigation refinement
+
+Both level and view selectors use icons with tooltips and no persistent captions.
+Cards carry their own outlined/filled favorite stars. Collapse-all and expand-all
+buttons share the view row. The bottom variant selector, detached favorite button,
+and Add selected block button are removed. Catalog and inserted-block context
+menus provide quick variant selection; the latter applies one undoable edit.
+The F3 dialog remains available for detailed parameter editing and a Python diff.
+
+Verification for this refinement: 14 focused variant/personal-view tests pass in
+5.26 seconds; 57 desktop, drag, language, lesson, and virtual-hub checks pass in
+39.95 seconds. The latter intentionally exceeds the quick-test budget to exercise
+complete lessons through the changed insertion controls. Native EN/RU checks
+verify icon rendering, tooltips, keyboard activation, both group actions, and the
+930 × 620 layout. Updated user guides and screenshots reflect the compact controls.

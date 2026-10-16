@@ -474,8 +474,8 @@ outside the viewport; use pixel scrolling and assert the clicked item is visible
 
 An empty `pass` body is an insertion hole before it is part of a recognized
 template. Default insertion must test that hole before promoting selection to
-the whole match. Cover loops, branches and function bodies through Add selected
-block as well as drag-and-drop.
+the whole match. Cover loops, branches and function bodies through catalog
+double-click insertion as well as drag-and-drop.
 
 User function cards distinguish action calls from value expressions. Inspect only
 returns/yields in the function's own body; nested definitions do not supply its
@@ -583,3 +583,8 @@ discard its partial descendant patches. Verify the resulting AST, parentheses,
 comments, and literal values. The catalog report's transition check exercises all
 built-in family transitions with defaults, including recognition after the edit;
 focused tests cover non-default values, evaluation order, stale dialogs, and Undo.
+
+Quick variant menus share dialog filtering and the core edit transaction; they
+must not insert a new block or record another use. Card favorite hit testing uses
+the painted star bounds and stable references, including unavailable cards.
+Consume its pointer gesture before item dragging or double-click insertion.
