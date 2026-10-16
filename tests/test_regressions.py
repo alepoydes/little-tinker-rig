@@ -1,5 +1,7 @@
 import ast
 
+import pytest
+
 from little_tinker_rig.core import edit
 from little_tinker_rig.core.analysis import Analysis
 from little_tinker_rig.core.imports import manage_imports
@@ -17,6 +19,41 @@ def test_source_without_final_newline_has_correct_end_position():
 def test_marker_text_in_string_is_not_an_import_section():
     source = 'text = """\n# --- automatically managed imports ---\n# --- user imports ---\n"""\nprint(text)\n'
     assert manage_imports(source) == source
+
+
+@pytest.mark.parametrize(
+    "expression",
+    [
+        "[pi for _ in items]",
+        "{pi for _ in items}",
+        "{item: pi for item in items}",
+        "tuple(pi for _ in items)",
+    ],
+)
+def test_class_comprehensions_keep_global_imports_on_unrelated_edits(
+    tmp_path, expression
+):
+    source = (
+        "# --- automatically managed imports ---\n"
+        "from math import pi\n"
+        "# --- user imports ---\n"
+        "class C:\n"
+        "    pi = 3\n"
+        "    items = (1, 2)\n"
+        f"    values = {expression}\n"
+        "result = C.values\n"
+    )
+    path = tmp_path / "main.py"
+    path.write_text(source)
+    owner = Session(path)
+    before = owner.document.state
+    owner.editor.commit(before.source + "unrelated = 1\n")
+    original, edited = {}, {}
+    exec(source, original)
+    exec(owner.document.state.source, edited)
+    assert edited["result"] == original["result"]
+    owner.editor.undo()
+    assert owner.document.state is before
 
 
 def test_parameter_edit_preserves_internal_comments_and_all_occurrences(tmp_path):

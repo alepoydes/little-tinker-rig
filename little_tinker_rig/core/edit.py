@@ -108,7 +108,7 @@ def reindent(source: str, indent: int) -> str:
     except (tokenize.TokenError, IndentationError) as error:
         raise ValueError(f"Incomplete fragment: {error}") from error
     first = next((line for line in lines if line.strip()), "")
-    old = len(first) - len(first.lstrip(" "))
+    old = len(first) - len(first.lstrip(" \t"))
     result = []
     for row, line in enumerate(lines, 1):
         if row in protected or not line.strip():

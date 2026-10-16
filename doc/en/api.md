@@ -26,12 +26,15 @@ refresh with the source revision. Operations include `edit_python`,
 `edit_parameters`, `insert_snippet`, `upgrade_selected`, `to_scratch`,
 `set_scratch`, `restore_scratch` and `toggle_expansion`.
 
-Project detects the Python encoding and external changes. Saving uses atomic
+Project detects the input Python encoding and external changes. Save and Save As
+write UTF-8 without a BOM, normalizing an active encoding declaration in the saved
+state. Saving uses atomic
 per-file replacement and protects Scratch across interrupted multi-file saves.
 With `allow_draft=True`, invalid source is returned in `project.draft` while the
 committed document starts empty. Commit corrected source and clear `draft` before
 saving. Structural CLI commands use the default strict behavior. TUI uses
-`SourceFile` independently: it preserves source text and checks disk changes
+`SourceFile` independently: it shares UTF-8 normalization, preserves other source
+text and checks disk changes
 without parsing, formatting or rewriting block workspace metadata.
 
 ## Spans and transformations

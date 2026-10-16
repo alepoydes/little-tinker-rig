@@ -1,13 +1,28 @@
-"""Plain source files: lossless text saves and external-change protection."""
+"""Plain source files: UTF-8 saves and external-change protection."""
 
 import hashlib
 import io
 import os
+import re
 import tempfile
 import tokenize
 from pathlib import Path
 
 from little_tinker_rig.i18n import tr
+
+
+def utf8_source(source: str) -> str:
+    """Normalize a Python encoding declaration, including in invalid drafts."""
+    lines = source.removeprefix("\ufeff").split("\n", 2)
+    for index, line in enumerate(lines[:2]):
+        cookie = re.match(r"[ \t\f]*#.*?coding[:=][ \t]*([-a-zA-Z0-9_.]+)", line)
+        if cookie:
+            start, end = cookie.span(1)
+            lines[index] = line[:start] + "utf-8" + line[end:]
+            break
+        if not re.match(r"[ \t\f]*(?:#|\r?$)", line):
+            break
+    return "\n".join(lines)
 
 
 def atomic_write(path: Path, text: str | bytes, encoding: str = "utf-8") -> None:
@@ -66,7 +81,9 @@ class SourceFile:
                 )
         elif raw is not None and not overwrite:
             raise FileExistsError(tr("The file already exists. Replace it?"))
-        data = text.encode(self.encoding)
+        text = utf8_source(text)
+        data = text.encode("utf-8")
         atomic_write(target, data)
         self.path, self.source = target, text
+        self.encoding = "utf-8"
         self.digest = hashlib.sha256(data).digest()

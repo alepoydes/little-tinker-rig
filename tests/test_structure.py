@@ -54,6 +54,41 @@ def test_rename_updates_only_resolved_uses_and_keywords_and_undo():
     assert "def move(speed)" in owner.document.syntax.source
 
 
+@pytest.mark.parametrize(
+    "subject, pattern",
+    [
+        ("1", "x"),
+        ("1", "1 as x"),
+        ("[1]", "[x]"),
+        ("[0, 1]", "[0, *x]"),
+        ('{"x": 1, "y": 2}', '{"x": _, **x}'),
+    ],
+)
+def test_parameter_rename_preserves_match_bindings_and_shadowed_names(subject, pattern):
+    source = (
+        "def f(x):\n"
+        "    def separate():\n"
+        "        match 99:\n"
+        "            case x:\n"
+        "                return x\n"
+        f"    match {subject}:\n"
+        f"        case {pattern}:\n"
+        "            pass\n"
+        "    return x, separate()\n"
+        "result = f(x=0)\n"
+    )
+    owner = session(source)
+    before = owner.document.state
+    change_parameter(owner, field(owner, "x"), "value")
+    original, edited = {}, {}
+    exec(source, original)
+    exec(owner.document.state.source, edited)
+    assert edited["result"] == original["result"]
+    assert "case x:\n                return x" in owner.document.state.source
+    owner.editor.undo()
+    assert owner.document.state is before
+
+
 def test_rename_rejects_capture_without_touching_source():
     owner = session(
         "def run(a):\n    def nested(b):\n        return a + b\n    return nested(1)\n"

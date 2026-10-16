@@ -1432,7 +1432,6 @@ class Studio(QMainWindow):
                 project = Project(destination, allow_draft=True)
                 project.document = session.document
                 project.draft = session.project.draft
-                project.encoding = session.project.encoding
                 project.collections = session.project.collections
                 project.pins = session.project.pins
                 project.save()

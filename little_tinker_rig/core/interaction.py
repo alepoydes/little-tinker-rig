@@ -24,6 +24,23 @@ class Editor:
         self.selection = document.syntax.tree
         self.moving: Move | None = None
 
+    @property
+    def selection(self):
+        syntax = self.document.syntax
+        if syntax is not self._selection_syntax:
+            # Persistence and recovery can replace the document revision too.
+            offset = self._selection_syntax.spans[self._selection].start
+            self.select(
+                edit.map_offset(self._selection_syntax.source, syntax.source, offset)
+            )
+            self.moving = None
+        return self._selection
+
+    @selection.setter
+    def selection(self, node):
+        self._selection = node
+        self._selection_syntax = self.document.syntax
+
     def select(self, offset: int) -> ast.AST:
         self.selection = self.document.syntax.at(offset)
         return self.selection

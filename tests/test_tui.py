@@ -8,7 +8,7 @@ import pytest
 from little_tinker_rig.core.source_file import SourceFile
 
 
-def test_source_saves_preserve_bytes_and_metadata_and_detect_disk_changes(tmp_path):
+def test_utf8_saves_preserve_drafts_newlines_metadata_and_detect_disk_changes(tmp_path):
     path = tmp_path / "main.py"
     raw = "# coding: cp1251\r\n# Привет\r\nvalue =".encode("cp1251")
     path.write_bytes(raw)
@@ -17,7 +17,10 @@ def test_source_saves_preserve_bytes_and_metadata_and_detect_disk_changes(tmp_pa
     metadata.write_text('{"scratch": ["unfinished"]}')
     file = SourceFile(path)
     file.save(file.source)
-    assert path.read_bytes() == raw
+    expected = "# coding: utf-8\r\n# Привет\r\nvalue ="
+    assert path.read_bytes() == expected.encode("utf-8")
+    assert file.source == SourceFile(path).source == expected
+    assert not file.dirty(expected)
     assert path.stat().st_mode & 0o777 == 0o640
     assert metadata.read_text() == '{"scratch": ["unfinished"]}'
     path.write_bytes(b"external change")
@@ -37,6 +40,52 @@ async def until(predicate):
     async with asyncio.timeout(8):
         while not predicate():
             await asyncio.sleep(0.02)
+
+
+@pytest.mark.parametrize(
+    "source, expected",
+    [
+        (
+            "#!/usr/bin/python\r\n# -*- coding: cp1251 -*-\r\nx =",
+            "#!/usr/bin/python\r\n# -*- coding: utf-8 -*-\r\nx =",
+        ),
+        ("\n# coding=latin-1\nx =", "\n# coding=utf-8\nx ="),
+        ('value = """\n# coding: latin-1\n"""', 'value = """\n# coding: latin-1\n"""'),
+        (
+            "# comment\n# comment\n# coding: cp1251\nx =",
+            "# comment\n# comment\n# coding: cp1251\nx =",
+        ),
+        ("\ufeff# coding: utf-8\nx =", "# coding: utf-8\nx ="),
+    ],
+)
+def test_source_save_normalizes_only_python_encoding_declarations(
+    tmp_path, source, expected
+):
+    file = SourceFile()
+    file.save(source, tmp_path / "main.py")
+    assert file.path.read_bytes() == expected.encode("utf-8")
+    assert file.source == SourceFile(file.path).source == expected
+
+
+async def test_tui_save_updates_encoding_cookie_and_keeps_undo(tmp_path):
+    from little_tinker_rig.tui.app import Studio
+
+    path = tmp_path / "main.py"
+    source = "# coding: cp1251\r\n# Привет\r\nvalue ="
+    path.write_bytes(source.encode("cp1251"))
+    app = Studio(path)
+    async with app.run_test(size=(120, 40)) as pilot:
+        app.editor.move_cursor((2, 7))
+        await pilot.press("ctrl+s")
+        await until(lambda: app.file.encoding == "utf-8")
+        assert app.editor.text == app.file.source == source.replace("cp1251", "utf-8")
+        assert app.editor.cursor_location == (2, 7)
+        assert not app.file.dirty(app.editor.text)
+        await pilot.press("ctrl+z")
+        assert app.editor.text == source and app.file.dirty(app.editor.text)
+        await pilot.press("ctrl+s")
+        await until(lambda: not app.file.dirty(app.editor.text))
+        assert SourceFile(path).source == app.editor.text
 
 
 async def test_tui_unfinished_source_save_search_undo_and_discard(tmp_path):

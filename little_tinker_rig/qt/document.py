@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
 )
 
 from little_tinker_rig.core.session import Session
+from little_tinker_rig.core.source_file import utf8_source
 from little_tinker_rig.i18n import N_, tr
 
 from .code import CodeEdit
@@ -110,6 +111,13 @@ class DocumentPage(QWidget):
         )
 
     def prepare_save(self):
+        source = utf8_source(self.text)
+        if not self.code_active:
+            if source != self.text:
+                self.session.editor.commit(source)
+                self.source.refresh_source()
+            return
+        self.code.replace_formatted(source)
         try:
             self.commit_code()
         except (SyntaxError, ValueError):

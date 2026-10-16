@@ -21,7 +21,7 @@ def name_span(syntax, node):
         for token in tokens:
             if token.string in {"def", "class"}:
                 return token_span(syntax, next(tokens))
-    if isinstance(node, ast.Attribute):
+    if isinstance(node, (ast.Attribute, ast.MatchAs, ast.MatchStar, ast.MatchMapping)):
         span = syntax.spans[node]
         return token_span(
             syntax,
@@ -85,18 +85,21 @@ def rename(session, node, name):
     for ref in syntax.spans:
         if ref is node:
             continue
-        if (
-            isinstance(ref, ast.Name)
-            and ref.id == old
-            and analysis.resolve(ref, old) is scope
-        ):
+        binding = None
+        if isinstance(ref, ast.Name):
+            binding = ref.id
+        elif isinstance(ref, (ast.MatchAs, ast.MatchStar)):
+            binding = ref.name
+        elif isinstance(ref, ast.MatchMapping):
+            binding = ref.rest
+        if binding == old and analysis.resolve(ref, old) is scope:
             # A new name must not capture references in nested scopes.
             current = analysis.scopes[ref]
             while current is not scope and current is not None:
                 if name != old and name in current.bindings:
                     raise ValueError(f"Name {name!r} is shadowed in a nested scope")
                 current = current.parent
-            changes.append((syntax.spans[ref], name))
+            changes.append((name_span(syntax, ref), name))
         elif isinstance(ref, (ast.Global, ast.Nonlocal)) and old in ref.names:
             owner = (
                 analysis.root
@@ -443,7 +446,11 @@ def sequence(syntax, node):
     code_in_part = False
     for token in syntax.tokens_between(start, syntax.spans[node].end):
         if opened is None:
-            if token.string in {"(", "[", "{"} and depth == 0:
+            if (
+                token.string in {"(", "[", "{"}
+                and depth == 0
+                and (kind not in {"arguments", "parameters"} or token.string == "(")
+            ):
                 opened = token_span(syntax, token).end
                 part = opened
                 depth = 1

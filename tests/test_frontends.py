@@ -442,7 +442,9 @@ def test_hub_button_cancels_connection_then_disconnects_instead_of_opening_monit
         assert window.device_panel.disconnect.isEnabled()
         window.hub_button.click()
         assert not window.hub_button.isEnabled()
-        qt_wait(lambda: not window.hub_info.connection_action)
+        qt_wait(
+            lambda: not window.hub_info.connection_action and not window.hub_is_busy
+        )
         assert future.cancelled() and released.is_set()
         assert not window.hub_info.connected
         assert window.hub_button.isEnabled() and not window.hub_is_busy

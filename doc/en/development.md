@@ -39,9 +39,13 @@ Window geometry uses Qt's save/restore API, including maximized/full-screen stat
 and screen-bound adjustment. Save only after close confirmation and recovery
 cleanup succeed. Reopening must remain visible even after closing while minimized.
 
-Save As carries the source document's encoding, including its BOM, independently
-of the destination's previous contents. Verify the decoded text after reopening,
-not only the text still held by the editor.
+Read legacy Python files using their declared encoding; Save and Save As always
+write UTF-8 without a BOM. Normalize an active encoding declaration through the
+shared source-file utility. Frontends apply that text change through their undo
+history before updating the saved baseline. Verify actual bytes, reopened text,
+editor state, Undo and subsequent saves, including invalid drafts and legacy BOMs.
+Editor selections rebind to the current syntax revision after persistence or
+recovery changes the document, as well as after interactive edits.
 
 Open reads the destination after Save/Discard/Cancel is resolved. Reopening the
 current file must use the just-saved bytes and their new conflict-detection hash;
@@ -57,6 +61,9 @@ their parent module. Load modules directly when inspecting available classes;
 do not assume `import pybricks.hubs as hubs` has CPython package semantics.
 Monitor tests must exercise this import boundary as well as port telemetry and
 motor cleanup. Compilation alone cannot detect missing module attributes.
+Async UI tests wait for the complete observable transition, including both
+connection state and operation availability; separate queued signals can arrive
+in different event-loop iterations.
 Unknown devices have no telemetry reads that could detect removal. Rescan them
 periodically, remove unplugged entries and preserve active supported devices.
 Test both immediate replacement and replacement after an empty-port interval.
@@ -76,6 +83,10 @@ once and isolate local variables. Generated helper definitions retain comments;
 inline insertion does not copy explanatory comments. Test source preservation,
 comment ownership (including docstrings and trailing suite comments), mode changes,
 parameter edits, Undo, and runtime traces after converting activities to functions.
+Use token boundaries when removing parameter defaults: AST expression spans omit
+redundant parentheses. Reuse string-aware indentation for definition bodies and
+helpers; generic dedenting changes multiline literal values. Verify generated
+functions by execution, including parenthesized defaults, docstrings and f-strings.
 
 Function blocks show their actual calls, never a substituted label or a body
 appended at each call site. Their names must agree in the library, saved calls,
@@ -90,6 +101,10 @@ parse and compile without executing (Scratch projections only require parsing). 
 and both histories. Unicode spans, comments, literal contents and lexical scopes
 must survive transformations. Compare optimized move targets with an independent
 compile-based reference. Test interrupted source/workspace saves in both directions.
+Lexical analysis and renaming cover every binding form, including match captures,
+star patterns and mapping remainders. Comprehension bodies skip class namespaces;
+only the outermost iterable uses the enclosing class scope. Verify both name
+resolution and runtime results after unrelated edits, cleanup and renames.
 
 Each document retains its own draft, selection, scrolling and undo. Window actions
 operate on the active tab. Changing language must not translate user text or clear

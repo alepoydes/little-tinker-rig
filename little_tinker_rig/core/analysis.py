@@ -155,7 +155,9 @@ class Scopes:
         if isinstance(
             node, (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)
         ):
-            inner = Scope(node, scope)
+            # Only the outermost iterable can see the class namespace.
+            parent = scope.parent if isinstance(scope.node, ast.ClassDef) else scope
+            inner = Scope(node, parent)
             self.defined_scopes[node] = inner
             for index, generator in enumerate(node.generators):
                 self._visit(generator.iter, scope if index == 0 else inner)

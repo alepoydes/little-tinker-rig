@@ -1,11 +1,11 @@
 """Preserve definition trivia while replacing corresponding Python expressions."""
 
 import ast
-import textwrap
 import tokenize
 from functools import lru_cache
 
-from .edit import patches
+from .edit import patches, reindent
+from .structure import sequence
 from .syntax import Span, Syntax
 
 
@@ -84,19 +84,18 @@ def body_source(source, roots):
     syntax = definition_syntax(source)
     first, last = roots[0], roots[-1]
     line = first.lineno
-    indent = first.col_offset
+    indent = syntax.lines[first.lineno - 1][: first.col_offset]
     while line > 1 and (
         not syntax.lines[line - 2].strip()
-        or syntax.lines[line - 2].startswith(" " * indent + "#")
+        or syntax.lines[line - 2].startswith(indent + "#")
     ):
         line -= 1
     end = last.end_lineno
     while end < len(syntax.lines) and (
-        not syntax.lines[end].strip()
-        or syntax.lines[end].startswith(" " * indent + "#")
+        not syntax.lines[end].strip() or syntax.lines[end].startswith(indent + "#")
     ):
         end += 1
-    return textwrap.dedent("".join(syntax.lines[line - 1 : end])).strip("\n")
+    return reindent("".join(syntax.lines[line - 1 : end]), 0).strip("\n")
 
 
 def function_source(source, original, transformed):
@@ -136,25 +135,37 @@ def function_source(source, original, transformed):
         )
         if a is not None and b is None
     ]
+    parameters = sequence(syntax, original).items if removed else ()
     for value in removed:
         span = syntax.spans[value]
+        parameter = next(p for p in parameters if p.contains(span.start))
+        parts = syntax.tokens_between(parameter.start, parameter.end)
         equal = next(
             t
-            for t in reversed(tokens)
+            for t in reversed(parts)
             if t.string == "=" and syntax.offset(*t.end) <= span.start
         )
+        # AST spans omit redundant parentheses. The parameter's final code
+        # token closes the whole default, including those parentheses.
+        last = next(
+            t
+            for t in reversed(parts)
+            if t.type not in {tokenize.COMMENT, tokenize.NL, tokenize.NEWLINE}
+        )
         left = syntax.offset(*equal.start)
+        right = syntax.offset(*last.end)
         while left > start and source[left - 1] in " \t":
             left -= 1
-        changes.append((Span(left - start, span.end - start), ""))
+        comments = [
+            t.string
+            for t in parts
+            if t.type == tokenize.COMMENT and left <= syntax.offset(*t.start) < right
+        ]
+        replacement = "  " + "\n".join(comments) + "\n" if comments else ""
+        changes.append((Span(left - start, right - start), replacement))
     signature = patches(source[start:end], changes)
     body = body_source(source, original.body)
     if original.body[0].lineno == original.lineno:
         body = source[end : syntax.starts[original.end_lineno]].strip()
-    statements = list(transformed.body)
-    if ast.get_docstring(original) is not None:
-        # Dedenting the body also dedents the literal's physical lines. The
-        # original indentation is restored below; keep its spelling intact.
-        statements[0] = ast.parse(body).body[0]
-    body = rewrite(body, ast.Module(body=statements, type_ignores=[]))
-    return signature + "\n" + textwrap.indent(body, "    ")
+    body = rewrite(body, ast.Module(body=transformed.body, type_ignores=[]))
+    return signature + "\n" + reindent(body, 4).rstrip("\n")

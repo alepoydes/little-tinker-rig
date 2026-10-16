@@ -267,6 +267,12 @@ class Studio(App):
                     return False
                 overwrite = True
             self.file.save(self.editor.text, path, overwrite=overwrite)
+            if self.editor.text != self.file.source:
+                selection = self.editor.selection
+                self.editor.history.checkpoint()
+                self.editor.replace(self.file.source, (0, 0), self.editor.document.end)
+                self.editor.selection = selection
+                self.editor.history.checkpoint()
             self.editor.path = self.file.path
             self.update_status()
             return True

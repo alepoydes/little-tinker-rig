@@ -176,6 +176,71 @@ def display():
     assert eval(expanded.source, namespace) == 11
 
 
+@pytest.mark.parametrize(
+    "default",
+    [
+        "(10)",
+        "(1 + 2)",
+        "(\n        10  # default note\n    )",
+        "(lambda x, y=2: x + y)",
+    ],
+)
+def test_block_defaults_remove_complete_expressions_from_helper_headers(default):
+    source = (
+        f"@block\ndef action(value={default}, *, extra=(2)):\n"
+        "    return value, extra\n"
+    )
+    (snippet,) = load_module(source, "test", "1")
+    expanded = instantiate(snippet, {"value": "7"})
+    helpers = "\n\n".join(expanded.helpers)
+    namespace = {}
+    exec(helpers, namespace)
+    assert eval(expanded.source, namespace) == (7, 2)
+    assert namespace["action"].__defaults__ is None
+    assert namespace["action"].__kwdefaults__ is None
+    if "# default note" in default:
+        assert "# default note" in helpers
+
+
+@pytest.mark.parametrize("decorator", ["block", "inline_block"])
+@pytest.mark.parametrize("prefix, indent", [("", "    "), ("f", "    "), ("", "\t")])
+def test_definition_body_preserves_multiline_literal_values(decorator, prefix, indent):
+    source = (
+        f"@{decorator}\ndef message():\n"
+        f'{indent}"""Help starts here.\nUnindented help.\n    Indented help.\n    """\n'
+        f"{indent}# body note\n"
+        f'{indent}value = {prefix}"""first\nsecond {{1 + 2}}\n    third"""\n'
+        f"{indent}print(value)\n"
+    )
+    expected, actual = [], []
+    original = {"print": expected.append}
+    exec(source.split("\n", 1)[1], original)
+    original["message"]()
+    (snippet,) = load_module(source, "test", "1")
+    expanded = instantiate(snippet, {})
+    namespace = {"print": actual.append}
+    exec("\n\n".join((*expanded.helpers, expanded.source)), namespace)
+    assert actual == expected
+    assert "# body note" in snippet.definition
+    if decorator == "block":
+        assert "# body note" in "\n".join(expanded.helpers)
+        assert namespace["message"].__doc__ == original["message"].__doc__
+
+
+@pytest.mark.skipif(
+    not hasattr(ast, "TypeVar"), reason="Requires Python 3.12 type parameters"
+)
+def test_generic_helper_keeps_type_parameters_when_removing_defaults():
+    (snippet,) = load_module(
+        "@block\ndef identity[T](value=(10)):\n    return value\n", "test", "1"
+    )
+    expansion = instantiate(snippet, {})
+    namespace = {}
+    exec("\n".join(expansion.helpers), namespace)
+    assert eval(expansion.source, namespace) == 10
+    assert namespace["identity"].__type_params__[0].__name__ == "T"
+
+
 def test_declared_names_are_lexical_and_collision_checked():
     (snippet,) = load_module(
         """

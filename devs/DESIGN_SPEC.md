@@ -1097,8 +1097,10 @@ include Jedi, Pybricks API descriptions and Python-only Tree-sitter highlighting
 
 - Edit ordinary Python with highlighting, indentation, undo/redo, find/replace,
   completion and signature/documentation help.
-- New, Open, Save and Save As preserve text, including invalid drafts, encoding
-  and line endings. Detect external changes and confirm overwrites; never rebuild
+- New, Open, Save and Save As preserve text, including invalid drafts and line
+  endings. Read legacy Python encodings; write UTF-8 without a BOM and normalize
+  active encoding declarations through the shared persistence utility and editor
+  undo history. Detect external changes and confirm overwrites; never rebuild
   imports, helper functions or block workspace metadata while saving source.
 - Connect using Bluetooth by default, supported USB, or a virtual hub.
 - Upload, upload-and-run, run uploaded code, stop and disconnect are distinct
@@ -1351,6 +1353,11 @@ Full-document Python editing may contain unfinished text. Save writes that text 
 the ordinary `.py` file, which reopens in Python view. Run, Upload and switching to
 Blocks require valid syntax. Local structural edit dialogs still reject invalid
 commits. Text persistence must not depend on structural validity.
+
+All program saves use UTF-8 without a BOM. Opening detects the original Python
+encoding; saving normalizes an active first- or second-line encoding declaration.
+The editor, persisted bytes and reopened text agree, including for invalid drafts.
+The declaration change participates in the active editor's undo history.
 
 Desktop recovery checkpoints preserve open tabs, unsaved text, Scratch, collection
 settings and the original save baselines. They are separate from source files,

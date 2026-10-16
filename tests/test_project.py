@@ -22,12 +22,47 @@ def test_save_reopen_and_external_change_detection(tmp_path, suffix):
     assert path.read_text() == "x = 3\n"
 
 
-def test_encoding_cookie_and_non_ascii_survive_save(tmp_path):
-    path = tmp_path / "latin.py"
-    path.write_bytes('# coding: latin-1\nname = "café"\n'.encode("latin-1"))
+@pytest.mark.parametrize(
+    "encoding, text, edited_cookie",
+    [
+        ("latin-1", "café", "cp1251"),
+        ("cp1251", "Привет", "utf-8"),
+        ("utf-8-sig", "Привет", "unknown"),
+    ],
+)
+def test_legacy_source_and_edited_cookie_save_as_utf8(
+    tmp_path, encoding, text, edited_cookie
+):
+    path = tmp_path / "main.py"
+    cookie = "utf-8" if encoding == "utf-8-sig" else encoding
+    source = f'# coding: {cookie}\nname = "{text}"\n'
+    path.write_bytes(source.encode(encoding))
     project = Project(path)
+    edited = source.replace(cookie, edited_cookie)
+    project.document.commit(edited)
     project.save()
-    assert "café" in Project(path).document.state.source
+    expected = source.replace(cookie, "utf-8")
+    assert path.read_bytes() == expected.encode("utf-8")
+    assert project.state.source == Project(path).state.source == expected
+    assert not project.dirty
+    if edited != expected:
+        project.document.undo()
+        assert project.state.source == edited and project.dirty
+
+
+def test_session_selection_survives_save_normalization_and_subsequent_edits(tmp_path):
+    path = tmp_path / "main.py"
+    path.write_bytes(b"# coding: latin-1\nvalue = 1\n")
+    session = Session(path)
+    session.editor.select(session.document.state.source.index("value"))
+    session.project.save()
+    assert session.document.syntax.text(session.editor.selection) == "value"
+    session.editor.commit(session.document.state.source.replace("= 1", "= 2"))
+    session.project.save()
+    assert Project(path).state.source == "# coding: utf-8\nvalue = 2\n"
+    session.editor.undo()
+    assert session.editor.selection in session.document.syntax.spans
+    assert session.project.dirty
 
 
 def test_external_scratch_change_is_not_overwritten(tmp_path):

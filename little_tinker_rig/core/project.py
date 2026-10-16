@@ -9,6 +9,7 @@ from pathlib import Path
 
 from .document import Document, State
 from .source_file import atomic_write as atomic_write
+from .source_file import utf8_source
 
 
 class Project:
@@ -168,6 +169,11 @@ class Project:
             raise ValueError(
                 "Workspace changed outside LittleTinker Rig; reopen it or save to another path"
             )
+        source = utf8_source(self.state.source)
+        if self.draft is not None:
+            self.draft = source
+        elif source != self.document.state.source:
+            self.document.commit(source)
         state = self.state
         metadata = {
             "format": 1,
@@ -198,8 +204,9 @@ class Project:
             # A recovery superset protects moves in both directions if saving
             # either file fails. Interrupted saves may leave extra copies.
             write_workspace(dict.fromkeys((*self._saved.scratch, *state.scratch)))
-        atomic_write(self.path, state.source, self.encoding)
-        self._disk_hash = hashlib.sha256(state.source.encode(self.encoding)).hexdigest()
+        atomic_write(self.path, state.source)
+        self.encoding = "utf-8"
+        self._disk_hash = hashlib.sha256(state.source.encode("utf-8")).hexdigest()
         if keep_workspace:
             write_workspace(state.scratch)
         self._saved = state

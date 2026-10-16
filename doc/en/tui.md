@@ -31,7 +31,9 @@ and F1 shows signatures and documentation using static Jedi analysis.
 
 Save preserves source text, including unfinished code, comments and spacing. It
 does not regenerate imports or block helpers and leaves `.ltr.json` metadata
-alone. Encoding and line endings are retained. A file changed externally cannot
+alone. Legacy encodings are detected on opening; saving writes UTF-8 without a
+BOM and updates the encoding declaration in the editor. Line endings are retained.
+The declaration change can be undone. A file changed externally cannot
 be silently overwritten; reopen it or save your version under another name.
 
 ## Connect and run

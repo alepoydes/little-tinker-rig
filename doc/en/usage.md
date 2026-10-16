@@ -27,8 +27,10 @@ signature and current parameter; **Ctrl+Shift+Space** requests a hint or documen
 for the name under the cursor. Jedi analyzes unfinished source in the background
 without running it. Dynamic Python objects may have incomplete suggestions;
 API descriptions do not verify support on a connected hub. Ruff
-formats valid committed edits. **Ctrl+S** also saves unfinished Python exactly as
-shown. Such files reopen in Python view; Run, Upload and switching to Blocks
+formats valid committed edits. **Ctrl+S** also saves unfinished Python. All programs
+are saved as UTF-8 without a BOM. Legacy files are read using their original
+encoding; saving updates the encoding declaration in the editor too. Ctrl+Z can
+undo that change. Unfinished files reopen in Python view; Run, Upload and switching to Blocks
 require valid syntax. A failed structural edit still leaves the block document
 unchanged.
 

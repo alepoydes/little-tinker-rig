@@ -327,7 +327,7 @@ def test_insertion_destinations_respect_declarations_and_loop_context():
         ("utf-8-sig", "utf-8", "Привет", False),
     ],
 )
-def test_save_as_preserves_source_encoding(
+def test_save_as_normalizes_source_encoding(
     tmp_path, qt_app, monkeypatch, encoding, cookie, text, existing
 ):
     from PySide6.QtWidgets import QFileDialog
@@ -349,17 +349,50 @@ def test_save_as_preserves_source_encoding(
             QFileDialog, "getSaveFileName", lambda *args: (str(destination), "")
         )
         assert window.save_as()
-        assert destination.read_bytes() == original
-        assert Project(destination).document.state.source == source
+        expected = source.replace(cookie, "utf-8")
+        assert destination.read_bytes() == expected.encode("utf-8")
+        assert Project(destination).document.state.source == expected
+        assert window.document_page.text == expected and not window.document_page.dirty
         assert path.read_bytes() == original
-        # The newly selected file also retains its encoding on subsequent saves.
+        # An edited legacy cookie is normalized again on subsequent saves.
         window.session.editor.commit(source.replace(text, text + "!"))
         window.save()
-        assert Project(destination).document.state.source == source.replace(
+        assert Project(destination).document.state.source == expected.replace(
             text, text + "!"
         )
     finally:
         discard_window(window)
+
+
+@pytest.mark.parametrize("draft", [False, True])
+def test_python_save_syncs_utf8_cookie_with_text_and_undo(tmp_path, qt_app, draft):
+    from little_tinker_rig.core.source_file import SourceFile
+    from little_tinker_rig.qt.document import DocumentPage
+
+    path = tmp_path / "main.py"
+    source = '# coding: cp1251\nmessage = "Привет"\n' + (
+        "unfinished =" if draft else ""
+    )
+    path.write_bytes(source.encode("cp1251"))
+    page = DocumentPage(path)
+    try:
+        page.change_mode(1)
+        page.save()
+        expected = source.replace("cp1251", "utf-8")
+        assert (
+            page.text
+            == page.session.project.state.source
+            == SourceFile(path).source
+            == expected
+        )
+        assert not page.dirty
+        page.code.undo()
+        assert page.text == source and page.dirty
+        page.save()
+        assert page.text == SourceFile(path).source == expected and not page.dirty
+    finally:
+        page.close()
+        page.deleteLater()
 
 
 def test_closing_invalid_draft_and_save_as_preserve_other_documents(
