@@ -2,6 +2,9 @@
 
 Drive-base and clock building blocks."""
 
+__category__ = "movement"
+
+
 @inline_block(level="beginner", icon="➜", color="state", names=("name",))
 def create_robot(
     name=drive,
@@ -48,13 +51,13 @@ def drive(
     drive.drive(speed, turn)
 
 
-@inline_block(level="beginner", icon="➜", color="action")
+@inline_block(level="beginner", icon="➜", color="action", variant="Brake")
 def brake(drive: "DriveBase" = drive):
     """Brake both robot wheels."""
     drive.brake()
 
 
-@inline_block(level="beginner", icon="➜", color="action")
+@inline_block(level="beginner", icon="➜", color="action", variant="Wait until finished")
 def straight(drive: "DriveBase" = drive, distance: "number[mm]" = 200):
     """Drive a distance, then stop.
 
@@ -84,7 +87,9 @@ def drive_angle(drive: "DriveBase" = drive) -> "number[deg]":
     return drive.angle()
 
 
-@inline_block(level="intermediate", icon="⏱", color="state", names=("name",))
+@inline_block(
+    level="intermediate", icon="⏱", color="state", names=("name",), category="input"
+)
 def create_clock(name=clock):
     """Create a stopwatch to measure time."""
     from pybricks.tools import StopWatch
@@ -92,19 +97,25 @@ def create_clock(name=clock):
     name: "StopWatch" = StopWatch()
 
 
-@inline_block(level="intermediate", icon="⏱", color="action")
+@inline_block(level="intermediate", icon="⏱", color="action", category="input")
 def elapsed(clock: "StopWatch" = clock) -> "number[ms]":
     """Read elapsed milliseconds from the stopwatch."""
     return clock.time()
 
 
-@inline_block(level="intermediate", icon="⏱", color="action")
+@inline_block(level="intermediate", icon="⏱", color="action", category="input")
 def reset_clock(clock: "StopWatch" = clock):
     """Restart the stopwatch."""
     clock.reset()
 
 
-@inline_block(level="advanced", icon="➜", color="action")
+@inline_block(
+    level="advanced",
+    icon="➜",
+    color="action",
+    variant="Speed and acceleration",
+    advanced=("turn_acceleration",),
+)
 def drive_settings(
     drive: "DriveBase" = drive,
     speed: "number[mm/s]" = 200,
@@ -119,7 +130,9 @@ def drive_settings(
     drive.settings(speed, acceleration, turn_rate, turn_acceleration)
 
 
-@inline_block(level="advanced", icon="➜", color="action")
+@inline_block(
+    level="advanced", icon="➜", color="action", variant="Current arc convention"
+)
 def curve(
     drive: "DriveBase" = drive, radius: "number[mm]" = 200, angle: "number[deg]" = 90
 ):

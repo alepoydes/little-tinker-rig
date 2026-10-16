@@ -2,6 +2,9 @@
 
 Control flow beyond counted loops and simple decisions."""
 
+__category__ = "program"
+
+
 @inline_block(level="intermediate", icon="◇", color="control", context="loop")
 def break_loop():
     """Leave the nearest loop.
@@ -27,7 +30,7 @@ def continue_loop():
         continue
 
 
-@inline_block(level="advanced", icon="＝", color="value")
+@inline_block(level="advanced", icon="＝", color="value", category="values")
 def choose_value(test: "bool" = True, yes=1, no=0):
     """Choose a value using a condition.
 

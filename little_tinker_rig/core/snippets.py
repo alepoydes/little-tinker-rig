@@ -13,7 +13,14 @@ from pathlib import Path
 from little_tinker_rig.i18n import N_
 
 from .analysis import Analysis, Scopes, annotation_text, identifiers
-from .block_metadata import LEVELS, decorator, metadata
+from .block_metadata import (
+    LEVELS,
+    category_declaration,
+    decorator,
+    metadata,
+    module_category,
+)
+from .catalog import families
 from .helpers import (
     helper_functions,
     helper_section,
@@ -53,6 +60,19 @@ class Snippet:
     group_help: str = ""
     context: str | None = None
     definition: str = ""
+    category: str = ""
+    family: str = ""
+    variant: str | None = None
+    advanced: tuple[str, ...] = ()
+    bindings: dict[str, str] = dataclass_field(default_factory=dict)
+
+    @property
+    def catalog_id(self):
+        return self.family or self.identity
+
+    @property
+    def catalog_visible(self):
+        return not self.family or self.variant is not None
 
     @cached_property
     def helper_signatures(self):
@@ -102,6 +122,7 @@ def load_module(
 ) -> tuple[Snippet, ...]:
     """Read definitions without importing or evaluating any template code."""
     tree = ast.parse(source)
+    category = module_category(tree)
     functions = [node for node in tree.body if isinstance(node, ast.FunctionDef)]
     if len({function.name for function in functions}) != len(functions):
         raise ValueError("Duplicate function name in block module")
@@ -114,6 +135,8 @@ def load_module(
     scopes = Scopes(tree)
     if not legacy:
         for node in tree.body:
+            if category_declaration(node):
+                continue
             if isinstance(node, (ast.FunctionDef, ast.Import, ast.ImportFrom)):
                 continue
             if node is tree.body[0] and group_help:
@@ -308,6 +331,11 @@ def load_module(
                 group_help=group_help,
                 context=context,
                 definition=definition,
+                category=options.get("category", category) if options else category,
+                family=options.get("family", "") if options else "",
+                variant=options.get("variant") if options else None,
+                advanced=options["advanced"] if options else (),
+                bindings=options.get("bindings", {}) if options else {},
             )
         )
     return tuple(result)
@@ -389,6 +417,7 @@ def function_snippets(syntax):
                 icon="ƒ",
                 color="definition",
                 group_help=N_("My functions"),
+                category="functions",
             )
         )
     return tuple(result)
@@ -579,10 +608,12 @@ def load_collection(
         raise ValueError(
             "Block difficulty belongs in source decorators, not collection.toml"
         )
-    return tuple(
+    result = tuple(
         replace(s, level=levels.get(s.identity.removeprefix(identity + "/"), s.level))
         for s in result
     )
+    families(result)
+    return result
 
 
 def builtin_snippets() -> tuple[Snippet, ...]:

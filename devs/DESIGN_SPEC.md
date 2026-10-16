@@ -655,7 +655,47 @@ collections remain readable and have an explicit, validated migration command.
 
 A major design goal is that writing a new snippet should require mostly writing normal Python rather than authoring a large schema or UI definition.
 
-### 19.1 Block Editor workspace
+### 19.1 Catalog family metadata
+
+Catalog grouping is independent of Python module paths and block role colors.
+A module may declare one literal `__category__` string; a block's optional
+`category` decorator argument overrides it. The built-in categories are `program`,
+`values`, `data`, `functions`, `movement`, `input`, `output`, and `devices`. Older
+collections without categories retain their module headings.
+
+A family uses the complete identity of a current primary block. Other forms name
+it with `family="collection/module/block"`. Primaries omit `family`; chains,
+missing primaries, and incompatible statement/expression or context requirements
+are rejected when a collection loads. Category changes never change identity.
+Definitions remain the sole source of code, parameters, descriptions, and grouping.
+The [generated inventory](BLOCK_LIBRARY_INVENTORY.md) can be regenerated with
+`python tools/catalog_report.py` and checked with its `--check` option.
+
+`variant` is a short, translatable operation label. A family member without this
+label is a compatibility alias: normal discovery omits it, while recognition and
+an existing lesson's exact identity can still use it. Choosing one family does
+not grant access to all its forms. Level, lesson, and insertion-context filters
+apply to each exact variant before producing a card.
+
+`advanced=("then", "wait")` identifies optional fields for compact editing;
+these names must have defaults in the signature. `bindings={"rotation_angle":
+"angle"}` maps differently named parameters to shared family fields, with unique
+keys within a variant. Unmapped names keep their own names. The metadata does
+not create runtime enums, evaluate defaults, or rewrite existing Python.
+
+For example, motor movement forms can omit `wait`, expose a Boolean `wait`, or
+expose the existing `Stop` enum as `then`. Stop, brake, and hold use different
+ordinary Python methods in one statement family. Reading motor settings remains
+an expression family separate from setting them. Historical spellings preserve
+their argument order, even when argument expressions have side effects. Reloading
+the catalog never silently converts a recognized form into its primary form.
+
+Copying a variant into a personal collection detaches its family reference and
+preserves its effective category, so the copy is a usable standalone definition.
+Handwritten collections may opt into grouping without migrating their existing
+source bodies or adding a parallel catalog file.
+
+### 19.2 Block Editor workspace
 
 The desktop has a separate text-based definition editor. Collections, modules and
 blocks appear on the left. A wide preview is above the Python source, using the

@@ -2,13 +2,28 @@
 
 Explicit device operations for studying complete robot programs."""
 
-@inline_block(level="expert", icon="▶", color="action")
+__category__ = "output"
+
+
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    family="pybricks/hubs/beep",
+    variant="Default tone",
+)
 def hub_speaker_beep(hub: "PrimeHub" = hub):
     """Play a tone on the hub speaker."""
     hub.speaker.beep()
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    family="pybricks/hubs/beep",
+    variant="Frequency",
+)
 def hub_speaker_beep_frequency(hub: "PrimeHub" = hub, frequency: "number[Hz]" = 500):
     """Play a tone on the hub speaker. Options: frequency."""
     hub.speaker.beep(frequency)
@@ -38,7 +53,15 @@ def hub_light_blink_color_durations(
     hub.light.blink(color, durations)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    family="pybricks/hub_feedback/animate_light",
+    variant="Frames and interval",
+    bindings={"frames": "colors"},
+    advanced=("interval",),
+)
 def hub_light_animate_frames_interval(
     hub: "PrimeHub | TechnicHub | MoveHub | Remote" = hub,
     frames=frames,
@@ -56,7 +79,13 @@ def hub_speaker_play_notes_notes_tempo(
     hub.speaker.play_notes(notes, tempo)
 
 
-@inline_block(level="advanced", icon="▶", color="action")
+@inline_block(
+    level="advanced",
+    icon="▶",
+    color="action",
+    variant="Color sequence",
+    advanced=("interval",),
+)
 def animate_light(
     hub: "PrimeHub | TechnicHub | MoveHub" = hub,
     colors=(Color.RED, Color.GREEN),

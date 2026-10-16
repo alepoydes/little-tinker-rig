@@ -7,6 +7,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from .analysis import Analysis, annotation_text
+from .block_metadata import change_property, metadata, module_category
 from .edit import reindent
 from .helpers import function_dependencies
 from .migration import migrate_module, module_levels, remove_levels
@@ -77,7 +78,7 @@ def copy_definition(source, name):
             visit(dependency)
 
     visit(name)
-    return (
+    result = (
         "\n\n".join(
             syntax.text(node)
             for node in syntax.tree.body
@@ -87,6 +88,15 @@ def copy_definition(source, name):
         )
         + "\n"
     )
+    category = module_category(syntax.tree)
+    for function in functions.values():
+        if function.name not in included or (options := metadata(function)) is None:
+            continue
+        if options.get("family"):
+            result = change_property(result, function.name, "family", "")
+        if category and not options.get("category"):
+            result = change_property(result, function.name, "category", category)
+    return result
 
 
 class DefinitionDraft:

@@ -2,13 +2,22 @@
 
 Explicit device operations for studying complete robot programs."""
 
+__category__ = "movement"
+
+
 @inline_block(level="expert", icon="▶", color="action")
 def motor_control_limits(motor: "Motor" = motor) -> "tuple":
     """Read or set motor speed, acceleration and torque limits."""
     return motor.control.limits()
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    family="pybricks/motors/acceleration",
+    variant="Speed, acceleration and torque",
+)
 def motor_control_limits_speed_acceleration_torque(
     motor: "Motor" = motor,
     speed: "number[deg/s]" = 300,
@@ -33,7 +42,13 @@ def motor_control_target_tolerances_speed_position(
     motor.control.target_tolerances(speed, position)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    family="pybricks/motors/acceleration",
+    variant="Restore saved limits",
+)
 def motor_control_limits_saved(motor: "Motor" = motor, saved: "tuple" = settings):
     """Read or set motor speed, acceleration and torque limits. Options: saved."""
     motor.control.limits(*saved)
@@ -45,7 +60,13 @@ def motor_control_pid(motor: "Motor" = motor) -> "tuple":
     return motor.control.pid()
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    family="pybricks/motors/acceleration",
+    variant="Speed",
+)
 def motor_control_limits_speed(motor: "Motor" = motor, speed: "number[deg/s]" = 300):
     """Read or set motor speed, acceleration and torque limits. Options: speed."""
     motor.control.limits(speed=speed)
@@ -57,7 +78,13 @@ def motor_control_pid_kp_ki(motor: "Motor" = motor, kp=1000, ki=0):
     motor.control.pid(kp=kp, ki=ki)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    family="pybricks/motors/acceleration",
+    variant="Speed and acceleration",
+)
 def motor_control_limits_speed_acceleration(
     motor: "Motor" = motor,
     speed: "number[deg/s]" = 300,

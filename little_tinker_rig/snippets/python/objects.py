@@ -2,7 +2,12 @@
 
 Expert Python structure for reusable robot models and cooperative control."""
 
-@inline_block(level="expert", icon="ƒ", color="definition", names=("Robot",))
+__category__ = "data"
+
+
+@inline_block(
+    level="expert", icon="ƒ", color="definition", names=("Robot",), category="functions"
+)
 def define_class():
     """Define a class for a robot or a shared state object.
 
@@ -13,7 +18,13 @@ def define_class():
         pass
 
 
-@inline_block(level="expert", icon="◇", color="control")
+@inline_block(
+    level="expert",
+    icon="◇",
+    color="control",
+    category="program",
+    variant="Unnamed resource",
+)
 def use_context(manager=resource):
     """Enter a context and automatically run its cleanup when leaving.
 
@@ -22,20 +33,43 @@ def use_context(manager=resource):
         pass
 
 
-@inline_block(level="expert", icon="◇", color="control", names=("name",))
+@inline_block(
+    level="expert",
+    icon="◇",
+    color="control",
+    names=("name",),
+    category="program",
+    family="python/objects/use_context",
+    variant="Named resource",
+)
 def use_named_context(manager=resource, name=robot):
     """Enter a context, name its resource, and clean up when leaving."""
     with manager as name:
         pass
 
 
-@inline_block(level="expert", icon="◇", color="control", kind="statement")
+@inline_block(
+    level="expert",
+    icon="◇",
+    color="control",
+    kind="statement",
+    category="functions",
+    variant="Yield a value",
+)
 def yield_value(value=None):
     """Yield a value from a generator, resuming here on its next iteration."""
     yield value
 
 
-@inline_block(level="expert", icon="◇", color="control", kind="statement")
+@inline_block(
+    level="expert",
+    icon="◇",
+    color="control",
+    kind="statement",
+    category="functions",
+    family="python/objects/yield_value",
+    variant="Yield without a value",
+)
 def yield_control():
     """Pause a generator without returning a value."""
     yield
@@ -47,13 +81,19 @@ def next_value(iterator=steps):
     return next(iterator)
 
 
-@inline_block(level="advanced", icon="＝", color="value")
+@inline_block(level="advanced", icon="＝", color="value", variant="All values")
 def all_values(values=(True, True)) -> "bool":
     """Check that every value is true; stop at the first false value."""
     return all(values)
 
 
-@inline_block(level="advanced", icon="＝", color="value")
+@inline_block(
+    level="advanced",
+    icon="＝",
+    color="value",
+    family="python/objects/all_values",
+    variant="Any value",
+)
 def any_value(values=(False, True)) -> "bool":
     """Check whether any value is true; stop at the first true value."""
     return any(values)
@@ -89,19 +129,19 @@ def dictionary_items(mapping=lookup):
     return mapping.items()
 
 
-@inline_block(level="advanced", icon="＝", color="value")
+@inline_block(level="advanced", icon="＝", color="value", category="values")
 def character_code(character="a") -> "int":
     """Read the numeric code of one character."""
     return ord(character)
 
 
-@inline_block(level="expert", icon="＝", color="value")
+@inline_block(level="expert", icon="＝", color="value", category="functions")
 def is_subclass(derived=ValueError, base=Exception) -> "bool":
     """Check an exception or class hierarchy."""
     return issubclass(derived, base)
 
 
-@inline_block(level="expert", icon="＝", color="value")
+@inline_block(level="expert", icon="＝", color="value", category="values")
 def constant(value: "int" = 1) -> "int":
     """Declare a MicroPython integer constant."""
     from micropython import const

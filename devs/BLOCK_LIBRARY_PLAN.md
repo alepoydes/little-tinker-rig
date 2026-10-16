@@ -1,6 +1,12 @@
 # Block library work plan
 
-Status: planned; implementation has not started. Baseline date: October 16, 2026.
+Status: in progress. Baseline date: October 16, 2026.
+
+The source-derived [inventory](BLOCK_LIBRARY_INVENTORY.md) accounts for all 253
+templates. Initial consolidation defines 191 families, with 250 selectable forms
+and three compatibility aliases. Family metadata, validation, and exact-variant
+filtering are implemented in the core. The desktop still needs to expose these
+families, variant editing, and personal navigation; the pilot is not yet complete.
 
 The objective is a smaller, easier-to-find set of block cards with explicit
 operation variants, predictable Python behavior, and personal navigation.

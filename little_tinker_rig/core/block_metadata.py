@@ -4,12 +4,58 @@ import ast
 import keyword
 import re
 
+from little_tinker_rig.i18n import N_
+
 from .presentation import PALETTE
 from .syntax import Span, Syntax
 
 LEVELS = ("beginner", "intermediate", "advanced", "expert")
 DECORATORS = {"inline_block", "block"}
-FIELDS = {"level", "icon", "color", "names", "kind", "context"}
+CATEGORIES = {
+    "program": N_("Program"),
+    "values": N_("Values and calculations"),
+    "data": N_("Variables and collections"),
+    "functions": N_("Functions"),
+    "movement": N_("Motors and movement"),
+    "input": N_("Sensors and input"),
+    "output": N_("Light and sound"),
+    "devices": N_("Devices and communication"),
+}
+FIELDS = {
+    "level",
+    "icon",
+    "color",
+    "names",
+    "kind",
+    "context",
+    "category",
+    "family",
+    "variant",
+    "advanced",
+    "bindings",
+}
+
+
+def module_category(tree):
+    """Read the optional static category shared by a module's block definitions."""
+    declarations = [node for node in tree.body if category_declaration(node)]
+    if len(declarations) > 1:
+        raise ValueError("A block module has one __category__ declaration")
+    if not declarations:
+        return ""
+    node = declarations[0]
+    if not isinstance(node.value, ast.Constant) or node.value.value not in CATEGORIES:
+        raise ValueError("Unknown block module category")
+    return node.value.value
+
+
+def category_declaration(node):
+    return (
+        isinstance(node, ast.Assign)
+        and len(node.targets) == 1
+        and isinstance(node.targets[0], ast.Name)
+        and node.targets[0].id == "__category__"
+    )
 
 
 def decorator(function):
@@ -77,6 +123,62 @@ def metadata(function):
         raise ValueError(
             f"{function.name}: a function block cannot require its caller's context"
         )
+    if values.get("category", "") not in ("", *CATEGORIES):
+        raise ValueError(f"{function.name}: unknown catalog category")
+    family = values.get("family", "")
+    if not isinstance(family, str) or (
+        family and not re.fullmatch(r"[\w.-]+(?:/[\w.-]+)+", family)
+    ):
+        raise ValueError(f"{function.name}: family needs a complete block identity")
+    variant = values.get("variant")
+    if variant is not None and (
+        not isinstance(variant, str)
+        or not variant.strip()
+        or len(variant.splitlines()) != 1
+    ):
+        raise ValueError(f"{function.name}: variant needs a short label")
+    arguments = [
+        *function.args.posonlyargs,
+        *function.args.args,
+        *function.args.kwonlyargs,
+    ]
+    parameters = {arg.arg for arg in arguments}
+    advanced = values.get("advanced", ())
+    optional = {
+        arg.arg
+        for arg, default in zip(
+            arguments,
+            [None]
+            * (
+                len(arguments)
+                - len(function.args.kwonlyargs)
+                - len(function.args.defaults)
+            )
+            + function.args.defaults
+            + function.args.kw_defaults,
+            strict=True,
+        )
+        if default is not None
+    }
+    if (
+        not isinstance(advanced, (tuple, list))
+        or not all(isinstance(name, str) and name in optional for name in advanced)
+        or len(set(advanced)) != len(advanced)
+    ):
+        raise ValueError(
+            f"{function.name}: advanced fields need distinct optional parameters"
+        )
+    bindings = values.get("bindings", {})
+    if not isinstance(bindings, dict) or any(
+        name not in parameters
+        or not isinstance(key, str)
+        or not key.isidentifier()
+        or keyword.iskeyword(key)
+        for name, key in bindings.items()
+    ):
+        raise ValueError(f"{function.name}: invalid family parameter bindings")
+    if len({bindings.get(name, name) for name in parameters}) != len(parameters):
+        raise ValueError(f"{function.name}: family parameter bindings must be unique")
     return dict(
         values,
         mode="inline" if mode == "inline_block" else "function",
@@ -84,6 +186,7 @@ def metadata(function):
         icon=icon,
         color=color,
         names=tuple(names),
+        advanced=tuple(advanced),
     )
 
 

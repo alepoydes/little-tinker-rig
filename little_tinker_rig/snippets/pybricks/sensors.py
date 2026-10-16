@@ -2,7 +2,10 @@
 
 Sensor and timing templates."""
 
-@inline_block(level="beginner", icon="⏱", color="action")
+__category__ = "input"
+
+
+@inline_block(level="beginner", icon="⏱", color="action", category="program")
 def wait_ms(duration: "number[ms]" = 1000):
     """Wait for a number of milliseconds. 1000 ms = 1 second."""
     from pybricks.tools import wait
@@ -10,7 +13,9 @@ def wait_ms(duration: "number[ms]" = 1000):
     wait(duration)
 
 
-@inline_block(level="beginner", icon="◉", color="state", names=("name",))
+@inline_block(
+    level="beginner", icon="◉", color="state", names=("name",), variant="Color sensor"
+)
 def create_color_sensor(name=sensor, port: "Port" = Port.C):
     """Connect a color sensor to a hub port."""
     from pybricks.parameters import Port
@@ -27,7 +32,7 @@ def reflection_below(
     return sensor.reflection() < threshold
 
 
-@inline_block(level="advanced", icon="◉", color="loop")
+@inline_block(level="advanced", icon="◉", color="loop", category="movement")
 def follow_edge(
     drive: "DriveBase" = drive,
     sensor: "ColorSensor | ColorDistanceSensor" = sensor,
@@ -47,7 +52,14 @@ def follow_edge(
         wait(10)
 
 
-@inline_block(level="intermediate", icon="◉", color="state", names=("name",))
+@inline_block(
+    level="intermediate",
+    icon="◉",
+    color="state",
+    names=("name",),
+    family="pybricks/sensors/create_color_sensor",
+    variant="Ultrasonic sensor",
+)
 def create_ultrasonic_sensor(name=distance, port: "Port" = Port.D):
     """Connect an ultrasonic distance sensor."""
     from pybricks.parameters import Port
@@ -56,7 +68,14 @@ def create_ultrasonic_sensor(name=distance, port: "Port" = Port.D):
     name: "UltrasonicSensor" = UltrasonicSensor(port)
 
 
-@inline_block(level="intermediate", icon="◉", color="state", names=("name",))
+@inline_block(
+    level="intermediate",
+    icon="◉",
+    color="state",
+    names=("name",),
+    family="pybricks/sensors/create_color_sensor",
+    variant="Force sensor",
+)
 def create_force_sensor(name=button, port: "Port" = Port.E):
     """Connect a force sensor to measure presses."""
     from pybricks.parameters import Port
@@ -65,7 +84,14 @@ def create_force_sensor(name=button, port: "Port" = Port.E):
     name: "ForceSensor" = ForceSensor(port)
 
 
-@inline_block(level="beginner", icon="◉", color="state", names=("name",))
+@inline_block(
+    level="beginner",
+    icon="◉",
+    color="state",
+    names=("name",),
+    family="pybricks/sensors/create_color_sensor",
+    variant="BOOST color and distance sensor",
+)
 def create_color_distance_sensor(name=sensor, port: "Port" = Port.D):
     """Connect a BOOST color and distance sensor."""
     from pybricks.parameters import Port
@@ -104,13 +130,13 @@ def pressed(sensor: "ForceSensor" = button) -> "bool":
     return sensor.pressed()
 
 
-@inline_block(level="intermediate", icon="◉", color="action")
+@inline_block(level="intermediate", icon="◉", color="action", variant="Surface color")
 def color(sensor: "ColorSensor | ColorDistanceSensor" = sensor) -> "Color":
     """Read the surface color under the sensor."""
     return sensor.color()
 
 
-@inline_block(level="beginner", icon="◉", color="loop")
+@inline_block(level="beginner", icon="◉", color="loop", category="program")
 def wait_color(
     sensor: "ColorSensor | ColorDistanceSensor" = sensor, color: "Color" = Color.WHITE
 ):
@@ -125,7 +151,7 @@ def wait_color(
         wait(20)
 
 
-@inline_block(level="intermediate", icon="◉", color="loop")
+@inline_block(level="intermediate", icon="◉", color="loop", category="program")
 def wait_until(test: "bool" = False):
     """Wait until a sensor condition becomes true.
 
@@ -137,7 +163,9 @@ def wait_until(test: "bool" = False):
         wait(20)
 
 
-@inline_block(level="intermediate", icon="◉", color="action")
+@inline_block(
+    level="intermediate", icon="◉", color="action", category="output", variant="On"
+)
 def distance_lights(
     sensor: "UltrasonicSensor | ColorSensor" = distance,
     brightness: "number[%] | list | tuple" = 100,
@@ -146,7 +174,14 @@ def distance_lights(
     sensor.lights.on(brightness)
 
 
-@inline_block(level="intermediate", icon="◉", color="action")
+@inline_block(
+    level="intermediate",
+    icon="◉",
+    color="action",
+    category="output",
+    family="pybricks/sensors/distance_lights",
+    variant="Off",
+)
 def distance_lights_off(sensor: "UltrasonicSensor | ColorSensor" = distance):
     """Turn off the ultrasonic sensor eyes."""
     sensor.lights.off()

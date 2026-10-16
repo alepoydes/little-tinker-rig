@@ -2,7 +2,12 @@
 
 Run several robot actions concurrently using Pybricks async functions."""
 
-@inline_block(level="expert", icon="ƒ", color="definition", names=("task",))
+__category__ = "program"
+
+
+@inline_block(
+    level="expert", icon="ƒ", color="definition", names=("task",), category="functions"
+)
 def define_task():
     """Define an async task; use await for operations that take time."""
 
@@ -27,7 +32,7 @@ def start_task(operation=task()):
     run_task(operation)
 
 
-@inline_block(level="expert", icon="⟳", color="control")
+@inline_block(level="expert", icon="⟳", color="control", variant="Wait for all")
 def parallel_tasks(first=task1(), second=task2()):
     """Create a task that waits for both operations to finish."""
     from pybricks.tools import multitask
@@ -35,7 +40,13 @@ def parallel_tasks(first=task1(), second=task2()):
     return multitask(first, second)
 
 
-@inline_block(level="expert", icon="⟳", color="control")
+@inline_block(
+    level="expert",
+    icon="⟳",
+    color="control",
+    family="pybricks/tasks/parallel_tasks",
+    variant="Finish with the first",
+)
 def race_tasks(first=task1(), second=wait(2000)):
     """Finish when one operation completes and cancel the other, for example a timeout."""
     from pybricks.tools import multitask, wait

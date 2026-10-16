@@ -2,6 +2,8 @@
 
 Short complete behaviors implemented as ordinary Python functions."""
 
+__category__ = "movement"
+
 # Set activities adapted from Pybricks Projects, copyright 2018-2023 The Pybricks
 # Authors (MIT). Full notice: examples/pybricks/LICENSE.txt, included in distributions.
 

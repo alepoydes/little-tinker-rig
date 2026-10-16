@@ -2,6 +2,9 @@
 
 Explicit device operations for studying complete robot programs."""
 
+__category__ = "output"
+
+
 @inline_block(level="expert", icon="▶", color="action")
 def hub_display_orientation_up(hub: "PrimeHub" = hub, up: "Side" = Side.TOP):
     """Rotate the display for the way the hub is mounted. Options: up."""
@@ -10,7 +13,7 @@ def hub_display_orientation_up(hub: "PrimeHub" = hub, up: "Side" = Side.TOP):
     hub.display.orientation(up)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(level="expert", icon="▶", color="action", advanced=("interval",))
 def hub_display_animate_frames_interval(
     hub: "PrimeHub" = hub, frames=frames, interval: "number[ms]" = 100
 ):
@@ -35,13 +38,20 @@ def hub_display_char_character(hub: "PrimeHub" = hub, character: "str" = "!"):
     hub.display.char(character)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(level="expert", icon="▶", color="action", variant="Default timing")
 def hub_display_text_text(hub: "PrimeHub" = hub, text: "str" = "Hello"):
     """Scroll text across the hub display. Options: text."""
     hub.display.text(text)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    family="pybricks/hub_display/hub_display_text_text",
+    variant="Character timing",
+    advanced=("on", "off"),
+)
 def hub_display_text_text_on_off(
     hub: "PrimeHub" = hub,
     text: "str" = "Hello",

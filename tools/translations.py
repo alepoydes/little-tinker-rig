@@ -56,6 +56,16 @@ def messages():
                 catalog.add(
                     text, locations=[(str(path.relative_to(ROOT)), node.lineno)]
                 )
+            block = decorator(node)
+            if isinstance(block, ast.Call):
+                for entry in block.keywords:
+                    if entry.arg == "variant" and isinstance(entry.value, ast.Constant):
+                        catalog.add(
+                            entry.value.value,
+                            locations=[
+                                (str(path.relative_to(ROOT)), entry.value.lineno)
+                            ],
+                        )
     return catalog
 
 

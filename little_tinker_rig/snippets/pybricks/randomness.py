@@ -2,6 +2,9 @@
 
 Random choices supported by larger Pybricks hubs."""
 
+__category__ = "values"
+
+
 @inline_block(level="intermediate", icon="▶", color="action")
 def random_integer(low: "number" = 1, high: "number" = 6) -> "number":
     """Choose a random integer, including both limits.

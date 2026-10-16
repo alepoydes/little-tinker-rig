@@ -2,6 +2,9 @@
 
 Lists, strings and mappings as ordinary Python data."""
 
+__category__ = "data"
+
+
 @inline_block(level="advanced", icon="▣", color="state")
 def store(target=value, value=0):
     """Store a value in a variable, attribute, item or unpacking target.
@@ -49,7 +52,7 @@ def length(items=values) -> "number":
     return len(items)
 
 
-@inline_block(level="intermediate", icon="▶", color="action")
+@inline_block(level="intermediate", icon="▶", color="action", category="values")
 def text(value=0) -> "str":
     """Convert a value to text."""
     return str(value)

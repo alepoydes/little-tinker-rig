@@ -2,11 +2,13 @@
 
 LEGO Powered Up remote control; no host protocol or event framework."""
 
+__category__ = "input"
+
 # Steering calibration adapted from Pybricks Projects (MIT); see the upstream
 # copyright and permission notice in examples/pybricks/LICENSE.txt.
 
 
-@block(level="beginner", icon="▶", color="action")
+@block(level="beginner", icon="▶", color="action", category="movement")
 def remote_drive(
     drive: "DriveBase" = drive, speed: "number[mm/s]" = 150, turn: "number[deg/s]" = 90
 ):
@@ -64,7 +66,7 @@ def buttons(remote: "Remote" = remote) -> "set":
     return remote.buttons.pressed()
 
 
-@block(level="intermediate", icon="▣", color="state")
+@block(level="intermediate", icon="▣", color="state", category="movement")
 def center_steering(steering: "Motor" = steer, speed: "number[deg/s]" = 200):
     """Find both steering stops and start returning to the center.
 
@@ -78,7 +80,7 @@ def center_steering(steering: "Motor" = steer, speed: "number[deg/s]" = 200):
     steering.run_target(speed, 0, wait=False)
 
 
-@inline_block(level="advanced", icon="▶", color="action")
+@inline_block(level="advanced", icon="▶", color="action", category="output")
 def remote_light(remote: "Remote" = remote, color: "Color" = Color.GREEN):
     """Set the remote light to show the selected driving mode."""
     from pybricks.parameters import Color

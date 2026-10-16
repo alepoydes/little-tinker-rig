@@ -2,7 +2,10 @@
 
 Explicit device operations for studying complete robot programs."""
 
-@inline_block(level="advanced", icon="▶", color="action")
+__category__ = "input"
+
+
+@inline_block(level="advanced", icon="▶", color="action", variant="Color sensor")
 def colorsensor_port(port: "Port" = Port.A) -> "ColorSensor":
     """Connect a color sensor. Options: port."""
     from pybricks.parameters import Port
@@ -11,7 +14,13 @@ def colorsensor_port(port: "Port" = Port.A) -> "ColorSensor":
     return ColorSensor(port)
 
 
-@inline_block(level="advanced", icon="▶", color="action")
+@inline_block(
+    level="advanced",
+    icon="▶",
+    color="action",
+    family="pybricks/sensor_values/colorsensor_port",
+    variant="Ultrasonic sensor",
+)
 def ultrasonicsensor_port(port: "Port" = Port.A) -> "UltrasonicSensor":
     """Connect a distance sensor. Options: port."""
     from pybricks.parameters import Port
@@ -36,7 +45,13 @@ def sensor_detectable_colors_colors(
     sensor.detectable_colors(colors)
 
 
-@inline_block(level="advanced", icon="▶", color="action")
+@inline_block(
+    level="advanced",
+    icon="▶",
+    color="action",
+    family="pybricks/sensors/color",
+    variant="Surface or light source",
+)
 def sensor_color_surface(
     sensor: "ColorSensor | ColorDistanceSensor" = sensor, surface: "bool" = True
 ) -> "Color":
@@ -44,7 +59,7 @@ def sensor_color_surface(
     return sensor.color(surface)
 
 
-@inline_block(level="advanced", icon="▶", color="action")
+@inline_block(level="advanced", icon="▶", color="action", category="values")
 def color_h_s_v(h: "number" = 0, s: "number[%]" = 100, v: "number[%]" = 100) -> "Color":
     """Create a color from hue, saturation and brightness. Options: h, s, v."""
     from pybricks.parameters import Color

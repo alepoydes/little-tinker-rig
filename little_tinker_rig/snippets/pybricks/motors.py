@@ -2,11 +2,15 @@
 
 Motor actions and values for Pybricks hubs; parsed as static templates."""
 
+__category__ = "movement"
+
 # Homing adapted from Pybricks Projects (MIT); see the upstream copyright and
 # permission notice in examples/pybricks/LICENSE.txt.
 
 
-@inline_block(level="beginner", icon="⚙", color="state", names=("name",))
+@inline_block(
+    level="beginner", icon="⚙", color="state", names=("name",), variant="Port"
+)
 def create_motor(name=motor, port: "Port" = Port.A):
     """Connect a motor to a hub port.
 
@@ -18,7 +22,15 @@ def create_motor(name=motor, port: "Port" = Port.A):
     name: "Motor" = Motor(port)
 
 
-@inline_block(level="intermediate", icon="⚙", color="state", names=("name",))
+@inline_block(
+    level="intermediate",
+    icon="⚙",
+    color="state",
+    names=("name",),
+    family="pybricks/motors/create_motor",
+    variant="Positive direction",
+    advanced=("direction",),
+)
 def create_oriented_motor(
     name=motor,
     port: "Port" = Port.A,
@@ -40,13 +52,13 @@ def run_motor(motor: "Motor" = motor, speed: "number[deg/s]" = 500):
     motor.run(speed)
 
 
-@inline_block(level="intermediate", icon="↻", color="action")
+@inline_block(level="intermediate", icon="↻", color="action", variant="Brake")
 def stop_motor(motor: "Motor | DCMotor" = motor):
     """Stop a motor with braking."""
     motor.brake()
 
 
-@inline_block(level="beginner", icon="↻", color="action")
+@inline_block(level="beginner", icon="↻", color="action", variant="Wait until finished")
 def turn_motor(
     motor: "Motor" = motor, angle: "number[deg]" = 90, speed: "number[deg/s]" = 300
 ):
@@ -54,7 +66,9 @@ def turn_motor(
     motor.run_angle(speed, angle)
 
 
-@inline_block(level="intermediate", icon="↻", color="action")
+@inline_block(
+    level="intermediate", icon="↻", color="action", variant="Wait until finished"
+)
 def motor_target(
     motor: "Motor" = motor, angle: "number[deg]" = 0, speed: "number[deg/s]" = 300
 ):
@@ -62,7 +76,7 @@ def motor_target(
     motor.run_target(speed, angle)
 
 
-@inline_block(level="beginner", icon="↻", color="action")
+@inline_block(level="beginner", icon="↻", color="action", variant="Wait until finished")
 def motor_time(
     motor: "Motor" = motor, duration: "number[ms]" = 1000, speed: "number[deg/s]" = 300
 ):
@@ -96,7 +110,15 @@ def motor_power(motor: "Motor | DCMotor" = motor, power: "number[%]" = 0):
     motor.dc(power)
 
 
-@inline_block(level="advanced", icon="⚙", color="state", names=("name",))
+@inline_block(
+    level="advanced",
+    icon="⚙",
+    color="state",
+    names=("name",),
+    family="pybricks/motors/create_motor",
+    variant="Position profile",
+    advanced=("direction", "tolerance"),
+)
 def create_profiled_motor(
     name=motor,
     port: "Port" = Port.A,
@@ -113,7 +135,7 @@ def create_profiled_motor(
     name: "Motor" = Motor(port, direction, profile=tolerance)
 
 
-@inline_block(level="advanced", icon="↻", color="action")
+@inline_block(level="advanced", icon="↻", color="action", variant="Acceleration")
 def acceleration(motor: "Motor" = motor, acceleration: "number[deg/s²] | tuple" = 1000):
     """Set the motor acceleration limit.
 
@@ -121,13 +143,25 @@ def acceleration(motor: "Motor" = motor, acceleration: "number[deg/s²] | tuple"
     motor.control.limits(acceleration=acceleration)
 
 
-@inline_block(level="intermediate", icon="↻", color="action")
+@inline_block(
+    level="intermediate",
+    icon="↻",
+    color="action",
+    family="pybricks/motors/stop_motor",
+    variant="Coast",
+)
 def coast_motor(motor: "Motor | DCMotor" = motor):
     """Release a motor and let it coast."""
     motor.stop()
 
 
-@inline_block(level="advanced", icon="↻", color="action")
+@inline_block(
+    level="advanced",
+    icon="↻",
+    color="action",
+    family="pybricks/motors/motor_target",
+    variant="Continue immediately",
+)
 def target_background(
     motor: "Motor" = motor, angle: "number[deg]" = 0, speed: "number[deg/s]" = 300
 ):
@@ -138,7 +172,13 @@ def target_background(
     motor.run_target(speed, angle, wait=False)
 
 
-@inline_block(level="advanced", icon="↻", color="action")
+@inline_block(
+    level="advanced",
+    icon="↻",
+    color="action",
+    family="pybricks/motors/motor_target",
+    variant="Coast after movement",
+)
 def target_coast(
     motor: "Motor" = motor, angle: "number[deg]" = 0, speed: "number[deg/s]" = 300
 ):
@@ -148,7 +188,9 @@ def target_coast(
     motor.run_target(speed, angle, then=Stop.COAST)
 
 
-@inline_block(level="advanced", icon="↻", color="action")
+@inline_block(
+    level="advanced", icon="↻", color="action", variant="Default stop and power"
+)
 def until_stalled(
     motor: "Motor" = motor, speed: "number[deg/s]" = 100
 ) -> "number[deg]":
@@ -159,7 +201,13 @@ def until_stalled(
     return motor.run_until_stalled(speed)
 
 
-@inline_block(level="advanced", icon="↻", color="action")
+@inline_block(
+    level="advanced",
+    icon="↻",
+    color="action",
+    family="pybricks/motors/until_stalled",
+    variant="Hold at the stop",
+)
 def stall_hold(motor: "Motor" = motor, speed: "number[deg/s]" = 100) -> "number[deg]":
     """Run to a mechanical stop, hold, and read the angle."""
     from pybricks.parameters import Stop
@@ -167,7 +215,14 @@ def stall_hold(motor: "Motor" = motor, speed: "number[deg/s]" = 100) -> "number[
     return motor.run_until_stalled(speed, then=Stop.HOLD)
 
 
-@inline_block(level="advanced", icon="↻", color="action")
+@inline_block(
+    level="advanced",
+    icon="↻",
+    color="action",
+    family="pybricks/motors/until_stalled",
+    variant="Limit power",
+    bindings={"power": "duty_limit"},
+)
 def stall_limited(
     motor: "Motor" = motor, speed: "number[deg/s]" = -100, power: "number[%]" = 30
 ) -> "number[deg]":

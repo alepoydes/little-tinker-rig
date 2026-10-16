@@ -2,6 +2,9 @@
 
 Pybricks 4 radio messages and external host data; not simulated by LittleTinker Rig."""
 
+__category__ = "devices"
+
+
 @inline_block(level="expert", icon="▣", color="state")
 def broadcast_radio(channel: "int" = 5) -> "BLERadio":
     """Create a Bluetooth broadcaster on channel 0–255; requires Pybricks 4."""

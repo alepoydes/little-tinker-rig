@@ -2,6 +2,9 @@
 
 Nonblocking input from the connected computer's terminal."""
 
+__category__ = "input"
+
+
 @inline_block(level="advanced", icon="⌨", color="value")
 def input_byte(latest: "bool" = True, character: "bool" = True):
     """Read a byte or character without waiting; optionally discard older buffered input."""

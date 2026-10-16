@@ -2,13 +2,16 @@
 
 Explicit device operations for studying complete robot programs."""
 
-@inline_block(level="expert", icon="▶", color="action")
+__category__ = "devices"
+
+
+@inline_block(level="expert", icon="▶", color="action", category="input")
 def hub_imu_acceleration(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "tuple":
     """Read the accelerometer vector."""
     return hub.imu.acceleration()
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(level="expert", icon="▶", color="action", variant="Default mounting")
 def primehub() -> "PrimeHub":
     """Create the Prime hub in its mounted orientation."""
     from pybricks.hubs import PrimeHub
@@ -16,7 +19,7 @@ def primehub() -> "PrimeHub":
     return PrimeHub()
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(level="expert", icon="▶", color="action", category="input")
 def hub_imu_angular_velocity_axis(
     hub: "PrimeHub | TechnicHub | MoveHub" = hub, axis=Axis.Z
 ) -> "number[deg/s]":
@@ -26,7 +29,13 @@ def hub_imu_angular_velocity_axis(
     return hub.imu.angular_velocity(axis)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    family="pybricks/hub_measurements/primehub",
+    variant="Front direction",
+)
 def primehub_front_side(front_side=Axis.X) -> "PrimeHub":
     """Create the Prime hub in its mounted orientation. Options: front_side."""
     from pybricks.hubs import PrimeHub
@@ -35,7 +44,13 @@ def primehub_front_side(front_side=Axis.X) -> "PrimeHub":
     return PrimeHub(front_side=front_side)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(
+    level="expert",
+    icon="▶",
+    color="action",
+    family="pybricks/hub_measurements/primehub",
+    variant="Top and front directions",
+)
 def primehub_top_side_front_side(top_side=Axis.Z, front_side=Axis.X) -> "PrimeHub":
     """Create the Prime hub in its mounted orientation. Options: top_side, front_side."""
     from pybricks.hubs import PrimeHub
@@ -44,19 +59,19 @@ def primehub_top_side_front_side(top_side=Axis.Z, front_side=Axis.X) -> "PrimeHu
     return PrimeHub(top_side=top_side, front_side=front_side)
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(level="expert", icon="▶", color="action", category="input")
 def hub_imu_up(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "Side":
     """Read which side of the hub faces up."""
     return hub.imu.up()
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(level="expert", icon="▶", color="action", category="input")
 def hub_imu_tilt(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "tuple":
     """Read the pitch and roll angles."""
     return hub.imu.tilt()
 
 
-@inline_block(level="expert", icon="▶", color="action")
+@inline_block(level="expert", icon="▶", color="action", category="input")
 def hub_imu_angular_velocity(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "tuple":
     """Read gyroscope rotation rate."""
     return hub.imu.angular_velocity()
@@ -108,13 +123,13 @@ def hub_system_shutdown(hub: "PrimeHub | TechnicHub | MoveHub" = hub):
     hub.system.shutdown()
 
 
-@inline_block(level="expert", icon="＝", color="value")
+@inline_block(level="expert", icon="＝", color="value", category="input")
 def imu_ready(hub: "PrimeHub | TechnicHub" = hub) -> "bool":
     """Check that the gyro has finished calibrating before balancing."""
     return hub.imu.ready()
 
 
-@inline_block(level="expert", icon="＝", color="value")
+@inline_block(level="expert", icon="＝", color="value", category="input")
 def imu_rotation(hub: "PrimeHub | TechnicHub" = hub, axis=Axis.X) -> "number[deg]":
     """Read accumulated gyro rotation around an axis or vector."""
     from pybricks.parameters import Axis
@@ -122,7 +137,7 @@ def imu_rotation(hub: "PrimeHub | TechnicHub" = hub, axis=Axis.X) -> "number[deg
     return hub.imu.rotation(axis)
 
 
-@inline_block(level="expert", icon="＝", color="value")
+@inline_block(level="expert", icon="＝", color="value", category="values")
 def axis_vector(x: "number" = 1, y: "number" = 0, z: "number" = 0):
     """Make a three-dimensional vector for the hub's mounting or measurement axis."""
     from pybricks.tools import vector
@@ -130,7 +145,7 @@ def axis_vector(x: "number" = 1, y: "number" = 0, z: "number" = 0):
     return vector(x, y, z)
 
 
-@inline_block(level="advanced", icon="◇", color="control")
+@inline_block(level="advanced", icon="◇", color="control", category="input")
 def choose_program(first="H", second="S", third="L"):
     """Choose a symbol with the Prime/Inventor hub buttons and display."""
     from pybricks.tools import hub_menu

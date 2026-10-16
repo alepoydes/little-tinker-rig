@@ -2,6 +2,9 @@
 
 Explicit device operations for studying complete robot programs."""
 
+__category__ = "input"
+
+
 @inline_block(level="advanced", icon="▶", color="action")
 def xboxcontroller() -> "XboxController":
     """Connect a Bluetooth Xbox controller (Pybricks 3.5 or later)."""
@@ -40,7 +43,7 @@ def controller_dpad(controller: "XboxController" = controller) -> "int":
     return controller.dpad()
 
 
-@inline_block(level="advanced", icon="▶", color="action")
+@inline_block(level="advanced", icon="▶", color="action", category="output")
 def controller_rumble(
     controller: "XboxController" = controller,
     power: "number[%]" = 100,
