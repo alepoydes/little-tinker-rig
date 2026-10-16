@@ -11,6 +11,7 @@ __category__ = "movement"
     color="action",
     title="Read motor limits",
     group=("Individual motors", "Measurements"),
+    readout=True,
 )
 def motor_control_limits(motor: "Motor" = motor) -> "tuple":
     """Read or set motor speed, acceleration and torque limits."""
@@ -41,6 +42,7 @@ def motor_control_limits_speed_acceleration_torque(
     color="action",
     title="Read motor tolerances",
     group=("Individual motors", "Measurements"),
+    readout=True,
 )
 def motor_control_target_tolerances(motor: "Motor" = motor) -> "tuple":
     """Read or set motor completion tolerances."""
@@ -80,6 +82,7 @@ def motor_control_limits_saved(motor: "Motor" = motor, saved: "tuple" = settings
     color="action",
     title="Read PID gains",
     group=("Individual motors", "Measurements"),
+    readout=True,
 )
 def motor_control_pid(motor: "Motor" = motor) -> "tuple":
     """Read or tune motor PID gains."""

@@ -12,6 +12,7 @@ __category__ = "devices"
     category="input",
     title="Acceleration vector",
     group=("Orientation and motion",),
+    readout=True,
 )
 def hub_imu_acceleration(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "tuple":
     """Read the accelerometer vector."""
@@ -42,6 +43,7 @@ def primehub() -> "PrimeHub":
     category="input",
     title="Rotation rate on axis",
     group=("Orientation and motion",),
+    readout=True,
 )
 def hub_imu_angular_velocity_axis(
     hub: "PrimeHub | TechnicHub | MoveHub" = hub, axis=Axis.Z
@@ -91,6 +93,7 @@ def primehub_top_side_front_side(top_side=Axis.Z, front_side=Axis.X) -> "PrimeHu
     category="input",
     title="Upward side",
     group=("Orientation and motion",),
+    readout=True,
 )
 def hub_imu_up(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "Side":
     """Read which side of the hub faces up."""
@@ -104,6 +107,7 @@ def hub_imu_up(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "Side":
     category="input",
     title="Pitch and roll",
     group=("Orientation and motion",),
+    readout=True,
 )
 def hub_imu_tilt(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "tuple":
     """Read the pitch and roll angles."""
@@ -117,6 +121,7 @@ def hub_imu_tilt(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "tuple":
     category="input",
     title="Rotation rate vector",
     group=("Orientation and motion",),
+    readout=True,
 )
 def hub_imu_angular_velocity(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "tuple":
     """Read gyroscope rotation rate."""
@@ -129,6 +134,7 @@ def hub_imu_angular_velocity(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "t
     color="action",
     title="Battery current",
     group=("Hub system",),
+    readout=True,
 )
 def hub_battery_current(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "int":
     """Read the battery current in milliamps."""
@@ -141,6 +147,7 @@ def hub_battery_current(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "int":
     color="action",
     title="Charger connected",
     group=("Hub system",),
+    readout=True,
 )
 def hub_charger_connected(hub: "PrimeHub" = hub) -> "bool":
     """Check whether a USB charger is connected."""
@@ -153,6 +160,7 @@ def hub_charger_connected(hub: "PrimeHub" = hub) -> "bool":
     color="action",
     title="Charging current",
     group=("Hub system",),
+    readout=True,
 )
 def hub_charger_current(hub: "PrimeHub" = hub) -> "int":
     """Read the charging current in milliamps."""
@@ -165,6 +173,7 @@ def hub_charger_current(hub: "PrimeHub" = hub) -> "int":
     color="action",
     title="Charger status",
     group=("Hub system",),
+    readout=True,
 )
 def hub_charger_status(hub: "PrimeHub" = hub) -> "int":
     """Read charger status: 0 idle, 1 charging, 2 full, 3 fault."""
@@ -193,6 +202,7 @@ def hub_system_set_stop_button_buttons(
     color="action",
     title="Hub Bluetooth name",
     group=("Hub system",),
+    readout=True,
 )
 def hub_system_name(hub: "PrimeHub | TechnicHub | MoveHub" = hub) -> "str":
     """Read the hub Bluetooth name."""
@@ -218,6 +228,7 @@ def hub_system_shutdown(hub: "PrimeHub | TechnicHub | MoveHub" = hub):
     category="input",
     title="Gyro ready",
     group=("Orientation and motion",),
+    readout=True,
 )
 def imu_ready(hub: "PrimeHub | TechnicHub" = hub) -> "bool":
     """Check that the gyro has finished calibrating before balancing."""
@@ -231,6 +242,7 @@ def imu_ready(hub: "PrimeHub | TechnicHub" = hub) -> "bool":
     category="input",
     title="Gyro rotation",
     group=("Orientation and motion",),
+    readout=True,
 )
 def imu_rotation(hub: "PrimeHub | TechnicHub" = hub, axis=Axis.X) -> "number[deg]":
     """Read accumulated gyro rotation around an axis or vector."""

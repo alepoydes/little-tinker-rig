@@ -84,6 +84,7 @@ def remote_pressed(
     color="action",
     title="Remote buttons",
     group=("Buttons and controllers", "LEGO remote"),
+    readout=True,
 )
 def buttons(remote: "Remote" = remote) -> "set":
     """Read all pressed remote buttons once.

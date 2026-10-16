@@ -12,7 +12,7 @@ from pathlib import Path
 
 from little_tinker_rig.i18n import N_
 
-from .analysis import Analysis, Scopes, annotation_text, identifiers
+from .analysis import Analysis, Scopes, annotation_nodes, annotation_text, identifiers
 from .block_metadata import (
     LEVELS,
     category_declaration,
@@ -67,6 +67,7 @@ class Snippet:
     variant: str | None = None
     advanced: tuple[str, ...] = ()
     bindings: dict[str, str] = dataclass_field(default_factory=dict)
+    readout: bool = False
 
     @property
     def catalog_id(self):
@@ -321,6 +322,8 @@ def load_module(
                 imports = (*module_imports, *imports)
         if template is None:
             template = ast.Constant(None)
+        if options and options.get("readout") and not isinstance(template, ast.expr):
+            raise ValueError(f"{function.name}: a readout must be an expression")
         definition = ""
         if mode == "function":
             helper = next(n for n in helpers if n.name == function.name)
@@ -356,6 +359,7 @@ def load_module(
                 variant=options.get("variant") if options else None,
                 advanced=options["advanced"] if options else (),
                 bindings=options.get("bindings", {}) if options else {},
+                readout=options.get("readout", False) if options else False,
             )
         )
     return tuple(result)
@@ -865,7 +869,7 @@ def _match(snippet: Snippet, candidate):
 
 
 def recognize(
-    syntax: Syntax, snippets: tuple[Snippet, ...], analysis=None
+    syntax: Syntax, snippets: tuple[Snippet, ...], analysis=None, *, nested=False
 ) -> tuple[Match, ...]:
     """Recognize whole algorithms before fragments; current forms supersede history."""
     analysis = analysis or Analysis(syntax)
@@ -908,16 +912,7 @@ def recognize(
     expressions, statements = {}, {}
     all_expressions = []
     # Type annotations are Python syntax, but are not executable expressions.
-    annotations = {
-        child
-        for node in syntax.spans
-        for annotation in (
-            getattr(node, "annotation", None),
-            getattr(node, "returns", None),
-        )
-        if annotation is not None
-        for child in ast.walk(annotation)
-    }
+    annotations = annotation_nodes(syntax.tree)
     for node, span in syntax.spans.items():
         if node in annotations or helper_span and helper_span.contains(span.start):
             continue
@@ -1003,6 +998,18 @@ def recognize(
             m.snippet.identity,
         )
     )
+    if nested:
+        # Retain inner expression contracts without giving them ownership of the
+        # enclosing block's source. Equal spans still choose one best template.
+        selected = {}
+        for match in candidates:
+            selected.setdefault(match.span, match)
+        return tuple(selected.values())
+    return outer_matches(candidates)
+
+
+def outer_matches(candidates):
+    """Choose disjoint display owners from recognition's priority order."""
     # A prefix-maximum Fenwick index rejects overlapping candidates in O(log n).
     # Accepted intervals are never removed; their start/end coordinates suffice.
     starts = sorted({match.span.start for match in candidates})

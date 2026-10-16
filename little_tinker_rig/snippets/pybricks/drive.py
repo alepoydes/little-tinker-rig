@@ -125,6 +125,7 @@ def turn(drive: "DriveBase" = drive, angle: "number[deg]" = 90):
     color="action",
     title="Travelled distance",
     group=("Two-wheel drive bases",),
+    readout=True,
 )
 def drive_distance(drive: "DriveBase" = drive) -> "number[mm]":
     """Read the distance traveled by the robot."""
@@ -137,6 +138,7 @@ def drive_distance(drive: "DriveBase" = drive) -> "number[mm]":
     color="action",
     title="Drive base angle",
     group=("Two-wheel drive bases",),
+    readout=True,
 )
 def drive_angle(drive: "DriveBase" = drive) -> "number[deg]":
     """Read the robot's turn angle."""
@@ -166,6 +168,7 @@ def create_clock(name=clock):
     category="input",
     title="Elapsed time",
     group=("Time",),
+    readout=True,
 )
 def elapsed(clock: "StopWatch" = clock) -> "number[ms]":
     """Read elapsed milliseconds from the stopwatch."""

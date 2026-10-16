@@ -37,6 +37,30 @@ def test_english_source_and_russian_catalog():
     assert language() == "ru"
 
 
+def test_parameter_validation_is_localized_without_changing_source(tmp_path, qt_app):
+    from little_tinker_rig.core.session import Session
+    from little_tinker_rig.qt.editor import SourceView
+
+    path = tmp_path / "main.py"
+    path.write_text("counter = 1\n")
+    session = Session(path)
+    view = SourceView(session)
+    view.show()
+    qt_app.processEvents()
+    set_language("ru")
+    try:
+        before = session.document.state
+        slot = next(s for s in view.parameter_slots if s.binding)
+        view.show_parameter(slot)
+        view.parameter_editor.line_edit.setText("not valid")
+        assert not view.parameter_editor.apply()
+        assert view.parameter_editor.error == tr("Enter a Python identifier")
+        assert view.parameter_editor.error != "Enter a Python identifier"
+        assert session.document.state is before
+    finally:
+        view.close()
+
+
 def test_rename_preserves_settings_without_overwriting_new_preferences(
     tmp_path, qt_app, monkeypatch
 ):

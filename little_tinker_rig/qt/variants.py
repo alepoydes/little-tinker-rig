@@ -1,6 +1,7 @@
 """Review a family operation and its fields before one atomic source edit."""
 
 import ast
+from dataclasses import replace
 from difflib import unified_diff
 
 from PySide6.QtCore import Qt, QTimer
@@ -19,7 +20,8 @@ from PySide6.QtWidgets import (
 )
 
 from little_tinker_rig.core.catalog import Family
-from little_tinker_rig.core.parameters import choices
+from little_tinker_rig.core.parameters import suggestions
+from little_tinker_rig.core.snippets import Expansion
 from little_tinker_rig.core.types import Compatibility, compatibility, known_type
 from little_tinker_rig.core.variants import field_key, variant_bindings, variant_source
 from little_tinker_rig.i18n import tr
@@ -122,10 +124,11 @@ class VariantDialog(QDialog):
 
     def change_variant(self, *_):
         self.timer.stop()
+        previous_values = self.values()
         for parameter in self.snippet.parameters:
             if parameter.name in self.fields:
                 self.drafts[field_key(self.snippet, parameter.name)] = (
-                    self.fields[parameter.name].currentText(),
+                    previous_values[parameter.name],
                     parameter.annotation,
                 )
         self.snippet = self.variants[self.variant.currentData()]
@@ -163,8 +166,21 @@ class VariantDialog(QDialog):
                 QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
             )
             field.setMinimumContentsLength(16)
-            field.addItems(choices(self.session, parameter, self.match.span.start))
-            field.setCurrentText(values[parameter.name])
+            for value in suggestions(
+                self.session, parameter, self.match.span.start
+            ).values():
+                field.addItem(value.source, value)
+            value = values[parameter.name]
+            if isinstance(value, Expansion):
+                index = field.findText(value.source)
+                if index < 0:
+                    field.addItem(value.source, value)
+                    index = field.count() - 1
+                else:
+                    field.setItemData(index, value)
+                field.setCurrentIndex(index)
+            else:
+                field.setCurrentText(value)
             field.setAccessibleName(parameter.name)
             field.setToolTip(parameter.annotation or "Python")
             field.currentTextChanged.connect(lambda *_: self.timer.start())
@@ -175,7 +191,7 @@ class VariantDialog(QDialog):
         self.more.setVisible(bool(self.snippet.advanced))
         self.more.setChecked(
             any(
-                changed_default(values[p.name], p.default)
+                changed_default(self.fields[p.name].currentText(), p.default)
                 for p in self.snippet.parameters
                 if p.name in self.snippet.advanced
             )
@@ -198,7 +214,14 @@ class VariantDialog(QDialog):
         self.resize(self.width(), self.minimumSizeHint().height())
 
     def values(self):
-        return {name: field.currentText() for name, field in self.fields.items()}
+        return {
+            name: (
+                replace(value, source=field.currentText())
+                if isinstance(value := field.currentData(), Expansion)
+                else field.currentText()
+            )
+            for name, field in self.fields.items()
+        }
 
     def update_additional(self):
         self.additional.setVisible(self.more.isChecked())

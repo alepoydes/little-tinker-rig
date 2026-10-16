@@ -55,6 +55,7 @@ def drivebase_left_right_wheel_diameter_axle_track(
     color="action",
     title="Drive settings",
     group=("Two-wheel drive bases",),
+    readout=True,
 )
 def drive_settings(drive: "DriveBase" = drive) -> "tuple":
     """Read or set drive speeds and accelerations."""

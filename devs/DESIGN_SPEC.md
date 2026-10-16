@@ -387,8 +387,9 @@ history entry. One successful commit and Undo cover both affected areas.
 The upper/lower half of a source row selects insertion above/below. Below a
 compound header means its first body position. Insertion after the whole compound
 uses the next outside block or a following blank line. Horizontal position on a
-blank line selects nesting. Only compatible expressions fit empty parameter slots;
-populated slots are not replaced by a drop.
+blank line selects nesting. Compatible expressions fit empty parameter slots;
+an explicit value search additionally authorizes replacement of its exact pinned
+input. Other filled inputs remain protected, and one Undo restores the old value.
 
 A new Insert here row opens space before descriptions and owned comments. Adding
 or removing it must preserve the same source row and relative pointer position.
@@ -669,6 +670,13 @@ The optional `group=("Mechanism", "Model")` contains up to two nonempty path
 segments beneath the category. Segments are English translation keys; localized
 labels never become persistent navigation keys. The family primary owns the path;
 members may omit it or repeat it exactly. Block Editor edits these literal fields.
+
+The optional boolean `readout=True` declares an expression suitable for automatic
+measurement suggestions. It must not start motion, wait, consume input, or change
+device state. The default is false, including for older collections. Receiver-method
+suggestions require this declaration as well as compatible type and unit contracts.
+Suggested expansions retain imports and helpers through inline and variant edits;
+dependencies and the value change are committed together.
 
 A family uses the complete identity of a current primary block. Other forms name
 it with `family="collection/module/block"`. Primaries omit `family`; chains,

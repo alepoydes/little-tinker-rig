@@ -4,9 +4,11 @@ import ast
 from bisect import bisect_right
 from dataclasses import dataclass
 
+from little_tinker_rig.i18n import tr
+
 from . import edit
 from .analysis import annotation_types, attribute_path, identifiers, value_type
-from .snippets import Match, Parameter, instantiate
+from .snippets import Expansion, Match, Parameter, instantiate
 from .structure import OPERATORS, change_operator, name_span, operator_spans, rename
 from .syntax import Span, Syntax
 from .types import Compatibility, compatibility, known_type
@@ -119,7 +121,14 @@ def slots(session):
             parameter = Parameter(
                 parameter.name,
                 None,
-                annotation if field else session.analysis.type_of(node),
+                (
+                    annotation
+                    if field
+                    else (
+                        session.input_contracts.get(span)
+                        or session.analysis.type_of(node)
+                    )
+                ),
             )
         result.setdefault(
             span,
@@ -346,12 +355,22 @@ def has_choices(session, slot):
         return False
     current = slot.syntax.source[slot.span.start : slot.span.end]
     return any(
-        value != current for value in _choices(session, slot.parameter, slot.span.start)
+        (value.source if isinstance(value, Expansion) else value) != current
+        for value in _choices(session, slot.parameter, slot.span.start)
     )
 
 
 def choices(session, parameter, offset):
-    return tuple(dict.fromkeys(_choices(session, parameter, offset)))
+    return tuple(suggestions(session, parameter, offset))
+
+
+def suggestions(session, parameter, offset):
+    """Keep each proposed value and its dependencies together until application."""
+    result = {}
+    for value in _choices(session, parameter, offset):
+        expansion = value if isinstance(value, Expansion) else Expansion(value, ())
+        result.setdefault(expansion.source, expansion)
+    return result
 
 
 def _choices(session, parameter, offset):
@@ -363,10 +382,16 @@ def _choices(session, parameter, offset):
     if kind is None and parameter.name in {"test", "condition"}:
         expected = kind = "bool"
     if kind == "Port":
-        yield from (f"Port.{port}" for port in getattr(session, "ports", "ABCDEF"))
+        yield from (
+            Expansion(f"Port.{port}", ("from pybricks.parameters import Port",))
+            for port in getattr(session, "ports", "ABCDEF")
+        )
         return
     if kind in ENUM_VALUES:
-        yield from (f"{kind}.{member}" for member in ENUM_VALUES[kind])
+        yield from (
+            Expansion(f"{kind}.{member}", (f"from pybricks.parameters import {kind}",))
+            for member in ENUM_VALUES[kind]
+        )
         return
     if parameter.default is not None and kind in {None, "number", "bool", "str"}:
         yield parameter.default
@@ -401,7 +426,7 @@ def _choices(session, parameter, offset):
                     and compatibility(device.annotation, actual)
                     is Compatibility.COMPATIBLE
                 ):
-                    yield instantiate(snippet, {device.name: name}).source
+                    yield instantiate(snippet, {device.name: name})
 
 
 def _reporters(session, expected):
@@ -409,7 +434,10 @@ def _reporters(session, expected):
     for snippet in session.snippets:
         body = snippet.body
         if not (
-            snippet.expression
+            snippet.readout
+            and not snippet.historical
+            and snippet.catalog_visible
+            and snippet.expression
             and known_type(snippet.result_type) is not None
             and compatibility(expected, known_type(snippet.result_type))
             is Compatibility.COMPATIBLE
@@ -481,14 +509,21 @@ def change_parameter(session, slot, expression):
     syntax = session.document.syntax
     # The popup is attached to this revision. Publishing a new revision closes it.
     if slot.syntax is not syntax:
-        raise ValueError("Document changed; choose the parameter again")
+        raise ValueError(tr("Document changed; choose the parameter again"))
+    expansion = expression if isinstance(expression, Expansion) else None
+    if expansion:
+        expression = expansion.source
+    elif not slot.binding:
+        expansion = suggestions(session, slot.parameter, slot.span.start).get(
+            expression
+        )
     if slot.field == "operator":
         source = change_operator(syntax, slot.node, slot.operator_index, expression)
     elif slot.field:
         import keyword
 
         if not expression.isidentifier() or keyword.iskeyword(expression):
-            raise ValueError("Enter a Python identifier")
+            raise ValueError(tr("Enter a Python identifier"))
         if slot.field in {"id", "name", "arg"}:
             source = rename(session, slot.node, expression)
         else:
@@ -508,4 +543,9 @@ def change_parameter(session, slot, expression):
                 for node in slot.match.occurrences[slot.parameter.name]
             ],
         )
-    session.editor.commit(source, focus=slot.span.start)
+    if expansion and (expansion.imports or expansion.helpers):
+        session.commit_insertion(
+            source, slot.span.start, expansion.imports, helpers=expansion.helpers
+        )
+    else:
+        session.editor.commit(source, focus=slot.span.start)

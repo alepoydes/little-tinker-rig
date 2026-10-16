@@ -114,3 +114,10 @@ not the current implementation with the same identity. Copy it to a user collect
 to make an editable variant.
 
 The catalog properties dialog also edits a short title and a group path of up to two segments (for example, `Individual motors / Motion`). Set the path on the family primary. Titles and group names are English source text with user-interface translations; full descriptions remain in the docstring.
+
+**Offer as a measurement** writes `readout=True` in an expression's decorator.
+Use it for readings that do not start motion, wait for an event, consume input, or
+change device state. Matching receiver-method readouts appear in parameter
+suggestions with their required imports. A numeric return type alone does not
+qualify an action as a readout. Existing definitions without this property still
+work and remain available in the catalog.

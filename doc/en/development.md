@@ -588,3 +588,20 @@ Quick variant menus share dialog filtering and the core edit transaction; they
 must not insert a new block or record another use. Card favorite hit testing uses
 the painted star bounds and stable references, including unavailable cards.
 Consume its pointer gesture before item dragging or double-click insertion.
+
+Parameter suggestions carry expansions, including imports and helpers, until the
+edit commits. Inline fields and variant changes must use those same dependencies.
+Automatic measurement candidates opt in with `readout=True`; returning a numeric
+value does not make a blocking motor action a measurement. Recognized inner calls
+retain input contracts even when a larger block owns their display and linked edits.
+
+Pinned searches are owned by a source view and revision, not keyboard focus.
+Test browsing from Scratch through applying a result and one Undo. Ordinary drops
+protect filled values; replacement is authorized only for the exact searched input.
+Keep scalar edits and hovering independent of catalog discovery.
+
+Name diagnostics distinguish lexical ownership from initialization during ordered
+evaluation. Visit assignment values before writes and loop iterables before targets.
+Reads in the same execution scope must have a preceding value; deferred functions
+may reference outer values created later. This is not control-flow analysis across
+branches or a proof of runtime initialization.

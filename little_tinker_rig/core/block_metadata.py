@@ -35,6 +35,7 @@ FIELDS = {
     "bindings",
     "title",
     "group",
+    "readout",
 }
 
 
@@ -127,6 +128,8 @@ def metadata(function):
         )
     if values.get("category", "") not in ("", *CATEGORIES):
         raise ValueError(f"{function.name}: unknown catalog category")
+    if type(values.get("readout", False)) is not bool:
+        raise ValueError(f"{function.name}: readout must be a boolean")
     title, group = values.get("title", ""), values.get("group", ())
     if not isinstance(title, str) or (
         title and (not title.strip() or len(title.splitlines()) != 1)

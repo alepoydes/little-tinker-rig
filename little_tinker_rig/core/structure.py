@@ -6,6 +6,8 @@ import keyword
 import tokenize
 from dataclasses import dataclass
 
+from little_tinker_rig.i18n import tr
+
 from . import edit
 from .syntax import Span, Syntax
 
@@ -47,7 +49,7 @@ def name_span(syntax, node):
 def rename(session, node, name):
     """Rename a lexical definition and its resolved references in one revision."""
     if not name.isidentifier() or keyword.iskeyword(name):
-        raise ValueError("Enter a Python identifier")
+        raise ValueError(tr("Enter a Python identifier"))
     syntax, analysis = session.document.syntax, session.analysis
     old = (
         node.arg
@@ -56,7 +58,9 @@ def rename(session, node, name):
     )
     scope = analysis.resolve(node, old)
     if name != old and name in scope.bindings:
-        raise ValueError(f"Name {name!r} is already defined in this scope")
+        raise ValueError(
+            tr("Name {name!r} is already defined in this scope", name=name)
+        )
     for other in syntax.spans:
         if other is node or analysis.scopes.get(other) is not scope:
             continue
@@ -73,13 +77,13 @@ def rename(session, node, name):
             and getattr(other, "name", None) == old
         ):
             raise ValueError(
-                "This name has another declaration; edit the declarations as Python"
+                tr("This name has another declaration; edit the declarations as Python")
             )
         if isinstance(other, (ast.Import, ast.ImportFrom)) and any(
             (a.asname or a.name.split(".")[0]) == old for a in other.names
         ):
             raise ValueError(
-                "This name is also imported; edit the declarations as Python"
+                tr("This name is also imported; edit the declarations as Python")
             )
     changes = [(name_span(syntax, node), name)]
     for ref in syntax.spans:
@@ -97,7 +101,9 @@ def rename(session, node, name):
             current = analysis.scopes[ref]
             while current is not scope and current is not None:
                 if name != old and name in current.bindings:
-                    raise ValueError(f"Name {name!r} is shadowed in a nested scope")
+                    raise ValueError(
+                        tr("Name {name!r} is shadowed in a nested scope", name=name)
+                    )
                 current = current.parent
             changes.append((name_span(syntax, ref), name))
         elif isinstance(ref, (ast.Global, ast.Nonlocal)) and old in ref.names:
@@ -124,7 +130,7 @@ def rename(session, node, name):
             current = analysis.scopes[ref]
             while current is not None and name not in current.bindings:
                 if current is scope:
-                    raise ValueError(f"Renaming would capture {name!r}")
+                    raise ValueError(tr("Renaming would capture {name!r}", name=name))
                 current = current.parent
     if isinstance(node, ast.arg):
         definition = scope.node
@@ -150,7 +156,7 @@ def declare_scope(session, node, name, kind):
         or not name.isidentifier()
         or keyword.iskeyword(name)
     ):
-        raise ValueError("Choose a scope and a Python variable name")
+        raise ValueError(tr("Choose a scope and a Python variable name"))
     syntax = session.document.syntax
     function = next(
         (
@@ -161,7 +167,7 @@ def declare_scope(session, node, name, kind):
         None,
     )
     if function is None:
-        raise ValueError("Select code inside a function")
+        raise ValueError(tr("Select code inside a function"))
     cls = ast.Global if kind == "global" else ast.Nonlocal
     scope = session.analysis.defined_scopes[function]
     changes = []
@@ -195,7 +201,7 @@ def add_import(session, module, names=""):
     if len(tree.body) != 1 or not isinstance(
         tree.body[0], (ast.Import, ast.ImportFrom)
     ):
-        raise ValueError("Enter a module and imported names")
+        raise ValueError(tr("Enter a module and imported names"))
     syntax = session.document.syntax
     signature = ast.dump(tree.body[0])
     if any(ast.dump(n) == signature for n in syntax.tree.body):
@@ -228,7 +234,7 @@ def add_import(session, module, names=""):
 def function_field(session, function, kind):
     """Add an editable decorator or return annotation without a Python dialog."""
     if not isinstance(function, (ast.FunctionDef, ast.AsyncFunctionDef)):
-        raise ValueError("Select a function")
+        raise ValueError(tr("Select a function"))
     syntax = session.document.syntax
     if kind == "decorator":
         offset = syntax.spans[function].start
@@ -243,7 +249,7 @@ def function_field(session, function, kind):
         source = edit.patches(syntax.source, [(Span(offset, offset), " -> ...")])
         focus = offset + 4
     else:
-        raise ValueError("Unknown function field")
+        raise ValueError(tr("Unknown function field"))
     session.editor.commit(source, focus=focus)
 
 
@@ -306,22 +312,24 @@ class Sequence:
             )
         if action == "insert":
             if not 0 <= index <= len(values) or not text or not text.strip():
-                raise ValueError("Enter an item and choose an insertion position")
+                raise ValueError(tr("Enter an item and choose an insertion position"))
             values.insert(index, text.strip())
         else:
             if not 0 <= index < len(values):
-                raise ValueError("Select a list item")
+                raise ValueError(tr("Select a list item"))
             if action == "remove":
                 if len(values) <= self.minimum:
-                    raise ValueError(f"Keep at least {self.minimum} items")
+                    raise ValueError(
+                        tr("Keep at least {count} items", count=self.minimum)
+                    )
                 values.pop(index)
             elif action in {"left", "right"}:
                 other = index + (-1 if action == "left" else 1)
                 if not 0 <= other < len(values):
-                    raise ValueError("The item is already at the end")
+                    raise ValueError(tr("The item is already at the end"))
                 values[index], values[other] = values[other], values[index]
             else:
-                raise ValueError("Unknown list operation")
+                raise ValueError(tr("Unknown list operation"))
         if self.kind == "comparisons":
             operators = [
                 self.syntax.source[s.start : s.end]
@@ -388,7 +396,7 @@ def join_items(values):
             }
         ]
         if not tokens:
-            raise ValueError("A list item must contain Python code")
+            raise ValueError(tr("A list item must contain Python code"))
         row, col = tokens[-1].end
         end = starts[row - 1] + col
         result.append(value[:end] + "," + value[end:])
@@ -495,7 +503,7 @@ def sequence(syntax, node):
             tokenize.DEDENT,
         }:
             code_in_part = True
-    raise ValueError("Cannot locate the argument list")
+    raise ValueError(tr("Cannot locate the argument list"))
 
 
 OPERATORS = {
@@ -538,7 +546,7 @@ def change_operator(syntax, node, index, operator):
 
     if isinstance(node, ast.AugAssign):
         if operator not in OPERATORS["assignment operator"]:
-            raise ValueError("Choose an assignment operator")
+            raise ValueError(tr("Choose an assignment operator"))
         span, _, _ = next(operator_spans(syntax, node))
         source = edit.patches(syntax.source, [(span, operator)])
         syntax.validate(source)
@@ -546,15 +554,15 @@ def change_operator(syntax, node, index, operator):
     updated = copy.deepcopy(node)
     if isinstance(node, ast.BinOp):
         if operator not in OPERATORS["binary operator"]:
-            raise ValueError("Choose an arithmetic operator")
+            raise ValueError(tr("Choose an arithmetic operator"))
         updated.op = ast.parse(f"a {operator} b", mode="eval").body.op
     elif isinstance(node, ast.Compare):
         if operator not in OPERATORS["comparison"]:
-            raise ValueError("Choose a comparison operator")
+            raise ValueError(tr("Choose a comparison operator"))
         updated.ops[index] = ast.parse(f"a {operator} b", mode="eval").body.ops[0]
     else:
         if operator not in OPERATORS["boolean operator"]:
-            raise ValueError("Choose and or or")
+            raise ValueError(tr("Choose and or or"))
         updated.op = ast.And() if operator == "and" else ast.Or()
     return edit.replace_expressions(
         syntax,

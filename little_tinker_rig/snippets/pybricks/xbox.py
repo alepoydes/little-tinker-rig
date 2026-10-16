@@ -25,6 +25,7 @@ def xboxcontroller() -> "XboxController":
     color="action",
     title="Left joystick",
     group=("Buttons and controllers", "Xbox controller"),
+    readout=True,
 )
 def controller_joystick_left(controller: "XboxController" = controller) -> "tuple":
     """Read the left Xbox joystick horizontal and vertical percentages."""
@@ -37,6 +38,7 @@ def controller_joystick_left(controller: "XboxController" = controller) -> "tupl
     color="action",
     title="Controller triggers",
     group=("Buttons and controllers", "Xbox controller"),
+    readout=True,
 )
 def controller_triggers(controller: "XboxController" = controller) -> "tuple":
     """Read the Xbox brake and acceleration trigger percentages."""
@@ -49,6 +51,7 @@ def controller_triggers(controller: "XboxController" = controller) -> "tuple":
     color="value",
     title="Right joystick",
     group=("Buttons and controllers", "Xbox controller"),
+    readout=True,
 )
 def controller_joystick_right(controller: "XboxController" = controller) -> "tuple":
     """Read the right Xbox joystick horizontal and vertical percentages."""
@@ -61,6 +64,7 @@ def controller_joystick_right(controller: "XboxController" = controller) -> "tup
     color="value",
     title="Controller buttons",
     group=("Buttons and controllers", "Xbox controller"),
+    readout=True,
 )
 def controller_buttons(controller: "XboxController" = controller) -> "set":
     """Read the pressed Xbox buttons, including bumpers and the direction pad."""
@@ -73,6 +77,7 @@ def controller_buttons(controller: "XboxController" = controller) -> "set":
     color="value",
     title="Direction pad",
     group=("Buttons and controllers", "Xbox controller"),
+    readout=True,
 )
 def controller_dpad(controller: "XboxController" = controller) -> "int":
     """Read Xbox direction 1–8 clockwise from up, or 0 when released."""

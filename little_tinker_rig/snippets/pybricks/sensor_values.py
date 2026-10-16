@@ -44,6 +44,7 @@ def ultrasonicsensor_port(port: "Port" = Port.A) -> "UltrasonicSensor":
     color="action",
     title="Read HSV color",
     group=("Color and reflection",),
+    readout=True,
 )
 def sensor_hsv(sensor: "ColorSensor | ColorDistanceSensor" = sensor) -> "Color":
     """Read the measured hue, saturation and brightness."""
@@ -73,6 +74,7 @@ def sensor_detectable_colors_colors(
     family="pybricks/sensors/color",
     variant="Surface or light source",
     title="Detected color",
+    readout=True,
 )
 def sensor_color_surface(
     sensor: "ColorSensor | ColorDistanceSensor" = sensor, surface: "bool" = True
@@ -101,6 +103,7 @@ def color_h_s_v(h: "number" = 0, s: "number[%]" = 100, v: "number[%]" = 100) -> 
     color="action",
     title="Ambient light",
     group=("Color and reflection",),
+    readout=True,
 )
 def sensor_ambient(sensor: "ColorSensor | ColorDistanceSensor" = sensor) -> "number[%]":
     """Read ambient light intensity."""

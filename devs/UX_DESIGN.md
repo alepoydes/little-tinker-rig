@@ -157,11 +157,14 @@ After insertion, reassess the original input; bind a new name only when that
 change is explicitly included in the reviewed edit. Document revision changes
 invalidate stale suggestions.
 
-Availability diagnostics cover missing names and clearly later module bindings.
+Availability diagnostics cover missing names and straight-line reads before
+assignment in the same execution scope, including function locals and assignment
+right-hand sides. Deferred closures can refer to outer bindings initialized later.
 They are lexical diagnostics, not a definite-assignment proof: conditional
 creation, runtime calls, and closure execution can remain uncertain. Input types
-come from recognized template fields and ordinary inference; an untyped nested
-expression may require an explicit annotation or Python editing. Source order alone
+come from recognized template fields, including calls nested in an assignment or
+another public input, and ordinary inference. Unknown expressions may still need
+an annotation or Python editing. Source order alone
 does not prove availability across branches, loops, closures or function calls.
 A module variable used by a function need not precede the function definition;
 it must exist when the function executes. Start with clear straight-line cases,
@@ -309,8 +312,11 @@ compound. The next outside block or an interior blank line offers insertion afte
 other compounds. A shared source offset does not make two suite destinations
 equivalent: moving the last child after its parent changes nesting. An insertion
 row cannot move the hovered source row relative
-to the pointer. Invalid contexts have no target; only empty parameters accept
-compatible expressions. One accepted gesture creates one Undo operation.
+to the pointer. Invalid contexts have no target. Ordinary drops accept expressions
+only in empty parameters; an explicit value search authorizes replacement of that
+exact pinned input. The search belongs to a view and source revision, so catalog
+focus does not cancel a search originating in Scratch. One accepted gesture creates
+one Undo operation.
 
 Cards and help show Beginner, Intermediate, Advanced, or Expert from collection
 metadata. The persisted level filter combines with search and groups; All is an

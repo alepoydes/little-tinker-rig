@@ -101,6 +101,7 @@ class SourceView(QTextEdit):
         self.expression_ids = None
         self.expression_operations = None
         self.expression_popup = None
+        self.input_target = None
         self.display = Display(session)
         self.setReadOnly(True)
         self.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
@@ -1713,7 +1714,13 @@ class SourceView(QTextEdit):
                 ),
                 None,
             )
-            if isinstance(node, ast.Constant) and empty(node) and not slot.binding:
+            replacing = (
+                self.drop_snippet is not None
+                and self.input_target is not None
+                and self.input_target.syntax is syntax
+                and self.input_target.node is node
+            )
+            if node is not None and not slot.binding and (empty(node) or replacing):
                 candidate = node
         else:
             candidate = self.pointer_target(point)

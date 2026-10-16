@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
 )
 
 from little_tinker_rig.core.expressions import navigate
-from little_tinker_rig.core.parameters import change_parameter, choices
+from little_tinker_rig.core.parameters import change_parameter, suggestions
 from little_tinker_rig.core.types import known_type
 from little_tinker_rig.i18n import tr
 
@@ -43,17 +43,17 @@ class ParameterEditor(QWidget):
         self.session, self.slot = view.session, slot
         self.view = view
         self.error = ""
-        options = (
-            choices(self.session, slot.parameter, slot.span.start)
+        self.options = (
+            suggestions(self.session, slot.parameter, slot.span.start)
             if view.parameter_choices[slot.span]
-            else ()
+            else {}
         )
         text = self.session.document.state.source[slot.span.start : slot.span.end]
         self.field = self.line_edit = QLineEdit(text, self)
         self.completer = None
         self.arrow = None
-        if options:
-            self.completer = QCompleter(options, self)
+        if self.options:
+            self.completer = QCompleter(list(self.options), self)
             self.completer.setCompletionMode(
                 QCompleter.CompletionMode.UnfilteredPopupCompletion
             )
@@ -105,7 +105,8 @@ class ParameterEditor(QWidget):
 
     def apply(self, *_):
         try:
-            change_parameter(self.session, self.slot, self.line_edit.text())
+            text = self.line_edit.text()
+            change_parameter(self.session, self.slot, self.options.get(text, text))
         except (ValueError, SyntaxError, OSError) as error:
             self.error = str(error)
             self.setToolTip(self.error)

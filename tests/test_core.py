@@ -9,6 +9,48 @@ from little_tinker_rig.core.presentation import regions
 from little_tinker_rig.core.syntax import Syntax, parse
 
 
+@pytest.mark.parametrize(
+    "source",
+    [
+        "value = value + 1\n",
+        "def f():\n    print(value)\n    value = 1\nf()\n",
+        "def f():\n    print(len([]))\n    len = 1\nf()\n",
+        "value: int\nprint(value)\n",
+        "value += 1\n",
+    ],
+)
+def test_reads_before_initialization_match_python_failures(source):
+    from little_tinker_rig.core.analysis import Analysis
+
+    assert any(
+        "not defined before" in d.message
+        for d in Analysis(Syntax(source)).diagnostics()
+    )
+    with pytest.raises(NameError):
+        exec(source, {})
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "value = 1\nvalue = value + 1\nvalue += 1\n",
+        "def f():\n    value = 1\n    value += 1\n    return value\nf()\n",
+        "def f():\n    return value\nvalue = 1\nf()\n",
+        "def outer():\n    def inner():\n        return value\n    value = 1\n    return inner()\nouter()\n",
+        "values = [value + 1 for value in range(3)]\n",
+        "items = [1]\nfor items in items:\n    pass\n",
+        "values = (value for _ in range(1))\nvalue = 3\nnext(values)\n",
+        "def setup():\n    global value\n    value = 1\nsetup()\nprint(value)\n",
+        "from __future__ import annotations\nclass Node:\n    child: Node\n",
+    ],
+)
+def test_initialized_values_and_deferred_closures_are_not_flagged(source):
+    from little_tinker_rig.core.analysis import Analysis
+
+    assert not Analysis(Syntax(source)).diagnostics()
+    exec(source, {})
+
+
 def test_unicode_offsets_and_ownership():
     syntax = Syntax('имя = "ёж"\nprint(имя)\n')
     offset = syntax.source.index("имя", 1)

@@ -1055,7 +1055,10 @@ class Studio(QMainWindow):
                 self.search.text(),
                 self.library.view_states[self.library.view],
             )
+        if self.input_search:
+            self.input_search[0].input_target = None
         self.input_search = (view, slot)
+        view.input_target = None if providers else slot
         self.search.clear()
         self.view_filter.select("catalog")
         self.library.context_key = None
@@ -1067,13 +1070,17 @@ class Studio(QMainWindow):
             + "\n"
             + tr("Constructors inside a loop run on every iteration.")
             if providers
-            else tr("Drag a matching expression onto this input.")
+            else tr(
+                "Drag a matching expression onto this input to replace its value, or double-click a result. Undo restores the previous value."
+            )
         )
         self.whole_blocks.show()
 
     def clear_input_search(self):
         previous = self.input_search
         self.input_search = None
+        if previous:
+            previous[0].input_target = None
         self.library.clear_context()
         self.whole_blocks.hide()
         if previous:
@@ -1094,7 +1101,10 @@ class Studio(QMainWindow):
             view, slot = self.input_search
             if (
                 view.session.document.syntax is not slot.syntax
-                or view.session is not self.editing_session
+                or not (
+                    view is self.source
+                    or any(cell.source is view for cell in self.scratch.cells)
+                )
                 or self.library.context_key is None
             ):
                 self.clear_input_search()
@@ -1249,9 +1259,18 @@ class Studio(QMainWindow):
     def insert_selected(self, *_):
         item = self.library.currentItem()
         if item and item.data(0, IDENTITY):
+            if self.input_search:
+                view, slot = self.input_search
+                if (
+                    view.input_target is slot
+                    and view.session.document.syntax is slot.syntax
+                ):
+                    view.session.editor.selection = slot.node
+                    self.insert_snippet(item.data(0, IDENTITY), view=view)
+                    return
             self.insert_snippet(item.data(0, IDENTITY))
 
-    def insert_snippet(self, identity, target=None):
+    def insert_snippet(self, identity, target=None, *, view=None):
         from little_tinker_rig.core.expressions import targets
 
         if (
@@ -1265,7 +1284,7 @@ class Studio(QMainWindow):
             )
             return
 
-        view = self.editing_source if target is None else self.source
+        view = view or (self.editing_source if target is None else self.source)
         session = view.session
         snippet = next(
             (

@@ -1501,7 +1501,7 @@ Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Trave
 
 **`pybricks/drive/drive_distance`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/drive.py](../little_tinker_rig/snippets/pybricks/drive.py); intermediate; expression → number[mm]; inline expansion.
+[little_tinker_rig/snippets/pybricks/drive.py](../little_tinker_rig/snippets/pybricks/drive.py); intermediate; expression → number[mm]; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -1518,7 +1518,7 @@ Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Drive
 
 **`pybricks/drive/drive_angle`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/drive.py](../little_tinker_rig/snippets/pybricks/drive.py); intermediate; expression → number[deg]; inline expansion.
+[little_tinker_rig/snippets/pybricks/drive.py](../little_tinker_rig/snippets/pybricks/drive.py); intermediate; expression → number[deg]; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -1797,7 +1797,7 @@ Catalog path: Motors and movement → Two-wheel drive bases. Card title: **Drive
 
 **`pybricks/drive_options/drive_settings`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/drive_options.py](../little_tinker_rig/snippets/pybricks/drive_options.py); expert; expression → tuple; inline expansion.
+[little_tinker_rig/snippets/pybricks/drive_options.py](../little_tinker_rig/snippets/pybricks/drive_options.py); expert; expression → tuple; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -1972,7 +1972,7 @@ Catalog path: Motors and movement → Individual motors → Measurements. Card t
 
 **`pybricks/motor_control/motor_control_limits`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/motor_control.py](../little_tinker_rig/snippets/pybricks/motor_control.py); expert; expression → tuple; inline expansion.
+[little_tinker_rig/snippets/pybricks/motor_control.py](../little_tinker_rig/snippets/pybricks/motor_control.py); expert; expression → tuple; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -2066,7 +2066,7 @@ Catalog path: Motors and movement → Individual motors → Measurements. Card t
 
 **`pybricks/motor_control/motor_control_target_tolerances`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/motor_control.py](../little_tinker_rig/snippets/pybricks/motor_control.py); expert; expression → tuple; inline expansion.
+[little_tinker_rig/snippets/pybricks/motor_control.py](../little_tinker_rig/snippets/pybricks/motor_control.py); expert; expression → tuple; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -2102,7 +2102,7 @@ Catalog path: Motors and movement → Individual motors → Measurements. Card t
 
 **`pybricks/motor_control/motor_control_pid`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/motor_control.py](../little_tinker_rig/snippets/pybricks/motor_control.py); expert; expression → tuple; inline expansion.
+[little_tinker_rig/snippets/pybricks/motor_control.py](../little_tinker_rig/snippets/pybricks/motor_control.py); expert; expression → tuple; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -2492,7 +2492,7 @@ Catalog path: Motors and movement → Individual motors → Measurements. Card t
 
 **`pybricks/motor_motion/motor_done`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/motor_motion.py](../little_tinker_rig/snippets/pybricks/motor_motion.py); expert; expression → bool; inline expansion.
+[little_tinker_rig/snippets/pybricks/motor_motion.py](../little_tinker_rig/snippets/pybricks/motor_motion.py); expert; expression → bool; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -2509,7 +2509,7 @@ Catalog path: Motors and movement → Individual motors → Measurements. Card t
 
 **`pybricks/motor_motion/motor_stalled`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/motor_motion.py](../little_tinker_rig/snippets/pybricks/motor_motion.py); expert; expression → bool; inline expansion.
+[little_tinker_rig/snippets/pybricks/motor_motion.py](../little_tinker_rig/snippets/pybricks/motor_motion.py); expert; expression → bool; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -2526,7 +2526,7 @@ Catalog path: Motors and movement → Individual motors → Measurements. Card t
 
 **`pybricks/motor_motion/motor_load`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/motor_motion.py](../little_tinker_rig/snippets/pybricks/motor_motion.py); expert; expression → number; inline expansion.
+[little_tinker_rig/snippets/pybricks/motor_motion.py](../little_tinker_rig/snippets/pybricks/motor_motion.py); expert; expression → number; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -2729,7 +2729,7 @@ Catalog path: Motors and movement → Individual motors → Measurements. Card t
 
 **`pybricks/motors/motor_angle`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/motors.py](../little_tinker_rig/snippets/pybricks/motors.py); intermediate; expression → number[deg]; inline expansion.
+[little_tinker_rig/snippets/pybricks/motors.py](../little_tinker_rig/snippets/pybricks/motors.py); intermediate; expression → number[deg]; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -2746,7 +2746,7 @@ Catalog path: Motors and movement → Individual motors → Measurements. Card t
 
 **`pybricks/motors/motor_speed`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/motors.py](../little_tinker_rig/snippets/pybricks/motors.py); intermediate; expression → number[deg/s]; inline expansion.
+[little_tinker_rig/snippets/pybricks/motors.py](../little_tinker_rig/snippets/pybricks/motors.py); intermediate; expression → number[deg/s]; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -2892,7 +2892,7 @@ Catalog path: Sensors and input → Time. Card title: **Elapsed time**.
 
 **`pybricks/drive/elapsed`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/drive.py](../little_tinker_rig/snippets/pybricks/drive.py); intermediate; expression → number[ms]; inline expansion.
+[little_tinker_rig/snippets/pybricks/drive.py](../little_tinker_rig/snippets/pybricks/drive.py); intermediate; expression → number[ms]; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -2939,7 +2939,7 @@ Catalog path: Sensors and input → Orientation and motion. Card title: **Accele
 
 **`pybricks/hub_measurements/hub_imu_acceleration`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → tuple; inline expansion.
+[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → tuple; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -2956,7 +2956,7 @@ Catalog path: Sensors and input → Orientation and motion. Card title: **Rotati
 
 **`pybricks/hub_measurements/hub_imu_angular_velocity_axis`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → number[deg/s]; inline expansion.
+[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → number[deg/s]; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -2974,7 +2974,7 @@ Catalog path: Sensors and input → Orientation and motion. Card title: **Upward
 
 **`pybricks/hub_measurements/hub_imu_up`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → Side; inline expansion.
+[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → Side; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -2991,7 +2991,7 @@ Catalog path: Sensors and input → Orientation and motion. Card title: **Pitch 
 
 **`pybricks/hub_measurements/hub_imu_tilt`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → tuple; inline expansion.
+[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → tuple; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3008,7 +3008,7 @@ Catalog path: Sensors and input → Orientation and motion. Card title: **Rotati
 
 **`pybricks/hub_measurements/hub_imu_angular_velocity`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → tuple; inline expansion.
+[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → tuple; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3025,7 +3025,7 @@ Catalog path: Sensors and input → Orientation and motion. Card title: **Gyro r
 
 **`pybricks/hub_measurements/imu_ready`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → bool; inline expansion.
+[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → bool; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3042,7 +3042,7 @@ Catalog path: Sensors and input → Orientation and motion. Card title: **Gyro r
 
 **`pybricks/hub_measurements/imu_rotation`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → number[deg]; inline expansion.
+[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → number[deg]; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3118,7 +3118,7 @@ Catalog path: Sensors and input → Orientation and motion. Card title: **Gyro h
 
 **`pybricks/hubs/heading`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/hubs.py](../little_tinker_rig/snippets/pybricks/hubs.py); advanced; expression → number[deg]; inline expansion.
+[little_tinker_rig/snippets/pybricks/hubs.py](../little_tinker_rig/snippets/pybricks/hubs.py); advanced; expression → number[deg]; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3271,7 +3271,7 @@ Catalog path: Sensors and input → Buttons and controllers → LEGO remote. Car
 
 **`pybricks/remote/buttons`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/remote.py](../little_tinker_rig/snippets/pybricks/remote.py); advanced; expression → set; inline expansion.
+[little_tinker_rig/snippets/pybricks/remote.py](../little_tinker_rig/snippets/pybricks/remote.py); advanced; expression → set; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3321,7 +3321,7 @@ Catalog path: Sensors and input → Color and reflection. Card title: **Read HSV
 
 **`pybricks/sensor_values/sensor_hsv`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/sensor_values.py](../little_tinker_rig/snippets/pybricks/sensor_values.py); advanced; expression → Color; inline expansion.
+[little_tinker_rig/snippets/pybricks/sensor_values.py](../little_tinker_rig/snippets/pybricks/sensor_values.py); advanced; expression → Color; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3356,7 +3356,7 @@ Catalog path: Sensors and input → Color and reflection. Card title: **Detected
 
 **`pybricks/sensors/color`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); intermediate; expression → Color; inline expansion.
+[little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); intermediate; expression → Color; measurement readout; inline expansion.
 
 Variant: Surface color.
 
@@ -3370,7 +3370,7 @@ Read the surface color under the sensor.
 
 **`pybricks/sensor_values/sensor_color_surface`** — Consolidate variant.
 
-[little_tinker_rig/snippets/pybricks/sensor_values.py](../little_tinker_rig/snippets/pybricks/sensor_values.py); advanced; expression → Color; inline expansion.
+[little_tinker_rig/snippets/pybricks/sensor_values.py](../little_tinker_rig/snippets/pybricks/sensor_values.py); advanced; expression → Color; measurement readout; inline expansion.
 
 Variant: Surface or light source.
 
@@ -3388,7 +3388,7 @@ Catalog path: Sensors and input → Color and reflection. Card title: **Ambient 
 
 **`pybricks/sensor_values/sensor_ambient`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/sensor_values.py](../little_tinker_rig/snippets/pybricks/sensor_values.py); advanced; expression → number[%]; inline expansion.
+[little_tinker_rig/snippets/pybricks/sensor_values.py](../little_tinker_rig/snippets/pybricks/sensor_values.py); advanced; expression → number[%]; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3482,7 +3482,7 @@ Catalog path: Sensors and input → Color and reflection. Card title: **Reflecti
 
 **`pybricks/sensors/reflection`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); intermediate; expression → number[%]; inline expansion.
+[little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); intermediate; expression → number[%]; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3499,7 +3499,7 @@ Catalog path: Sensors and input → Distance sensing. Card title: **Distance**.
 
 **`pybricks/sensors/distance`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); intermediate; expression → number[mm]; inline expansion.
+[little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); intermediate; expression → number[mm]; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3516,7 +3516,7 @@ Catalog path: Sensors and input → Distance sensing. Card title: **BOOST relati
 
 **`pybricks/sensors/boost_distance`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); intermediate; expression → number[%]; inline expansion.
+[little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); intermediate; expression → number[%]; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3533,7 +3533,7 @@ Catalog path: Sensors and input → Force and contact. Card title: **Force**.
 
 **`pybricks/sensors/force`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); intermediate; expression → number[N]; inline expansion.
+[little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); intermediate; expression → number[N]; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3550,7 +3550,7 @@ Catalog path: Sensors and input → Force and contact. Card title: **Force senso
 
 **`pybricks/sensors/pressed`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); intermediate; expression → bool; inline expansion.
+[little_tinker_rig/snippets/pybricks/sensors.py](../little_tinker_rig/snippets/pybricks/sensors.py); intermediate; expression → bool; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3580,7 +3580,7 @@ Catalog path: Sensors and input → Buttons and controllers → Xbox controller.
 
 **`pybricks/xbox/controller_joystick_left`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/xbox.py](../little_tinker_rig/snippets/pybricks/xbox.py); advanced; expression → tuple; inline expansion.
+[little_tinker_rig/snippets/pybricks/xbox.py](../little_tinker_rig/snippets/pybricks/xbox.py); advanced; expression → tuple; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3597,7 +3597,7 @@ Catalog path: Sensors and input → Buttons and controllers → Xbox controller.
 
 **`pybricks/xbox/controller_triggers`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/xbox.py](../little_tinker_rig/snippets/pybricks/xbox.py); advanced; expression → tuple; inline expansion.
+[little_tinker_rig/snippets/pybricks/xbox.py](../little_tinker_rig/snippets/pybricks/xbox.py); advanced; expression → tuple; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3614,7 +3614,7 @@ Catalog path: Sensors and input → Buttons and controllers → Xbox controller.
 
 **`pybricks/xbox/controller_joystick_right`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/xbox.py](../little_tinker_rig/snippets/pybricks/xbox.py); advanced; expression → tuple; inline expansion.
+[little_tinker_rig/snippets/pybricks/xbox.py](../little_tinker_rig/snippets/pybricks/xbox.py); advanced; expression → tuple; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3631,7 +3631,7 @@ Catalog path: Sensors and input → Buttons and controllers → Xbox controller.
 
 **`pybricks/xbox/controller_buttons`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/xbox.py](../little_tinker_rig/snippets/pybricks/xbox.py); advanced; expression → set; inline expansion.
+[little_tinker_rig/snippets/pybricks/xbox.py](../little_tinker_rig/snippets/pybricks/xbox.py); advanced; expression → set; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3648,7 +3648,7 @@ Catalog path: Sensors and input → Buttons and controllers → Xbox controller.
 
 **`pybricks/xbox/controller_dpad`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/xbox.py](../little_tinker_rig/snippets/pybricks/xbox.py); advanced; expression → int; inline expansion.
+[little_tinker_rig/snippets/pybricks/xbox.py](../little_tinker_rig/snippets/pybricks/xbox.py); advanced; expression → int; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -3840,7 +3840,7 @@ Catalog path: Light and sound → Sound. Card title: **Speaker volume**.
 
 **`pybricks/hub_feedback/hub_speaker_volume`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/hub_feedback.py](../little_tinker_rig/snippets/pybricks/hub_feedback.py); expert; expression → number[%]; inline expansion.
+[little_tinker_rig/snippets/pybricks/hub_feedback.py](../little_tinker_rig/snippets/pybricks/hub_feedback.py); expert; expression → number[%]; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -4140,7 +4140,7 @@ Catalog path: Devices and communication → Hub system. Card title: **Battery cu
 
 **`pybricks/hub_measurements/hub_battery_current`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → int; inline expansion.
+[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → int; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -4157,7 +4157,7 @@ Catalog path: Devices and communication → Hub system. Card title: **Charger co
 
 **`pybricks/hub_measurements/hub_charger_connected`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → bool; inline expansion.
+[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → bool; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -4174,7 +4174,7 @@ Catalog path: Devices and communication → Hub system. Card title: **Charging c
 
 **`pybricks/hub_measurements/hub_charger_current`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → int; inline expansion.
+[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → int; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -4191,7 +4191,7 @@ Catalog path: Devices and communication → Hub system. Card title: **Charger st
 
 **`pybricks/hub_measurements/hub_charger_status`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → int; inline expansion.
+[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → int; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -4226,7 +4226,7 @@ Catalog path: Devices and communication → Hub system. Card title: **Hub Blueto
 
 **`pybricks/hub_measurements/hub_system_name`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → str; inline expansion.
+[little_tinker_rig/snippets/pybricks/hub_measurements.py](../little_tinker_rig/snippets/pybricks/hub_measurements.py); expert; expression → str; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -4303,7 +4303,7 @@ Catalog path: Devices and communication → Hub system. Card title: **Battery vo
 
 **`pybricks/hubs/battery_voltage`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/hubs.py](../little_tinker_rig/snippets/pybricks/hubs.py); advanced; expression → number; inline expansion.
+[little_tinker_rig/snippets/pybricks/hubs.py](../little_tinker_rig/snippets/pybricks/hubs.py); advanced; expression → number; measurement readout; inline expansion.
 
 Variant: Default.
 
@@ -4373,7 +4373,7 @@ Catalog path: Devices and communication → Radio messages. Card title: **Receiv
 
 **`pybricks/messaging/observe`** — Keep family entry.
 
-[little_tinker_rig/snippets/pybricks/messaging.py](../little_tinker_rig/snippets/pybricks/messaging.py); expert; expression → inferred Python value; inline expansion.
+[little_tinker_rig/snippets/pybricks/messaging.py](../little_tinker_rig/snippets/pybricks/messaging.py); expert; expression → inferred Python value; measurement readout; inline expansion.
 
 Variant: Default.
 

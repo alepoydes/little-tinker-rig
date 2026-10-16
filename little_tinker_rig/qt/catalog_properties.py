@@ -66,6 +66,15 @@ class CatalogProperties(QDialog):
         form.addRow(tr("Family primary"), self.family)
         self.variant = QLineEdit(snippet.variant or "")
         form.addRow(tr("Variant label"), self.variant)
+        self.readout = QCheckBox(tr("Offer as a measurement"))
+        self.readout.setChecked(snippet.readout)
+        self.readout.setEnabled(snippet.expression)
+        self.readout.setToolTip(
+            tr(
+                "Reads a value without starting motion, waiting, or changing device state."
+            )
+        )
+        form.addRow(self.readout)
         layout.addLayout(form)
         hint = QLabel(
             tr(
@@ -121,6 +130,7 @@ class CatalogProperties(QDialog):
             "category": self.category.currentData(),
             "family": self.family.text().strip(),
             "variant": self.variant.text().strip() or None,
+            "readout": self.readout.isChecked(),
             "advanced": tuple(
                 name
                 for name, (_, additional) in self.fields.items()

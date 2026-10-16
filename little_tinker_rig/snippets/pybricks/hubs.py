@@ -186,6 +186,7 @@ def tilted(
     category="input",
     title="Gyro heading",
     group=("Orientation and motion",),
+    readout=True,
 )
 def heading(hub: "PrimeHub | InventorHub | TechnicHub" = hub) -> "number[deg]":
     """Read the gyro heading in degrees.
@@ -200,6 +201,7 @@ def heading(hub: "PrimeHub | InventorHub | TechnicHub" = hub) -> "number[deg]":
     color="action",
     title="Battery voltage",
     group=("Hub system",),
+    readout=True,
 )
 def battery_voltage(
     hub: "PrimeHub | InventorHub | MoveHub | TechnicHub" = hub,

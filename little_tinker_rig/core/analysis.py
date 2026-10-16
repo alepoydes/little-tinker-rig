@@ -27,6 +27,7 @@ class Scope:
     bindings: dict[str, int] = field(default_factory=dict)
     global_names: set[str] = field(default_factory=set)
     nonlocal_names: set[str] = field(default_factory=set)
+    initialized: set[str] = field(default_factory=set)
 
 
 @dataclass(frozen=True)
@@ -65,6 +66,20 @@ def identifiers(tree: ast.AST) -> set[str]:
     return result
 
 
+def annotation_nodes(tree):
+    """Annotation syntax is distinct from executable parameter expressions."""
+    return {
+        child
+        for node in ast.walk(tree)
+        for annotation in (
+            getattr(node, "annotation", None),
+            getattr(node, "returns", None),
+        )
+        if annotation is not None
+        for child in ast.walk(annotation)
+    }
+
+
 class Scopes:
     """Lexical bindings shared by diagnostics and hygienic template expansion."""
 
@@ -74,6 +89,8 @@ class Scopes:
         self.scopes: dict[ast.AST, Scope] = {}
         self.defined_scopes: dict[ast.AST, Scope] = {}
         self.references: list[tuple[ast.Name, Scope]] = []
+        self.reference_bindings: dict[ast.Name, Scope | None] = {}
+        self.deferred_writes = set()
         self._visit(tree, self.root)
         # Declarations govern an entire lexical scope. Resolve after all outer
         # bindings are known, visiting enclosing scopes before their children.
@@ -87,18 +104,52 @@ class Scopes:
                 if owner:
                     offset = scope.bindings.pop(name)
                     owner.bindings[name] = min(owner.bindings.get(name, offset), offset)
+                    self.deferred_writes.add((id(owner), name))
 
-    def _bind(self, scope: Scope, name: str, node: ast.AST) -> None:
+    def _bind(self, scope: Scope, name: str, node: ast.AST, *, initialize=True) -> None:
         offset = self.positions.get(node, Span(0, 0)).start
         scope.bindings[name] = min(scope.bindings.get(name, offset), offset)
+        if initialize:
+            scope.initialized.add(name)
+
+    def _reference(self, node, scope):
+        self.references.append((node, scope))
+        while scope and node.id not in scope.initialized:
+            scope = scope.parent
+        self.reference_bindings[node] = scope
 
     def _visit(self, node: ast.AST, scope: Scope) -> None:
         self.scopes[node] = scope
         if isinstance(node, ast.Name):
             if isinstance(node.ctx, ast.Load):
-                self.references.append((node, scope))
+                self._reference(node, scope)
             elif isinstance(node.ctx, ast.Store):
                 self._bind(scope, node.id, node)
+            return
+        if isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign)):
+            if isinstance(node, ast.AugAssign) and isinstance(node.target, ast.Name):
+                self._reference(node.target, scope)
+            if node.value is not None:
+                self._visit(node.value, scope)
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            for target in targets:
+                if (
+                    isinstance(node, ast.AnnAssign)
+                    and node.value is None
+                    and isinstance(target, ast.Name)
+                ):
+                    self.scopes[target] = scope
+                    self._bind(scope, target.id, target, initialize=False)
+                else:
+                    self._visit(target, scope)
+            if isinstance(node, ast.AnnAssign):
+                self._visit(node.annotation, scope)
+            return
+        if isinstance(node, (ast.For, ast.AsyncFor)):
+            self._visit(node.iter, scope)
+            self._visit(node.target, scope)
+            for child in (*node.body, *node.orelse):
+                self._visit(child, scope)
             return
         if isinstance(node, (ast.Global, ast.Nonlocal)):
             names = (
@@ -117,7 +168,6 @@ class Scopes:
             node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda, ast.ClassDef)
         ):
             if not isinstance(node, ast.Lambda):
-                self._bind(scope, node.name, node)
                 for decorator in node.decorator_list:
                     self._visit(decorator, scope)
             if isinstance(node, ast.ClassDef):
@@ -151,6 +201,8 @@ class Scopes:
             body = node.body if isinstance(node.body, list) else [node.body]
             for child in body:
                 self._visit(child, inner)
+            if not isinstance(node, ast.Lambda):
+                self._bind(scope, node.name, node)
             return
         if isinstance(
             node, (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)
@@ -521,29 +573,51 @@ class Analysis(Scopes):
     def _diagnostics(self) -> tuple[Diagnostic, ...]:
         result = []
         contracts = list(self.contracts)
+        deferred_annotations = (
+            annotation_nodes(self.syntax.tree)
+            if any(
+                isinstance(node, ast.ImportFrom)
+                and node.module == "__future__"
+                and any(alias.name == "annotations" for alias in node.names)
+                for node in self.syntax.tree.body
+            )
+            else set()
+        )
         for node, scope in self.references:
             name = node.id
             origin = scope
-            if name in scope.global_names:
-                scope = self.root
-            elif name in scope.nonlocal_names:
-                scope = scope.parent
-            found = name in vars(builtins) or name in {
-                "__name__",
-                "__file__",
-                "__package__",
-            }
-            while scope and not found:
-                if name in scope.bindings:
-                    found = (
-                        scope is not self.root
-                        or origin is not self.root
-                        or (scope.bindings[name] <= self.syntax.spans[node].start)
+            owner = self.resolve(node, name)
+            if owner is not None:
+                # Closures run later; their enclosing values need not exist at
+                # definition time. Reads in the same execution scope do.
+                deferred = False
+                while scope is not None and scope is not owner:
+                    deferred |= isinstance(
+                        scope.node,
+                        (
+                            ast.FunctionDef,
+                            ast.AsyncFunctionDef,
+                            ast.Lambda,
+                            ast.GeneratorExp,
+                        ),
                     )
-                    break
-                if "*" in scope.bindings:
-                    found = True  # A star import makes precise lookup impossible.
-                scope = scope.parent
+                    scope = scope.parent
+                found = (
+                    deferred
+                    or node in deferred_annotations
+                    or self.reference_bindings.get(node) is owner
+                    or (id(owner), name) in self.deferred_writes
+                )
+            else:
+                found = name in vars(builtins) or name in {
+                    "__name__",
+                    "__file__",
+                    "__package__",
+                }
+                scope = origin
+                while scope and not found:
+                    found = "*" in scope.bindings
+                    scope = scope.parent
             if not found:
                 result.append(
                     Diagnostic(

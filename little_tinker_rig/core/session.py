@@ -28,6 +28,7 @@ from .snippets import (
     function_snippets,
     instantiate,
     load_collection,
+    outer_matches,
     recognize,
     upgrade,
 )
@@ -199,9 +200,18 @@ class Session:
                             self._analysis.method_types[kind, path] = (
                                 snippet.result_type
                             )
-            self._matches = recognize(
-                self.document.syntax, self.snippets, self._analysis
+            recognized = recognize(
+                self.document.syntax, self.snippets, self._analysis, nested=True
             )
+            self._matches = outer_matches(recognized)
+            self.input_contracts = {
+                self.document.syntax.spans[node]: parameter.annotation
+                for match in recognized
+                if match.snippet.expression
+                for parameter in match.snippet.parameters
+                if parameter.annotation and parameter.name not in match.snippet.names
+                for node in match.occurrences.get(parameter.name, ())
+            }
             self._analysis.apply_contracts(self._matches)
             self._match_starts = [match.span.start for match in self._matches]
             self._revision = self.document.syntax

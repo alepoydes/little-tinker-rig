@@ -136,8 +136,9 @@ or **At program level**, and opens space before the destination's descriptions. 
 same source row and relative point under the pointer. Edges scroll the view;
 dragging does not fold code automatically.
 
-Only an empty parameter (`...`) accepts a compatible expression. Populated
-parameters are not replaced by a drop. Invalid contexts offer no insertion and
+Ordinary drops accept compatible expressions only in empty parameters (`...`).
+After **Find value blocks**, the searched input also accepts replacement of its
+current value; other populated inputs remain protected. Invalid contexts offer no insertion and
 release restores the source. Library blocks use defaults and known device names.
 A successful transfer commits once; Undo restores both program and Scratch.
 Attached Python comments move with the block. Syntax validity does not prove that
@@ -413,16 +414,27 @@ value, show a known definition, or **Find creation blocks**. **Find value blocks
 searches expressions for the selected input. Hovering and ordinary clicks leave
 the catalog alone. The explicit search stays pinned while you browse; its back
 button restores your previous view and search. Editing the program ends the search.
+The same workflow works in Scratch and stays pinned when focus moves to the
+catalog. Drag a result onto the searched input or double-click its card to replace
+that value. The replacement and any required imports form one Undo operation.
+Quick measurement suggestions contain declared readouts, such as `motor.angle()`;
+motor movements remain explicit catalog actions even when they return a number.
 
 Creation search uses what a block produces: a Motor input finds motor constructors,
 and a ForceSensor input selects that variant of the shared sensor family. Level
 and lesson restrictions still apply. Place a variable's creation before its use
 in an accessible scope. An expression constructor inside a loop runs on every
-iteration. The editor does not choose ports or initialize dependencies for you.
+iteration. The editor does not choose ports or create prerequisite devices for you.
 Lexical hints cannot prove that every branch or runtime call initializes a name.
+Straight-line reads before assignment are diagnosed inside functions too, including
+an initial `value = value + 1`. A closure's outer values may be initialized after
+the closure is defined. Nested calls retain their input contracts: the sensor in
+`force = sensor.force()` offers the same creation help as a standalone reading.
 
 Large catalog branches have nested mechanism or input groups. Individual motors,
 two-wheel bases and steering chassis have separate branches; model-dependent
 conveyor actions live under **Conveyors / BOOST Auto Builder**. Shared sensor
 creation stays directly under Sensors and input. Search includes group names;
 Favorites, Recent and Frequent remain flat lists.
+Card tooltips include the learning level. Cards reserve a variant row only when
+there is a variant label; there is no separate level badge or empty metadata row.

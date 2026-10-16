@@ -190,6 +190,7 @@ def motor_hold(motor: "Motor" = motor):
     color="action",
     title="Motor finished",
     group=("Individual motors", "Measurements"),
+    readout=True,
 )
 def motor_done(motor: "Motor | DriveBase" = motor) -> "bool":
     """Check whether the motor has finished its movement."""
@@ -202,6 +203,7 @@ def motor_done(motor: "Motor | DriveBase" = motor) -> "bool":
     color="action",
     title="Motor stalled",
     group=("Individual motors", "Measurements"),
+    readout=True,
 )
 def motor_stalled(motor: "Motor | DriveBase" = motor) -> "bool":
     """Check whether the motor cannot follow its commanded motion."""
@@ -214,6 +216,7 @@ def motor_stalled(motor: "Motor | DriveBase" = motor) -> "bool":
     color="action",
     title="Motor load",
     group=("Individual motors", "Measurements"),
+    readout=True,
 )
 def motor_load(motor: "Motor" = motor) -> "number":
     """Read estimated motor load in millinewton meters."""

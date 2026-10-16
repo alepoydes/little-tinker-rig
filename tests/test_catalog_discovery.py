@@ -1,7 +1,216 @@
 from little_tinker_rig.core.catalog_history import reference
-from little_tinker_rig.core.parameters import choices
+from little_tinker_rig.core.parameters import change_parameter, choices, slots
 from little_tinker_rig.core.session import Session
 from little_tinker_rig.core.snippets import Parameter, load_module
+
+
+def test_measurement_suggestions_preserve_dependencies_and_undo(tmp_path, qt_app):
+    from little_tinker_rig.core.variants import variant_bindings, variant_source
+
+    path = tmp_path / "main.py"
+    path.write_text(
+        "from pybricks.hubs import PrimeHub\n"
+        "from pybricks.pupdevices import Motor\n"
+        "from pybricks.parameters import Port\n"
+        "hub = PrimeHub()\nmotor = Motor(Port.A)\nmotor.run_angle(300, 90)\n"
+    )
+    session = Session(path)
+    slot = next(s for s in slots(session) if s.parameter.name == "angle")
+    options = choices(session, slot.parameter, slot.span.start)
+    assert "motor.angle()" in options
+    assert not any("run_until_stalled" in value for value in options)
+    value = "hub.imu.rotation(Axis.X)"
+    assert value in options
+    before = session.document.state
+    change_parameter(session, slot, value)
+    assert "from pybricks.parameters import Axis" in session.document.state.source
+    assert session.document.state.source.endswith(f"motor.run_angle(300, {value})\n")
+    assert not session.analysis.diagnostics()
+    session.editor.undo()
+    assert session.document.state is before
+
+    session.editor.selection = session.document.syntax.tree.body[-1]
+    match = session.selected_match()
+    values = variant_bindings(session, match, match.snippet)
+    values["angle"] = value
+    candidate = variant_source(session, match, match.snippet, values)
+    assert "from pybricks.parameters import Axis" in candidate
+    assert session.document.state is before
+
+    from little_tinker_rig.qt.editor import SourceView
+    from little_tinker_rig.qt.variants import VariantDialog
+
+    view = SourceView(session)
+    dialog = VariantDialog(view)
+    try:
+        field = dialog.fields["angle"]
+        field.setCurrentIndex(field.findText(value))
+        field.setEditText("hub.imu.rotation(Axis.Y)")
+        assert dialog.update_preview()
+        assert "from pybricks.parameters import Axis" in dialog.candidate
+        target = next(
+            s
+            for s in dialog.variants.values()
+            if "rotation_angle" in {p.name for p in s.parameters}
+        )
+        dialog.variant.setCurrentIndex(dialog.variant.findData(target.identity))
+        assert (
+            dialog.fields["rotation_angle"].currentText() == "hub.imu.rotation(Axis.Y)"
+        )
+        assert "from pybricks.parameters import Axis" in dialog.candidate
+        dialog.apply()
+        assert not session.analysis.diagnostics()
+        session.editor.undo()
+        assert session.document.state is before
+    finally:
+        dialog.close()
+        view.close()
+
+
+def test_nested_receiver_contract_keeps_outer_linked_edit(tmp_path, qt_app):
+    from little_tinker_rig.qt.editor import SourceView
+    from little_tinker_rig.qt.structure import block_menu
+
+    path = tmp_path / "main.py"
+    path.write_text("force = sensor.force()\n")
+    session = Session(path)
+    view = SourceView(session)
+    view.show()
+    qt_app.processEvents()
+    try:
+        slot = next(
+            s
+            for s in view.parameter_slots
+            if session.document.syntax.text(s.node) == "sensor"
+        )
+        assert slot.parameter.annotation == "ForceSensor"
+        menu = block_menu(view, view.parameter_rect(slot).center().toPoint())
+        assert "Find creation blocks" in [a.text() for a in menu.actions()]
+        menu.deleteLater()
+        before = session.document.state
+        change_parameter(session, slot, "force_sensor")
+        assert session.document.state.source == "force = force_sensor.force()\n"
+        session.editor.undo()
+        assert session.document.state is before
+    finally:
+        view.close()
+
+
+def test_scratch_search_survives_catalog_focus_and_applies_to_origin(tmp_path, qt_app):
+    from little_tinker_rig.qt.app import Studio
+
+    path = tmp_path / "main.py"
+    path.write_text(
+        "from pybricks.pupdevices import Motor\nfrom pybricks.parameters import Port\nmotor = Motor(Port.A)\n"
+    )
+    window = Studio(path)
+    window.show()
+    try:
+        window.level_filter.select("all")
+        window.session.set_scratch(None, "motor.run(300)\n")
+        window.refresh_views()
+        window.scratch_dock.show()
+        window.scratch_dock.raise_()
+        qt_app.processEvents()
+        view = window.scratch.cells[0].source
+        view.setFocus()
+        slot = next(s for s in view.parameter_slots if s.parameter.name == "speed")
+        view.search_input(slot)
+        window.search.setFocus()
+        qt_app.processEvents()
+        assert window.input_search == (view, slot)
+        window.library.setCurrentItem(
+            window.library.rows[reference("pybricks/motors/motor_speed")]
+        )
+        window.library.setFocus()
+        qt_app.processEvents()
+        before = window.session.document.state
+        window.insert_selected()
+        assert window.session.document.state.source == before.source
+        assert window.session.document.state.scratch == ("motor.run(motor.speed())\n",)
+        assert window.input_search is None
+        window.session.editor.undo()
+        assert window.session.document.state is before
+    finally:
+        window.confirm_close = lambda *_: True
+        window.close()
+
+
+def test_filled_drop_requires_search_for_that_exact_input(tmp_path, qt_app):
+    from PySide6.QtCore import QMimeData, QPointF, Qt
+    from PySide6.QtGui import (
+        QDragEnterEvent,
+        QDragLeaveEvent,
+        QDragMoveEvent,
+        QDropEvent,
+    )
+
+    from little_tinker_rig.qt.app import Studio
+
+    path = tmp_path / "main.py"
+    path.write_text(
+        "from pybricks.pupdevices import Motor\nfrom pybricks.parameters import Port\nmotor = Motor(Port.A)\nmotor.run(300)\nmotor.run(500)\n"
+    )
+    window = Studio(path)
+    window.show()
+    qt_app.processEvents()
+    view = window.source
+    data = QMimeData()
+    data.setData(
+        "application/x-little-tinker-rig-snippet", b"pybricks/motors/motor_speed"
+    )
+
+    def hover(slot):
+        point = view.parameter_rect(slot).center().toPoint()
+        qt_app.sendEvent(
+            view.viewport(),
+            QDragEnterEvent(
+                point,
+                Qt.DropAction.CopyAction,
+                data,
+                Qt.MouseButton.LeftButton,
+                Qt.KeyboardModifier.NoModifier,
+            ),
+        )
+        point = view.parameter_rect(slot).center().toPoint()
+        event = QDragMoveEvent(
+            point,
+            Qt.DropAction.CopyAction,
+            data,
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+        )
+        qt_app.sendEvent(view.viewport(), event)
+        return event.isAccepted(), point
+
+    try:
+        window.level_filter.select("all")
+        first, second = [s for s in view.parameter_slots if s.parameter.name == "speed"]
+        assert not hover(first)[0]
+        qt_app.sendEvent(view.viewport(), QDragLeaveEvent())
+        view.search_input(first)
+        assert not hover(second)[0]
+        qt_app.sendEvent(view.viewport(), QDragLeaveEvent())
+        accepted, point = hover(first)
+        assert accepted
+        before = window.session.document.state
+        drop = QDropEvent(
+            QPointF(point),
+            Qt.DropAction.CopyAction,
+            data,
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+        )
+        qt_app.sendEvent(view.viewport(), drop)
+        assert drop.isAccepted()
+        assert window.session.document.state.source.endswith(
+            "motor.run(motor.speed())\nmotor.run(500)\n"
+        )
+        window.session.editor.undo()
+        assert window.session.document.state is before
+    finally:
+        window.confirm_close = lambda *_: True
+        window.close()
 
 
 def test_providers_are_results_and_public_declarations_not_consumers():

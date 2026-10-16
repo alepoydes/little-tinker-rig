@@ -149,6 +149,7 @@ def reset_motor_angle(motor: "Motor" = motor, angle: "number[deg]" = 0):
     color="action",
     title="Motor angle",
     group=("Individual motors", "Measurements"),
+    readout=True,
 )
 def motor_angle(motor: "Motor" = motor) -> "number[deg]":
     """Read the current motor angle."""
@@ -161,6 +162,7 @@ def motor_angle(motor: "Motor" = motor) -> "number[deg]":
     color="action",
     title="Motor speed",
     group=("Individual motors", "Measurements"),
+    readout=True,
 )
 def motor_speed(motor: "Motor" = motor) -> "number[deg/s]":
     """Read the current motor speed."""

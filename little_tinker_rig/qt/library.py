@@ -84,7 +84,7 @@ class CardDelegate(QStyledItemDelegate):
         super().__init__(parent)
         self.icons = {
             key: QIcon(str(Path(__file__).with_name("icons") / f"{key}.svg"))
-            for key in (*LEVEL_TITLES, "favorites", "favorite-active")
+            for key in ("favorites", "favorite-active")
         }
 
     def paint(self, painter, option, index):
@@ -123,30 +123,34 @@ class CardDelegate(QStyledItemDelegate):
         font.setBold(False)
         font.setPointSize(8)
         painter.setFont(font)
-        self.icons[index.data(LEVEL)].paint(
-            painter, QRect(rect.left() + 10, rect.top() + 25, 14, 14)
-        )
-        painter.drawText(
-            rect.adjusted(30, 26, -8, 0),
-            Qt.AlignmentFlag.AlignTop,
-            QFontMetrics(font).elidedText(
-                index.data(VARIANT) or "",
-                Qt.TextElideMode.ElideRight,
-                rect.width() - 40,
-            ),
-        )
+        variant = index.data(VARIANT)
+        if variant:
+            painter.drawText(
+                rect.adjusted(10, 26, -8, 0),
+                Qt.AlignmentFlag.AlignTop,
+                QFontMetrics(font).elidedText(
+                    variant,
+                    Qt.TextElideMode.ElideRight,
+                    rect.width() - 20,
+                ),
+            )
         painter.setFont(QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont))
         for row, line in enumerate(index.data(PREVIEW).splitlines()[:2]):
             text = painter.fontMetrics().elidedText(
                 line, Qt.TextElideMode.ElideRight, rect.width() - 20
             )
-            painter.drawText(rect.left() + 10, rect.top() + 57 + row * 17, text)
+            painter.drawText(
+                rect.left() + 10, rect.top() + 39 + bool(variant) * 18 + row * 17, text
+            )
         painter.restore()
 
     def sizeHint(self, option, index):
         if index.data(IDENTITY):
             return QSize(
-                270, 69 + 17 * (min(2, len(index.data(PREVIEW).splitlines())) - 1)
+                270,
+                51
+                + bool(index.data(VARIANT)) * 18
+                + 17 * (min(2, len(index.data(PREVIEW).splitlines())) - 1),
             )
         size = super().sizeHint(option, index)
         if index.data(REFERENCE):

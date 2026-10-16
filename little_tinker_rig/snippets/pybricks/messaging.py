@@ -51,6 +51,7 @@ def broadcast(radio: "BLERadio" = radio, data=(0, 0, 0)):
     color="value",
     title="Receive message",
     group=("Radio messages",),
+    readout=True,
 )
 def observe(radio: "BLERadio" = radio, channel: "int" = 5):
     """Read the latest message, or None when the channel has no recent data."""

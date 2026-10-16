@@ -11,7 +11,8 @@ from little_tinker_rig.i18n import N_
 from . import edit
 from .analysis import identifiers
 from .expressions import accepts
-from .snippets import instantiate, instantiate_tree
+from .parameters import suggestions
+from .snippets import Expansion, instantiate, instantiate_tree
 from .source_text import rewrite
 from .types import Compatibility, compatibility, known_type
 
@@ -154,6 +155,11 @@ def _align_call_order(before, after):
 
 def variant_source(session, match, snippet, values):
     """Prepare the exact complete source for review, leaving state and history intact."""
+    supplied = [value for value in values.values() if isinstance(value, Expansion)]
+    values = {
+        name: value.source if isinstance(value, Expansion) else value
+        for name, value in values.items()
+    }
     if (
         match.snippet.catalog_id != snippet.catalog_id
         or match.snippet.expression != snippet.expression
@@ -221,7 +227,26 @@ def variant_source(session, match, snippet, values):
         if snippet.expression:
             replacement = "(\n" + replacement + "\n)"
     source = session._replace_match(match, replacement)
+    suggested = supplied + [
+        value
+        for parameter in snippet.parameters
+        if parameter.name not in snippet.names
+        and (
+            value := suggestions(session, parameter, match.span.start).get(
+                values.get(parameter.name)
+            )
+        )
+    ]
     prepared = session.prepare_insertion(
-        source, match.span.start, expansion.imports, helpers=expansion.helpers
+        source,
+        match.span.start,
+        (
+            *expansion.imports,
+            *(entry for value in suggested for entry in value.imports),
+        ),
+        helpers=(
+            *expansion.helpers,
+            *(entry for value in suggested for entry in value.helpers),
+        ),
     )
     return session.document.candidate(prepared).source

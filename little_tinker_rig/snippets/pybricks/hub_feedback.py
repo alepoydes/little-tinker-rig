@@ -44,7 +44,12 @@ def hub_speaker_volume_volume(hub: "PrimeHub" = hub, volume: "number[%]" = 50):
 
 
 @inline_block(
-    level="expert", icon="▶", color="action", title="Speaker volume", group=("Sound",)
+    level="expert",
+    icon="▶",
+    color="action",
+    title="Speaker volume",
+    group=("Sound",),
+    readout=True,
 )
 def hub_speaker_volume(hub: "PrimeHub" = hub) -> "number[%]":
     """Read or set the speaker volume."""

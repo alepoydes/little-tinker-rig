@@ -131,6 +131,7 @@ def create_color_distance_sensor(name=sensor, port: "Port" = Port.D):
     color="action",
     title="Reflection",
     group=("Color and reflection",),
+    readout=True,
 )
 def reflection(sensor: "ColorSensor | ColorDistanceSensor" = sensor) -> "number[%]":
     """Measure surface reflection from 0 to 100%."""
@@ -143,6 +144,7 @@ def reflection(sensor: "ColorSensor | ColorDistanceSensor" = sensor) -> "number[
     color="action",
     title="Distance",
     group=("Distance sensing",),
+    readout=True,
 )
 def distance(sensor: "UltrasonicSensor" = distance) -> "number[mm]":
     """Measure obstacle distance in millimeters."""
@@ -155,6 +157,7 @@ def distance(sensor: "UltrasonicSensor" = distance) -> "number[mm]":
     color="action",
     title="BOOST relative distance",
     group=("Distance sensing",),
+    readout=True,
 )
 def boost_distance(sensor: "ColorDistanceSensor" = sensor) -> "number[%]":
     """Measure relative distance with a BOOST sensor."""
@@ -167,6 +170,7 @@ def boost_distance(sensor: "ColorDistanceSensor" = sensor) -> "number[%]":
     color="action",
     title="Force",
     group=("Force and contact",),
+    readout=True,
 )
 def force(sensor: "ForceSensor" = button) -> "number[N]":
     """Measure pressing force in newtons."""
@@ -179,6 +183,7 @@ def force(sensor: "ForceSensor" = button) -> "number[N]":
     color="action",
     title="Force sensor pressed",
     group=("Force and contact",),
+    readout=True,
 )
 def pressed(sensor: "ForceSensor" = button) -> "bool":
     """Check whether the force sensor button is pressed."""
@@ -192,6 +197,7 @@ def pressed(sensor: "ForceSensor" = button) -> "bool":
     variant="Surface color",
     title="Detected color",
     group=("Color and reflection",),
+    readout=True,
 )
 def color(sensor: "ColorSensor | ColorDistanceSensor" = sensor) -> "Color":
     """Read a detected color.

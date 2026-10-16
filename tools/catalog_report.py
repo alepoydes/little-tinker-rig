@@ -79,6 +79,8 @@ def report():
                 )
                 if snippet.context:
                     kind += f"; {snippet.context} context"
+                if snippet.readout:
+                    kind += "; measurement readout"
                 source = snippet.source_path.relative_to(ROOT).as_posix()
                 lines += [
                     f"**`{snippet.identity}`** — {disposition}.",
