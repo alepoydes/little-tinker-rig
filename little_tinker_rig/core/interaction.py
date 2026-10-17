@@ -78,9 +78,10 @@ class Editor:
         scratch: tuple[str, ...] | None = None,
         *,
         focus: int | None = None,
+        scratch_ids=None,
     ) -> bool:
         offset = self.document.syntax.spans[self.selection].start
-        changed = self.document.commit(source, scratch)
+        changed = self.document.commit(source, scratch, scratch_ids=scratch_ids)
         self.moving = None
         self.select(
             edit.map_offset(source, self.document.state.source, focus)
@@ -99,14 +100,23 @@ class Editor:
         syntax = self.document.syntax
         node = self.selection
         text = edit.block_text(syntax, node)
-        self.commit(edit.delete(syntax, node), self.document.state.scratch + (text,))
+        self.commit(
+            edit.delete(syntax, node),
+            self.document.state.scratch + (text,),
+            scratch_ids=self.document.state.scratch_ids + (object(),),
+        )
 
     def from_scratch(self, index: int, target: edit.Target) -> None:
         scratch = self.document.state.scratch
         if not 0 <= index < len(scratch):
             raise ValueError("Scratch index outside workspace")
         source = edit.insert(self.document.syntax, target, scratch[index])
-        self.commit(source, scratch[:index] + scratch[index + 1 :])
+        identities = self.document.state.scratch_ids
+        self.commit(
+            source,
+            scratch[:index] + scratch[index + 1 :],
+            scratch_ids=identities[:index] + identities[index + 1 :],
+        )
 
     def begin_move(self, nodes: tuple[ast.stmt, ...] | None = None) -> Move:
         syntax, node = self.document.syntax, nodes or self.statement()

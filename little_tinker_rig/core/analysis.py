@@ -25,9 +25,11 @@ class Scope:
     node: ast.AST
     parent: "Scope | None"
     bindings: dict[str, int] = field(default_factory=dict)
+    value_bindings: dict[str, int] = field(default_factory=dict)
     global_names: set[str] = field(default_factory=set)
     nonlocal_names: set[str] = field(default_factory=set)
     initialized: set[str] = field(default_factory=set)
+    deleted: set[str] = field(default_factory=set)
 
 
 @dataclass(frozen=True)
@@ -90,6 +92,7 @@ class Scopes:
         self.defined_scopes: dict[ast.AST, Scope] = {}
         self.references: list[tuple[ast.Name, Scope]] = []
         self.reference_bindings: dict[ast.Name, Scope | None] = {}
+        self.deleted_references: set[ast.Name] = set()
         self.class_fallbacks: dict[ast.Name, bool] = {}
         self.deferred_writes = {}
         self._visit(tree, self.root)
@@ -105,6 +108,12 @@ class Scopes:
                 if owner:
                     offset = scope.bindings.pop(name)
                     owner.bindings[name] = min(owner.bindings.get(name, offset), offset)
+                    if name not in scope.value_bindings:
+                        continue
+                    value_offset = scope.value_bindings.pop(name)
+                    owner.value_bindings[name] = min(
+                        owner.value_bindings.get(name, value_offset), value_offset
+                    )
                     writer = self.execution_scope(scope)
                     if writer is not self.execution_scope(owner):
                         self.deferred_writes.setdefault(writer.node, set()).add(
@@ -140,7 +149,11 @@ class Scopes:
         offset = self.positions.get(node, Span(0, 0)).start
         scope.bindings[name] = min(scope.bindings.get(name, offset), offset)
         if initialize:
+            scope.value_bindings[name] = min(
+                scope.value_bindings.get(name, offset), offset
+            )
             scope.initialized.add(name)
+            scope.deleted.discard(name)
             if name in scope.global_names | scope.nonlocal_names:
                 owner = (
                     self.root
@@ -149,9 +162,32 @@ class Scopes:
                 )
                 if owner and self.execution_scope(scope) is self.execution_scope(owner):
                     owner.initialized.add(name)
+                    owner.deleted.discard(name)
+
+    @cached_property
+    def value_names(self):
+        """Names with actual value declarations; annotations alone reserve no value."""
+        return frozenset(
+            name
+            for scope in (self.root, *self.defined_scopes.values())
+            for name in scope.value_bindings
+        )
+
+    def _delete(self, scope, name, node):
+        self._bind(scope, name, node, initialize=False)
+        scope.initialized.discard(name)
+        scope.deleted.add(name)
+        if name in scope.global_names | scope.nonlocal_names:
+            owner = (
+                self.root if name in scope.global_names else self._resolve(scope, name)
+            )
+            if owner and self.execution_scope(scope) is self.execution_scope(owner):
+                owner.initialized.discard(name)
+                owner.deleted.add(name)
 
     def _reference(self, node, scope):
         self.references.append((node, scope))
+        origin = scope
         if (
             isinstance(scope.node, ast.ClassDef)
             and node.id not in scope.initialized
@@ -159,6 +195,11 @@ class Scopes:
         ):
             self.class_fallbacks[node] = node.id in self.root.initialized
         while scope and node.id not in scope.initialized:
+            if node.id in scope.deleted:
+                if self.execution_scope(scope) is self.execution_scope(origin):
+                    self.deleted_references.add(node)
+                scope = None
+                break
             scope = scope.parent
         self.reference_bindings[node] = scope
 
@@ -169,6 +210,9 @@ class Scopes:
                 self._reference(node, scope)
             elif isinstance(node.ctx, ast.Store):
                 self._bind(scope, node.id, node)
+            elif isinstance(node.ctx, ast.Del):
+                self._reference(node, scope)
+                self._delete(scope, node.id, node)
             return
         if isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign)):
             if isinstance(node, ast.AugAssign) and isinstance(node.target, ast.Name):
@@ -609,7 +653,7 @@ class Analysis(Scopes):
         while scope:
             names.update(
                 name
-                for name, start in scope.bindings.items()
+                for name, start in scope.value_bindings.items()
                 if start <= offset or (scope is self.root and origin is not self.root)
             )
             scope = scope.parent
@@ -683,6 +727,8 @@ class Analysis(Scopes):
                 while scope and not found:
                     found = "*" in scope.bindings
                     scope = scope.parent
+            if node in self.deleted_references and not self.class_fallbacks.get(node):
+                found = False
             if not found:
                 result.append(
                     Diagnostic(

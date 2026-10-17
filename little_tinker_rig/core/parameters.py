@@ -468,9 +468,9 @@ def default_bindings(session, snippet, offset=None):
     syntax = session.document.syntax
     offset = syntax.spans[session.editor.selection].start if offset is None else offset
     analysis = session.analysis
-    used = set(analysis.declared_names)
+    used = set(analysis.value_names)
     if context := getattr(session, "context", None):
-        used.update(context.analysis.declared_names)
+        used.update(context.analysis.value_names)
     consumers = ()
     if snippet.produced_bindings:
         scope = analysis.scopes.get(syntax.at(offset), analysis.root)

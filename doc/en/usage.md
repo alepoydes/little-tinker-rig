@@ -65,6 +65,7 @@ applies valid input; Escape cancels it. Save and Run apply the active field firs
 Invalid input stays editable and prevents saving, running or leaving its document
 until corrected or cancelled. **Stop (F6)** and **Disconnect** always remain
 available when connected, even with invalid input; they preserve that input.
+F6 also stops the owning window's hub while one of its dialogs is open.
 Uncommitted Python text shows **changes not checked**
 instead of a warning count from an earlier version.
 A structural selection uses the whole block background, including the
@@ -280,9 +281,12 @@ cell's mode, cursor and text undo history. Python accepts arbitrary unfinished
 text; parseable fragments can be edited structurally without a complete execution
 context. For example, a detached `break` is allowed in Scratch but can only return
 inside a loop. Invalid drops preserve both areas.
+Reordering cells or removing a neighboring cell keeps each remaining fragment's
+own text editor and Undo history, including when two fragments have identical text.
 
 **View → Name diagnostics** lists unknown names. This lexical analysis does not
 infer every execution path or inspect third-party runtime objects.
+It detects uses after `del name` until that name receives another value.
 
 ## CLI
 
@@ -462,7 +466,9 @@ in an accessible scope. After **Find creation blocks**, Enter or a double-click
 places a declaration block immediately before the consumer; dragging lets you
 choose its location. A public declaration reuses a compatible missing name, such
 as `drive` in `drive.straight(200)`, instead of inventing `drive_2`. Real declarations
-still reserve their names. Private helpers never capture unresolved references.
+still reserve their names. An annotation alone, such as `drive: DriveBase`, does
+not create a value: the tooltip still offers a creator, which can reuse `drive`.
+Private helpers never capture unresolved references.
 An expression constructor inside a loop runs on every iteration. The editor does
 not choose ports or create prerequisite devices for you.
 Lexical hints cannot prove that every branch or runtime call initializes a name.

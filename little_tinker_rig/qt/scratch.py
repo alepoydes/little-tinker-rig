@@ -2,7 +2,7 @@
 
 import math
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QSignalBlocker, Qt, Signal
 from PySide6.QtWidgets import (
     QApplication,
     QFrame,
@@ -270,30 +270,37 @@ class ScratchPane(QScrollArea):
                 cell.deleteLater()
             self.cells = []
             self.session = session
-        texts = session.document.state.scratch
-        while len(self.cells) > len(texts):
-            cell = self.cells.pop()
-            self.column.removeWidget(cell)
-            cell.deleteLater()
-        for index, text in enumerate(texts):
-            if index < len(self.cells):
-                cell = self.cells[index]
+        state = session.document.state
+        previous = {cell.identity: cell for cell in self.cells}
+        self.cells = []
+        for index, (identity, text) in enumerate(
+            zip(state.scratch_ids, state.scratch, strict=True)
+        ):
+            cell = previous.pop(identity, None)
+            if cell is not None:
+                cell.index = cell.source.scratch_index = index
                 view = cell.source
                 if cell.text != text:
                     cell.text = text
                     cell.code.blockSignals(True)
                     cell.code.replace_formatted(text)
                     cell.code.blockSignals(False)
-                    cell.change_mode(cell.code_active, focus=False)
+                    with QSignalBlocker(cell):
+                        cell.change_mode(cell.code_active, focus=False)
                 if view.session.snippets is not session.snippets:
                     view.session.set_snippets(session.snippets)
                 view.refresh_source()
                 cell.fit()
-                continue
-            cell = ScratchCell(self, index, text)
-            cell.mode_changed.connect(self.changed)
+            else:
+                cell = ScratchCell(self, index, text)
+                cell.identity = identity
+                cell.mode_changed.connect(self.changed)
             self.cells.append(cell)
             self.column.insertWidget(index, cell)
+        for cell in previous.values():
+            self.column.removeWidget(cell)
+            cell.hide()
+            cell.deleteLater()
         self.empty.setVisible(not self.cells)
         self.empty.setText(
             tr(
@@ -410,9 +417,13 @@ class ScratchPane(QScrollArea):
                     snippet, default_bindings(self.session, snippet)
                 )
                 items = list(self.session.document.state.scratch)
+                identities = list(self.session.document.state.scratch_ids)
                 items.insert(position, expansion.source)
+                identities.insert(position, object())
                 self.session.editor.commit(
-                    self.session.document.state.source, tuple(items)
+                    self.session.document.state.source,
+                    tuple(items),
+                    scratch_ids=identities,
                 )
                 self.snippet_inserted.emit(identity)
             event.acceptProposedAction()

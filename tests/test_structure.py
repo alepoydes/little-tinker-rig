@@ -24,6 +24,31 @@ def field(owner, text, occurrence=0):
     ][occurrence]
 
 
+@pytest.mark.parametrize(
+    "source, lines",
+    [
+        ("value = 1\ndel value\nprint(value)\nvalue = 2\nprint(value)\n", [3]),
+        ("del missing\n", [1]),
+        ("a, b = 1, 2\ndel a, b\nprint(a, b)\n", [3, 3]),
+        ("items = [1]\ndel items[0]\nprint(items)\n", []),
+        ("value = 1\ndef f():\n    del value\n    print(value)\n", [3, 4]),
+        (
+            "value = 1\ndef f():\n    global value\n    del value\n    print(value)\n",
+            [5],
+        ),
+        (
+            "def f():\n    value = 1\n    def g():\n        nonlocal value\n        del value\n        print(value)\n",
+            [6],
+        ),
+    ],
+)
+def test_deleted_bindings_are_checked_in_execution_order(source, lines):
+    syntax = Syntax(source)
+    assert [
+        syntax.position(d.span.start)[0] for d in Analysis(syntax).diagnostics()
+    ] == lines
+
+
 def test_receiver_callee_method_parameters_and_nested_leaves_are_editable():
     owner = session("def action(speed=1):\n    left.run(speed + 2)\naction(3)\n")
     change_parameter(owner, field(owner, "left"), "right")

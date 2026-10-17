@@ -25,6 +25,8 @@ In the program, **Edit → Create block from selection** starts a definition fro
 the selected structural block or selected Python text. The program stays intact.
 Declare parameters explicitly in the new signature and use them in its body;
 this action does not guess which constants should become parameters.
+The draft includes imports needed by the selection. Local aliases take precedence
+over imports from its enclosing program, including when selecting code in Scratch.
 
 ## Preview above the source
 

@@ -6,7 +6,7 @@ import re
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QSettings, QSize, QStandardPaths, Qt, QTimer
+from PySide6.QtCore import QEvent, QSettings, QSize, QStandardPaths, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QTextCursor
 from PySide6.QtWidgets import (
     QApplication,
@@ -36,13 +36,18 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from little_tinker_rig.core.authoring import template_from_source, user_collection
+from little_tinker_rig.core.authoring import (
+    selection_imports,
+    template_from_source,
+    user_collection,
+)
 from little_tinker_rig.core.edit import Target, target_position
 from little_tinker_rig.core.expressions import navigate as navigate_expression
 from little_tinker_rig.core.lessons import localized
 from little_tinker_rig.core.parameters import default_bindings
 from little_tinker_rig.core.project import ExternalChangeError
 from little_tinker_rig.core.snippets import LEVELS, load_collection
+from little_tinker_rig.core.syntax import Syntax
 from little_tinker_rig.core.transfer import Transfer
 from little_tinker_rig.examples import examples_directory
 from little_tinker_rig.i18n import (
@@ -276,6 +281,7 @@ class Studio(QMainWindow):
         self.document_mode_changed()
         self.retranslate()
         QApplication.instance().applicationStateChanged.connect(self.application_state)
+        QApplication.instance().installEventFilter(self)
         QApplication.instance().focusChanged.connect(self.focus_changed)
         self.recovery = Recovery(self)
         self.documents.tabBar().tabMoved.connect(lambda *_: self.recovery.schedule())
@@ -1923,6 +1929,25 @@ class Studio(QMainWindow):
     def show_controls(self):
         self.set_mode(1)
 
+    def eventFilter(self, watched, event):
+        # Window shortcuts are disabled by modal dialogs. Stop still belongs to
+        # the Studio that owns the dialog, even with several windows open.
+        if event.type() in (QEvent.Type.ShortcutOverride, QEvent.Type.KeyPress):
+            owner = QApplication.activeModalWidget()
+            while owner is not None and owner is not self:
+                owner = owner.parent()
+            if (
+                owner is self
+                and event.key() == Qt.Key.Key_F6
+                and event.modifiers() == Qt.KeyboardModifier.NoModifier
+                and self.stop_action.isEnabled()
+            ):
+                if event.type() == QEvent.Type.KeyPress and not event.isAutoRepeat():
+                    self.stop_action.trigger()
+                event.accept()
+                return True
+        return super().eventFilter(watched, event)
+
     def application_state(self, state):
         if state != Qt.ApplicationState.ApplicationActive:
             self.controls.armed.setChecked(False)
@@ -2017,6 +2042,7 @@ class Studio(QMainWindow):
             if not cursor.hasSelection():
                 raise ValueError(tr("Select Python source to create a block."))
             source = cursor.selectedText().replace("\u2029", "\n")
+            offset = cursor.selectionStart()
             prefix_cursor = QTextCursor(cursor)
             prefix_cursor.setPosition(cursor.selectionStart())
             prefix_cursor.movePosition(
@@ -2027,6 +2053,9 @@ class Studio(QMainWindow):
                 source = prefix + source
         else:
             source, _ = self.editing_session.extract_selection()
+            offset = self.editing_session.document.syntax.spans[
+                self.editing_session.editor.selection
+            ].start
             match = self.editing_session.selected_match()
             expression = (
                 match.snippet.expression
@@ -2035,21 +2064,15 @@ class Studio(QMainWindow):
             )
         session = self.editing_session
         try:
-            tree = ast.parse(page.text)
+            syntax = Syntax(page.text, fragment=True)
         except SyntaxError:
-            tree = session.document.syntax.tree
+            syntax = session.document.syntax
         context = getattr(session, "context", None)
-        trees = [context.document.syntax.tree, tree] if context else [tree]
-        imports = tuple(
-            dict.fromkeys(
-                ast.unparse(node)
-                for root in trees
-                for node in root.body
-                if isinstance(node, (ast.Import, ast.ImportFrom))
-                and not (
-                    isinstance(node, ast.ImportFrom) and node.module == "__future__"
-                )
-            )
+        imports = selection_imports(
+            source,
+            syntax,
+            offset,
+            context=context.document.syntax if context else None,
         )
         definition = template_from_source(source, imports, expression=expression)
         self.set_mode(3)

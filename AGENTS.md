@@ -57,6 +57,13 @@
   Class-local reads before initialization can fall back to global names; preserve
   those dependencies during cleanup. Include parameter and return annotations,
   including quoted nested types, when retaining imports.
+- An annotation without a value does not initialize or reserve a public creator
+  name. Keep value declarations distinct from lexical ownership in suggestions,
+  expansion and missing-name guidance. Deletion removes initialization, while
+  preserving scope ownership; a later assignment restores it.
+- Capture custom-block imports from free references at the selection boundary.
+  Respect local aliases and Scratch shadowing, and verify the resulting block
+  can be inserted with its dependencies into a fresh program.
 
 ## Workspace interactions
 
@@ -71,6 +78,14 @@
 - Retain the Python text document and its undo history across representation
   and document-tab switches, including Scratch. Each open document owns its
   Scratch widgets. Record structural updates to text buffers as undoable edits.
+- Keep Scratch fragment identity in document history independently of its text
+  and position. Moves, duplicate text and removal of neighboring cells must not
+  exchange text buffers or their undo histories.
+- Stop shortcuts must reach their owning window through modal dialogs. Test
+  multiple windows so stopping one hub cannot target another.
+- Coalesce pending control samples without losing the final neutral frame when
+  input stops. Hub operations discard queued motion; verify delayed delivery and
+  cancellation, not only successful writes on an idle connection.
 - Momentary motor controls return to neutral on mouse/key release and focus loss.
   Cover slider grooves as well as handles: sliderReleased is not a general mouse
   release event. Verify emitted commands, not just the displayed position.

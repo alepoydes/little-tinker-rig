@@ -1197,7 +1197,7 @@ class SourceView(QTextEdit):
             detail += "\n" + "\n".join(issues)
             if isinstance(slot.node, ast.Name):
                 scope = self.session.analysis.resolve(slot.node, slot.node.id)
-                offset = scope.bindings.get(slot.node.id) if scope else None
+                offset = scope.value_bindings.get(slot.node.id) if scope else None
                 if offset is not None and offset > slot.span.start:
                     guidance = tr(
                         "Move the definition of {name} at line {line} before this block.",

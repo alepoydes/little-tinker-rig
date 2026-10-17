@@ -1,3 +1,5 @@
+import pytest
+
 from little_tinker_rig.core.catalog_history import reference
 from little_tinker_rig.core.parameters import (
     change_parameter,
@@ -69,14 +71,19 @@ def test_creation_preserves_real_declarations_and_prefers_selected_consumer(tmp_
     assert default_bindings(session, snippet, 0)["name"] == "rover"
 
 
-def test_creation_search_explains_fix_and_inserts_before_consumer(tmp_path, qt_app):
+@pytest.mark.parametrize(
+    "annotation", ["", "from pybricks.robotics import DriveBase\ndrive: DriveBase\n"]
+)
+def test_creation_search_explains_fix_and_inserts_before_consumer(
+    tmp_path, qt_app, annotation
+):
     from PySide6.QtCore import Qt
     from PySide6.QtTest import QTest
 
     from little_tinker_rig.qt.app import Studio
 
     path = tmp_path / "main.py"
-    path.write_text("drive.straight(200)\n", encoding="utf-8")
+    path.write_text(annotation + "drive.straight(200)\n", encoding="utf-8")
     window = Studio(path)
     window.show()
     qt_app.processEvents()

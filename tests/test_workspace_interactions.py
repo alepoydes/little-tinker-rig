@@ -50,6 +50,98 @@ def parameter(window, name, text, *, view=None):
     return field
 
 
+def test_scratch_history_follows_fragments_across_moves_and_removal(windows):
+    from little_tinker_rig.core.edit import Target
+    from little_tinker_rig.core.transfer import Transfer
+
+    window = windows()
+    session = window.session
+    for _ in range(2):
+        session.set_scratch(None, "value = 1\n")
+    window.scratch_dock.show()
+    window.refresh_views()
+    first, second = window.scratch.cells
+    for cell in (first, second):
+        cell.change_mode(True)
+    Transfer.capture(session, index=0).to_scratch(2)
+    window.refresh_views()
+    assert window.scratch.cells == [second, first]
+    assert session.editor.undo()
+    window.refresh_views()
+    assert window.scratch.cells == [first, second]
+    for cell, text in ((first, "first = 10\n"), (second, "second = 20\n")):
+        cell.code.moveCursor(QTextCursor.MoveOperation.End)
+        cell.code.insertPlainText(text)
+    Transfer.capture(session, index=0).to_program(
+        Target(session.document.syntax.suites[0], 1)
+    )
+    window.refresh_views()
+    assert window.scratch.cells == [second]
+    assert second.index == second.source.scratch_index == 0
+    second.code.undo()
+    assert session.document.state.scratch == ("value = 1\n",)
+    assert "first = 10" in session.document.state.source
+    session.set_scratch(0, "value = 2\n")
+    window.refresh_views()
+    assert window.scratch.cells == [second]
+    second.code.undo()
+    assert session.document.state.scratch == ("value = 1\n",)
+
+
+def test_modal_variant_dialog_routes_stop_to_its_own_window(windows, monkeypatch):
+    from little_tinker_rig.pybricks.devices import HubInfo
+
+    window, other = windows(MOTOR), windows(MOTOR)
+    stopped = []
+    for owner in (window, other):
+        monkeypatch.setattr(
+            owner,
+            "robot",
+            SimpleNamespace(
+                stop_program=lambda owner=owner: stopped.append(owner),
+                close=lambda: None,
+            ),
+        )
+        owner.update_hub(HubInfo(connected=True, running=True))
+    window.activateWindow()
+    window.session.editor.select(window.document_page.text.index("motor ="))
+    window.source.refresh_source()
+
+    def stop():
+        dialog = QApplication.activeModalWidget()
+        QTest.keyClick(dialog, Qt.Key.Key_F6)
+        dialog.reject()
+
+    QTimer.singleShot(10, stop)
+    window.source.edit_variant()
+    assert stopped == [window]
+
+
+def test_scratch_custom_block_keeps_its_own_import_alias(windows, monkeypatch):
+    from little_tinker_rig.core.session import Session
+    from little_tinker_rig.core.snippets import load_module
+
+    window = windows("from math import sqrt as calculate\nmain = 1\n")
+    window.session.set_scratch(
+        None, "from cmath import sqrt as calculate\nresult = calculate(-1)\n"
+    )
+    window.scratch_dock.show()
+    window.refresh_views()
+    cell = window.scratch.cells[0]
+    cell.change_mode(True)
+    cursor = cell.code.document().find("result = calculate(-1)")
+    cell.code.setTextCursor(cursor)
+    captured = []
+    monkeypatch.setattr(window.block_editor, "create", captured.append)
+    window.create_block_from_selection()
+    snippet = load_module(captured[0], "review/custom", "1")[0]
+    target = Session(window.session.project.path.with_name("custom.py"))
+    target.insert_snippet(snippet, {})
+    namespace = {}
+    exec(target.document.state.source, namespace)
+    assert namespace["result"] == 1j
+
+
 def test_pending_parameters_commit_before_blur_save_and_run(windows, monkeypatch):
     window = windows(MOTOR)
     parameter(window, "name", "wheel")

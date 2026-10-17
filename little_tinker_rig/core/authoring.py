@@ -6,10 +6,11 @@ import tomllib
 from dataclasses import replace
 from pathlib import Path
 
-from .analysis import Analysis, annotation_text
+from .analysis import Analysis, Scopes, annotation_nodes, annotation_text, identifiers
 from .block_metadata import change_property, metadata, module_category
 from .edit import reindent
 from .helpers import function_dependencies
+from .imports import import_entries
 from .migration import migrate_module, module_levels, remove_levels
 from .paths import personal_collection
 from .project import atomic_write
@@ -62,6 +63,74 @@ def template_from_source(source: str, imports=(), *, expression=False) -> str:
         '@inline_block(level="intermediate", icon="▶", color="snippet")\ndef my_block():\n    """Describe this block."""\n'
         + reindent(body, 4)
     )
+
+
+def selection_imports(source, syntax, offset, *, context=None):
+    """Capture only free import dependencies, with nearer bindings taking precedence."""
+    selected = Scopes(ast.parse(reindent(source, 0)))
+    used = {
+        node.id
+        for node, _ in selected.references
+        if selected.resolve(node, node.id) is None
+    }
+    for node in annotation_nodes(selected.root.node):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            try:
+                used.update(identifiers(ast.parse(node.value, mode="eval")))
+            except SyntaxError:
+                pass
+    bindings = {}
+    contexts = [(context, len(context.source))] if context else []
+    for current, boundary in [*contexts, (syntax, offset)]:
+        scopes = Scopes(current.tree, current.spans)
+        scope = scopes.scopes.get(current.at(boundary), scopes.root)
+        visible = []
+        while scope:
+            visible.append(scope)
+            scope = scope.parent
+        for scope in reversed(visible):
+            for node, owner in sorted(
+                scopes.scopes.items(),
+                key=lambda item: current.spans.get(
+                    item[0], current.spans[current.tree]
+                ).start,
+            ):
+                span = current.spans.get(node)
+                if owner is not scope or span is None or span.start >= boundary:
+                    continue
+                if isinstance(node, (ast.Import, ast.ImportFrom)):
+                    if isinstance(node, ast.ImportFrom) and (
+                        node.module == "__future__"
+                        or any(a.name == "*" for a in node.names)
+                    ):
+                        continue
+                    bindings.update(import_entries([node]))
+                    continue
+                name = None
+                if isinstance(node, ast.Name) and isinstance(
+                    node.ctx, (ast.Store, ast.Del)
+                ):
+                    parent = current.parent.get(node)
+                    if isinstance(parent, ast.AnnAssign) and parent.value is None:
+                        continue
+                    name = node.id
+                elif isinstance(node, ast.arg):
+                    name = node.arg
+                elif isinstance(
+                    node,
+                    (
+                        ast.FunctionDef,
+                        ast.AsyncFunctionDef,
+                        ast.ClassDef,
+                        ast.ExceptHandler,
+                        ast.MatchAs,
+                        ast.MatchStar,
+                    ),
+                ):
+                    name = node.name
+                if name:
+                    bindings[name] = None
+    return tuple(text for name, text in bindings.items() if name in used and text)
 
 
 def copy_definition(source, name):

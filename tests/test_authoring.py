@@ -8,6 +8,7 @@ import pytest
 
 from little_tinker_rig.core.authoring import (
     DefinitionDraft,
+    selection_imports,
     template_from_source,
     user_collection,
 )
@@ -20,6 +21,46 @@ from little_tinker_rig.core.snippets import (
 )
 
 SOURCE = '@inline_block(level="intermediate", icon="▶", color="action")\ndef show(value=1):\n    """Show a value."""\n    print(value)\n'
+
+
+@pytest.mark.parametrize(
+    "source, selected, expected",
+    [
+        (
+            "from math import sqrt, sin\nresult = sqrt(4)\nfrom cmath import sqrt\n",
+            "result = sqrt(4)",
+            ("from math import sqrt",),
+        ),
+        (
+            "from math import sqrt\ndef f(sqrt):\n    return sqrt(4)\n",
+            "return sqrt(4)",
+            (),
+        ),
+        (
+            "from math import sqrt\ndef f():\n    from cmath import sqrt\n    result = sqrt(-1)\n",
+            "result = sqrt(-1)",
+            ("from cmath import sqrt",),
+        ),
+        (
+            "from math import sqrt\nsqrt = print\nresult = sqrt(4)\n",
+            "result = sqrt(4)",
+            (),
+        ),
+        (
+            'from robot import Motor\ndef move(motor: "Motor"):\n    pass\n',
+            'def move(motor: "Motor"):\n    pass\n',
+            ("from robot import Motor",),
+        ),
+    ],
+)
+def test_selection_imports_follow_scope_and_selection_boundary(
+    source, selected, expected
+):
+    from little_tinker_rig.core.syntax import Syntax
+
+    assert (
+        selection_imports(selected, Syntax(source), source.index(selected)) == expected
+    )
 
 
 def definition(tmp_path, source=SOURCE):

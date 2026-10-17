@@ -4,7 +4,7 @@ import asyncio
 import codecs
 from concurrent.futures import CancelledError
 from dataclasses import replace
-from threading import Event, Thread
+from threading import Event, Lock, Thread
 
 from little_tinker_rig.core.runtime_errors import Tracebacks
 from little_tinker_rig.i18n import tr
@@ -27,6 +27,8 @@ class HubWorker:
         self.info = HubInfo()
         self.connection = None
         self.operation = self.pending = None
+        self.control_lock = Lock()
+        self.latest_control = None
         self.tracebacks = None
         self.stored_program = None
         self.lock = asyncio.Lock()
@@ -63,8 +65,10 @@ class HubWorker:
             self.generation += 1
             if interrupt and self.operation:
                 self.operation.cancel()
-            if self.pending:
-                self.pending.cancel()
+            with self.control_lock:
+                self.latest_control = None
+                if self.pending:
+                    self.pending.cancel()
             self._busy_changed(True)
         generation = self.generation
 
@@ -212,16 +216,35 @@ class HubWorker:
         return self.submit(stop(), operation=True, interrupt=True)
 
     def drive(self, commands):
-        if self.pending and not self.pending.done():
-            return  # Send the latest sample next tick; never queue old controls.
-        if self.connection:
-            self.pending = self.submit(self.connection.drive(commands))
+        self._control("drive", commands)
 
     def send(self, state):
-        if self.pending and not self.pending.done():
-            return
-        if self.connection:
-            self.pending = self.submit(self.connection.send(state))
+        self._control("send", state)
+
+    def _control(self, method, value):
+        with self.control_lock:
+            if not self.connection or self.operation and not self.operation.done():
+                return
+            # Keep one latest sample, including the final neutral frame when
+            # disarming stops the UI timer. Never accumulate obsolete movement.
+            self.latest_control = self.connection, method, value
+            if self.pending is None or self.pending.done():
+                self.pending = self.submit(self._drain_controls())
+
+    async def _drain_controls(self):
+        try:
+            while True:
+                with self.control_lock:
+                    sample, self.latest_control = self.latest_control, None
+                    if sample is None:
+                        self.pending = None
+                        return
+                connection, method, value = sample
+                await getattr(connection, method)(value)
+        except BaseException:
+            with self.control_lock:
+                self.latest_control = self.pending = None
+            raise
 
     def configure(self, port, kind, value=None):
         if isinstance(self.connection, VirtualConnection):

@@ -520,10 +520,10 @@ class Session:
     def expand_snippet(self, snippet, bindings):
         """Public declarations may satisfy missing names; helpers must not capture them."""
         occupied = identifiers(self.document.syntax.tree)
-        declared = set(self.analysis.declared_names)
+        declared = set(self.analysis.value_names)
         if context := getattr(self, "context", None):
             occupied.update(identifiers(context.document.syntax.tree))
-            declared.update(context.analysis.declared_names)
+            declared.update(context.analysis.value_names)
         return instantiate(snippet, bindings, occupied, declared=declared)
 
     def insert_snippet(
@@ -605,13 +605,16 @@ class Session:
         return self.with_imports(prepared, required)
 
     def commit_insertion(
-        self, source, offset, required=(), scratch=None, *, helpers=()
+        self, source, offset, required=(), scratch=None, *, helpers=(), scratch_ids=None
     ):
         imported = self.prepare_insertion(
             source, offset, required, scratch, helpers=helpers
         )
         self.editor.commit(
-            imported, scratch, focus=edit.map_offset(source, imported, offset)
+            imported,
+            scratch,
+            focus=edit.map_offset(source, imported, offset),
+            scratch_ids=scratch_ids,
         )
 
     def change_variant(self, snippet, bindings):
@@ -754,18 +757,25 @@ class Session:
     def to_scratch(self, position=None) -> None:
         text, source = self.extract_selection()
         scratch = list(self.document.state.scratch)
-        scratch.insert(len(scratch) if position is None else position, text)
-        self.editor.commit(source, tuple(scratch))
+        identities = list(self.document.state.scratch_ids)
+        position = len(scratch) if position is None else position
+        scratch.insert(position, text)
+        identities.insert(position, object())
+        self.editor.commit(source, tuple(scratch), scratch_ids=identities)
 
     def set_scratch(self, index: int | None, text: str) -> None:
         scratch = list(self.document.state.scratch)
+        identities = list(self.document.state.scratch_ids)
         if index is None:
             scratch.append(text)
+            identities.append(object())
         else:
             if not 0 <= index < len(scratch):
                 raise ValueError("Scratch index outside workspace")
             scratch[index] = text
-        self.editor.commit(self.document.state.source, tuple(scratch))
+        self.editor.commit(
+            self.document.state.source, tuple(scratch), scratch_ids=identities
+        )
 
     def fragment_imports(self, text):
         """Dependencies come from library definitions, never execute a module."""
@@ -822,4 +832,13 @@ class Session:
             + ((remainder,) if remainder.strip() else ())
             + scratch[index + 1 :]
         )
-        self.commit_insertion(source, offset, self.fragment_imports(text), remaining)
+        identities = self.document.state.scratch_ids
+        self.commit_insertion(
+            source,
+            offset,
+            self.fragment_imports(text),
+            remaining,
+            scratch_ids=identities[:index]
+            + ((identities[index],) if remainder.strip() else ())
+            + identities[index + 1 :],
+        )

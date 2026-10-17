@@ -68,16 +68,18 @@ class Transfer:
     def remaining(self):
         self.validate()
         source, scratch = self.revision.source, list(self.revision.scratch)
+        identities = list(self.revision.scratch_ids)
         if self.origin is None:
             source = self.remainder
         elif self.remainder.strip():
             scratch[self.origin] = self.remainder
         else:
             del scratch[self.origin]
-        return source, scratch
+            del identities[self.origin]
+        return source, scratch, identities
 
     def to_scratch(self, position):
-        source, scratch = self.remaining()
+        source, scratch, identities = self.remaining()
         if (
             self.origin is not None
             and not self.remainder.strip()
@@ -85,7 +87,13 @@ class Transfer:
         ):
             position -= 1
         scratch.insert(position, self.text)
-        self.owner.editor.commit(source, tuple(scratch))
+        identity = (
+            self.revision.scratch_ids[self.origin]
+            if self.origin is not None and not self.remainder.strip()
+            else object()
+        )
+        identities.insert(position, identity)
+        self.owner.editor.commit(source, tuple(scratch), scratch_ids=identities)
 
     def to_program(self, target):
         self.validate()
@@ -139,7 +147,11 @@ class Transfer:
             source = fragment.document.state.source
             scratch = list(self.revision.scratch)
             scratch[index] = format_source(source, fragment=True)
-            self.owner.editor.commit(self.revision.source, tuple(scratch))
+            self.owner.editor.commit(
+                self.revision.source,
+                tuple(scratch),
+                scratch_ids=self.revision.scratch_ids,
+            )
             return
         source = (
             edit.replace(syntax, target, self.text)
@@ -148,7 +160,7 @@ class Transfer:
         )
         if isinstance(target, ast.expr):
             source = fragment._field_source(target, source)
-        main, scratch = self.remaining()
+        main, scratch, identities = self.remaining()
         if (
             self.origin is not None
             and not self.remainder.strip()
@@ -156,4 +168,4 @@ class Transfer:
         ):
             index -= 1
         scratch[index] = format_source(source, fragment=True)
-        self.owner.editor.commit(main, tuple(scratch))
+        self.owner.editor.commit(main, tuple(scratch), scratch_ids=identities)
