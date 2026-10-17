@@ -374,16 +374,20 @@ Undo возвращает убранные ячейки с прежним реж
 Команды преобразования печатают результат. Только `--write` сохраняет файл.
 
 ```sh
-uv run little-tinker-rig inspect examples/first.py
-uv run little-tinker-rig diagnose examples/first.py
-uv run little-tinker-rig snippets examples/first.py
-uv run little-tinker-rig insert main.py python/basics/display --param 'value="Hello!"'
-uv run little-tinker-rig replace main.py '4 + 5' --at 1:4
-uv run little-tinker-rig move main.py --at 2:0 --to 7:0
-uv run little-tinker-rig scratch main.py --at 2:0 --write
-uv run little-tinker-rig restore main.py 0 --at 1:0 --write
-uv run little-tinker-rig format main.py --write
+./.venv/bin/little-tinker-rig inspect examples/first.py
+./.venv/bin/little-tinker-rig diagnose examples/first.py
+./.venv/bin/little-tinker-rig snippets examples/first.py
+./.venv/bin/little-tinker-rig insert main.py python/basics/display --param 'value="Hello!"'
+./.venv/bin/little-tinker-rig replace main.py '4 + 5' --at 1:4
+./.venv/bin/little-tinker-rig move main.py --at 2:0 --to 7:0
+./.venv/bin/little-tinker-rig scratch main.py --at 2:0 --write
+./.venv/bin/little-tinker-rig restore main.py 0 --at 1:0 --write
+./.venv/bin/little-tinker-rig format main.py --write
 ```
+
+В Linux/macOS установленная CLI-команда находится в `./.venv/bin/little-tinker-rig`.
+В Windows используйте `.\.venv\Scripts\little-tinker-rig.exe` из PowerShell.
+После установки параметры `uv` для запуска не нужны.
 
 `inspect` выводит JSON с текстом, структурными областями и распознанными шаблонами.
 `diagnose` возвращает код 1 при предупреждениях, 0 при их отсутствии.
@@ -394,8 +398,11 @@ uv run little-tinker-rig format main.py --write
 Дополнительную библиотеку подключают через общий параметр CLI:
 
 ```sh
-uv run --extra qt little-tinker-rig --collection ./my_snippets qt main.py
+./.venv/bin/little-tinker-rig --collection ./my_snippets qt main.py
 ```
+
+В Windows используйте `.\.venv\Scripts\little-tinker-rig.exe` вместо
+`./.venv/bin/little-tinker-rig`.
 
 После сохранения путь сохраняется в workspace-файле. При распознавании целые
 алгоритмы имеют приоритет перед составляющими их маленькими блоками; текущая

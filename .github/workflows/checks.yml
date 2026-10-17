@@ -39,3 +39,39 @@ jobs:
         run: uv run --all-extras --locked pytest -q
       - name: Build distributions
         run: uv build
+
+  windows-smoke:
+    runs-on: windows-2025
+    timeout-minutes: 20
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.13"
+      - name: Install the editor as documented
+        run: uv sync --locked --no-dev --extra qt
+      - name: Check Windows launchers and virtual hub
+        shell: pwsh
+        run: |
+          $gui = ".\.venv\Scripts\little-tinker-rig-qt.exe"
+          $console = ".\.venv\Scripts\little-tinker-rig-qt-console.exe"
+          $cli = ".\.venv\Scripts\little-tinker-rig.exe"
+          foreach ($launcher in @($gui, $console, $cli)) {
+            if (-not (Test-Path $launcher)) { throw "Missing launcher: $launcher" }
+          }
+          $output = & $cli run examples/first.py --transport virtual --model inventor
+          if ($LASTEXITCODE -ne 0) { throw "Virtual hub run failed" }
+          $greetings = @($output | Where-Object { $_ -eq "Hello from LittleTinker Rig!" })
+          if ($greetings.Count -ne 3) { throw "Expected three greetings, got $($greetings.Count)" }
+          $process = Start-Process -FilePath $gui -PassThru
+          try {
+            Start-Sleep -Seconds 3
+            $process.Refresh()
+            if ($process.HasExited) { throw "Qt editor exited on startup" }
+          } finally {
+            if (-not $process.HasExited) { taskkill /PID $process.Id /T /F | Out-Null }
+          }

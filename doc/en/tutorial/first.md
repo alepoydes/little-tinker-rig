@@ -3,9 +3,9 @@
 A program is a sequence of actions. LittleTinker Rig keeps those actions in an ordinary
 Python file and shows their structure as colored blocks.
 
-```sh
-uv run --extra qt little-tinker-rig-qt examples/first.py
-```
+Open the editor using the shortcut or launcher from [installation](../INSTALL.md),
+then choose **File → Examples → first.py**. No terminal options are needed when
+opening it again.
 
 The narrow icon sidebar on the left switches workspaces, including **Program**,
 **Control**, **Block Editor** and **Help**. Hover over an icon to see its name.
@@ -25,7 +25,7 @@ example and copies its local modules to your chosen folder.
 
 ## From an empty document
 
-Launch `uv run --extra qt little-tinker-rig-qt` without a filename, or choose **File → New**.
+Choose **File → New** for an empty document.
 On first launch, the library starts at Beginner level; later it remembers your
 choice. Select the level button **1** (Beginner) and the **Catalog** view button
 using their tooltips. Open the **Program** category.

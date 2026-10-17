@@ -57,7 +57,7 @@ Use the rules supplied by the installed `pybricksdev`, as described in the
 From the LittleTinker Rig source checkout:
 
 ```sh
-uv run --extra pybricks pybricksdev udev | sudo tee /etc/udev/rules.d/99-pybricksdev.rules
+./.venv/bin/pybricksdev udev | sudo tee /etc/udev/rules.d/99-pybricksdev.rules
 sudo udevadm control --reload-rules
 ```
 

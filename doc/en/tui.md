@@ -3,14 +3,19 @@
 The Textual TUI focuses on Python source and Pybricks tools. It does not include
 blocks, Scratch, lessons or 3D assembly. Qt is not installed by the `tui` extra.
 
+Install the TUI once from the project folder:
+
 ```sh
-uv sync --locked --extra tui --extra pybricks
-uv run --locked --extra tui --extra pybricks little-tinker-rig-tui examples/first.py
+uv sync --locked --no-dev --extra tui
 ```
 
-Omit `--extra pybricks` for editing and virtual hubs alone. Omit the filename to
-start an untitled program. Use `--language ru` for Russian, or choose **Language**
-from the command menu. Firmware and connection requirements are described in
+Then run `.\.venv\Scripts\little-tinker-rig-tui.exe` in Windows PowerShell or
+`./.venv/bin/little-tinker-rig-tui` in a Linux/macOS terminal. The same command
+opens the TUI on later days. Add `--extra pybricks` to the installation command
+for real hubs, keeping `--extra tui` as well. Include `--extra qt` too if you
+also want the graphical editor in this environment. Omit the filename to start an
+untitled program. Choose **Language** from the command menu for Russian.
+Firmware and connection requirements are described in
 [installation](INSTALL.md) and [robotics](robotics.md).
 
 ## Edit and save

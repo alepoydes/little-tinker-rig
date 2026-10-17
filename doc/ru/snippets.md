@@ -38,8 +38,11 @@ format = 2
 **Начать следующую версию…** в редакторе блоков или командой:
 
 ```sh
-uv run little-tinker-rig next-block-version ./my_blocks 1.1.0
+./.venv/bin/little-tinker-rig next-block-version ./my_blocks 1.1.0
 ```
+
+В Windows вместо исполняемого файла Linux/macOS используйте
+`.\.venv\Scripts\little-tinker-rig.exe`.
 
 Та же команда используется для встроенных коллекций в `little_tinker_rig/snippets/` при
 подготовке выпуска. Номер имеет вид `MAJOR.MINOR.PATCH`. Команда проверяет временную

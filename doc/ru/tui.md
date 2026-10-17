@@ -3,13 +3,18 @@
 TUI на Textual предназначен для исходников Python и работы с Pybricks. Блоков,
 Scratch, уроков и 3D-сборки в нём нет. Опция `tui` не устанавливает Qt.
 
+Установите TUI один раз из папки проекта:
+
 ```sh
-uv sync --locked --extra tui --extra pybricks
-uv run --locked --extra tui --extra pybricks little-tinker-rig-tui examples/first.py --language ru
+uv sync --locked --no-dev --extra tui
 ```
 
-Для редактирования и виртуальных хабов достаточно `--extra tui`. Без имени файла
-откроется новая программа. Язык можно переключить командой **Язык** из меню F10.
+После этого запускайте `.\.venv\Scripts\little-tinker-rig-tui.exe` в Windows
+PowerShell или `./.venv/bin/little-tinker-rig-tui` в терминале Linux/macOS.
+В следующие дни команда та же. Для настоящих хабов добавьте
+`--extra pybricks` к команде установки, сохранив `--extra tui`. Если в том же
+окружении нужен графический редактор, оставьте также `--extra qt`. Без имени файла
+откроется новая программа. Язык переключается командой **Язык** из меню F10.
 Требования к подключению и прошивке описаны в разделах [установка](INSTALL.md)
 и [роботы](robotics.md).
 

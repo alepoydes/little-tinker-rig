@@ -77,25 +77,24 @@ controllers, multiple hubs or devices that it cannot simulate. See the
 
 ## Try it from source
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then clone
-the [repository](https://github.com/alepoydes/little-tinker-rig) and run:
+Install [Git](https://git-scm.com/downloads) and
+[uv](https://docs.astral.sh/uv/getting-started/installation/), then clone the
+[repository](https://github.com/alepoydes/little-tinker-rig) and install the editor once:
 
 ```sh
 git clone https://github.com/alepoydes/little-tinker-rig.git
 cd little-tinker-rig
-uv sync --locked --extra qt --extra pybricks --extra gamepad
-uv run --locked --extra qt --extra pybricks --extra gamepad little-tinker-rig-qt
+uv sync --locked --no-dev --extra qt
 ```
 
-For the editor and virtual hubs alone, use `--extra qt` in both commands. Keep the
-same extras when launching: `uv run` synchronizes the selected dependencies.
-Python 3.11+ is supported; uv uses the development version in `.python-version`.
-The `pybricks` extra uses a pinned Git revision of the pybricksdev fork for USB CDC
-and MPY 6.3 support; Git is required for installation. Plain pip and standalone
-wheel installs do not apply this uv source pin. Use the repository's uv workflow
-for real hubs.
-See [installation](doc/en/INSTALL.md) for a regular virtual environment and
-connection requirements.
+Then double-click `.venv\Scripts\little-tinker-rig-qt.exe` on Windows, or run
+`./.venv/bin/little-tinker-rig-qt` on Linux/macOS. You can make a desktop shortcut
+to the Windows executable. Launches do not need `uv` options or a file name.
+For a physical hub, install its tools once with
+`uv sync --locked --no-dev --extra qt --extra pybricks`, then use the same launcher.
+Keep all wanted extras in future `uv sync` commands; sync can remove omitted ones.
+See [installation](doc/en/INSTALL.md) for Windows setup, connection requirements
+and troubleshooting.
 
 1. Open **File → Examples → first.py**, or start an empty document.
 2. Add blocks from the library and edit their parameters. Switch to **Python** to
@@ -111,7 +110,8 @@ work accessible. Save As retains the example association and local modules.
 
 The [first steps guide](doc/en/tutorial/first.md) walks through a small program.
 The command-line tools start with
-`uv run little-tinker-rig inspect examples/first.py`.
+`./.venv/bin/little-tinker-rig inspect examples/first.py` on Linux/macOS, or
+`.\.venv\Scripts\little-tinker-rig.exe inspect examples/first.py` on Windows.
 
 ## Documentation and feedback
 
@@ -143,9 +143,9 @@ uv run --all-extras --locked python tools/check_docs.py
 uv build
 ```
 
-The [GitHub Actions workflow](.github/workflows/checks.yml) runs these checks on
-GitHub's Ubuntu runner, with Qt in offscreen mode and simulated devices. Physical
-Bluetooth/USB, flashing and native 3D rendering still need local checks.
+The [GitHub Actions workflow](.github/workflows/checks.yml) runs full checks on
+Ubuntu and an installation, launcher and virtual-hub smoke check on Windows.
+Physical Bluetooth/USB, flashing and native 3D rendering still need local checks.
 See [USB connection help](doc/en/usb.md) for serial-port permissions and troubleshooting.
 
 See the [project rules](AGENTS.md), [architecture](doc/en/architecture.md), [development invariants](doc/en/development.md)
@@ -156,8 +156,8 @@ Qt is the primary interface. The [Textual terminal workspace](doc/en/tui.md)
 focuses on Python source editing and Pybricks tools: program upload/run, console
 input/output, firmware installation and port monitoring. It has no block editor,
 Scratch or lesson views, and does not require Qt. Start it with
-`uv run --extra tui --extra pybricks little-tinker-rig-tui examples/first.py`;
-omit `--extra pybricks` for editing and virtual hubs alone.
+`./.venv/bin/little-tinker-rig-tui` after installing the `tui` extra; add
+`pybricks` during installation for real hubs. See the [TUI guide](doc/en/tui.md).
 
 ## License and credits
 

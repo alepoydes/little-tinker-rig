@@ -40,9 +40,8 @@ Integration pins must be fetchable from the declared Git remote. Dependency
 changes are validated and committed locally before any separately authorized
 publication; never publish a root revision whose pin cannot be fetched.
 
-Wheel metadata does not carry uv sources or its lockfile. Plain pip/wheel
-installation is documented for the editor and simulator; the tested real-hub
-workflow uses the repository with uv. A future PyPI-only hub installation needs
+Wheel metadata does not carry uv sources or its lockfile. The supported
+user installation uses the repository with uv. A future PyPI-only hub installation needs
 a published client distribution containing the required public APIs.
 
 The uv development environment pins Python 3.13 to use binary wheels for the
@@ -53,9 +52,10 @@ Qt tests run offscreen. Tests covering asyncio worker threads require local
 socketpair communication; a sandbox that denies socketpair writes cannot run
 those tests correctly. No test requires a physical robot.
 
-The GitHub Actions workflow uses a GitHub-hosted Ubuntu runner with offscreen Qt.
-It checks code, documentation, translations, tests and distribution builds.
-Hardware and native OpenGL checks remain local; CI does not need a self-hosted runner.
+The GitHub Actions workflow uses Ubuntu for full checks and a Windows runner for
+the documented no-dev Qt installation, launchers and virtual-hub smoke test.
+Both use offscreen Qt. Hardware and native OpenGL checks remain local; CI does
+not need a self-hosted runner.
 
 ## Invariants
 

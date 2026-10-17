@@ -23,13 +23,10 @@ Bluetooth; также доступны USB и виртуальный хаб. Д�
 Время подключения ограничено 20 секундами. Перед повторной попыткой транспорт
 закрывается, в том числе при зависании нативного USB-драйвера.
 
-Виртуальный хаб не требует дополнительных пакетов связи:
-
-```sh
-uv run --extra qt little-tinker-rig-qt examples/motor.py
-```
-
-Для настоящего хаба добавьте `--extra pybricks`. Bluetooth и старый USB используют
+Виртуальный хаб не требует дополнительных пакетов связи. Откройте в редакторе
+**Файл → Примеры → motor.py** и подключите виртуальный хаб. Для настоящего хаба
+один раз установите опцию `pybricks` по [инструкции](INSTALL.md), затем
+используйте тот же ярлык редактора. Bluetooth и старый USB используют
 публичные API `pybricksdev`; новый USB Serial работает через pySerial.
 Поддержка USB зависит от прошивки и разрешений ОС; в Linux для последовательного
 порта может понадобиться членство в группе `dialout`.
@@ -64,10 +61,14 @@ Bluetooth. Прежний USB-транспорт сохранён для про�
 Запуск из терминала с ожиданием завершения:
 
 ```sh
-uv run little-tinker-rig run examples/motor.py --transport virtual --model boost
-uv run --extra pybricks little-tinker-rig run examples/motor.py --name 'My hub'
-uv run --extra pybricks little-tinker-rig run examples/motor.py --transport usb
+./.venv/bin/little-tinker-rig run examples/motor.py --transport virtual --model boost
+./.venv/bin/little-tinker-rig run examples/motor.py --name 'My hub'
+./.venv/bin/little-tinker-rig run examples/motor.py --transport usb
 ```
+
+В Windows вместо `./.venv/bin/little-tinker-rig` используйте
+`.\.venv\Scripts\little-tinker-rig.exe`. Для настоящего хаба сначала один раз
+установите опцию `pybricks` по [инструкции](INSTALL.md).
 
 ## Информация о хабе
 
@@ -123,7 +124,8 @@ WASD, правый — стрелками, пока соответствующи
 
 ## Физический геймпад
 
-Добавьте `--extra gamepad` и включите **Физический контроллер**.
+Добавьте `--extra gamepad` к [команде установки](INSTALL.md) и включите
+**Физический контроллер**.
 Стики, триггеры и кнопки физического устройства отображаются на экранном
 контроллере и используют те же назначения моторов. pygame-ce использует
 [публичный SDL Controller API](https://www.pygame.org/docs/ref/sdl2_controller.html)
@@ -136,9 +138,13 @@ WASD, правый — стрелками, пока соответствующи
 алгоритма, который читает состояние ввода. Создайте вспомогательный файл:
 
 ```sh
-uv run little-tinker-rig controller examples/little_tinker_rig_controller.py --write
-uv run --extra qt little-tinker-rig-qt examples/drive_controller.py
+./.venv/bin/little-tinker-rig controller examples/little_tinker_rig_controller.py --write
 ```
+
+В Windows используйте `.venv\Scripts\little-tinker-rig.exe`. Затем откройте
+`examples/drive_controller.py` через **Файл → Примеры** и запустите на
+подключённом хабе. Для физического контроллера сначала установите опцию
+`gamepad`.
 
 Запустите программу на выбранном хабе, откройте «Управление», выберите передачу
 в программу и включите команды. Режим не запускает монитор и не меняет алгоритм.

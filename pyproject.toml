@@ -38,8 +38,11 @@ Issues = "https://github.com/alepoydes/little-tinker-rig/issues"
 
 [project.scripts]
 little-tinker-rig = "little_tinker_rig.cli.main:main"
-little-tinker-rig-qt = "little_tinker_rig.qt.app:main"
+little-tinker-rig-qt-console = "little_tinker_rig.qt.app:main"
 little-tinker-rig-tui = "little_tinker_rig.tui.app:main"
+
+[project.gui-scripts]
+little-tinker-rig-qt = "little_tinker_rig.qt.app:main"
 
 [dependency-groups]
 dev = [

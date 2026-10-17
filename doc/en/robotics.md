@@ -50,9 +50,13 @@ its button counts new messages. TUI uses F7/F5/F6 and F8 for its console.
 CLI can wait for completion:
 
 ```sh
-uv run little-tinker-rig run examples/motor.py --transport virtual --model boost
-uv run --extra pybricks little-tinker-rig run examples/motor.py --name 'My hub'
+./.venv/bin/little-tinker-rig run examples/motor.py --transport virtual --model boost
+./.venv/bin/little-tinker-rig run examples/motor.py --name 'My hub'
 ```
+
+On Windows, use `.\.venv\Scripts\little-tinker-rig.exe` in place of
+`./.venv/bin/little-tinker-rig`. Install the `pybricks` extra once, as described
+in [installation](INSTALL.md), before using a real hub.
 
 The device panel shows hub identity, firmware, battery and port readings.
 **Hub and devices** and **Scratch** share the right dock as tabs. Their buttons
@@ -94,9 +98,12 @@ Disconnecting it disables commands. To feed your own program instead, select
 **Send controller input to my program** and use the helper:
 
 ```sh
-uv run little-tinker-rig controller examples/little_tinker_rig_controller.py --write
-uv run --all-extras little-tinker-rig-qt examples/drive_controller.py
+./.venv/bin/little-tinker-rig controller examples/little_tinker_rig_controller.py --write
 ```
+
+On Windows, use the `.venv\Scripts\little-tinker-rig.exe` CLI instead. Then open
+`examples/drive_controller.py` in the editor from **File → Examples** and run it
+on the connected hub. Install the `gamepad` extra first for a physical controller.
 
 `Controller.update()` reads `left_x`, `left_y`, `right_x`, `right_y`,
 `left_trigger`, `right_trigger`, a 16-bit `buttons` mask and legacy `slider`.

@@ -1,65 +1,107 @@
-# Installation
+# Installation and first launch
 
-LittleTinker Rig runs on your computer. Programs for real robots run on Pybricks firmware;
-the included virtual hubs need no hardware or connection packages. Python 3.11+
-is supported. The development interpreter and exact dependencies are recorded in
-`.python-version` and `uv.lock`.
+LittleTinker Rig runs on your computer. The editor and virtual hubs need no robot.
+Programs for physical hubs require compatible Pybricks firmware. Start with the
+virtual hub; [robot connections](robotics.md) and [USB help](usb.md) are separate
+steps. The Windows desktop shortcut and physical hardware still need hands-on
+verification.
 
-Get the source from [GitHub](https://github.com/alepoydes/little-tinker-rig):
+## Install the editor once
+
+Install [Git](https://git-scm.com/downloads) and
+[uv](https://docs.astral.sh/uv/getting-started/installation/). On Windows, open
+PowerShell and, if WinGet is available, run:
+
+```powershell
+winget install --id Git.Git -e --source winget
+winget install --id astral-sh.uv -e --source winget
+```
+
+If WinGet is unavailable, use the linked installers. Close and reopen PowerShell
+after installation so it can find `git` and `uv`. On Linux or macOS, install these
+tools using the linked instructions or your package manager. Then, in a terminal,
+choose where you want to keep the project and run:
 
 ```sh
 git clone https://github.com/alepoydes/little-tinker-rig.git
 cd little-tinker-rig
+uv sync --locked --no-dev --extra qt
 ```
 
-The supported installation for real hubs uses [uv](https://docs.astral.sh/uv/)
-from the repository. Git must be installed:
+Keep the project folder in place: the installed editor uses it. `uv` creates an
+isolated `.venv` and obtains the Python version in `.python-version` if needed;
+you do not need to activate the environment. The project supports Python 3.11+
+and uses 3.13 for this checkout. `--locked` keeps the recorded
+dependencies, `--no-dev` skips developer tools, and `--extra qt` installs the
+graphical editor. These options belong to installation, not daily launch.
+
+## Open the editor any time
+
+On Windows, double-click `little-tinker-rig-qt.exe` in the project's
+`.venv\Scripts` folder, or run this from the project folder in PowerShell:
+
+```powershell
+.\.venv\Scripts\little-tinker-rig-qt.exe
+```
+
+To make daily launch easier, right-click the `.exe` in File Explorer, create a
+shortcut (use **Show more options** if needed), and move the shortcut to the
+desktop. Keep the project folder at its original location. On Linux or macOS,
+launch from the project folder with:
 
 ```sh
-uv sync --all-extras --locked
-uv run --all-extras --locked little-tinker-rig-qt examples/courier.py
+./.venv/bin/little-tinker-rig-qt
 ```
 
-For just the desktop editor and virtual hubs, use `--extra qt`. Other extras are
-`tui` for the Textual terminal interface, `pybricks` for Bluetooth/USB, and
-`gamepad` for SDL controllers. `uv run` synchronizes the selected extras, so keep
-the extras you need in the command. `--no-dev` omits development tools.
+On first launch, open **File → Examples → first.py**, choose **Connect hub →
+Virtual hub → Robot Inventor / SPIKE Prime → Connect**, and press **F5 / Run**.
+Open **Console** to see the greeting three times. No file path is needed when
+starting the editor; use **File → Examples** or **File → Open** inside it.
 
-The `pybricks` extra installs a tested Git revision of the
-[pybricksdev fork](https://github.com/alepoydes/pybricksdev), including its USB CDC
-adapter and MPY 6.3 compiler support. Both the revision and resolved dependencies
-are pinned; `--locked` prevents installation from silently changing them.
+English is the initial interface language. Choose **View → Language → Русский**
+for Russian; the setting and offline help are saved with your preferences.
+The [first steps guide](tutorial/first.md) continues from this example.
 
-For a terminal editor with hub tools, see the [TUI guide](tui.md). It requires
-`--extra tui --extra pybricks`, without Qt or 3D dependencies.
+## Add a physical hub or controller later
 
-For the editor and virtual hubs only, a regular virtual environment also works:
+From the project folder, run this installation command once to add Bluetooth
+and supported USB connections:
 
 ```sh
-python -m venv .venv
-# Activate .venv, then:
-python -m pip install '.[qt,gamepad]'
-little-tinker-rig-qt examples/courier.py
+uv sync --locked --no-dev --extra qt --extra pybricks
 ```
 
-Installing a wheel or using plain pip does not apply `[tool.uv.sources]` or
-`uv.lock`; adding the `pybricks` extra that way does not select the required fork.
-Use the repository's uv workflow for the tested USB/BLE integration.
+The same editor shortcut now has hub tools; no extra options are needed to launch
+it. This installs a pinned Git revision of the
+[pybricksdev fork](https://github.com/alepoydes/pybricksdev). A physical gamepad
+also needs `--extra gamepad` in the installation command. When you add a feature
+or update the checkout, repeat `uv sync` with *all* the extras you want to keep:
+syncing without a previously selected extra can remove it from `.venv`.
 
-English is the default on first launch. Choose **View → Language → Русский**
-for Russian. The choice is remembered, including existing Russian preferences. Switching language
-preserves open documents, incomplete text and undo histories. Help is bundled
-with the package and works offline.
+A real hub must run suitable Pybricks firmware. Stable Inventor/Prime 4.0.1 uses
+Bluetooth; USB Serial needs compatible beta firmware. Follow the
+[robot guide](robotics.md) for your hub and [USB help](usb.md) for port and
+firmware details. EV3 USB support is experimental and untested on hardware.
 
-Existing PyBlocks settings, user libraries and cached downloads are retained.
-Fresh installations use `little-tinker-rig` in the operating system's user data
-and cache directories. New student projects use `.ltr`; existing `.pyblocks`
-projects and `.pyblocks.json` workspaces remain readable.
+For the terminal editor, see the [TUI guide](tui.md); install its `tui` extra once
+and launch its executable directly in a terminal.
 
-If a dependency is missing, install its extra. If Qt cannot find a platform
-plugin, check your desktop session and system Qt dependencies. For headless use,
-choose TUI; `QT_QPA_PLATFORM=offscreen` is intended for tests. Bluetooth requires
-a powered Pybricks hub and no other app connected to it. USB requires a data
-cable and operating-system device permissions.
+## If something does not start
 
-Next: [first steps](tutorial/first.md), [editing](usage.md), [robots](robotics.md).
+- If `git` or `uv` is not found after installation, reopen the terminal and check
+  `git --version` or `uv --version`.
+- If the editor does not open on Windows, run
+  `.\.venv\Scripts\little-tinker-rig-qt-console.exe` from PowerShell to see the
+  startup error. On Linux/macOS, start the editor from a terminal to see it.
+- If an optional module is missing, rerun `uv sync` with the required extras.
+  `PySide6` needs `qt`; `pybricksdev` needs `pybricks`.
+- If Qt cannot create a display, check the desktop session and graphics driver;
+  for headless use, choose the [TUI](tui.md). If only 3D fails, text steps and
+  parts lists remain available.
+- For a missing or busy real hub, close other hub apps and check Bluetooth or
+  the USB cable and port in [USB help](usb.md).
+
+Fresh installations store preferences, student projects and downloads in the
+operating system's user directories. Existing PyBlocks settings, `.pyblocks`
+projects and `.pyblocks.json` workspaces remain readable; new lesson projects
+use `.ltr`.

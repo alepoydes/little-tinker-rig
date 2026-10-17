@@ -36,8 +36,11 @@ Before changing a published collection, archive its saved definitions and advanc
 the version with **Start next version…** in Block Editor or:
 
 ```sh
-uv run little-tinker-rig next-block-version ./my_blocks 1.1.0
+./.venv/bin/little-tinker-rig next-block-version ./my_blocks 1.1.0
 ```
+
+On Windows, use `.\.venv\Scripts\little-tinker-rig.exe` in place of the
+Linux/macOS executable.
 
 The same command works for built-in collections in `little_tinker_rig/snippets/` during
 release development. Versions use `MAJOR.MINOR.PATCH`. The command validates a

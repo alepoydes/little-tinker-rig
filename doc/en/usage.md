@@ -308,20 +308,25 @@ Coordinates refer to the formatted source returned by `inspect`: lines start at
 only `--write` saves it.
 
 ```sh
-uv run little-tinker-rig inspect examples/courier.py
-uv run little-tinker-rig diagnose examples/courier.py
-uv run little-tinker-rig snippets main.py
-uv run little-tinker-rig insert main.py python/basics/display --param 'value="Hello"'
-uv run little-tinker-rig replace main.py '4 + 5' --at 1:4
-uv run little-tinker-rig move main.py --at 2:0 --to 7:0
-uv run little-tinker-rig scratch main.py --at 2:0 --write
-uv run little-tinker-rig restore main.py 0 --at 1:0 --write
-uv run little-tinker-rig format main.py --write
+./.venv/bin/little-tinker-rig inspect examples/courier.py
+./.venv/bin/little-tinker-rig diagnose examples/courier.py
+./.venv/bin/little-tinker-rig snippets main.py
+./.venv/bin/little-tinker-rig insert main.py python/basics/display --param 'value="Hello"'
+./.venv/bin/little-tinker-rig replace main.py '4 + 5' --at 1:4
+./.venv/bin/little-tinker-rig move main.py --at 2:0 --to 7:0
+./.venv/bin/little-tinker-rig scratch main.py --at 2:0 --write
+./.venv/bin/little-tinker-rig restore main.py 0 --at 1:0 --write
+./.venv/bin/little-tinker-rig format main.py --write
 ```
+
+`./.venv/bin/little-tinker-rig` is the installed CLI on Linux/macOS. On Windows,
+use `.\.venv\Scripts\little-tinker-rig.exe` from PowerShell. Neither launcher
+needs `uv` options after installation.
 
 `diagnose` exits with 1 for warnings and 0 otherwise. Input/transformation errors
 exit with 2. `little-tinker-rig --help` lists commands. Add a collection with
-`little-tinker-rig --collection ./my_snippets qt main.py`; saving remembers its path.
+`./.venv/bin/little-tinker-rig --collection ./my_snippets qt main.py`; saving
+remembers its path.
 See [authoring snippets](snippets.md) and [robot control](robotics.md).
 
 ![Multiple documents, inline parameters and the English interface](images/editor.png)
