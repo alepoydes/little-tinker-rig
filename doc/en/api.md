@@ -15,10 +15,15 @@ session.insert_snippet(snippet, {"value": '"Hello"'})
 session.project.save()
 ```
 
-`State(source, scratch)` is immutable. `Document.commit(source, scratch=None)`
-validates and formats before publication and returns whether it changed anything.
-Failure changes neither state nor history. `None` retains Scratch. Empty commits
-do not clear redo. Use Editor.undo/redo when keeping an editor selection.
+`State` is immutable and stores the valid `source` projection, `scratch`,
+fragment `scratch_ids` and an optional raw Python `draft`. `State.text` returns the
+draft when present, otherwise the source. `Document.commit(source, scratch=None)`
+validates and formats structural edits before publication and returns whether
+state changed. Failure changes neither state nor history; `None` retains Scratch.
+`Document.set_draft(text)` records unrestricted text in the same history. Commit
+with `apply_draft=True` when applying a valid draft to its structural projection.
+Unchanged visible content does not add an Undo entry or clear Redo. Use
+Editor.undo/redo when keeping an editor selection.
 
 `Session(path, collections=(), allow_draft=False)` combines Project, Editor,
 collections, recognition and analysis. `matches`, `visible_matches` and `analysis`
@@ -31,8 +36,9 @@ write UTF-8 without a BOM, normalizing an active encoding declaration in the sav
 state. Saving uses atomic
 per-file replacement and protects Scratch across interrupted multi-file saves.
 With `allow_draft=True`, invalid source is returned in `project.draft` while the
-committed document starts empty. Commit corrected source and clear `draft` before
-saving. Structural CLI commands use the default strict behavior. TUI uses
+structural projection starts empty. The draft can be saved without parsing.
+Commit corrected source with `apply_draft=True` to resume structural editing.
+Structural CLI commands use the default strict behavior. TUI uses
 `SourceFile` independently: it shares UTF-8 normalization, preserves other source
 text and checks disk changes
 without parsing, formatting or rewriting block workspace metadata.
@@ -110,8 +116,9 @@ conflict, and OSError a file/device failure. Failed source edits are never publi
 ## Detached fragments
 
 `Session.fragment(text, snippets)` creates a structural projection without a file.
-It formats and parses, but does not compile the surrounding execution context or
-add imports. Arbitrary invalid text stays separately in Scratch.
+It removes the common indentation and parses without canonical formatting,
+compiling the surrounding execution context or adding imports. Structural edits
+format their new source. Arbitrary invalid text stays separately in Scratch.
 `Transfer.capture(owner, index=None, fragment=None)` prepares a move without
 changing state. `to_scratch(position)`, `to_program(target)` and
 `to_fragment(index, session, target)` check the revision and commit both areas in

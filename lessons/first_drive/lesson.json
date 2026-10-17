@@ -74,12 +74,12 @@
       "starter": "setup.py",
       "hints": [
         {
-          "en": "Start with “Set up a two-wheel robot”. Set the wheel diameter to 56 and axle track to 136.",
-          "ru": "Начни с «Создать двухколёсного робота». Диаметр колеса — 56, колея — 136."
+          "en": "Start with “Set up drive base”. Set the wheel diameter to 56 and axle track to 136.",
+          "ru": "Начни с «Настроить ходовую часть». Диаметр колеса — 56, колея — 136."
         },
         {
-          "en": "Place “Drive a distance, then stop” after setup. Set distance to 200.",
-          "ru": "После настройки добавь «Проехать расстояние и остановиться». Расстояние — 200."
+          "en": "Place “Drive straight” after setup. Set distance to 200.",
+          "ru": "После настройки добавь «Проехать прямо». Расстояние — 200."
         }
       ]
     },
@@ -161,8 +161,8 @@
           "ru": "После настройки колёсной базы создай датчик расстояния на D."
         },
         {
-          "en": "Add “Drive until an ultrasonic obstacle, then brake”. Keep speed 100 mm/s and distance 100 mm.",
-          "ru": "Добавь «Ехать до препятствия и затормозить». Скорость — 100 мм/с, расстояние — 100 мм."
+          "en": "Add “Stop near object”. Keep speed 100 mm/s and distance 100 mm.",
+          "ru": "Добавь «Остановиться у объекта». Скорость — 100 мм/с, расстояние — 100 мм."
         }
       ]
     }

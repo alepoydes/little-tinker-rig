@@ -18,10 +18,9 @@ together, with their introduction levels and complete Python source.
 
 | Category | Available actions |
 |---|---|
-| Program | Repeat a number of times; wait for time |
+| Program | Console output; repeat a number of times; wait for time or a color |
 | Motors and movement | Connect a motor; finite motor moves; set up a two-wheel robot; drive, turn and brake; line following, conveyor, drawing, dance, gripper, and remote driving actions |
-| Sensors and input | Connect a SPIKE or BOOST color sensor; wait for a color |
-| Light and sound | Console output |
+| Sensors and input | Connect a SPIKE or BOOST color sensor |
 
 Start with one motor and a finite movement. Change an angle from `90` to `-90`,
 put two movements in sequence, and repeat them. Next add a sensor wait. Try
@@ -29,8 +28,9 @@ put two movements in sequence, and repeat them. Next add a sensor wait. Try
 on BOOST. The virtual sensor reports white at reflection 50 or above and black
 below 50; physical sensors distinguish more colors.
 
-Then use **Set up a two-wheel robot in one block**. Select different left/right
-ports and the wheel diameter and axle track in millimeters. The default reverses
+Then use **Set up drive base** under **Motors and movement → Two-wheel drive bases**.
+Select different left/right ports and the wheel diameter and axle track in
+millimeters. The default reverses
 the left motor for a mirrored chassis. Add a distance move and a turn. Expanding
 the setup reveals ordinary motor constructors and `DriveBase`, so directions
 and individual motors can be edited later.

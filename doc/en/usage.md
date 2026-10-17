@@ -132,9 +132,11 @@ and Undo; Run/Upload requires filling them. Collection and argument controls add
 remove and reorder items. The context menu also offers wrapping and keeping one
 operand of an expression. Optional Python expression entry remains available.
 
-The library filters expression blocks for the current input, including known type
-and unit contracts. Unknown types remain available. When a selected block has more
-than one suitable input, choose the destination from the offered list; hovering
+Use **Find value blocks** in the input's context menu to filter the library by
+known type and unit contracts. Selection alone does not filter it; local
+expression search and the pinned catalog search are separate actions. Unknown
+types remain available. When a selected block has more than one suitable input,
+choose the destination from the offered list; hovering
 highlights that input. Levels still limit the catalog.
 
 | Action | Qt |
@@ -191,13 +193,13 @@ or Python API name. Search includes English names in every interface language.
 Direct title matches appear before incidental matches within each category.
 Search previews the best matching variant; you can still choose another variant.
 Clearing search restores the previous selection and open branches. A message
-explains matches hidden by the level, lesson palette, or selected parameter.
+explains matches hidden by the level, lesson palette, or explicit input search.
 
 A card represents a family of related operations. Right-click it and choose a
 **Variant**; the card's preview shows the Python that will be inserted.
-The level, lesson palette, and selected
-input also filter variants. Changing a catalog variant does not edit code already
-in the program. Drag the card to the intended position. Double-click also inserts
+The level, lesson palette, and explicit input search also filter variants.
+Changing a catalog variant does not edit code already in the program.
+Drag the card to the intended position. Double-click also inserts
 at the current selection.
 
 - **Favorites:** click the star on a card to add or remove its link; a filled star

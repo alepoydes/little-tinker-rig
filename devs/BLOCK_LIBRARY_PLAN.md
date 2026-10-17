@@ -1,7 +1,9 @@
 # Block library work plan
 
-Status: initial delivery complete; follow-up catalog and dependency work is planned
-below. Baseline and verification date: October 16, 2026.
+Status: initial delivery and the recorded catalog/dependency follow-ups are complete.
+The delivery sequence below records the October 16, 2026 baseline and completed
+work; it is not a list of outstanding tasks. Project/model applicability filtering
+remains deferred. Use the source-derived inventory for current catalog membership.
 
 The source-derived [inventory](BLOCK_LIBRARY_INVENTORY.md) accounts for all 253
 templates. Consolidation defines 191 families, with 250 selectable forms

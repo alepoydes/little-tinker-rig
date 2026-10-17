@@ -1,8 +1,8 @@
 # Stop before the obstacle
 
-Keep the robot setup. Remove the earlier journeys and turns (or move them to Scratch). Add **Connect an ultrasonic distance sensor**, with name **distance** and port **D**.
+Keep the robot setup. Remove the earlier journeys and turns (or move them to Scratch). Add **Connect sensor** (variant **Ultrasonic sensor**), with name **distance** and port **D**.
 
-Add **Drive until an ultrasonic obstacle, then brake**. Use the drive base **drive**, sensor **distance**, threshold **100 mm**, and speed **100 mm/s**.
+Add **Stop near object**. Use the drive base **drive**, sensor **distance**, threshold **100 mm**, and speed **100 mm/s**.
 
 Put a large upright object in front of the robot. Run the program and keep **Stop** within reach. Check whether it stops about 100 mm from the sensor. Try a different threshold and predict the result.
 

@@ -180,8 +180,9 @@ The pinned filter survives moving the pointer to the catalog. A compact existing
 status/back control identifies the input and restores the previous catalog view,
 search, selection and expansion on exit. It must not silently widen lesson or
 level restrictions: explain when a provider is hidden and offer an explicit way
-to change the relevant filter. The existing selected-expression filter is not
-sufficient for statement creators and must not be reused as if they were values.
+to change the relevant filter. Creation search filters declarations by what they
+produce; value search filters expressions by the input contract. Selection alone
+does not activate either search.
 
 ## Hubs and controls
 

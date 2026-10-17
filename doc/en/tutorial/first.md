@@ -7,11 +7,13 @@ Python file and shows their structure as colored blocks.
 uv run --extra qt little-tinker-rig-qt examples/first.py
 ```
 
-The narrow tabs on the left switch between **Program**, **Control** and **Help**.
+The narrow icon sidebar on the left switches workspaces, including **Program**,
+**Control**, **Block Editor** and **Help**. Hover over an icon to see its name.
 The library shows a block's description and Python preview. Files open in tabs
 across the top. The two small icons at the top right of the document switch
 between **Blocks** and **Python**; the same commands are in the View menu.
-**Scratch** is visible on the right; drag blocks there to set them aside.
+**Scratch** starts hidden; open it with the bottom button and drag blocks there
+to set them aside.
 **Console** opens from the bottom bar.
 
 The **File → Examples** menu opens the bundled programs, including all subdirectories.
@@ -20,11 +22,13 @@ It opens the example file itself; use **Save as** to keep your own variation.
 ## From an empty document
 
 Launch `uv run --extra qt little-tinker-rig-qt` without a filename, or choose **File → New**.
-The library starts at Beginner level. Open the **Program** category.
+On first launch, the library starts at Beginner level; later it remembers your
+choice. Select the level button **1** (Beginner) and the **Catalog** view button
+using their tooltips. Open the **Program** category.
 
-1. Drag **Repeat actions with a counter** into the empty program.
+1. Drag **Repeat with counter** into the empty program.
 2. Click `10`, type `3`, and press Enter.
-3. Drag **Display a value in the console** from **Light and sound** onto `pass` inside the loop.
+3. Drag **Display value**, also in **Program**, onto `pass` inside the loop.
    The action replaces `pass` inside the loop.
 4. Change `"Hello!"` to your own quoted message and press Enter.
 5. Choose **Connect hub → Virtual hub → Robot Inventor / SPIKE Prime → Connect**.
@@ -37,10 +41,15 @@ use **File → Open** or **Open recent** to continue it later.
 
 ## Change a parameter
 
-Click the visible field around `message` in `print(message)`. Select a suggestion
-or type `"Hello, robot!"`, including the quotes, and press Enter. The editor
-updates the Python source immediately. Invalid input stays in the inline field so
-you can correct it; the program is unchanged. Click outside or press Escape to cancel.
+Click the quoted message in your `print(...)` block. Type `"Hello, robot!"`,
+including the quotes, and press Enter. If you opened `examples/first.py`, click
+`message` in `print(message)` instead. Suggestions have an arrow only when
+alternatives are available.
+
+Enter, choosing a suggestion or leaving the field applies valid input. Save and
+Run also apply it first. Escape cancels the edit. Invalid input stays visible and
+editable; correct or cancel it before saving, running or leaving the document.
+**Stop / F6** and disconnect remain available and preserve the unfinished field.
 
 Quoted text is a string. An unquoted word refers to a variable. A number such as
 `42` needs no quotes. F3 opens the selected block's parameter editor.
@@ -52,10 +61,14 @@ indentation. Release to insert the default values immediately; no dialog appears
 Click its parameter fields to adapt it. To insert a statement from the library
 without dragging, double-click its card; insertion uses the current selection.
 
-Drag an existing block to move it. A block's selected background slowly pulses;
-it has no selection border. Python rules still apply: a `break` cannot move outside
-a loop. Empty loop, condition and function bodies contain `pass`. Click that row
+Drag an existing block to move it. Its background and outline show selection.
+Python rules still apply: a `break` cannot move outside a loop. Empty loop,
+condition and function bodies contain `pass`. Click that row
 before double-clicking a library card, or drag onto it, to fill the body.
+
+To put an action after the final loop, drop it in the empty space below the
+program. Check the destination preview before releasing. Dropping onto the lower
+half of the last row inside the loop keeps it inside the loop.
 
 Ctrl+Z undoes an operation; Ctrl+Shift+Z redoes it. The Python icon opens an ordinary
 text editor. It accepts unfinished text and formats valid Python when you save,
@@ -80,8 +93,9 @@ unsaved changes. Cancelling keeps it open.
 Ctrl+S saves the Python file. Scratch fragments and collection settings are stored
 beside it in `name.py.ltr.json`; the Python program does not need that file to
 run. In Blocks, Ctrl+X moves a fragment to Scratch. In Python, Ctrl+X is ordinary
-text cutting. External changes to a file are detected before saving: reopen the
-current file or use Save as to another path.
+text cutting. If a file changes outside the editor, Save offers **Reload from
+disk**, **Save a copy…**, or Cancel. Reload replaces the open version; ordinary
+Open just selects its tab. See [editing and recovery](../usage.md#documents-and-views).
 
 Ctrl+S also saves unfinished Python. Fix its syntax before running or switching
 back to Blocks. After a crash, the editor offers to recover open tabs, unsaved text

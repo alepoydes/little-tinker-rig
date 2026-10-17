@@ -23,8 +23,11 @@ Each stage shows a small palette, including its permitted contextual expression
 operations. Existing code still uses the full library for recognition and editing.
 **Show all blocks**, in the block library, enables free experiments while retaining
 lesson progress.
-When an input is selected, the library offers suitable expressions. **← Back to
-whole blocks** (or Escape in the editor) returns to adding complete actions.
+Selecting or hovering over an input does not filter the library. Right-click the
+input and choose **Find value blocks** to search for compatible expressions, or
+**Find creation blocks** to find a declaration for a missing variable. The back
+button above the catalog restores the previous view and search. Escape in the
+editor returns selection to the enclosing statement.
 Ordinary **File → New** creates a program outside the lesson, with the normal library.
 
 ## Pybricks projects

@@ -13,6 +13,18 @@
 - Keep Python keywords, identifiers, and executable code independent of UI
   language. Translation must not change program semantics.
 
+## Documentation consistency
+
+- Update affected guides, lesson steps and hints in every supported user language
+  with changes to UI labels, catalog placement or interaction behavior. Use the
+  visible localized card title and variant, not a description's first sentence.
+- Verify documented workflows against the current controls and behavior. Link
+  checks verify navigation, not factual accuracy; exercise the introductory path
+  through the GUI when changing it.
+- Keep current contracts distinct from proposed designs and dated delivery
+  evidence. Remove resolved items from open decisions, and link to the maintained
+  guide or source-derived inventory instead of duplicating changing details.
+
 ## Structural editing
 
 - Identify insertion destinations by their statement suite and index. Equal

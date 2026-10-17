@@ -223,11 +223,14 @@ minimized state or replace saved geometry when closing is cancelled.
 
 ### 7.1 Main source
 
-The main editor represents a valid Python program.
+The block view represents a valid structural projection. Inline fields and local
+fragment dialogs apply only syntactically valid edits; invalid input remains
+editable until corrected or explicitly cancelled. Valid inline input applies on
+Enter, suggestion acceptance or leaving the field, including before Save and Run.
 
-A local text edit may be temporarily incomplete while an editor field is active, but the user may only commit/finish an edit in the main source when the resulting Python is syntactically valid.
-
-If an edit is invalid, the user can continue editing or cancel it and restore the previous valid state.
+Full-document Python view may contain and save unfinished text. Its draft shares
+document history with blocks and Scratch. Run, Upload and switching to Blocks
+require valid syntax; saving a text draft does not. See section 43.
 
 ### 7.2 Scratch workspace
 
@@ -244,7 +247,11 @@ It is a place for:
 
 A Scratch item may therefore be either valid Python or arbitrary dirty text.
 
-The persistence format for Scratch content has **not yet been decided**. It must not contaminate `main.py` with editor-specific metadata.
+Scratch is persisted as text fragments in the sibling `name.py.ltr.json` workspace,
+alongside collection paths and pins. Lesson projects package these files in `.ltr`.
+Editor metadata never enters the Python source. See the
+[file API](../doc/en/api.md#documents-and-sessions) and
+[lesson project guide](../doc/en/lessons.md).
 
 ### 7.3 Moving between main and Scratch
 
@@ -270,10 +277,14 @@ if condition:
 and where an expression is structurally required:
 
 ```python
-some_call(None)
+some_call(...)
 ```
 
 `pass` and `...` are examples of context-dependent valid placeholders. The exact rules for when to introduce them should remain simple and Python-native.
+
+`None` is an ordinary Python value, not an unfilled input. Empty required suites
+use `pass`; unfinished expressions use `...`. Save preserves unfinished inputs;
+Run and Upload require filling them.
 
 The UI may present an automatically introduced placeholder as an editable slot rather than emphasizing the literal `...` or `pass` to a beginner.
 
@@ -1016,15 +1027,17 @@ Because typical educational and robotics source files are small, the preferred i
 
 A logical state includes at least:
 
-- main source text;
-- Scratch workspace contents if Scratch is persistent in the current session.
+- the valid source projection and optional full-document Python draft;
+- Scratch text and fragment identities.
 
-After every committed atomic operation:
+After an atomic operation changes visible text or fragment identities:
 
 - push the previous state to undo history;
 - clear redo history.
 
-Undo restores an earlier source state and reparses it.
+Undo restores the earlier snapshot and its structural projection. Parsing an
+unchanged draft does not add a history entry or clear Redo. Fragment identities
+keep Scratch text widgets, cursors and modes attached to their own history.
 
 This is expected to be simpler and more reliable than writing inverse transformations for every operation.
 
@@ -1331,31 +1344,39 @@ physical gamepad -------+--> normalized control state --> Pybricks connection --
 keyboard ---------------+
 ```
 
-The exact normalized state format is not finalized.
+`ControlState` defines four axes in `[-1, 1]`, two triggers and a legacy slider
+in `[0, 1]`, and a 16-bit button mask. The
+[hub/input API](../doc/en/api.md#hubs-and-input) specifies its stdin frames.
 
 The controller input implementation should be optional so that users who do not need physical gamepads do not inherit unnecessary dependencies.
 
-A mature cross-platform controller library based on SDL is a plausible implementation direction, but the exact dependency is not yet selected.
+The optional `gamepad` extra uses pygame-ce's SDL controller API. Its input is
+normalized to the same state as the screen controls.
 
 ---
 
 ## 39. Source-side controller API
 
-The eventual user-facing Pybricks code should be ordinary readable Python.
-
-A future convenient API may allow code conceptually like:
+The bundled `little_tinker_rig_controller.py` helper is ordinary Python. Generate
+it beside a hub program with the CLI `controller` command. Call `update()` on
+each control-loop iteration:
 
 ```python
 controller = Controller()
 
 while True:
+    controller.update()
     drive.drive(
         controller.left_y * 500,
         controller.left_x * 120,
     )
+    wait(20)
 ```
 
-Whether this helper lives in a small bundled hub-side module, is generated inline, or uses an existing Pybricks application-data API has not yet been finalized.
+The helper uses Pybricks `read_input_byte` and owns stdin. Stale input becomes
+neutral after 500 ms; the program must apply that state to its motors. Import
+`Controller` from the generated module and `wait` from `pybricks.tools`. See the
+[control guide](../doc/en/robotics.md#manual-control) for a runnable example.
 
 The important point is that virtual and physical controllers should feed the same conceptual state.
 
@@ -1473,8 +1494,6 @@ and Python filenames and refreshing when opened. Opening uses normal document-ta
 semantics. Bundle examples with installed distributions; no lesson manifest or
 second examples registry is required.
 
-Scratch is explicitly exempt from this rule.
-
 Static diagnostics such as undefined names may remain warnings and do not necessarily block commits, because they are semantic rather than syntax errors.
 
 ---
@@ -1559,7 +1578,7 @@ Use the existing Pybricks host-side Python library where practical.
 
 ### Physical gamepads
 
-Optional mature cross-platform controller dependency, likely SDL-based, exact choice TBD.
+Optional pygame-ce dependency through the `gamepad` extra, using its SDL controller API.
 
 Do not introduce browser runtimes, JavaScript build systems, Rust sidecars, local RPC daemons, or similar layers unless a concrete later requirement justifies them.
 
@@ -1573,8 +1592,8 @@ The implementation should preserve these invariants:
 2. **A normal `.py` file must remain useful outside LittleTinker Rig.**
 3. **No per-block/source provenance tags are required for correctness.**
 4. **AST/block presentation is derived from source.**
-5. **The committed main document is syntactically valid Python.**
-6. **Scratch may be syntactically invalid.**
+5. **The structural projection is syntactically valid Python.**
+6. **Full-document Python drafts and Scratch may be syntactically invalid and saved.**
 7. **Structural edits are atomic.**
 8. **Snippet recognition is an enhancement, never a requirement for execution.**
 9. **Unknown/modified code degrades to generic Python blocks.**
@@ -1590,7 +1609,9 @@ The implementation should preserve these invariants:
 
 ## 48. First implementation milestones
 
-The following sequence reflects the current design without requiring speculative features.
+This section records the initial implementation sequence. It is historical
+delivery guidance, not an outstanding task list. The current behavior is described
+in the corresponding contracts and the [developer guide](../doc/en/development.md).
 
 ### Milestone 1: structural core
 
@@ -1687,7 +1708,8 @@ Implement:
 - old-template recognition;
 - compatible-signature upgrade by preserving bindings.
 
-Exact project metadata format can be chosen when this milestone is reached.
+Project collection paths and version pins now use the `.py.ltr.json` workspace
+format described in section 7.2.
 
 ### Milestone 9: Pybricks integration
 
@@ -1714,24 +1736,25 @@ Implement:
 
 ## 49. Open decisions
 
-The following questions remain intentionally open and should not be guessed during initial implementation unless they become necessary:
+Possible extensions remain open until a concrete task needs them:
 
-1. Which canonical Python formatter to use.
-2. Additional terminal workflows beyond the source-and-hub scope.
-3. Distribution of external collections beyond the directory-based format.
-4. Exact persistence format for Scratch workspace.
-5. Exact project-level mechanism for selecting/pinning snippet collections.
-6. Exact historical-pattern storage format.
-7. Precise conflict-resolution rules when multiple snippet templates match the same region.
-8. Extensions beyond the current string type/unit grammar.
-9. Exact comment-attachment policy when moving source blocks.
-10. Exact Pybricks host API calls and supported transports in the current library version.
-11. Exact hub-side helper API for virtual/physical controller state.
-12. Exact physical gamepad library.
-13. Exact visual palette and animation details.
-14. Whether and how a presentation-intensity slider should be exposed.
+- Additional terminal workflows beyond the source-and-hub scope.
+- Distribution of external collections beyond the directory-based format.
+- Extensions beyond the current string type/unit grammar.
+- Whether a presentation-intensity control would improve the existing Blocks / Python views.
 
-These are implementation decisions to make from concrete evidence, not places to invent complexity in advance.
+The following earlier questions are resolved and must not be treated as missing
+implementations:
+
+| Decision | Current contract |
+|---|---|
+| Formatting | Ruff public CLI; see [formatting and latency](../doc/en/development.md#interactive-latency) |
+| Scratch, collection paths and pins | `.py.ltr.json` workspace; see [file API](../doc/en/api.md#documents-and-sessions) |
+| Historical templates | Manifest `[[history]]` entries and archived definitions; see [collection versions](../doc/en/snippets.md#starting-a-collection-version) |
+| Recognition conflicts | Larger regions first, then fewer contract mismatches, greater specificity, current before historical forms, and stable identity; see `recognize` in [snippets.py](../little_tinker_rig/core/snippets.py) |
+| Comment ownership | Source-attached comments and separate definition display; see [editor views](../doc/en/usage.md#documents-and-views) |
+| Hub adapters and controller state | Public pinned pybricksdev adapters, bundled Controller helper and optional pygame-ce; see [hub/input API](../doc/en/api.md#hubs-and-input) |
+| Palette and interaction feedback | Shared semantic roles and current [UX contracts](UX_DESIGN.md) |
 
 ---
 
@@ -2048,8 +2071,8 @@ progress. This option belongs to the block library, not the lesson overview.
 The main toolbar uses 24-pixel icons with localized tooltips and shortcuts;
 hub name and connection status retain text. Multiple programs can belong to one
 project; saving any of them saves the project's open programs and progress together.
-Contextual filtering exposes a return to whole-block selection, so editing a
-parameter cannot leave a learner facing an unexplained empty palette. Inline
+Explicit input searches expose a back button restoring the previous catalog view
+and search. Hover and parameter selection do not change the catalog. Inline
 fields consume their commit key: Return must not also invoke the parent editor's
 expression chooser.
 Qt's automatic focus traversal when a child field closes is not structural
