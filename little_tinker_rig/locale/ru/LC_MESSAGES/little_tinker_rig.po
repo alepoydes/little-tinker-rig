@@ -6650,3 +6650,19 @@ msgstr "＋ Подключить хаб"
 #~ msgid "＋ Add selected block"
 #~ msgstr "＋ Добавить выбранный блок"
 
+
+msgid "Cut"
+msgstr "Вырезать"
+
+msgid "Copy"
+msgstr "Копировать"
+
+msgid "Paste"
+msgstr "Вставить"
+
+msgid "Select all"
+msgstr "Выделить всё"
+
+#, python-brace-format
+msgid "Import name {name!r} changes during this selection; use distinct aliases"
+msgstr "Импортируемое имя {name!r} меняется внутри выделения; используйте разные псевдонимы"

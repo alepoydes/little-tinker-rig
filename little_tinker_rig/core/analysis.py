@@ -188,8 +188,15 @@ class Scopes:
     def _reference(self, node, scope):
         self.references.append((node, scope))
         origin = scope
+        deleting = isinstance(node.ctx, ast.Del)
+        if deleting and node.id not in scope.global_names | scope.nonlocal_names:
+            self.reference_bindings[node] = (
+                scope if node.id in scope.initialized else None
+            )
+            return
         if (
-            isinstance(scope.node, ast.ClassDef)
+            not deleting
+            and isinstance(scope.node, ast.ClassDef)
             and node.id not in scope.initialized
             and node.id not in scope.global_names | scope.nonlocal_names
         ):
@@ -318,10 +325,17 @@ class Scopes:
                 target_scope = target_scope.parent
             self._visit(node.target, target_scope)
             return
-        if (
-            isinstance(node, (ast.ExceptHandler, ast.MatchAs, ast.MatchStar))
-            and node.name
-        ):
+        if isinstance(node, ast.ExceptHandler):
+            if node.type:
+                self._visit(node.type, scope)
+            if node.name:
+                self._bind(scope, node.name, node)
+            for child in node.body:
+                self._visit(child, scope)
+            if node.name:
+                self._delete(scope, node.name, node)
+            return
+        if isinstance(node, (ast.MatchAs, ast.MatchStar)) and node.name:
             self._bind(scope, node.name, node)
         if isinstance(node, ast.MatchMapping) and node.rest:
             self._bind(scope, node.rest, node)
@@ -729,6 +743,19 @@ class Analysis(Scopes):
                     scope = scope.parent
             if node in self.deleted_references and not self.class_fallbacks.get(node):
                 found = False
+            # Module and class loads can reach builtins after removing a local
+            # value. Function locals and deletion targets cannot fall back.
+            if (
+                not found
+                and not isinstance(node.ctx, ast.Del)
+                and name in vars(builtins)
+                and (
+                    owner is None
+                    or owner is self.root
+                    or isinstance(owner.node, ast.ClassDef)
+                )
+            ):
+                found = True
             if not found:
                 result.append(
                     Diagnostic(

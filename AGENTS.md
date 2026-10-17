@@ -64,6 +64,11 @@
 - Capture custom-block imports from free references at the selection boundary.
   Respect local aliases and Scratch shadowing, and verify the resulting block
   can be inserted with its dependencies into a fresh program.
+  Deferred function bodies can use later outer imports; their defaults and
+  decorators evaluate immediately. Method bodies do not close over class locals.
+- Model implicit exception-alias cleanup as deletion. Distinguish loading an
+  unbound module/class name (which may reach builtins) from deleting it or loading
+  a function-local name. Verify both missing warnings and false positives.
 
 ## Workspace interactions
 
@@ -81,11 +86,20 @@
 - Keep Scratch fragment identity in document history independently of its text
   and position. Moves, duplicate text and removal of neighboring cells must not
   exchange text buffers or their undo histories.
+  Keep removed cells while their identities remain reachable through history.
+- Program text drafts, block edits and Scratch share document Undo/Redo. Changing
+  representation or parsing unchanged text must not introduce a second history
+  or clear Redo. Verify transfers followed by Python Undo, save and reopen.
+- Interrupted saves preserve the multiplicity of Scratch fragments. Recovery
+  copies are a multiset union; identical text does not identify the same cell.
 - Stop shortcuts must reach their owning window through modal dialogs. Test
   multiple windows so stopping one hub cannot target another.
 - Coalesce pending control samples without losing the final neutral frame when
   input stops. Hub operations discard queued motion; verify delayed delivery and
   cancellation, not only successful writes on an idle connection.
+  Stop and disconnect interrupt every task holding or waiting for the connection
+  lock, including console input and configuration. Their timeouts must not be
+  postponed indefinitely by unrelated writes.
 - Momentary motor controls return to neutral on mouse/key release and focus loss.
   Cover slider grooves as well as handles: sliderReleased is not a general mouse
   release event. Verify emitted commands, not just the displayed position.

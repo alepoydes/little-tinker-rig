@@ -763,7 +763,7 @@ class Session:
         identities.insert(position, object())
         self.editor.commit(source, tuple(scratch), scratch_ids=identities)
 
-    def set_scratch(self, index: int | None, text: str) -> None:
+    def set_scratch(self, index: int | None, text: str, *, group=None) -> None:
         scratch = list(self.document.state.scratch)
         identities = list(self.document.state.scratch_ids)
         if index is None:
@@ -774,7 +774,10 @@ class Session:
                 raise ValueError("Scratch index outside workspace")
             scratch[index] = text
         self.editor.commit(
-            self.document.state.source, tuple(scratch), scratch_ids=identities
+            self.document.state.source,
+            tuple(scratch),
+            scratch_ids=identities,
+            group=group,
         )
 
     def fragment_imports(self, text):

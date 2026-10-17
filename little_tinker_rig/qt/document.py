@@ -53,9 +53,10 @@ class DocumentPage(QWidget):
         self.source.help_requested.connect(self.help_requested)
         self.source.input_search_requested.connect(self.input_search_requested)
         self.code = CodeEdit(path)
+        self.code.history = self
         self.code.setAcceptDrops(False)
         self.code.setPlainText(self.session.document.state.source)
-        self.code.textChanged.connect(self.changed)
+        self.code.textChanged.connect(self.text_changed)
         self.editor_stack = QStackedWidget()
         self.editor_stack.addWidget(self.source)
         self.editor_stack.addWidget(self.code)
@@ -100,7 +101,7 @@ class DocumentPage(QWidget):
         layout.addWidget(self.editor_stack, 1)
         if self.session.project.draft is not None:
             self.code_active = True
-            self.code.setPlainText(self.session.project.draft)
+            self.code.sync_text(self.session.project.draft)
             self.editor_stack.setCurrentIndex(1)
         self.update_mode()
 
@@ -132,6 +133,32 @@ class DocumentPage(QWidget):
             # Text persistence does not require a valid structural projection.
             self.session.project.draft = self.code.toPlainText()
 
+    def text_changed(self):
+        self.session.document.set_draft(
+            self.code.toPlainText(), group=self.code.history_group
+        )
+        self.changed.emit()
+
+    def sync_text(self):
+        state = self.session.document.state
+        self.code.sync_text(state.text)
+        if state.draft is not None and not self.code_active:
+            self.code_active = True
+            self.editor_stack.setCurrentIndex(1)
+            self.update_mode()
+
+    def undo(self):
+        self.session.editor.undo()
+        self.sync_text()
+        self.scratch.refresh(self.session)
+        self.changed.emit()
+
+    def redo(self):
+        self.session.editor.redo()
+        self.sync_text()
+        self.scratch.refresh(self.session)
+        self.changed.emit()
+
     def save(self):
         self.prepare_save()
         self.session.project.save()
@@ -147,7 +174,7 @@ class DocumentPage(QWidget):
         self.source.display_modes.clear()
         self.source.runtime_problem = self.code.runtime_problem = None
         self.code_active = self.code_active or session.project.draft is not None
-        self.code.setPlainText(
+        self.code.sync_text(
             session.project.draft
             if session.project.draft is not None
             else session.document.state.source
@@ -191,7 +218,7 @@ class DocumentPage(QWidget):
         self.code_active = (
             checkpoint["python"] or self.session.project.draft is not None
         )
-        self.code.setPlainText(checkpoint["source"])
+        self.code.sync_text(checkpoint["source"])
         self.editor_stack.setCurrentIndex(int(self.code_active))
         self.source.refresh_source()
         editor = self.code if self.code_active else self.source
@@ -224,7 +251,7 @@ class DocumentPage(QWidget):
             if index == 0:
                 self.commit_code()
             else:
-                self.code.replace_formatted(self.session.document.state.source)
+                self.code.sync_text(self.session.document.state.text)
             self.code_active = bool(index)
             self.editor_stack.setCurrentIndex(index)
             (self.code if index else self.source).setFocus()
@@ -236,7 +263,6 @@ class DocumentPage(QWidget):
 
     def commit_code(self):
         if self.code_active:
-            self.session.editor.commit(self.code.toPlainText())
-            self.session.project.draft = None
-            self.code.replace_formatted(self.session.document.state.source)
+            self.session.editor.commit(self.code.toPlainText(), apply_draft=True)
+            self.code.sync_text(self.session.document.state.source)
             self.source.refresh_source()

@@ -3,16 +3,19 @@
 import keyword
 import re
 
-from PySide6.QtCore import QRect, QSize, Qt
+from PySide6.QtCore import QRect, QSignalBlocker, QSize, Qt
 from PySide6.QtGui import (
     QColor,
     QFontDatabase,
+    QKeySequence,
     QPainter,
     QSyntaxHighlighter,
     QTextCharFormat,
     QTextCursor,
 )
-from PySide6.QtWidgets import QPlainTextEdit, QWidget
+from PySide6.QtWidgets import QMenu, QPlainTextEdit, QWidget
+
+from little_tinker_rig.i18n import tr
 
 from .completion import PythonAssist
 from .editor import qt_offset, source_offset
@@ -101,6 +104,9 @@ class CodeEdit(QPlainTextEdit):
         super().__init__()
         self.path = path
         self.runtime_problem = None
+        self.history = None
+        self.history_group = object()
+        self.document().undoCommandAdded.connect(self.new_history_group)
         font = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
         font.setPointSize(11)
         self.setFont(font)
@@ -160,6 +166,12 @@ class CodeEdit(QPlainTextEdit):
     def keyPressEvent(self, event):
         if self.isReadOnly():
             return super().keyPressEvent(event)
+        if self.history and event.matches(QKeySequence.StandardKey.Undo):
+            self.undo()
+            return
+        if self.history and event.matches(QKeySequence.StandardKey.Redo):
+            self.redo()
+            return
         if self.assist.completer.popup().isVisible() and event.key() in (
             Qt.Key.Key_Enter,
             Qt.Key.Key_Return,
@@ -203,6 +215,46 @@ class CodeEdit(QPlainTextEdit):
             Qt.Key.Key_Delete,
         ):
             self.assist.timer.start()
+
+    def new_history_group(self):
+        self.history_group = object()
+
+    def undo(self):
+        self.history.undo() if self.history else super().undo()
+
+    def redo(self):
+        self.history.redo() if self.history else super().redo()
+
+    def contextMenuEvent(self, event):
+        if self.history is None:
+            return super().contextMenuEvent(event)
+        menu = QMenu(self)
+        document = self.history.session.document
+        for title, callback, enabled in (
+            (tr("Undo"), self.undo, document.can_undo),
+            (tr("Redo"), self.redo, document.can_redo),
+            (tr("Cut"), self.cut, self.textCursor().hasSelection()),
+            (tr("Copy"), self.copy, self.textCursor().hasSelection()),
+            (tr("Paste"), self.paste, self.canPaste()),
+            (
+                tr("Delete"),
+                lambda: self.textCursor().removeSelectedText(),
+                self.textCursor().hasSelection(),
+            ),
+            (tr("Select all"), self.selectAll, bool(self.toPlainText())),
+        ):
+            action = menu.addAction(title, callback)
+            action.setEnabled(
+                enabled
+                and (not self.isReadOnly() or callback in (self.copy, self.selectAll))
+            )
+        menu.exec(event.globalPos())
+        menu.deleteLater()
+
+    def sync_text(self, source):
+        """Refresh a projection without recording a second user edit."""
+        with QSignalBlocker(self):
+            self.replace_formatted(source)
 
     def indent(self, direction):
         cursor = self.textCursor()

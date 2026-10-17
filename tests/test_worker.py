@@ -5,6 +5,8 @@ from threading import Event
 
 import pytest
 
+from little_tinker_rig.pybricks.connection import Connection
+from little_tinker_rig.pybricks.devices import HubInfo
 from little_tinker_rig.pybricks.worker import HubWorker
 
 
@@ -56,6 +58,49 @@ def test_latest_control_is_delivered_and_stop_discards_queued_motion(method):
         control(4)
         worker.stop_program().result(timeout=1)
         assert frames == [1, 0, 3, "stop"]
+        assert not failures
+    finally:
+        worker.close()
+
+
+@pytest.mark.parametrize("operation", ["stop_program", "disconnect_hub"])
+def test_interrupt_cancels_active_and_queued_console_writes(operation):
+    entered = Event()
+    calls, failures = [], []
+
+    class Transport:
+        async def write(self, data):
+            calls.append(data)
+            entered.set()
+            await asyncio.Event().wait()
+
+        async def stop_user_program(self):
+            calls.append("stop")
+
+        async def disconnect(self):
+            calls.append("disconnect")
+
+    worker = HubWorker(
+        output=lambda *_: None,
+        failed=failures.append,
+        updated=lambda *_: None,
+        busy_changed=lambda *_: None,
+        problem=lambda *_: None,
+        program_started=lambda *_: None,
+    )
+    worker.connection = Connection()
+    worker.connection.hub = Transport()
+    worker.info = HubInfo(connected=True, running=True)
+    try:
+        first = worker.write_input(b"first")
+        assert entered.wait(1)
+        second = worker.write_input(b"queued")
+        getattr(worker, operation)().result(timeout=1)
+        assert first.cancelled() and second.cancelled()
+        assert calls == [
+            b"first",
+            "stop" if operation == "stop_program" else "disconnect",
+        ]
         assert not failures
     finally:
         worker.close()

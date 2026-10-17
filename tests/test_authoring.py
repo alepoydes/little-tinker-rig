@@ -24,6 +24,47 @@ SOURCE = '@inline_block(level="intermediate", icon="▶", color="action")\ndef s
 
 
 @pytest.mark.parametrize(
+    "source, selected, argument, expected",
+    [
+        (
+            "def root(x):\n    return sqrt(x)\nfrom math import sqrt\n",
+            "def root(x):\n    return sqrt(x)\n",
+            9,
+            3.0,
+        ),
+        (
+            "from math import sqrt as calculate\ndef root(x):\n    return calculate(x)\nfrom cmath import sqrt as calculate\n",
+            "def root(x):\n    return calculate(x)\n",
+            -1,
+            1j,
+        ),
+        (
+            "from math import sqrt\nclass C:\n    from cmath import sqrt\n    def root(x):\n        return sqrt(x)\n",
+            "def root(x):\n        return sqrt(x)\n",
+            9,
+            3.0,
+        ),
+    ],
+)
+def test_captured_functions_keep_deferred_imports(
+    tmp_path, source, selected, argument, expected
+):
+    from little_tinker_rig.core.snippets import load_module
+    from little_tinker_rig.core.syntax import Syntax
+
+    imports = selection_imports(selected, Syntax(source), source.index(selected))
+    snippet = load_module(
+        template_from_source(selected, imports), "review/custom", "1"
+    )[0]
+    target = Session(tmp_path / "new.py")
+    target.insert_snippet(snippet, {})
+    namespace = {}
+    exec(target.document.state.source, namespace)
+    result = namespace["root"](argument)
+    assert result == expected and type(result) is type(expected)
+
+
+@pytest.mark.parametrize(
     "source, selected, expected",
     [
         (

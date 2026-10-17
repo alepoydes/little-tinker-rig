@@ -23,9 +23,11 @@ firmware validation and installation, and `core/completion.py` for static Jedi
 analysis. Qt adapts worker callbacks to signals; TUI posts Textual messages.
 
 
-Document publishes a revision only after formatting and compilation. Compilation
-checks context but does not execute code. History stores source and Scratch
-snapshots together. An invalid text draft stays outside the committed document.
+Document validates structural revisions by formatting and compilation, without
+executing code. Its history stores the valid source projection, optional raw
+Python draft, Scratch text and fragment identities in one snapshot. Draft edits
+do not require parsing. Applying an unchanged draft updates the projection
+without creating another Undo entry or clearing Redo.
 
 Block definitions use static decorators as their sole metadata source. The loader
 feeds the library, authoring preview, help and structural edit permissions.
@@ -34,8 +36,11 @@ Known mismatches are diagnosed; unknown dynamic values stay usable. At commit,
 reachable generated helpers and imports are reconciled with main and Scratch
 references before the new snapshot is published.
 
-Qt DocumentPage owns one Session, a structural view, a Python draft and its native
-text undo. The window owns document tabs, global workspaces, help, console and one
+Qt DocumentPage owns one Session and the structural and Python views. Native Qt
+edit-command boundaries group typing in the shared document history; program
+Undo/Redo, including text context menus, always restore that history. Scratch
+widgets remain cached while their identities are reachable through Undo/Redo.
+The window owns document tabs, global workspaces, help, console and one
 hub connection. Changing tabs or language preserves document widgets and history.
 Window actions resolve the active document when invoked.
 
@@ -55,6 +60,8 @@ Real and virtual hubs share ControlState, MotorBinding and HubInfo. Qt owns I/O 
 an asyncio thread and serializes lifecycle operations. Input frames never build a
 queue of old commands. A separate monitor supplies telemetry and direct motor
 control; user programs use a separate Controller protocol when requested.
+Stop and disconnect cancel all earlier tasks holding or waiting for the worker
+lock, including console writes and configuration, before acquiring it themselves.
 
 Virtual programs run in stoppable processes over a small explicit device model.
 The model advances time deterministically in unit tests; runtime tests exercise
@@ -62,7 +69,7 @@ real subprocesses and Qt signals. It is neither physical simulation nor a securi
 sandbox. Hardware transport and motor characteristics need separate testing.
 
 Files are replaced atomically, but Python plus workspace is not one filesystem
-transaction. Saving first writes a recovery union of old/new Scratch, then source,
+transaction. Saving first writes a multiset union of old/new Scratch, then source,
 then final metadata. An interruption can leave duplicate fragments, but should not
 lose the only saved copy. External modifications are checked for both files.
 

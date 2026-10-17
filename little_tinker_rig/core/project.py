@@ -5,6 +5,7 @@ import io
 import json
 import os
 import tokenize
+from collections import Counter
 from pathlib import Path
 
 from little_tinker_rig.i18n import tr
@@ -68,17 +69,23 @@ class Project:
                 raise ValueError("Pins must map collection names to version strings")
             self.collections = [(self.path.parent / p).resolve() for p in collections]
             self.pins = pins
-        self.draft = None
         try:
             self.document = Document(source, scratch)
         except SyntaxError:
             if not allow_draft:
                 raise
-            self.draft = source
-            self.document = Document("", scratch)
+            self.document = Document("", scratch, draft=source)
         self._saved = (
             State(source, scratch) if self.draft is not None else self.document.state
         )
+
+    @property
+    def draft(self):
+        return self.document.state.draft
+
+    @draft.setter
+    def draft(self, text):
+        self.document.set_draft(text)
 
     @property
     def workspace_path(self) -> Path:
@@ -211,7 +218,8 @@ class Project:
         if keep_workspace:
             # A recovery superset protects moves in both directions if saving
             # either file fails. Interrupted saves may leave extra copies.
-            write_workspace(dict.fromkeys((*self._saved.scratch, *state.scratch)))
+            missing = Counter(self._saved.scratch) - Counter(state.scratch)
+            write_workspace((*state.scratch, *missing.elements()))
         atomic_write(self.path, state.source)
         self.encoding = "utf-8"
         self._disk_hash = hashlib.sha256(state.source.encode("utf-8")).hexdigest()

@@ -79,13 +79,68 @@ def test_scratch_history_follows_fragments_across_moves_and_removal(windows):
     assert window.scratch.cells == [second]
     assert second.index == second.source.scratch_index == 0
     second.code.undo()
-    assert session.document.state.scratch == ("value = 1\n",)
-    assert "first = 10" in session.document.state.source
-    session.set_scratch(0, "value = 2\n")
-    window.refresh_views()
-    assert window.scratch.cells == [second]
+    assert window.scratch.cells == [first, second]
+    assert first.code_active and second.code_active
     second.code.undo()
-    assert session.document.state.scratch == ("value = 1\n",)
+    assert session.document.state.scratch == ("value = 1\nfirst = 10\n", "value = 1\n")
+    session.set_scratch(1, "value = 2\n")
+    window.refresh_views()
+    assert window.scratch.cells == [first, second]
+    second.code.undo()
+    assert session.document.state.scratch[1] == "value = 1\n"
+
+
+@pytest.mark.parametrize("to_program", [True, False])
+def test_python_undo_restores_whole_transfer_and_survives_save(windows, to_program):
+    from little_tinker_rig.core.edit import Target
+    from little_tinker_rig.core.session import Session
+    from little_tinker_rig.core.transfer import Transfer
+
+    window = windows("main = 1\n" if to_program else "main = 1\nimportant = 42\n")
+    session = window.session
+    if to_program:
+        session.set_scratch(None, "important = 42\n")
+    before = session.document.state
+    if to_program:
+        Transfer.capture(session, index=0).to_program(
+            Target(session.document.syntax.suites[0], 1)
+        )
+    else:
+        session.editor.selection = session.document.syntax.tree.body[-1]
+        Transfer.capture(session).to_scratch(0)
+    after = session.document.state
+    window.refresh_views()
+    window.source.setFocus()
+    window.change_editor(1)
+    QTest.keyClick(window.code, Qt.Key.Key_Z, CTRL)
+    assert window.document_page.text == before.source
+    assert session.document.state.scratch == before.scratch
+    window.save()
+    reopened = Session(session.project.path)
+    assert reopened.document.state.source == before.source
+    assert reopened.document.state.scratch == before.scratch
+    QTest.keyClick(window.code, Qt.Key.Key_Z, CTRL | Qt.KeyboardModifier.ShiftModifier)
+    assert window.document_page.text == after.source
+    assert session.document.state.scratch == after.scratch
+
+
+def test_unfinished_python_and_scratch_share_history(windows):
+    window = windows()
+    window.change_editor(1)
+    window.code.moveCursor(QTextCursor.MoveOperation.End)
+    QTest.keyClicks(window.code, "if value:")
+    draft = window.document_page.text
+    window.session.set_scratch(None, "scratch = 2\n")
+    window.refresh_views()
+    window.undo_action.trigger()
+    assert not window.session.document.state.scratch
+    assert window.document_page.text == draft
+    window.undo_action.trigger()
+    assert window.document_page.text == "x = 1\n"
+    window.redo_action.trigger()
+    assert window.document_page.text == draft
+    window.save()
+    assert window.session.project.path.read_text() == draft
 
 
 def test_modal_variant_dialog_routes_stop_to_its_own_window(windows, monkeypatch):

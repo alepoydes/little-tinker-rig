@@ -32,6 +32,7 @@ class HubWorker:
         self.tracebacks = None
         self.stored_program = None
         self.lock = asyncio.Lock()
+        self.tasks = set()
         self.generation = 0
         self.connection_generation = 0
         ready = Event()
@@ -73,10 +74,18 @@ class HubWorker:
         generation = self.generation
 
         async def serialized():
+            task = asyncio.current_task()
             try:
+                if interrupt:
+                    # Console writes and device configuration share this lock
+                    # too. Interrupt every earlier task, including queued work.
+                    for previous in self.tasks:
+                        previous.cancel()
+                self.tasks.add(task)
                 async with self.lock:
                     return await coroutine
             finally:
+                self.tasks.discard(task)
                 coroutine.close()
                 if operation and generation == self.generation:
                     self._busy_changed(False)

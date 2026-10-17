@@ -6,6 +6,8 @@ import tomllib
 from dataclasses import replace
 from pathlib import Path
 
+from little_tinker_rig.i18n import tr
+
 from .analysis import Analysis, Scopes, annotation_nodes, annotation_text, identifiers
 from .block_metadata import change_property, metadata, module_category
 from .edit import reindent
@@ -66,20 +68,23 @@ def template_from_source(source: str, imports=(), *, expression=False) -> str:
 
 
 def selection_imports(source, syntax, offset, *, context=None):
-    """Capture only free import dependencies, with nearer bindings taking precedence."""
+    """Capture free imports; deferred bodies can use later outer declarations."""
     selected = Scopes(ast.parse(reindent(source, 0)))
     used = {
-        node.id
-        for node, _ in selected.references
+        (node.id, selected.execution_scope(scope) is not selected.root)
+        for node, scope in selected.references
         if selected.resolve(node, node.id) is None
     }
     for node in annotation_nodes(selected.root.node):
         if isinstance(node, ast.Constant) and isinstance(node.value, str):
             try:
-                used.update(identifiers(ast.parse(node.value, mode="eval")))
+                used.update(
+                    (name, False)
+                    for name in identifiers(ast.parse(node.value, mode="eval"))
+                )
             except SyntaxError:
                 pass
-    bindings = {}
+    bindings = {False: {}, True: {}}
     contexts = [(context, len(context.source))] if context else []
     for current, boundary in [*contexts, (syntax, offset)]:
         scopes = Scopes(current.tree, current.spans)
@@ -88,23 +93,36 @@ def selection_imports(source, syntax, offset, *, context=None):
         while scope:
             visible.append(scope)
             scope = scope.parent
+        ordered = sorted(
+            scopes.scopes.items(),
+            key=lambda item: current.spans.get(
+                item[0], current.spans[current.tree]
+            ).start,
+        )
         for scope in reversed(visible):
-            for node, owner in sorted(
-                scopes.scopes.items(),
-                key=lambda item: current.spans.get(
-                    item[0], current.spans[current.tree]
-                ).start,
-            ):
+            for node, owner in ordered:
                 span = current.spans.get(node)
-                if owner is not scope or span is None or span.start >= boundary:
+                if owner is not scope or span is None:
                     continue
+                targets = [
+                    bindings[delayed]
+                    for delayed in (False, True)
+                    if not (delayed and isinstance(owner.node, ast.ClassDef))
+                    and (
+                        span.start < boundary
+                        or delayed
+                        or scopes.execution_scope(visible[0])
+                        is not scopes.execution_scope(owner)
+                    )
+                ]
                 if isinstance(node, (ast.Import, ast.ImportFrom)):
                     if isinstance(node, ast.ImportFrom) and (
                         node.module == "__future__"
                         or any(a.name == "*" for a in node.names)
                     ):
                         continue
-                    bindings.update(import_entries([node]))
+                    for target in targets:
+                        target.update(import_entries([node]))
                     continue
                 name = None
                 if isinstance(node, ast.Name) and isinstance(
@@ -129,8 +147,21 @@ def selection_imports(source, syntax, offset, *, context=None):
                 ):
                     name = node.name
                 if name:
-                    bindings[name] = None
-    return tuple(text for name, text in bindings.items() if name in used and text)
+                    for target in targets:
+                        target[name] = None
+    required = {}
+    for name, delayed in sorted(used):
+        text = bindings[delayed].get(name)
+        if text and name in required and required[name] != text:
+            raise ValueError(
+                tr(
+                    "Import name {name!r} changes during this selection; use distinct aliases",
+                    name=name,
+                )
+            )
+        if text:
+            required[name] = text
+    return tuple(required.values())
 
 
 def copy_definition(source, name):

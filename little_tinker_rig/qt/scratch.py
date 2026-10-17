@@ -84,6 +84,7 @@ class ScratchCell(QFrame):
         self.code_button.clicked.connect(lambda: self.change_mode(True))
         layout.addLayout(row)
         self.code = CodeEdit()
+        self.code.history = pane.history
         self.code.setAcceptDrops(False)
         self.code.setPlainText(text)
         self.code.textChanged.connect(self.text_changed)
@@ -139,9 +140,7 @@ class ScratchCell(QFrame):
                 self.error.setText(str(error))
                 self.error.show()
         else:
-            self.code.blockSignals(True)
-            self.code.replace_formatted(self.text)
-            self.code.blockSignals(False)
+            self.code.sync_text(self.text)
         self.code_active = code
         self.stack.setCurrentIndex(int(code))
         self.blocks_button.setChecked(not code)
@@ -191,7 +190,9 @@ class ScratchCell(QFrame):
 
     def text_changed(self):
         self.text = self.code.toPlainText()
-        self.pane.session.set_scratch(self.index, self.text)
+        self.pane.session.set_scratch(
+            self.index, self.text, group=self.code.history_group
+        )
         self.fit()
         self.pane.changed.emit()
 
@@ -234,8 +235,10 @@ class ScratchPane(QScrollArea):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.session = None
+        self.history = parent
         self.allowed_ids = None
         self.cells = []
+        self.cell_cache = {}
         self.setWidgetResizable(True)
         self.setAcceptDrops(True)
         self.setFrameShape(QFrame.Shape.NoFrame)
@@ -265,42 +268,46 @@ class ScratchPane(QScrollArea):
 
     def refresh(self, session):
         if self.session is not session:
-            for cell in self.cells:
+            for cell in self.cell_cache.values():
                 self.column.removeWidget(cell)
                 cell.deleteLater()
             self.cells = []
+            self.cell_cache = {}
             self.session = session
         state = session.document.state
-        previous = {cell.identity: cell for cell in self.cells}
+        active = set(state.scratch_ids)
+        for cell in self.cells:
+            if cell.identity not in active:
+                self.column.removeWidget(cell)
+                cell.hide()
         self.cells = []
         for index, (identity, text) in enumerate(
             zip(state.scratch_ids, state.scratch, strict=True)
         ):
-            cell = previous.pop(identity, None)
+            cell = self.cell_cache.get(identity)
             if cell is not None:
                 cell.index = cell.source.scratch_index = index
                 view = cell.source
                 if cell.text != text:
                     cell.text = text
-                    cell.code.blockSignals(True)
-                    cell.code.replace_formatted(text)
-                    cell.code.blockSignals(False)
+                    cell.code.sync_text(text)
                     with QSignalBlocker(cell):
                         cell.change_mode(cell.code_active, focus=False)
                 if view.session.snippets is not session.snippets:
                     view.session.set_snippets(session.snippets)
                 view.refresh_source()
+                cell.code.sync_text(text)
                 cell.fit()
             else:
                 cell = ScratchCell(self, index, text)
                 cell.identity = identity
+                self.cell_cache[identity] = cell
                 cell.mode_changed.connect(self.changed)
             self.cells.append(cell)
             self.column.insertWidget(index, cell)
-        for cell in previous.values():
-            self.column.removeWidget(cell)
-            cell.hide()
-            cell.deleteLater()
+            cell.show()
+        for identity in self.cell_cache.keys() - session.document.scratch_identities:
+            self.cell_cache.pop(identity).deleteLater()
         self.empty.setVisible(not self.cells)
         self.empty.setText(
             tr(

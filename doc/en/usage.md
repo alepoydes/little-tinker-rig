@@ -19,7 +19,9 @@ Assembly appear when the open project provides them.
 the source, or beside it when vertical space is limited; see
 [its guide](block-editor.md).
 
-Switching between Blocks and Python preserves the Python editor's undo history.
+Program text, including unfinished Python, block edits and Scratch share one
+Undo/Redo history per document. Switching between Blocks and Python preserves it.
+Undoing a transfer restores both its source and destination, including in Python.
 Find, Format Python, Create block from selection, Name diagnostics and the
 editor-mode shortcuts target the selected program or Scratch cell. The catalog
 follows that editor's Blocks / Python mode. Undo is unavailable in Help, Control
@@ -66,6 +68,8 @@ Invalid input stays editable and prevents saving, running or leaving its documen
 until corrected or cancelled. **Stop (F6)** and **Disconnect** always remain
 available when connected, even with invalid input; they preserve that input.
 F6 also stops the owning window's hub while one of its dialogs is open.
+Stop and Disconnect cancel pending console input and device configuration before
+issuing the hub operation.
 Uncommitted Python text shows **changes not checked**
 instead of a warning count from an earlier version.
 A structural selection uses the whole block background, including the
@@ -277,16 +281,20 @@ are imported only when the fragment enters the program. One undo restores both
 areas after a transfer.
 
 Each cell has Blocks / Python icons. Switching document tabs preserves each
-cell's mode, cursor and text undo history. Python accepts arbitrary unfinished
-text; parseable fragments can be edited structurally without a complete execution
+cell's mode and cursor, along with the shared document history. Python accepts
+arbitrary unfinished text; parseable fragments can be edited structurally without a complete execution
 context. For example, a detached `break` is allowed in Scratch but can only return
 inside a loop. Invalid drops preserve both areas.
 Reordering cells or removing a neighboring cell keeps each remaining fragment's
-own text editor and Undo history, including when two fragments have identical text.
+own text editor, including when two fragments have identical text.
+Undo restores removed cells with their previous editor mode and cursor.
 
 **View → Name diagnostics** lists unknown names. This lexical analysis does not
 infer every execution path or inspect third-party runtime objects.
 It detects uses after `del name` until that name receives another value.
+An exception alias (`except ... as error`) is unavailable after its handler.
+Deleting a module or class binding can reveal a built-in name again; deleting a
+function-local binding does not make that name available from an outer scope.
 
 ## CLI
 

@@ -11,6 +11,32 @@ from little_tinker_rig.core.syntax import Syntax
 
 
 @pytest.mark.parametrize(
+    "source, lines",
+    [
+        (
+            "try:\n    raise ValueError()\nexcept ValueError as error:\n    print(error)\nprint(error)\n",
+            [5],
+        ),
+        (
+            "error = 1\ntry:\n    raise ValueError()\nexcept ValueError as error:\n    pass\nprint(error)\nerror = 2\nprint(error)\n",
+            [6],
+        ),
+        ("len = 1\ndel len\nresult = len([1, 2])\n", []),
+        ("def f():\n    len = 1\n    del len\n    return len([])\n", [4]),
+        ("value = 1\nclass C:\n    del value\n", [3]),
+        ("value = 1\nclass C:\n    value = 2\n    del value\n    result = value\n", []),
+        ("class C:\n    len = 1\n    del len\n    result = len([])\n", []),
+        ("del len\n", [1]),
+    ],
+)
+def test_binding_cleanup_and_builtin_fallback(source, lines):
+    syntax = Syntax(source)
+    assert [
+        syntax.position(d.span.start)[0] for d in Analysis(syntax).diagnostics()
+    ] == lines
+
+
+@pytest.mark.parametrize(
     "body",
     [
         "class C:\n    pi = pi\nresult = C.pi\n",

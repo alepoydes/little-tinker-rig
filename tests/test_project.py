@@ -136,6 +136,36 @@ def test_interrupted_restore_save_preserves_scratch_copy(tmp_path, monkeypatch):
     assert Project(path).document.state == project.document.state
 
 
+def test_interrupted_save_preserves_scratch_multiplicity(tmp_path, monkeypatch):
+    from little_tinker_rig.core import project as storage
+
+    path = tmp_path / "main.py"
+    project = Project(path)
+    project.document.commit("x = 1\n", ("same\n", "same\n", "old\n"))
+    project.save()
+    project.document.commit("x = 2\n", ("new\n", "same\n", "same\n", "same\n"))
+    write = storage.atomic_write
+
+    def fail_main(destination, text, encoding="utf-8"):
+        if destination == path:
+            raise OSError("disk full")
+        write(destination, text, encoding)
+
+    monkeypatch.setattr(storage, "atomic_write", fail_main)
+    with pytest.raises(OSError):
+        project.save()
+    assert Project(path).document.state.scratch == (
+        "new\n",
+        "same\n",
+        "same\n",
+        "same\n",
+        "old\n",
+    )
+    monkeypatch.setattr(storage, "atomic_write", write)
+    project.save()
+    assert Project(path).document.state.scratch == project.document.state.scratch
+
+
 def test_collection_history_upgrade_and_pin(tmp_path):
     collection = tmp_path / "course"
     history = collection / "old_versions" / "1.0.0"

@@ -79,9 +79,17 @@ class Editor:
         *,
         focus: int | None = None,
         scratch_ids=None,
+        group=None,
+        apply_draft=False,
     ) -> bool:
         offset = self.document.syntax.spans[self.selection].start
-        changed = self.document.commit(source, scratch, scratch_ids=scratch_ids)
+        changed = self.document.commit(
+            source,
+            scratch,
+            scratch_ids=scratch_ids,
+            group=group,
+            apply_draft=apply_draft,
+        )
         self.moving = None
         self.select(
             edit.map_offset(source, self.document.state.source, focus)

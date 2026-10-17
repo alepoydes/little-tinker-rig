@@ -27,6 +27,9 @@ Declare parameters explicitly in the new signature and use them in its body;
 this action does not guess which constants should become parameters.
 The draft includes imports needed by the selection. Local aliases take precedence
 over imports from its enclosing program, including when selecting code in Scratch.
+Function bodies retain outer imports declared below their definitions. Defaults
+and decorators use the imports available at definition time; class-local imports
+do not become dependencies of method bodies.
 
 ## Preview above the source
 

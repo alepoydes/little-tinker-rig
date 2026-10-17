@@ -1130,6 +1130,7 @@ class Studio(QMainWindow):
         if self.scratch_stack.indexOf(self.scratch) < 0:
             self.scratch_stack.addWidget(self.scratch)
         self.scratch_stack.setCurrentWidget(self.scratch)
+        self.document_page.sync_text()
         self.source.refresh_source()
         if self.library.update_functions(self.session.available_snippets):
             self.help_page.snippets = self.session.available_snippets
@@ -1252,7 +1253,7 @@ class Studio(QMainWindow):
         self.undo_action.setEnabled(
             (
                 text_editor.document().isUndoAvailable()
-                if text_editor
+                if self.pages.currentIndex() == 3 and text_editor
                 else self.session.document.can_undo
             )
             and self.pages.currentIndex() in (0, 3)
@@ -1260,7 +1261,7 @@ class Studio(QMainWindow):
         self.redo_action.setEnabled(
             (
                 text_editor.document().isRedoAvailable()
-                if text_editor
+                if self.pages.currentIndex() == 3 and text_editor
                 else self.session.document.can_redo
             )
             and self.pages.currentIndex() in (0, 3)
@@ -1632,13 +1633,21 @@ class Studio(QMainWindow):
         if self.pages.currentIndex() not in (0, 3):
             return
         editor = self.text_editor()
-        editor.undo() if editor else self.session.editor.undo()
+        (
+            editor.undo()
+            if self.pages.currentIndex() == 3 and editor
+            else self.document_page.undo()
+        )
 
     def redo(self):
         if self.pages.currentIndex() not in (0, 3):
             return
         editor = self.text_editor()
-        editor.redo() if editor else self.session.editor.redo()
+        (
+            editor.redo()
+            if self.pages.currentIndex() == 3 and editor
+            else self.document_page.redo()
+        )
 
     def save(self):
         if self.pages.currentIndex() == 3:
