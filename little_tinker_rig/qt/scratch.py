@@ -20,7 +20,6 @@ from PySide6.QtWidgets import (
 from little_tinker_rig.core.edit import target_position
 from little_tinker_rig.core.parameters import default_bindings
 from little_tinker_rig.core.session import Session
-from little_tinker_rig.core.snippets import instantiate
 from little_tinker_rig.core.transfer import Transfer
 from little_tinker_rig.i18n import N_, tr
 
@@ -402,7 +401,7 @@ class ScratchPane(QScrollArea):
                     data.data("application/x-little-tinker-rig-snippet")
                 ).decode()
                 snippet = self.catalog_snippet(identity)
-                expansion = instantiate(
+                expansion = self.session.expand_snippet(
                     snippet, default_bindings(self.session, snippet)
                 )
                 items = list(self.session.document.state.scratch)

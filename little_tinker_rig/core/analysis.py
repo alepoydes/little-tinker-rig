@@ -127,6 +127,15 @@ class Scopes:
             scope = scope.parent
         return scope
 
+    @cached_property
+    def declared_names(self):
+        """Explicit bindings, including arguments and imports, without reads."""
+        return frozenset(
+            name
+            for scope in (self.root, *self.defined_scopes.values())
+            for name in scope.bindings
+        )
+
     def _bind(self, scope: Scope, name: str, node: ast.AST, *, initialize=True) -> None:
         offset = self.positions.get(node, Span(0, 0)).start
         scope.bindings[name] = min(scope.bindings.get(name, offset), offset)

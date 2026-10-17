@@ -78,20 +78,24 @@ class Snippet:
         return not self.family or self.variant is not None
 
     @cached_property
-    def produced_types(self):
-        """Declared results and public bindings, excluding private helper locals."""
-        if self.expression:
-            return (self.result_type,) if self.result_type else ()
-        if self.mode != "inline":
-            return ()
-        return tuple(
-            annotation_text(node.annotation)
+    def produced_bindings(self):
+        """Typed public names created by this block, excluding helper locals."""
+        if self.expression or self.mode != "inline":
+            return {}
+        return {
+            node.target.id: annotation_text(node.annotation)
             for root in self.body
             for node in ast.walk(root)
             if isinstance(node, ast.AnnAssign)
             and isinstance(node.target, ast.Name)
             and node.target.id in self.names
-        )
+        }
+
+    @cached_property
+    def produced_types(self):
+        if self.expression:
+            return (self.result_type,) if self.result_type else ()
+        return tuple(self.produced_bindings.values())
 
     @cached_property
     def helper_signatures(self):
@@ -657,14 +661,20 @@ def instantiate_tree(
     occupied: set[str] | None = None,
     *,
     local_names: dict[str, str] | None = None,
+    declared: set[str] | frozenset[str] | None = None,
 ) -> ast.AST:
-    """Substitute expressions. Repeated parameters repeat evaluation, as in source."""
+    """Substitute expressions; repeated parameters repeat evaluation, as in source.
+
+    ``occupied`` protects helper hygiene. ``declared`` can narrow public-name
+    conflicts to real bindings so a new declaration can satisfy unresolved reads.
+    """
     values = {}
     parameter_names = {p.name for p in snippet.parameters}
     extra = bindings.keys() - parameter_names - snippet.names.keys()
     if extra:
         raise ValueError(f"Unknown parameters: {', '.join(sorted(extra))}")
     used = set(occupied or ())
+    declared = set(occupied or ()) if declared is None else set(declared)
     for parameter in snippet.parameters:
         value = bindings.get(parameter.name, parameter.default)
         if value is None:
@@ -677,13 +687,15 @@ def instantiate_tree(
         values[parameter.name] = expression
         used.update(identifiers(expression))
     renamed = dict(local_names or {})
-    reserved = set(used)
+    reserved = declared | {
+        name for value in values.values() for name in identifiers(value)
+    }
     for name, key in snippet.names.items():
         if name in parameter_names:
             expression = values[name]
             if not isinstance(expression, ast.Name):
                 raise ValueError(f"{name} must be a declared name")
-            if expression.id in (occupied or ()):
+            if expression.id in declared:
                 if name in bindings:
                     raise ValueError(
                         f"Declared name {expression.id!r} conflicts with an existing name"
@@ -755,9 +767,12 @@ def instantiate(
     *,
     local_names: dict[str, str] | None = None,
     formatted: bool = False,
+    declared: set[str] | frozenset[str] | None = None,
 ) -> Expansion:
     """Expand a template with its imports and shared helper definitions."""
-    tree = instantiate_tree(snippet, bindings, occupied, local_names=local_names)
+    tree = instantiate_tree(
+        snippet, bindings, occupied, local_names=local_names, declared=declared
+    )
     text = ast.unparse(tree)
     if formatted and snippet.definition and snippet.mode != "function":
         module = (

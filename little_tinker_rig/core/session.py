@@ -517,6 +517,15 @@ class Session:
         suite = syntax.statement_suite[node]
         return edit.Target(suite, suite.statements.index(node) + 1)
 
+    def expand_snippet(self, snippet, bindings):
+        """Public declarations may satisfy missing names; helpers must not capture them."""
+        occupied = identifiers(self.document.syntax.tree)
+        declared = set(self.analysis.declared_names)
+        if context := getattr(self, "context", None):
+            occupied.update(identifiers(context.document.syntax.tree))
+            declared.update(context.analysis.declared_names)
+        return instantiate(snippet, bindings, occupied, declared=declared)
+
     def insert_snippet(
         self,
         snippet: Snippet,
@@ -524,7 +533,7 @@ class Session:
         target: edit.Target | None = None,
     ) -> None:
         syntax = self.document.syntax
-        expansion = instantiate(snippet, bindings, identifiers(syntax.tree))
+        expansion = self.expand_snippet(snippet, bindings)
         if (
             snippet.expression
             and target is None

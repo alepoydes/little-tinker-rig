@@ -37,7 +37,7 @@ from PySide6.QtWidgets import (
 )
 
 from little_tinker_rig.core.authoring import template_from_source, user_collection
-from little_tinker_rig.core.edit import target_position
+from little_tinker_rig.core.edit import Target, target_position
 from little_tinker_rig.core.expressions import navigate as navigate_expression
 from little_tinker_rig.core.lessons import localized
 from little_tinker_rig.core.parameters import default_bindings
@@ -1371,12 +1371,31 @@ class Studio(QMainWindow):
                     self.clear_input_search()
                     return
                 view, slot = self.input_search
+                snippet = self.library.snippets.get(item.data(0, IDENTITY))
                 if (
                     view.input_target is slot
-                    and view.session.document.syntax is slot.syntax
-                ):
+                    or snippet is not None
+                    and snippet.expression
+                ) and view.session.document.syntax is slot.syntax:
                     view.session.editor.selection = slot.node
                     self.insert_snippet(item.data(0, IDENTITY), view=view)
+                    return
+                statement = next(
+                    (
+                        node
+                        for node in slot.syntax.ancestors(slot.node)
+                        if isinstance(node, ast.stmt)
+                    ),
+                    None,
+                )
+                if statement in slot.syntax.statement_suite:
+                    suite = slot.syntax.statement_suite[statement]
+                    view.session.editor.selection = slot.node
+                    self.insert_snippet(
+                        item.data(0, IDENTITY),
+                        Target(suite, suite.statements.index(statement)),
+                        view=view,
+                    )
                     return
             self.insert_snippet(item.data(0, IDENTITY))
 

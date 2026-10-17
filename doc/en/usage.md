@@ -431,9 +431,11 @@ not change drop targets. Error borders and insertion markers remain distinct.
 
 ## Finding a missing device or value
 
-An amber input border marks a warning. Hover to see its expected type or unit and
-why the name is unavailable. Right-click the field to edit it, select an existing
-value, show a known definition, or **Find creation blocks**. **Find value blocks**
+An amber input border marks a warning. For a missing name, the tooltip starts with
+the fix: which creation block to put before this use, or which later definition
+to move. The expected type, unit and ordinary help follow. Right-click the field
+to edit it, select an existing value, show a known definition, or **Find creation
+blocks**. **Find value blocks**
 searches expressions for the selected input. Hovering and ordinary clicks leave
 the catalog alone. The explicit search stays pinned while you browse; its back
 button restores your previous view and search. Editing the program ends the search.
@@ -448,8 +450,13 @@ motor movements remain explicit catalog actions even when they return a number.
 Creation search uses what a block produces: a Motor input finds motor constructors,
 and a ForceSensor input selects that variant of the shared sensor family. Level
 and lesson restrictions still apply. Place a variable's creation before its use
-in an accessible scope. An expression constructor inside a loop runs on every
-iteration. The editor does not choose ports or create prerequisite devices for you.
+in an accessible scope. After **Find creation blocks**, Enter or a double-click
+places a declaration block immediately before the consumer; dragging lets you
+choose its location. A public declaration reuses a compatible missing name, such
+as `drive` in `drive.straight(200)`, instead of inventing `drive_2`. Real declarations
+still reserve their names. Private helpers never capture unresolved references.
+An expression constructor inside a loop runs on every iteration. The editor does
+not choose ports or create prerequisite devices for you.
 Lexical hints cannot prove that every branch or runtime call initializes a name.
 Straight-line reads before assignment are diagnosed inside functions too, including
 an initial `value = value + 1`. A closure's outer values may be initialized after

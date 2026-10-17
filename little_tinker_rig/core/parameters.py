@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from little_tinker_rig.i18n import tr
 
 from . import edit
-from .analysis import annotation_types, attribute_path, identifiers, value_type
+from .analysis import annotation_types, attribute_path, value_type
 from .snippets import Expansion, Match, Parameter, instantiate
 from .structure import OPERATORS, change_operator, name_span, operator_spans, rename
 from .syntax import Span, Syntax
@@ -452,12 +452,51 @@ def _reporters(session, expected):
             yield snippet, device
 
 
+def creation_blocks(snippets, annotation):
+    return tuple(
+        snippet
+        for snippet in snippets
+        if not snippet.historical
+        and any(
+            compatibility(annotation, known_type(produced)) is Compatibility.COMPATIBLE
+            for produced in snippet.produced_types
+        )
+    )
+
+
 def default_bindings(session, snippet, offset=None):
     syntax = session.document.syntax
     offset = syntax.spans[session.editor.selection].start if offset is None else offset
-    used = identifiers(syntax.tree)
+    analysis = session.analysis
+    used = set(analysis.declared_names)
     if context := getattr(session, "context", None):
-        used |= identifiers(context.document.syntax.tree)
+        used.update(context.analysis.declared_names)
+    consumers = ()
+    if snippet.produced_bindings:
+        scope = analysis.scopes.get(syntax.at(offset), analysis.root)
+        contracts = dict(analysis.contracts)
+        contracts.update(
+            (node, annotation)
+            for node, _ in analysis.references
+            if (annotation := session.input_contracts.get(syntax.spans[node]))
+        )
+        available = set(analysis.available(offset))
+        consumers = sorted(
+            (
+                (node, annotation)
+                for node, annotation in contracts.items()
+                if isinstance(node, ast.Name)
+                and isinstance(node.ctx, ast.Load)
+                and node.id not in used
+                and node.id not in available
+                and analysis.scopes[node] is scope
+            ),
+            key=lambda item: (
+                item[0] is not session.editor.selection,
+                syntax.spans[item[0]].start < offset,
+                abs(syntax.spans[item[0]].start - offset),
+            ),
+        )
     result = {}
     roots = (snippet.body,) if snippet.expression else snippet.body
     declared = {
@@ -496,6 +535,15 @@ def default_bindings(session, snippet, offset=None):
                 )
             )
         if parameter.name in declared:
+            produced = known_type(snippet.produced_bindings.get(parameter.name))
+            wanted = [
+                node.id
+                for node, expected in consumers
+                if node.id not in used
+                and compatibility(expected, produced) is Compatibility.COMPATIBLE
+            ]
+            if wanted:
+                value = wanted[0]
             base = value
             suffix = 2
             while value in used:

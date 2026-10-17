@@ -22,7 +22,6 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import QApplication, QTextEdit
 
 from little_tinker_rig.core import edit
-from little_tinker_rig.core.analysis import identifiers
 from little_tinker_rig.core.display import Display
 from little_tinker_rig.core.edit import target_position
 from little_tinker_rig.core.expressions import (
@@ -35,7 +34,12 @@ from little_tinker_rig.core.expressions import (
     navigate,
     public,
 )
-from little_tinker_rig.core.parameters import default_bindings, has_choices, slots
+from little_tinker_rig.core.parameters import (
+    creation_blocks,
+    default_bindings,
+    has_choices,
+    slots,
+)
 from little_tinker_rig.core.presentation import (
     Region,
     regions,
@@ -43,11 +47,11 @@ from little_tinker_rig.core.presentation import (
     role_color,
     snippet_role,
 )
-from little_tinker_rig.core.snippets import instantiate
+from little_tinker_rig.core.snippets import LEVELS
 from little_tinker_rig.core.transfer import Transfer
 from little_tinker_rig.i18n import language, tr
 
-from .annotations import block_notes
+from .annotations import block_notes, snippet_title
 from .colors import saturated
 from .drag import BlockMime, cancel_drag, drag_block
 from .parameters import ParameterEditor, unit_text
@@ -1187,6 +1191,7 @@ class SourceView(QTextEdit):
         unit = unit_text(slot.parameter.annotation)
         contract = slot.parameter.annotation or "Python"
         detail = name + " · " + (unit or contract)
+        guidance = ""
         issues = self.parameter_issues.get(slot.span, ())
         if issues:
             detail += "\n" + "\n".join(issues)
@@ -1194,14 +1199,52 @@ class SourceView(QTextEdit):
                 scope = self.session.analysis.resolve(slot.node, slot.node.id)
                 offset = scope.bindings.get(slot.node.id) if scope else None
                 if offset is not None and offset > slot.span.start:
-                    detail += "\n" + tr(
-                        "Defined later at line {line}.",
+                    guidance = tr(
+                        "Move the definition of {name} at line {line} before this block.",
+                        name=slot.node.id,
                         line=slot.syntax.position(offset)[0],
                     )
-                if offset is None or offset > slot.span.start:
-                    detail += "\n" + tr(
-                        "Create the value before this block, in a scope visible here."
+                elif (
+                    offset is None
+                    and slot.node.id
+                    not in self.session.analysis.available(slot.span.start)
+                ):
+                    creators = [
+                        snippet
+                        for snippet in creation_blocks(
+                            self.session.available_snippets, slot.parameter.annotation
+                        )
+                        if snippet.produced_bindings
+                        and snippet.catalog_visible
+                        and (
+                            self.expression_ids is None
+                            or snippet.identity in self.expression_ids
+                        )
+                        and (
+                            self.expression_level == "all"
+                            or LEVELS.index(snippet.level)
+                            <= LEVELS.index(self.expression_level)
+                        )
+                    ]
+                    creator = min(
+                        creators,
+                        key=lambda s: (LEVELS.index(s.level), s.identity),
+                        default=None,
                     )
+                    guidance = (
+                        tr(
+                            "Add “{block}” before this block to create {name}.\nRight-click {name} → Find creation blocks.",
+                            block=snippet_title(creator),
+                            name=slot.node.id,
+                        )
+                        if creator
+                        else tr(
+                            "Define {name} before this block, in a scope visible here.",
+                            name=slot.node.id,
+                        )
+                    )
+        if guidance:
+            detail = guidance + "\n\n" + detail
         if slot.binding:
             return detail
         return (
@@ -1877,10 +1920,9 @@ class SourceView(QTextEdit):
             if isinstance(target, ast.expr)
             else target_position(syntax, target)[0] if target else 0
         )
-        return instantiate(
+        return self.session.expand_snippet(
             self.drop_snippet,
             default_bindings(self.session, self.drop_snippet, offset),
-            identifiers(syntax.tree),
         ).source
 
     def dragLeaveEvent(self, event):

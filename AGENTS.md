@@ -36,6 +36,11 @@
   and variant changes. Apply dependencies and source as one Undo transaction.
   A numeric result alone does not make an operation a measurement: automatic
   readout suggestions require an explicit source declaration.
+- Distinguish declarations from unresolved reads when creating public names.
+  Prefer a compatible missing consumer name; preserve existing bindings and keep
+  private helper names isolated from all references. Drag previews and committed
+  insertions must use the same expansion rules. Missing-name guidance starts with
+  a concrete creation or ordering fix before ordinary parameter help.
 - Keep pinned searches attached to their source view and revision, independent
   of keyboard focus. Replacing a filled input by dragging requires an explicit
   search for that exact input; ordinary drops retain their existing protection.

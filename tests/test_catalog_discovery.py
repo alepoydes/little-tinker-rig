@@ -1,7 +1,115 @@
 from little_tinker_rig.core.catalog_history import reference
-from little_tinker_rig.core.parameters import change_parameter, choices, slots
+from little_tinker_rig.core.parameters import (
+    change_parameter,
+    choices,
+    default_bindings,
+    slots,
+)
 from little_tinker_rig.core.session import Session
 from little_tinker_rig.core.snippets import Parameter, load_module
+
+
+def test_creation_reuses_missing_typed_names_without_capturing_helpers(tmp_path):
+    from little_tinker_rig.core.edit import Target
+
+    path = tmp_path / "missing.py"
+    for text, identity, wanted in (
+        ("drive.straight(200)\n", "pybricks/drive/create_robot", "drive"),
+        ("rover.turn(90)\n", "pybricks/drive/create_robot", "rover"),
+        ("print(touch.force())\n", "pybricks/sensors/create_force_sensor", "touch"),
+    ):
+        path.write_text(text, encoding="utf-8")
+        session = Session(path)
+        snippet = next(s for s in session.snippets if s.identity == identity)
+        values = default_bindings(session, snippet, 0)
+        assert values["name"] == wanted
+        before = session.document.state
+        session.insert_snippet(
+            snippet, values, Target(session.document.syntax.suites[0], 0)
+        )
+        assert not session.analysis.diagnostics()
+        session.editor.undo()
+        assert session.document.state is before
+
+    path.write_text("drive.straight(200)\nprint(left_motor)\n", encoding="utf-8")
+    session = Session(path)
+    snippet = next(
+        s for s in session.snippets if s.identity == "pybricks/drive/create_robot"
+    )
+    session.insert_snippet(
+        snippet,
+        default_bindings(session, snippet, 0),
+        Target(session.document.syntax.suites[0], 0),
+    )
+    assert 'left_motor_2: "Motor"' in session.document.state.source
+    assert len(session.analysis.diagnostics()) == 1
+    assert "left_motor" in session.analysis.diagnostics()[0].message
+
+
+def test_creation_preserves_real_declarations_and_prefers_selected_consumer(tmp_path):
+    path = tmp_path / "existing.py"
+    for text in (
+        "drive = 1\n",
+        "import robot as drive\n",
+        "def move(drive):\n    pass\n",
+    ):
+        path.write_text(text, encoding="utf-8")
+        session = Session(path)
+        snippet = next(
+            s for s in session.snippets if s.identity == "pybricks/drive/create_robot"
+        )
+        assert default_bindings(session, snippet, 0)["name"] == "drive_2"
+    path.write_text("drive.straight(200)\nrover.turn(90)\n", encoding="utf-8")
+    session = Session(path)
+    session.editor.selection = next(
+        s.node
+        for s in slots(session)
+        if session.document.syntax.text(s.node) == "rover"
+    )
+    assert default_bindings(session, snippet, 0)["name"] == "rover"
+
+
+def test_creation_search_explains_fix_and_inserts_before_consumer(tmp_path, qt_app):
+    from PySide6.QtCore import Qt
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.app import Studio
+
+    path = tmp_path / "main.py"
+    path.write_text("drive.straight(200)\n", encoding="utf-8")
+    window = Studio(path)
+    window.show()
+    qt_app.processEvents()
+    try:
+        slot = next(
+            s for s in window.source.parameter_slots if s.parameter.name == "drive"
+        )
+        tip = window.source.parameter_tip(slot)
+        assert tip.startswith(
+            "Add “Set up drive base” before this block to create drive."
+        )
+        assert "Find creation blocks" in tip
+        before = window.session.document.state
+        window.source.search_input(slot, True)
+        window.library.setCurrentItem(
+            window.library.rows[reference("pybricks/drive/create_robot")]
+        )
+        window.library.setFocus()
+        QTest.keyClick(window.library, Qt.Key.Key_Return)
+        assert 'drive: "DriveBase"' in window.document_page.text
+        assert "drive_2" not in window.document_page.text
+        assert not window.session.analysis.diagnostics()
+        window.session.editor.undo()
+        window.refresh_views()
+        assert window.session.document.state is before
+        window.change_language("ru")
+        slot = next(
+            s for s in window.source.parameter_slots if s.parameter.name == "drive"
+        )
+        assert "drive" in window.source.parameter_tip(slot)
+    finally:
+        window.confirm_close = lambda *_: True
+        window.close()
 
 
 def test_measurement_suggestions_preserve_dependencies_and_undo(tmp_path, qt_app):

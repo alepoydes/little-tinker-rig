@@ -26,9 +26,9 @@ from little_tinker_rig.core.block_metadata import CATEGORIES
 from little_tinker_rig.core.catalog import families
 from little_tinker_rig.core.catalog_history import History, reference
 from little_tinker_rig.core.expressions import eligible, input_roots
+from little_tinker_rig.core.parameters import creation_blocks
 from little_tinker_rig.core.presentation import role_color, snippet_role
 from little_tinker_rig.core.snippets import instantiate
-from little_tinker_rig.core.types import Compatibility, compatibility, known_type
 from little_tinker_rig.i18n import N_, tr
 
 from .annotations import block_icon, snippet_title
@@ -604,11 +604,8 @@ class Library(QTreeWidget):
         if providers:
             self.eligible_ids = {
                 s.identity
-                for s in self.snippets.values()
-                if any(
-                    compatibility(slot.parameter.annotation, known_type(annotation))
-                    is Compatibility.COMPATIBLE
-                    for annotation in s.produced_types
+                for s in creation_blocks(
+                    self.snippets.values(), slot.parameter.annotation
                 )
             }
             self.filter(self.search)
