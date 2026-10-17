@@ -22,6 +22,7 @@ from little_tinker_rig.i18n import N_, tr
 from .code import CodeEdit
 from .editor import SourceView
 from .find import FindBar
+from .scratch import ScratchPane
 
 
 class DocumentPage(QWidget):
@@ -36,6 +37,7 @@ class DocumentPage(QWidget):
     def __init__(self, path: Path, collections=()):
         super().__init__()
         self.session = Session(path, collections, allow_draft=True)
+        self.scratch = ScratchPane(self)
         self.unnamed = False
         self.unsaved_scope = "unsaved:" + uuid4().hex
         self.lesson_project = None

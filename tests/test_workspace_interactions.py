@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QTextCursor
+from PySide6.QtGui import QAction, QTextCursor
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QFileDialog
 
@@ -95,6 +95,78 @@ def test_invalid_parameter_blocks_tab_change_without_losing_draft(windows, tmp_p
     QTest.keyClick(field, Qt.Key.Key_Escape)
     window.open_document(other)
     assert window.session.project.path == other
+
+
+def test_stop_and_disconnect_bypass_invalid_edits(windows, monkeypatch):
+    from PySide6.QtWidgets import QToolBar
+
+    from little_tinker_rig.pybricks.devices import HubInfo
+
+    window = windows(MOTOR)
+    calls = []
+    robot = SimpleNamespace(
+        stop_program=lambda: calls.append("stop"),
+        disconnect_hub=lambda: calls.append("disconnect"),
+        close=lambda: None,
+    )
+    monkeypatch.setattr(window, "robot", robot)
+    window.update_hub(HubInfo(connected=True, running=True))
+    field = parameter(window, "speed", "500 +")
+    QTest.keyClick(field, Qt.Key.Key_F6)
+    toolbar = window.findChild(QToolBar, "programTools")
+    QTest.mouseClick(
+        toolbar.widgetForAction(window.stop_action), Qt.MouseButton.LeftButton
+    )
+    disconnect = next(
+        a for a in window.findChildren(QAction) if a.text() == "Disconnect"
+    )
+    disconnect.trigger()
+    assert calls == ["stop", "stop", "disconnect"]
+    assert field.text() == "500 +" and field.isVisible()
+    assert "motor.run(500)" in window.document_page.text
+    QTest.keyClick(field, Qt.Key.Key_Escape)
+
+
+def test_scratch_retains_editors_across_tabs_and_routes_commands(
+    windows, tmp_path, monkeypatch
+):
+    window = windows("main_value = 1\n")
+    owner = window.document_page
+    window.change_editor(1)
+    window.code.selectAll()
+    window.session.set_scratch(None, "scratch_value = 2\n")
+    window.refresh_views()
+    window.scratch_dock.show()
+    cell = window.scratch.cells[0]
+    cell.source.setFocus()
+    QApplication.processEvents()
+    assert window.library_pane.isVisible()
+    cell.change_mode(True)
+    cell.code.moveCursor(QTextCursor.MoveOperation.End)
+    cell.code.insertPlainText("print(missing_name)\n")
+    assert not window.library_pane.isVisible()
+    other = tmp_path / "other.py"
+    other.write_text("other = 3\n", encoding="utf-8")
+    window.open_document(other)
+    assert not window.scratch.cells
+    window.documents.setCurrentWidget(owner)
+    assert window.scratch.cells[0] is cell
+    assert cell.code_active and cell.code.document().isUndoAvailable()
+    cell.code.setFocus()
+    window.show_diagnostics()
+    assert "missing_name" in window.console.toPlainText()
+    assert "No unknown names" not in window.console.toPlainText()
+    QTest.keyClick(cell.code, Qt.Key.Key_Z, CTRL)
+    assert cell.text == "scratch_value = 2\n"
+    cell.code.selectAll()
+    definitions = []
+    monkeypatch.setattr(window.block_editor, "create", definitions.append)
+    window.create_block_action.trigger()
+    assert "scratch_value = 2" in definitions[0]
+    assert "main_value" not in definitions[0]
+    window.set_mode(0)
+    window.documents.setCurrentIndex(1)
+    assert window.document_page.text == "other = 3\n"
 
 
 def test_python_undo_survives_mode_changes_and_tracks_block_edits(windows):
@@ -255,6 +327,17 @@ def test_trigger_release_and_focus_loss_stop_motor_commands(qt_app):
         controls.sample()
         assert commands[-1] == (("A", "speed", 50.0),)
         QTest.keyRelease(trigger, Qt.Key.Key_PageUp)
+        controls.sample()
+        assert commands[-1] == (("A", "speed", 0.0),)
+        trigger.setFocus()
+        QTest.mousePress(
+            trigger, Qt.MouseButton.LeftButton, pos=trigger.rect().center()
+        )
+        controls.sample()
+        assert commands[-1][0][2] > 0
+        QTest.mouseRelease(
+            trigger, Qt.MouseButton.LeftButton, pos=trigger.rect().center()
+        )
         controls.sample()
         assert commands[-1] == (("A", "speed", 0.0),)
         QTest.keyPress(trigger, Qt.Key.Key_PageUp)

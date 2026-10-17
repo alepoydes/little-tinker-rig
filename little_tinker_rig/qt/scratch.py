@@ -121,15 +121,18 @@ class ScratchCell(QFrame):
         self.change_mode(False)
         localize(self)
 
-    def change_mode(self, code):
+    def commit_code(self):
+        if self.code_active or self.text != self.source.session.document.state.source:
+            session = Session.fragment(self.text, self.pane.session.snippets)
+            session.context = self.pane.session
+            self.source.session = session
+
+    def change_mode(self, code, *, focus=True):
         if not self.source.finish_parameter():
             return
         if not code:
             try:
-                self.source.session = Session.fragment(
-                    self.text, self.pane.session.snippets
-                )
-                self.source.session.context = self.pane.session
+                self.commit_code()
                 self.source.refresh_source()
             except (SyntaxError, ValueError) as error:
                 code = True
@@ -146,7 +149,8 @@ class ScratchCell(QFrame):
         if not code:
             self.error.hide()
         self.fit()
-        (self.code if code else self.source).setFocus()
+        if focus:
+            (self.code if code else self.source).setFocus()
         self.mode_changed.emit()
 
     def show_drag_origin(self, transfer):
@@ -227,8 +231,8 @@ class ScratchPane(QScrollArea):
     input_search_requested = Signal(object, object, bool)
     snippet_inserted = Signal(str)
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.session = None
         self.allowed_ids = None
         self.cells = []
@@ -272,22 +276,23 @@ class ScratchPane(QScrollArea):
             self.column.removeWidget(cell)
             cell.deleteLater()
         for index, text in enumerate(texts):
-            if index < len(self.cells) and self.cells[index].text == text:
-                view = self.cells[index].source
+            if index < len(self.cells):
+                cell = self.cells[index]
+                view = cell.source
+                if cell.text != text:
+                    cell.text = text
+                    cell.code.blockSignals(True)
+                    cell.code.replace_formatted(text)
+                    cell.code.blockSignals(False)
+                    cell.change_mode(cell.code_active, focus=False)
                 if view.session.snippets is not session.snippets:
                     view.session.set_snippets(session.snippets)
                 view.refresh_source()
-                self.cells[index].fit()
+                cell.fit()
                 continue
             cell = ScratchCell(self, index, text)
             cell.mode_changed.connect(self.changed)
-            if index < len(self.cells):
-                old = self.cells[index]
-                self.column.removeWidget(old)
-                old.deleteLater()
-                self.cells[index] = cell
-            else:
-                self.cells.append(cell)
+            self.cells.append(cell)
             self.column.insertWidget(index, cell)
         self.empty.setVisible(not self.cells)
         self.empty.setText(

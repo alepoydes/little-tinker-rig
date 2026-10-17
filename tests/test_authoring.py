@@ -364,11 +364,11 @@ def test_editor_groups_copies_and_language_changes_keep_edits(tmp_path, qt_app):
         source = page.code.toPlainText()
         page.check()
         qt_app.processEvents()
-        sizes = page.vertical.sizes()
+        sizes = page.preview_splitter.sizes()
         page.code.insertPlainText("\n# Another comment\n")
         page.check()
         qt_app.processEvents()
-        assert page.vertical.sizes() == sizes
+        assert page.preview_splitter.sizes() == sizes
         window.change_language("ru")
         assert window.modes.item(3).text() == "Редактор блоков"
         assert page.save_button.text() == "Сохранить и применить"

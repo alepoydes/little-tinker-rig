@@ -69,7 +69,6 @@ from .localization import localize, translate_standard_dialogs
 from .navigation import ChoiceButtons, ModeList
 from .recovery import Recovery
 from .runtime import RuntimePanel
-from .scratch import ScratchPane
 from .window import TitleBar, resize_edges
 
 
@@ -292,14 +291,28 @@ class Studio(QMainWindow):
             theme, self.style().standardIcon(getattr(QStyle.StandardPixmap, fallback))
         )
 
-    def _action(self, menu, label, shortcut, callback, toolbar=None, icon=None):
+    def _action(
+        self,
+        menu,
+        label,
+        shortcut,
+        callback,
+        toolbar=None,
+        icon=None,
+        *,
+        commit_parameters=True,
+    ):
         action = QAction(label, self)
         if shortcut:
             action.setShortcut(QKeySequence(shortcut))
         if icon:
             action.setIcon(self._icon(*icon))
         action.setToolTip(label)
-        action.triggered.connect(lambda checked=False: self.perform(callback))
+        action.triggered.connect(
+            lambda checked=False: self.perform(
+                callback, commit_parameters=commit_parameters
+            )
+        )
         menu.addAction(action)
         if toolbar:
             toolbar.addAction(action)
@@ -346,16 +359,11 @@ class Studio(QMainWindow):
         )
         self.console_dock.visibilityChanged.connect(self.console_visibility)
         self.console_dock.hide()
-        self.scratch = ScratchPane()
         self.active_cell = None
-        self.scratch.changed.connect(self.refresh_views)
-        self.scratch.failed.connect(self.error)
-        self.scratch.snippet_inserted.connect(self.library.record_use)
-        self.scratch.definition_requested.connect(self.open_definition)
-        self.scratch.help_requested.connect(self.open_block_help)
-        self.scratch.input_search_requested.connect(self.find_input_blocks)
+        self.scratch_stack = QStackedWidget()
+        self.scratch_stack.addWidget(self.scratch)
         self.scratch_dock = self.dock(
-            N_("Scratch"), self.scratch, Qt.DockWidgetArea.RightDockWidgetArea
+            N_("Scratch"), self.scratch_stack, Qt.DockWidgetArea.RightDockWidgetArea
         )
         self.resizeDocks([self.scratch_dock], [300], Qt.Orientation.Horizontal)
         self.scratch_dock.visibilityChanged.connect(self.scratch_visibility)
@@ -608,9 +616,12 @@ class Studio(QMainWindow):
             self.stop_hub,
             toolbar,
             ("media-playback-stop", "SP_MediaStop"),
+            commit_parameters=False,
         )
         self._action(robot, N_("Connect…"), "F7", self.connect_hub)
-        self._action(robot, N_("Disconnect"), None, self.disconnect_hub)
+        self._action(
+            robot, N_("Disconnect"), None, self.disconnect_hub, commit_parameters=False
+        )
         self._action(robot, N_("Manual control"), None, self.show_controls)
         self.stored_action = self._action(
             robot, N_("Run stored program"), None, self.run_stored_hub
@@ -676,6 +687,10 @@ class Studio(QMainWindow):
     @property
     def code_active(self):
         return self.document_page.code_active
+
+    @property
+    def scratch(self):
+        return self.document_page.scratch
 
     @property
     def find_bar(self):
@@ -820,8 +835,6 @@ class Studio(QMainWindow):
     def document_mode_changed(self):
         if not hasattr(self, "library_pane"):
             return
-        self.library_pane.setVisible(not self.code_active)
-        self.editor_actions[int(self.code_active)].setChecked(True)
         self.refresh_status()
 
     def open_document(self, path, *, unnamed=False):
@@ -863,6 +876,14 @@ class Studio(QMainWindow):
         page.help_requested.connect(self.open_block_help)
         page.input_search_requested.connect(self.find_input_blocks)
         page.mode_changed.connect(self.document_mode_changed)
+        page.scratch.changed.connect(self.refresh_views)
+        page.scratch.failed.connect(self.error)
+        page.scratch.snippet_inserted.connect(
+            lambda identity: self.library.record_use(identity)
+        )
+        page.scratch.definition_requested.connect(self.open_definition)
+        page.scratch.help_requested.connect(self.open_block_help)
+        page.scratch.input_search_requested.connect(self.find_input_blocks)
         index = self.documents.addTab(page, path.name)
         self.documents.setTabToolTip(index, str(path))
         self.documents.setCurrentIndex(index)
@@ -1034,6 +1055,8 @@ class Studio(QMainWindow):
         if self.documents.count() == 1:
             self.new_file()
         self.documents.removeTab(self.documents.indexOf(page))
+        self.scratch_stack.removeWidget(page.scratch)
+        page.scratch.deleteLater()
         page.deleteLater()
         if self.recovery.flush():
             self.lessons.release_unused()
@@ -1060,6 +1083,7 @@ class Studio(QMainWindow):
                 self.scratch_dock.raise_()
                 cell.source.parameter_editor.line_edit.setFocus()
                 break
+        self.refresh_status()
 
     def set_mode(self, index):
         if index < 0 or self.modes.item(index).isHidden():
@@ -1095,8 +1119,11 @@ class Studio(QMainWindow):
         self.refresh_status()
 
     def refresh_views(self):
-        if not hasattr(self, "scratch") or self.document_page is None:
+        if not hasattr(self, "scratch_stack") or self.document_page is None:
             return
+        if self.scratch_stack.indexOf(self.scratch) < 0:
+            self.scratch_stack.addWidget(self.scratch)
+        self.scratch_stack.setCurrentWidget(self.scratch)
         self.source.refresh_source()
         if self.library.update_functions(self.session.available_snippets):
             self.help_page.snippets = self.session.available_snippets
@@ -1185,6 +1212,8 @@ class Studio(QMainWindow):
             if not self.input_search_current() or self.library.context_key is None:
                 self.clear_input_search()
         page = self.editing_page
+        if page is not None:
+            self.library_pane.setVisible(not page.code_active)
         session = self.editing_session
         match = session.selected_match()
         selection = (
@@ -1262,8 +1291,8 @@ class Studio(QMainWindow):
             views.extend(cell.source for cell in self.scratch.cells)
         return all(view.finish_parameter() for view in views)
 
-    def perform(self, callback):
-        if not self.finish_parameters():
+    def perform(self, callback, *, commit_parameters=True):
+        if commit_parameters and not self.finish_parameters():
             return
         cell = self.editing_page if self.editing_page in self.scratch.cells else None
         revision = cell.source.session.document.state if cell is not None else None
@@ -1555,10 +1584,14 @@ class Studio(QMainWindow):
         self.set_mode(2)
 
     def show_diagnostics(self):
-        self.commit_code()
-        diagnostics = self.session.analysis.diagnostics()
+        page = self.editing_page
+        if page is None:
+            return
+        page.commit_code()
+        session = self.editing_session
+        diagnostics = session.analysis.diagnostics()
         for diagnostic in diagnostics:
-            line, column = self.session.document.syntax.position(diagnostic.span.start)
+            line, column = session.document.syntax.position(diagnostic.span.start)
             self.append_output(f"{line}:{column}: {diagnostic.message}\n")
         if not diagnostics:
             self.append_output(tr("No unknown names found.\n"))
@@ -1975,9 +2008,12 @@ class Studio(QMainWindow):
             self.code.find("def " + identity.rsplit("/", 1)[1] + "(")
 
     def create_block_from_selection(self):
+        page = self.editing_page
+        if page is None:
+            return
         expression = False
-        if self.code_active:
-            cursor = self.code.textCursor()
+        if page.code_active:
+            cursor = page.code.textCursor()
             if not cursor.hasSelection():
                 raise ValueError(tr("Select Python source to create a block."))
             source = cursor.selectedText().replace("\u2029", "\n")
@@ -1997,11 +2033,23 @@ class Studio(QMainWindow):
                 if match
                 else isinstance(self.editing_session.editor.selection, ast.expr)
             )
+        session = self.editing_session
+        try:
+            tree = ast.parse(page.text)
+        except SyntaxError:
+            tree = session.document.syntax.tree
+        context = getattr(session, "context", None)
+        trees = [context.document.syntax.tree, tree] if context else [tree]
         imports = tuple(
-            ast.unparse(node)
-            for node in self.session.document.syntax.tree.body
-            if isinstance(node, (ast.Import, ast.ImportFrom))
-            and not (isinstance(node, ast.ImportFrom) and node.module == "__future__")
+            dict.fromkeys(
+                ast.unparse(node)
+                for root in trees
+                for node in root.body
+                if isinstance(node, (ast.Import, ast.ImportFrom))
+                and not (
+                    isinstance(node, ast.ImportFrom) and node.module == "__future__"
+                )
+            )
         )
         definition = template_from_source(source, imports, expression=expression)
         self.set_mode(3)

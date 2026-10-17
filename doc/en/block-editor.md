@@ -1,5 +1,8 @@
 # Block Editor
 
+When vertical space is limited, for example with Console open, the preview and
+source appear side by side. Taller workspaces place the preview above the source.
+
 Open **Block Editor** in the workspace rail, or press **Ctrl+Alt+3**. The library's
 context menu and each block's help section also offer **Open definition**.
 Definitions are ordinary Python function templates, edited as text. The editor

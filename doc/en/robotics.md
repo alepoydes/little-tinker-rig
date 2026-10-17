@@ -75,6 +75,7 @@ to its center: RT with scale 90 and center 20 requests 20–110°. Sticks range 
 Unassigned motors remain stopped. Assignments remain in the current window.
 
 Release the mouse or keyboard control to center a stick or reset a trigger.
+This includes clicking the trigger's track outside its handle.
 Moving keyboard focus away also returns the input to neutral. Trigger sliders
 ignore the mouse wheel because it has no release action. With a stick focused,
 WASD controls the left stick and arrow keys the right. A neutral rotation input

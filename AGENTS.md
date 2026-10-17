@@ -63,15 +63,21 @@
 - Commit valid inline input before saving, running, switching views or leaving its
   document. Keep invalid input visible and editable; only explicit cancellation
   discards it. Hiding a widget is not a decision to discard its draft.
+- Stop and disconnect bypass edit validation and preserve pending input. Exercise
+  both toolbar actions and shortcuts while an invalid parameter is open.
 - Route editing commands to a visible editor with a stable owner, including
   Scratch. Menus and catalog focus must not redirect edits to another document or
   a hidden structural projection. Non-editing workspaces must not undo programs.
 - Retain the Python text document and its undo history across representation
-  switches. Record structural updates to that buffer as undoable edits.
+  and document-tab switches, including Scratch. Each open document owns its
+  Scratch widgets. Record structural updates to text buffers as undoable edits.
 - Momentary motor controls return to neutral on mouse/key release and focus loss.
-  Verify emitted commands, not just the displayed position of a control.
+  Cover slider grooves as well as handles: sliderReleased is not a general mouse
+  release event. Verify emitted commands, not just the displayed position.
 - Handle external file conflicts through explicit reload, copy or cancel actions.
   A failed reload leaves the open document intact; never bypass disk-change checks.
 - Check compact layouts with Russian captions and lesson/device panels open.
   Icon controls retain tooltips and accessible names. Search must report misses,
   preserve the editor position on a miss, and support keyboard dismissal.
+- Keep preview and source usable with Console open at the minimum window size.
+  Help navigation must reveal its destination even when a search filter is active.

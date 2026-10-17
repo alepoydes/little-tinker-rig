@@ -135,8 +135,11 @@ def test_recovery_restores_tabs_scratch_drafts_and_original_disk_baseline(
         assert page.text == "value = 2\nif value:"
         assert page.session.document.state.scratch == ("pending(",)
         restored.documents.setCurrentWidget(page)
-        with pytest.raises(ValueError, match="outside"):
-            restored.save()
+        from PySide6.QtCore import QTimer
+        from PySide6.QtWidgets import QApplication
+
+        QTimer.singleShot(0, lambda: QApplication.activeModalWidget().reject())
+        assert not restored.save()
         assert first.read_text() == "external = 9\n"
         restored.documents.setCurrentIndex(1)
         restored.save()

@@ -115,7 +115,10 @@ class Trigger(QSlider):
     def __init__(self):
         super().__init__(Qt.Orientation.Horizontal)
         self.setRange(0, 100)
-        self.sliderReleased.connect(lambda: self.setValue(0))
+
+    def mouseReleaseEvent(self, event):
+        super().mouseReleaseEvent(event)
+        self.setValue(0)
 
     def keyReleaseEvent(self, event):
         super().keyReleaseEvent(event)

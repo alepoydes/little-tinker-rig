@@ -10,6 +10,8 @@ from PySide6.QtGui import (
     QDesktopServices,
     QFont,
     QFontDatabase,
+    QKeySequence,
+    QShortcut,
     QTextBlockFormat,
     QTextCursor,
     QTextDocument,
@@ -18,6 +20,7 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import (
     QHBoxLayout,
+    QLabel,
     QLineEdit,
     QPushButton,
     QSplitter,
@@ -237,13 +240,21 @@ class HelpPage(QWidget):
         )
         search = self.search = QLineEdit()
         search.setPlaceholderText(N_("Search the guide and blocks…"))
+        search.setClearButtonEnabled(True)
         search.textChanged.connect(self.filter)
+        clear = QShortcut(QKeySequence("Escape"), search)
+        clear.setContext(Qt.ShortcutContext.WidgetShortcut)
+        clear.activated.connect(search.clear)
+        self.no_results = QLabel()
+        self.no_results.setWordWrap(True)
+        self.no_results.hide()
         back = QPushButton(N_("← Back"))
         back.clicked.connect(self.back)
         sidebar = QWidget()
         left = QVBoxLayout(sidebar)
         left.addWidget(back)
         left.addWidget(search)
+        left.addWidget(self.no_results)
         left.addWidget(self.tree)
         splitter = QSplitter()
         splitter.addWidget(sidebar)
@@ -319,7 +330,11 @@ class HelpPage(QWidget):
             return
         identity = self.snippet_targets.get(identity, identity)
         page, _, anchor = identity.partition("#")
-        if page not in self.pages or identity == self.current:
+        if page not in self.pages:
+            return
+        if self.pages[page][1].isHidden():
+            self.search.clear()
+        if identity == self.current:
             return
         previous = self.current
         if previous:
@@ -371,6 +386,12 @@ class HelpPage(QWidget):
             )
             if query and not group.isHidden():
                 group.setExpanded(True)
+        self.no_results.setText(
+            tr("No matching pages. Clear the search to browse all topics.")
+        )
+        self.no_results.setVisible(
+            not any(not item.isHidden() for _, item in self.pages.values())
+        )
 
     def follow_link(self, url):
         if url.scheme() == "little-tinker-rig-definition":

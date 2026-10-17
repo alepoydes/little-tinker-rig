@@ -196,6 +196,15 @@ def test_help_groups_links_back_search_and_language(qt_app):
             < page.browser.viewport().height()
         )
         page.show_page("usage.md")
+        assert not page.search.text()
+        assert not page.tree.currentItem().isHidden()
+        page.search.setText("no-such-help-topic-123")
+        assert page.no_results.isVisible()
+        current = page.current
+        page.search.setFocus()
+        QTest.keyClick(page.search, Qt.Key.Key_Escape)
+        assert not page.no_results.isVisible() and not page.search.text()
+        assert page.current == current
         set_language("en")
         page.retranslate()
         assert (

@@ -16,12 +16,17 @@ to see its full name. The selected mode has a shaded background and a left accen
 Short panels scroll vertically without changing the current mode. Lesson and
 Assembly appear when the open project provides them.
 **Block Editor** (**Ctrl+Alt+3**) edits template definitions with a preview above
-the source; see [its guide](block-editor.md).
+the source, or beside it when vertical space is limited; see
+[its guide](block-editor.md).
 
 Switching between Blocks and Python preserves the Python editor's undo history.
-Find, Format Python and the editor-mode shortcuts target the selected program or
-Scratch cell. Undo is unavailable in Help, Control and Assembly. In Help, Ctrl+F
-focuses the guide search. In a program or Scratch, Enter finds the next match,
+Find, Format Python, Create block from selection, Name diagnostics and the
+editor-mode shortcuts target the selected program or Scratch cell. The catalog
+follows that editor's Blocks / Python mode. Undo is unavailable in Help, Control
+and Assembly. In Help, Ctrl+F focuses the guide search; Escape clears its filter.
+An empty result is explained beside the search, and following a link clears a
+filter that would hide its destination. In a program or Scratch, Enter finds the
+next match,
 Shift+Enter the previous match, and Escape closes search. A missed search reports
 **Not found** without moving the cursor. Select a catalog block and press Enter
 to insert it at the current structural selection; double-clicking does the same.
@@ -58,7 +63,9 @@ conditions offer booleans and button readings, motor fields offer motor variable
 Repeated occurrences change together. Enter, choosing an item or leaving the field
 applies valid input; Escape cancels it. Save and Run apply the active field first.
 Invalid input stays editable and prevents saving, running or leaving its document
-until corrected or cancelled. Uncommitted Python text shows **changes not checked**
+until corrected or cancelled. **Stop (F6)** and **Disconnect** always remain
+available when connected, even with invalid input; they preserve that input.
+Uncommitted Python text shows **changes not checked**
 instead of a warning count from an earlier version.
 A structural selection uses the whole block background, including the
 remaining line width.
@@ -268,8 +275,9 @@ a cell to combine, or onto a program boundary to restore. Library dependencies
 are imported only when the fragment enters the program. One undo restores both
 areas after a transfer.
 
-Each cell has Blocks / Python icons. Python accepts arbitrary unfinished text;
-parseable fragments can be edited structurally without a complete execution
+Each cell has Blocks / Python icons. Switching document tabs preserves each
+cell's mode, cursor and text undo history. Python accepts arbitrary unfinished
+text; parseable fragments can be edited structurally without a complete execution
 context. For example, a detached `break` is allowed in Scratch but can only return
 inside a loop. Invalid drops preserve both areas.
 

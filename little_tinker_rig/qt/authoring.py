@@ -318,6 +318,7 @@ class BlockEditor(QWidget):
         self.card.setRootIsDecorated(False)
         self.card.setIndentation(0)
         self.preview_stack = QStackedWidget()
+        self.preview_stack.setMinimumHeight(90)
         self.preview_stack.addWidget(self.preview)
         self.preview_stack.addWidget(self.card)
         self.preview_mode = QComboBox()
@@ -361,16 +362,17 @@ class BlockEditor(QWidget):
         top_layout.addWidget(self.preview_more)
         top_layout.addWidget(self.test_panel)
         self.code_stack = QStackedWidget()
+        self.code_stack.setMinimumHeight(110)
         self.empty = CodeEdit()
         self.empty.setReadOnly(True)
         self.code_stack.addWidget(self.empty)
-        self.vertical = QSplitter(Qt.Orientation.Vertical)
-        self.vertical.addWidget(top)
-        self.vertical.addWidget(self.code_stack)
-        self.vertical.setChildrenCollapsible(False)
-        self.vertical.setStretchFactor(0, 0)
-        self.vertical.setStretchFactor(1, 1)
-        self.vertical.setSizes([160, 600])
+        self.preview_splitter = QSplitter(Qt.Orientation.Vertical)
+        self.preview_splitter.addWidget(top)
+        self.preview_splitter.addWidget(self.code_stack)
+        self.preview_splitter.setChildrenCollapsible(False)
+        self.preview_splitter.setStretchFactor(0, 0)
+        self.preview_splitter.setStretchFactor(1, 1)
+        self.preview_splitter.setSizes([160, 600])
         right = QWidget()
         layout = QVBoxLayout(right)
         row = QHBoxLayout()
@@ -384,7 +386,7 @@ class BlockEditor(QWidget):
         row.addWidget(self.save_button)
         layout.addLayout(row)
         layout.addWidget(self.caption)
-        layout.addWidget(self.vertical, 1)
+        layout.addWidget(self.preview_splitter, 1)
         layout.addWidget(self.hint)
         layout.addWidget(self.status)
         splitter = QSplitter()
@@ -997,10 +999,29 @@ class BlockEditor(QWidget):
         if not keep_message:
             self.status.setText(tr("Preview only; template code is never executed."))
 
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        orientation = (
+            Qt.Orientation.Horizontal
+            if event.size().height() < 430
+            else Qt.Orientation.Vertical
+        )
+        if self.preview_splitter.orientation() != orientation:
+            self.preview_splitter.setOrientation(orientation)
+            self.resize_preview(self.expand.isChecked())
+
     def resize_preview(self, expanded):
-        total = sum(self.vertical.sizes())
-        height = 320 if expanded else 160
-        self.vertical.setSizes([height, max(200, total - height)])
+        total = sum(self.preview_splitter.sizes())
+        size = (
+            320
+            if expanded
+            else (
+                230
+                if self.preview_splitter.orientation() == Qt.Orientation.Horizontal
+                else 160
+            )
+        )
+        self.preview_splitter.setSizes([size, max(200, total - size)])
         self.limit_preview()
 
     def limit_preview(self):
