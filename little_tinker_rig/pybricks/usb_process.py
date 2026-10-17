@@ -160,13 +160,41 @@ class USBHub:
 
 
 async def serve(selector, emit):
-    from .usb_serial import find_hub
+    from .usb import find_hub
 
     hub = None
     subscriptions = []
     try:
         hub = find_hub(selector)
-        await hub.connect()
+        try:
+            await hub.connect()
+        except OSError as error:
+            if isinstance(error, TimeoutError):
+                raise TimeoutError(
+                    tr(
+                        "No response from USB hub. Check that it runs compatible Pybricks beta firmware and that no other application is using the port."
+                    )
+                ) from error
+            if hasattr(hub, "port"):
+                from .serial_access import opening_error
+
+                raise ConnectionError(opening_error(hub.port, error)) from error
+            raise
+        # CDC exposes negotiated limits through the public characteristic API.
+        # Legacy USB keeps its existing single-packet write contract.
+        payload_size = None
+        if hasattr(hub, "port"):
+            from pybricksdev.ble.pybricks import (
+                PYBRICKS_HUB_CAPABILITIES_UUID,
+                unpack_hub_capabilities,
+            )
+
+            limits = unpack_hub_capabilities(
+                await hub.read_gatt_char(PYBRICKS_HUB_CAPABILITIES_UUID)
+            )
+            payload_size = limits[0] - 1
+            if payload_size < 1:
+                raise ValueError(tr("Invalid hub capabilities"))
         emit(
             reply=0,
             value={
@@ -200,8 +228,14 @@ async def serve(selector, emit):
                 }:
                     raise ValueError("Unknown USB operation")
                 if method == "write":
-                    args = [bytes.fromhex(args[0])]
-                await getattr(hub, method)(*args, **options)
+                    data = bytes.fromhex(args[0])
+                    if payload_size is None:
+                        await hub.write(data)
+                    else:
+                        for offset in range(0, len(data), payload_size):
+                            await hub.write(data[offset : offset + payload_size])
+                else:
+                    await getattr(hub, method)(*args, **options)
                 emit(reply=identifier)
             except Exception as error:
                 emit(reply=identifier, error=str(error) or type(error).__name__)

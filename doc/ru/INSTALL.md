@@ -24,43 +24,47 @@ LittleTinker Rig работает на компьютере. Программу 
 
 Установите [uv](https://docs.astral.sh/uv/getting-started/installation/), скачайте
 проект и откройте терминал в его каталоге. uv создаёт изолированное окружение
-`.venv`; системные Python-пакеты не меняются.
+`.venv`; системные Python-пакеты не меняются. Для загрузки зависимости
+из репозитория должен быть установлен Git.
 
 Графический редактор:
 
 ```sh
-uv sync --extra qt
-uv run --extra qt little-tinker-rig-qt examples/first.py
+uv sync --locked --extra qt
+uv run --locked --extra qt little-tinker-rig-qt examples/first.py
 ```
 
 [Терминальный редактор и инструменты хаба](tui.md):
 
 ```sh
-uv sync --extra tui
-uv run --extra tui little-tinker-rig-tui examples/first.py
+uv sync --locked --extra tui
+uv run --locked --extra tui little-tinker-rig-tui examples/first.py
 ```
 
 Для работы с хабом добавьте `--extra pybricks` при установке и запуске:
 
 ```sh
-uv sync --extra qt --extra pybricks
-uv run --extra qt --extra pybricks little-tinker-rig-qt examples/motor.py
+uv sync --locked --extra qt --extra pybricks
+uv run --locked --extra qt --extra pybricks little-tinker-rig-qt examples/motor.py
 ```
 
 Физический геймпад требует ещё `--extra gamepad`. Установка терминального
 интерфейса не устанавливает Qt; установка ядра не устанавливает Pybricks.
-`uv sync --all-extras` устанавливает все возможности сразу.
+`uv sync --locked --all-extras` устанавливает все возможности сразу.
 
 Виртуальные Inventor/Prime, BOOST и Technic входят в базовый пакет и не требуют
 `--extra pybricks`. В Qt нажмите «Подключить хаб», выберите «Виртуальный хаб»
 и модель. Руководство находится в режиме «Помощь» и работает без сети.
 
-Версии зависимостей зафиксированы в `uv.lock`. Добавьте `--locked`, если нужно
-запретить uv менять этот файл. `--no-dev` исключает инструменты разработки.
+Опция `pybricks` устанавливает закреплённую ревизию форка pybricksdev
+с поддержкой USB Serial и компиляции MPY 6.3. Версии зависимостей записаны
+в `uv.lock`; `--locked` запрещает менять этот файл при установке.
+`--no-dev` исключает инструменты разработки.
 
 ## Обычное виртуальное окружение
 
-Поддерживается Python 3.11 и новее. В корне проекта:
+Этот способ подходит для редактора и виртуальных хабов. Поддерживается
+Python 3.11 и новее. В корне проекта:
 
 ```sh
 python -m venv .venv
@@ -70,9 +74,13 @@ python -m venv .venv
 `.venv\Scripts\activate` в Windows. Затем:
 
 ```sh
-python -m pip install '.[qt,pybricks]'
+python -m pip install '.[qt]'
 little-tinker-rig-qt examples/first.py
 ```
+
+Обычный pip и установка wheel не учитывают `[tool.uv.sources]` и `uv.lock`.
+Добавление опции `pybricks` этим способом не выбирает нужный форк. Для работы
+с реальными хабами используйте установку из репозитория через uv.
 
 ## Если запуск не удался
 

@@ -6666,3 +6666,9 @@ msgstr "Выделить всё"
 #, python-brace-format
 msgid "Import name {name!r} changes during this selection; use distinct aliases"
 msgstr "Импортируемое имя {name!r} меняется внутри выделения; используйте разные псевдонимы"
+
+msgid "USB Serial requires the pinned pybricksdev fork. Run uv sync --locked --extra pybricks with your other extras from the project directory."
+msgstr "Для USB Serial нужен закреплённый форк pybricksdev. Выполните uv sync --locked --extra pybricks с остальными нужными опциями из каталога проекта."
+
+msgid "Hub disconnected."
+msgstr "Хаб отключён."

@@ -110,3 +110,15 @@
   preserve the editor position on a miss, and support keyboard dismissal.
 - Keep preview and source usable with Console open at the minimum window size.
   Help navigation must reveal its destination even when a search filter is active.
+
+## Hub dependency integration
+
+- Use the Git-pinned pybricksdev public adapters and compiler through uv. Keep
+  protocol framing and commands in the dependency; do not copy them into the app
+  or reach into private client fields. Pins must be fetchable before publication.
+- Verify changes through the USB child and a synthetic byte-stream peer, including
+  cold-start slot selection, long binary input, interrupted upload and reconnect.
+  A compiler mock cannot establish MPY ABI or imported-module compatibility.
+- Waiting for program completion requires a fresh idle status after START;
+  cached idle or a guessed startup delay is insufficient. Test disconnection and
+  cancellation without treating simulated transport checks as hardware evidence.

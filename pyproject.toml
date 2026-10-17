@@ -28,7 +28,7 @@ qt = [
     "moderngl>=5.12,<6",
     "numpy>=2,<3",
 ]
-pybricks = ["pybricksdev>=2.3,<3", "pyserial>=3.5,<4"]
+pybricks = ["pybricksdev>=2.3.2,<3", "pyserial>=3.5,<4"]
 gamepad = ["pygame-ce>=2.5,<3"]
 
 [project.urls]
@@ -53,6 +53,9 @@ dev = [
 [tool.setuptools.packages.find]
 include = ["little_tinker_rig*"]
 namespaces = false
+
+[tool.uv.sources]
+pybricksdev = { git = "https://github.com/alepoydes/pybricksdev", rev = "973fe51b8960c3cac53ce56bed6129f0574c3919" }
 
 [tool.setuptools.cmdclass]
 build_py = "build_support.BuildPy"

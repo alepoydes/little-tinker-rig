@@ -90,6 +90,10 @@ uv run --locked --extra qt --extra pybricks --extra gamepad little-tinker-rig-qt
 For the editor and virtual hubs alone, use `--extra qt` in both commands. Keep the
 same extras when launching: `uv run` synchronizes the selected dependencies.
 Python 3.11+ is supported; uv uses the development version in `.python-version`.
+The `pybricks` extra uses a pinned Git revision of the pybricksdev fork for USB CDC
+and MPY 6.3 support; Git is required for installation. Plain pip and standalone
+wheel installs do not apply this uv source pin. Use the repository's uv workflow
+for real hubs.
 See [installation](doc/en/INSTALL.md) for a regular virtual environment and
 connection requirements.
 

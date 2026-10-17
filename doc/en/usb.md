@@ -5,8 +5,9 @@ Leave the port field empty for automatic discovery, or enter the serial port sho
 by your operating system. Installing firmware and transferring programs use different
 connections; successful flashing does not establish permission to open a serial port.
 
-LittleTinker Rig uses public Pybricks tools for BLE, legacy USB and firmware installation.
-Its temporary USB Serial adapter covers the protocol missing from `pybricksdev 2.3.2`.
+LittleTinker Rig uses the public adapters of a pinned pybricksdev fork for BLE,
+legacy USB and USB Serial. Install it through the repository's
+[uv workflow](INSTALL.md) to obtain the tested client and compiler together.
 Both Inventor/Prime and EV3 on compatible new firmware use this serial protocol.
 EV3 remains experimental and has not been verified on physical hardware; the older
 EV3 Linux/SD-card environment is outside this adapter's scope.

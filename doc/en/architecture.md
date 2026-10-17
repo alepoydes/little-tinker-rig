@@ -22,6 +22,12 @@ use `pybricks/worker.py` for serialized hub operations, `pybricks/firmware.py` f
 firmware validation and installation, and `core/completion.py` for static Jedi
 analysis. Qt adapts worker callbacks to signals; TUI posts Textual messages.
 
+Real hubs use the public BLE, legacy USB and CDC adapters of the Git-pinned
+pybricksdev dependency selected by uv. It owns framing, protocol commands and
+compilation. LittleTinker Rig owns discovery, process isolation, user-facing
+diagnostics and application lifecycle. No local serial protocol implementation
+is maintained.
+
 
 Document validates structural revisions by formatting and compilation, without
 executing code. Its history stores the valid source projection, optional raw

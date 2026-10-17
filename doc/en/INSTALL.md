@@ -12,11 +12,12 @@ git clone https://github.com/alepoydes/little-tinker-rig.git
 cd little-tinker-rig
 ```
 
-From the repository, using [uv](https://docs.astral.sh/uv/):
+The supported installation for real hubs uses [uv](https://docs.astral.sh/uv/)
+from the repository. Git must be installed:
 
 ```sh
 uv sync --all-extras --locked
-uv run --all-extras little-tinker-rig-qt examples/courier.py
+uv run --all-extras --locked little-tinker-rig-qt examples/courier.py
 ```
 
 For just the desktop editor and virtual hubs, use `--extra qt`. Other extras are
@@ -24,17 +25,26 @@ For just the desktop editor and virtual hubs, use `--extra qt`. Other extras are
 `gamepad` for SDL controllers. `uv run` synchronizes the selected extras, so keep
 the extras you need in the command. `--no-dev` omits development tools.
 
+The `pybricks` extra installs a tested Git revision of the
+[pybricksdev fork](https://github.com/alepoydes/pybricksdev), including its USB CDC
+adapter and MPY 6.3 compiler support. Both the revision and resolved dependencies
+are pinned; `--locked` prevents installation from silently changing them.
+
 For a terminal editor with hub tools, see the [TUI guide](tui.md). It requires
 `--extra tui --extra pybricks`, without Qt or 3D dependencies.
 
-With a regular virtual environment:
+For the editor and virtual hubs only, a regular virtual environment also works:
 
 ```sh
 python -m venv .venv
 # Activate .venv, then:
-python -m pip install '.[qt,pybricks,gamepad]'
+python -m pip install '.[qt,gamepad]'
 little-tinker-rig-qt examples/courier.py
 ```
+
+Installing a wheel or using plain pip does not apply `[tool.uv.sources]` or
+`uv.lock`; adding the `pybricks` extra that way does not select the required fork.
+Use the repository's uv workflow for the tested USB/BLE integration.
 
 English is the default on first launch. Choose **View → Language → Русский**
 for Russian. The choice is remembered, including existing Russian preferences. Switching language

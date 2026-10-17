@@ -127,7 +127,9 @@ def test_non_permission_errors_and_other_platforms_need_no_linux_metadata(
 async def test_open_failure_reaches_usb_process_with_complete_diagnosis(monkeypatch):
     serial = pytest.importorskip("serial")
     pytest.importorskip("pybricksdev")
-    from little_tinker_rig.pybricks import usb_process, usb_serial
+    from pybricksdev.connections.serial import PybricksHubSerial
+
+    from little_tinker_rig.pybricks import usb, usb_process
 
     monkeypatch.setattr(serial_access, "sys", SimpleNamespace(platform="win32"))
     error = serial.SerialException(errno.EACCES, "Accès refusé")
@@ -136,9 +138,9 @@ async def test_open_failure_reaches_usb_process_with_complete_diagnosis(monkeypa
         raise error
 
     monkeypatch.setattr(serial, "Serial", denied)
-    hub = usb_serial.SerialHub("COM3")
-    monkeypatch.setattr(usb_serial, "find_hub", lambda selector: hub)
+    hub = PybricksHubSerial("COM3")
+    monkeypatch.setattr(usb, "find_hub", lambda selector: hub)
     events = []
     await usb_process.serve("COM3", lambda **event: events.append(event))
     assert events == [{"reply": 0, "error": serial_access.opening_error("COM3", error)}]
-    assert hub._port is None and hub._reader is None
+    assert hub.connection_state_observable.value.name == "DISCONNECTED"

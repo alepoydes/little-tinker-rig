@@ -133,15 +133,39 @@ class Connection:
             self._update(running=True)
             await hub.run(
                 str(path.resolve()) if path is not None else None,
-                wait=wait,
+                wait=False,
                 print_output=False,
                 line_handler=False,
             )
+            if wait:
+                await self._wait_stopped(hub)
         except BaseException:
             self._update(running=False)
             raise
         if wait:
             self._update(running=False)
+
+    async def _wait_stopped(self, hub):
+        from pybricksdev.ble.pybricks import StatusFlag
+        from reactivex import operators as op
+
+        finished = asyncio.get_running_loop().create_future()
+
+        def status(flags):
+            if not finished.done() and not flags & StatusFlag.USER_PROGRAM_RUNNING:
+                finished.set_result(None)
+
+        def connection(state):
+            if state.name == "DISCONNECTED" and not finished.done():
+                finished.set_exception(ConnectionError(tr("Hub disconnected.")))
+
+        # Ignore the cached pre-START status. Periodic reports also confirm that
+        # a short program stopped without relying on a guessed startup timeout.
+        with (
+            hub.status_observable.pipe(op.skip(1)).subscribe(status),
+            hub.connection_state_observable.subscribe(connection),
+        ):
+            await finished
 
     async def stop(self) -> None:
         self._monitor_requested = False

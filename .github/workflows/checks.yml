@@ -25,6 +25,7 @@ jobs:
         run: |
           uv python install
           uv sync --all-extras --locked
+          uv pip check
       - name: Check code
         run: |
           uv run --all-extras --locked ruff check little_tinker_rig tests tools build_support.py
