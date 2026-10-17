@@ -12,3 +12,4 @@ dist/
 # Third-party geometry belongs in the user cache, not in lesson sources.
 /lessons/**/ldraw/
 /lessons/**/offline-parts*.zip
+/tmp
