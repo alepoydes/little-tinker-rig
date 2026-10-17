@@ -42,6 +42,7 @@ class Project:
             self._disk_hash = hashlib.sha256(data).hexdigest()
         self.collections: list[Path] = []
         self.pins: dict[str, str] = {}
+        self.example_attempt = None
         scratch = ()
         self._workspace_hash = None
         if self.workspace_path.exists():
@@ -69,6 +70,11 @@ class Project:
                 raise ValueError("Pins must map collection names to version strings")
             self.collections = [(self.path.parent / p).resolve() for p in collections]
             self.pins = pins
+            self.example_attempt = metadata.get("example_attempt")
+            if self.example_attempt is not None and not isinstance(
+                self.example_attempt, str
+            ):
+                raise ValueError("Invalid example attempt")
         try:
             self.document = Document(source, scratch)
         except SyntaxError:
@@ -119,6 +125,7 @@ class Project:
             "collections": [str(p) for p in self.collections],
             "pins": self.pins,
             "encoding": self.encoding,
+            "example_attempt": self.example_attempt,
             "disk_hash": self._disk_hash,
             "workspace_hash": self._workspace_hash,
             "saved_source": self._saved.source,
@@ -153,6 +160,7 @@ class Project:
         self.collections = [Path(p) for p in checkpoint["collections"]]
         self.pins = checkpoint["pins"]
         self.encoding = checkpoint["encoding"]
+        self.example_attempt = checkpoint.get("example_attempt")
         self._disk_hash = checkpoint["disk_hash"]
         self._workspace_hash = checkpoint["workspace_hash"]
         self._saved = State(
@@ -198,10 +206,13 @@ class Project:
             ],
             "pins": self.pins,
         }
+        if self.example_attempt:
+            metadata["example_attempt"] = self.example_attempt
         keep_workspace = bool(
             state.scratch
             or self.collections
             or self.pins
+            or self.example_attempt
             or self.workspace_path.exists()
         )
 

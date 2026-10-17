@@ -43,11 +43,11 @@ class Robot(QObject):
     def connect_hub(self, name=None, transport="ble", model="inventor"):
         return self.worker.connect_hub(name, transport, model)
 
-    def run_file(self, path):
-        return self.worker.run_file(path)
+    def run_file(self, path, sources=None):
+        return self.worker.run_file(path, sources)
 
-    def upload_file(self, path):
-        return self.worker.upload_file(path)
+    def upload_file(self, path, sources=None):
+        return self.worker.upload_file(path, sources)
 
     def run_stored(self):
         return self.worker.run_stored()

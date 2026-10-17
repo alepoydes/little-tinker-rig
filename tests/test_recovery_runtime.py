@@ -176,7 +176,9 @@ def test_examples_follow_directory_changes_and_reuse_existing_tabs(
         assert window.examples_menu.menuAction() in file_menu.actions()
         assert window.examples_menu.menuAction() not in bar.actions()
         window.refresh_examples()
-        actions = window.examples_menu.actions()
+        actions = [
+            a for a in window.examples_menu.actions() if a.data() or a.text() == "robot"
+        ]
         assert [a.text() for a in actions] == ["robot", "one.py"]
         action = actions[0].menu().actions()[0]
         assert action.text() == two.name
@@ -195,7 +197,10 @@ def test_examples_follow_directory_changes_and_reuse_existing_tabs(
             a.text() for a in window.examples_menu.actions()[0].menu().actions()
         ] == ["three.py"]
         QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
-        assert len(window.examples_menu.findChildren(QMenu)) == 1
+        assert not any(
+            m.title() == "51515_two.py"
+            for m in window.examples_menu.findChildren(QMenu)
+        )
     finally:
         close(window)
 

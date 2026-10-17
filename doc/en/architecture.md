@@ -74,6 +74,13 @@ The model advances time deterministically in unit tests; runtime tests exercise
 real subprocesses and Qt signals. It is neither physical simulation nor a security
 sandbox. Hardware transport and motor characteristics need separate testing.
 
+Program snapshots freeze the entry and reachable local modules, with overrides
+from open editor buffers. Run and Upload require recovery persistence, not an
+ordinary-file save. Tracebacks map to the snapshot's original paths and text.
+ExampleWork records each persistent attempt's bundled origin and current paths.
+The Qt manager resumes attempts and autosaves through Project, retaining its disk
+conflict checks. A failed autosave still leaves a separate recovery checkpoint.
+
 Files are replaced atomically, but Python plus workspace is not one filesystem
 transaction. Saving first writes a multiset union of old/new Scratch, then source,
 then final metadata. An interruption can leave duplicate fragments, but should not

@@ -123,6 +123,18 @@
 - Keep preview and source usable with Console open at the minimum window size.
   Help navigation must reveal its destination even when a search filter is active.
 
+## Execution and example work
+
+- Run and Upload use immutable current-source snapshots, including reachable open
+  local modules, without requiring a file name or overwriting ordinary files.
+  Persist recovery first; keep original source paths for runtime diagnostics.
+- Bundled examples are templates. Resume the latest explicitly opened persistent
+  attempt; create another only on an explicit restart. Keep origin and attempt
+  identity through Save As, including imported modules and their open edits.
+- Autosave retains Project's external-change checks and invalid-text support.
+  Persist a recovery checkpoint even when autosave fails. Validate all module
+  destinations before export; a main filename cannot replace an imported module.
+
 ## Hub dependency integration
 
 - Use the Git-pinned pybricksdev public adapters and compiler through uv. Keep

@@ -213,7 +213,7 @@ def test_pending_parameters_commit_before_blur_save_and_run(windows, monkeypatch
         window,
         "_robot",
         lambda: SimpleNamespace(
-            run_file=lambda path: executed.append(path.read_text())
+            run_file=lambda path, sources: executed.append(sources[path])
         ),
     )
     window.run_hub()
@@ -226,7 +226,7 @@ def test_pending_parameters_commit_before_blur_save_and_run(windows, monkeypatch
     assert window.source.parameter_editor.error
     assert window.source.parameter_editor.line_edit.text() == "700 +"
     assert not window.code_active
-    assert "wheel.run(700)" in window.session.project.path.read_text()
+    assert "wheel.run(900)" in window.session.project.path.read_text()
     QTest.keyClick(field, Qt.Key.Key_Escape)
 
 

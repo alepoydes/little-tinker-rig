@@ -17,7 +17,11 @@ to set them aside.
 **Console** opens from the bottom bar.
 
 The **File → Examples** menu opens the bundled programs, including all subdirectories.
-It opens the example file itself; use **Save as** to keep your own variation.
+The first opening creates your own working copy, including local modules. Later
+openings continue your last attempt, even after restarting the app. Changes are
+saved automatically. **File → Examples → Start this example again** creates another
+attempt; **My attempts** opens earlier work. **Save as** keeps the link to the
+example and copies its local modules to your chosen folder.
 
 ## From an empty document
 
@@ -32,9 +36,11 @@ using their tooltips. Open the **Program** category.
    The action replaces `pass` inside the loop.
 4. Change `"Hello!"` to your own quoted message and press Enter.
 5. Choose **Connect hub → Virtual hub → Robot Inventor / SPIKE Prime → Connect**.
-6. Press **Run**. Choose a name and folder when prompted, then open **Console**.
-   Your message appears three times. Cancelling the save also cancels execution.
+6. Press **Run**, then open **Console**. Your message appears three times.
+   Run uses the current text without asking for a filename.
 
+Use **Save** when you want to choose a filename and folder. Run first checkpoints
+your work for crash recovery; it does not save ordinary files or choose their names.
 Save remembers the chosen file. New documents and first launch never silently
 create `main.py` or `untitled.py` in the working directory. Close the document and
 use **File → Open** or **Open recent** to continue it later.

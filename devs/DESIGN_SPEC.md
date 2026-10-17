@@ -1489,10 +1489,14 @@ frames prefer the calling user block. If source has changed, show the executed
 snapshot read-only instead of attaching an old line number to the new source.
 Keep complete tracebacks and unknown messages; user stop interrupts are not errors.
 
-The desktop File → Examples submenu mirrors `examples/` recursively, sorting directories
-and Python filenames and refreshing when opened. Opening uses normal document-tab
-semantics. Bundle examples with installed distributions; no lesson manifest or
-second examples registry is required.
+The desktop File → Examples submenu discovers bundled programs recursively.
+First opening creates a persistent local attempt with imported Python modules;
+subsequent openings resume the last explicitly opened attempt. Start again creates
+a new attempt; My attempts exposes older ones. Attempts autosave Python and Scratch
+through Project, including invalid text, and survive normal close. Save As retains
+the attempt identity and relocates its modules without overwriting conflicting
+files. The local work manifest records origin and paths, not a second catalog of
+available examples. Bundled source remains unchanged.
 
 Static diagnostics such as undefined names may remain warnings and do not necessarily block commits, because they are semantic rather than syntax errors.
 
@@ -1872,8 +1876,11 @@ and compare command traces with scripted virtual inputs. Keep upstream revision,
 attribution, API migrations and hardware limitations beside the examples.
 
 The toolbar omits Parameters, To Scratch and Python fragment; menus and shortcuts
-retain these actions. Upload saves and sends the active program without running.
-Run uploads and executes; Run stored program starts the existing hub program;
+retain these actions. Upload sends the active source snapshot without running.
+Run sends and executes the snapshot; neither asks for a filename or saves ordinary
+files. Open imported modules supply their current text. Recovery is flushed before
+submission; runtime diagnostics retain original paths and executed text.
+Run stored program starts the existing hub program;
 Stop halts execution. Physical uploads contain compiled code without an additional
 source archive. Source read-back and bytecode decompilation are out of scope.
 

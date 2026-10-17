@@ -87,6 +87,12 @@ consistent; renderers own geometry and animation.
 
 ## Hubs and input
 
+`Program(path, sources=None)` freezes the entry and recursively imported local
+Python modules. The optional path-to-text mapping supplies unsaved open documents;
+only reachable modules are included. UTF-8 normalization preserves source cookies.
+Snapshots retain original paths for runtime diagnostics. `HubWorker.run_file` and
+`upload_file` accept the same mapping; existing file-only callers remain valid.
+
 `Connection(output=None, changed=None)` accepts bytes-output and HubInfo callbacks.
 Async methods are `connect(name=None, transport="ble")`, `run(path, wait=False)`,
 `stop`, `start_monitor`, `drive`, `send(ControlState)` and `disconnect`. Use one event

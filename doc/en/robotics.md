@@ -36,8 +36,10 @@ environment. EV3 has not been tested on hardware; its port monitor, virtual
 profile and Bluetooth Classic connection are not implemented. The ordinary
 Bluetooth choice uses BLE and does not connect an EV3.
 
-**Upload / Shift+F5** saves and sends the active program without executing it.
-**Run / F5** saves, uploads and runs it; **Stop / F6** stops execution.
+**Upload / Shift+F5** sends a snapshot of the active program without executing it.
+**Run / F5** sends and runs that snapshot; **Stop / F6** stops execution. Neither
+requires choosing a filename. Open local modules contribute their current text;
+other imported local modules are read from disk. Ordinary files are not saved by Run.
 **Hub → Run stored program** starts the previously uploaded program. On physical
 hubs only compiled code is sent; source read-back is not supported.
 Upload and Run open **Console** automatically. It shows connection messages,

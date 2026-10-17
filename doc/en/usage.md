@@ -6,10 +6,13 @@ Python source directly and provides its own hub controls.
 ## Documents and views
 
 Files have independent tabs, drafts and undo histories. The hub connection and
-console belong to the window. Run always saves and runs the active document.
-Starting without a filename and **File → New** create unnamed documents. Their
-first Save, Run or Upload asks for a file location; cancelling leaves the document
-open and does not start a hub operation. Saving while closing uses the same rule.
+console belong to the window. Run and Upload capture the active document and its
+imported local Python modules, using current text from any open module tabs. A
+recovery checkpoint is written first. Ordinary files are not overwritten by Run.
+Starting without a filename and **File → New** create unnamed documents. Run and
+Upload need no filename; explicit Save asks for one. Cancelling Save leaves the
+document open. Saving while closing uses the same rule. Example attempts autosave
+separately, as described below.
 Use the two document icons or **View → Blocks / Python** to change the editor mode.
 Global workspaces appear as icons in the narrow left sidebar. Hover over an icon
 to see its full name. The selected mode has a shaded background and a left accent.
@@ -37,8 +40,8 @@ If a file or its Scratch metadata changes outside the editor, Save offers
 **Reload from disk**, **Save a copy…**, or Cancel. Reload explicitly replaces the
 open document and Scratch; copying preserves both versions. **File → Reload from
 disk…** is also available without first saving. Ordinary Open selects an existing
-tab and does not discard its edits. Reloading during a Run request cancels that
-run so you can inspect the newly loaded program first.
+tab and does not discard its edits. Running a snapshot does not resolve or
+overwrite external file changes; explicit Save still checks them.
 
 The Python editor has syntax highlighting, line numbers, indentation with
 Tab/Shift+Tab, and search with Ctrl+F. Completion appears while typing names or
@@ -421,16 +424,31 @@ and Scratch in the operating system's user data directory (`little-tinker-rig/re
 Changes are checkpointed within about a second while the interface is responsive.
 After an abnormal exit, **Recover work** offers to restore them. Yes restores;
 No discards that checkpoint; Cancel keeps it for later. Other live windows are
-excluded. Normal Save/Discard on closing still applies. Recovery never overwrites
-source files, and later saves retain external-change checks. If another restored
+excluded. Ordinary documents still offer Save/Discard on closing. Restoring a
+checkpoint does not itself overwrite source files, and later saves retain
+external-change checks. Example attempts autosave through the same file checks;
+if autosave fails, a separate recovery checkpoint still preserves the edited text. If another restored
 version would replace unsaved work in an open tab, it opens as a separate
 `*_recovered_N.py` document. Recovery does not retain undo history.
 
-**File → Examples** mirrors the bundled `examples/` directory: subdirectories are submenus,
-and `.py` filenames are actions. The menu refreshes when opened. Selecting a file
-opens it normally, or selects its existing tab without losing edits. These are the
-actual example files; use **Save as** to keep a separate variation. Examples are
-included in installed distributions and do not depend on the working directory.
+**File → Examples** mirrors the bundled `examples/` directory. On first opening,
+the app creates a persistent working copy with its local Python imports. Changes,
+unfinished Python and Scratch autosave within about a second and on normal close.
+Repeating the menu action continues the last opened attempt, preserving an open
+tab and its history. The bundled originals remain available for new attempts.
+
+**Start this example again** creates another attempt without replacing the old one.
+**My attempts** lists previous work, grouped by example; choosing one makes it the
+next continuation. Attempt numbers stay attached to their creation order.
+**Save as** preserves the example association and copies local modules, including
+open edits and their Scratch. A conflicting destination module must be resolved
+before saving. The renamed work continues to autosave at its chosen location.
+Opening a new ordinary document leaves the example workflow.
+
+Attempts are ordinary Python files and workspace sidecars under the user-data
+`little-tinker-rig/examples` directory, with a small `work.json` manifest for the
+original example, current paths and opening order. They are not temporary cache
+files. The menu also works when examples are installed with the application.
 
 Execution errors open the Console with a short explanation and **Show block**.
 Known source locations receive a red block annotation or Python line highlight.

@@ -184,6 +184,8 @@ def test_first_lesson_build_save_run_and_reopen(tmp_path, qt_app, monkeypatch):
         run(window)
         wait_until(lambda: window.console.toPlainText().count("Hi robot!") == 3)
         wait_until(lambda: not window.hub_info.running and not window.hub_is_busy)
+        assert not (tmp_path / "greeting.py").exists()
+        assert window.save()
         assert (tmp_path / "greeting.py").read_text() == source
         page = window.document_page
         window.close_document(window.documents.currentIndex())
@@ -373,7 +375,8 @@ def test_open_example_save_variation_run_and_correct_python_error(
             a for a in window.examples_menu.actions() if a.data() == str(original)
         )
         action.trigger()
-        assert window.session.project.path == original.resolve()
+        assert window.session.project.path != original.resolve()
+        assert window.document_page.example_work is not None
         monkeypatch.setattr(
             QFileDialog, "getSaveFileName", lambda *a: (str(destination), "")
         )
@@ -504,7 +507,7 @@ def test_function_lesson_add_parameter_body_calls_and_rename(tmp_path, qt_app):
         window.close()
 
 
-def test_new_document_asks_for_name_and_cancel_does_not_run_or_close(
+def test_new_document_runs_without_name_but_explicit_save_can_cancel(
     tmp_path, qt_app, monkeypatch
 ):
     window = Studio()
@@ -520,9 +523,26 @@ def test_new_document_asks_for_name_and_cancel_does_not_run_or_close(
         assert checkpoint["unnamed"]
         monkeypatch.setattr(QFileDialog, "getSaveFileName", lambda *a: ("", ""))
         assert not window.save()
+        from types import SimpleNamespace
+
+        from little_tinker_rig.pybricks.program import Program
+
+        snapshots = []
+        monkeypatch.setattr(
+            window,
+            "_robot",
+            lambda: SimpleNamespace(
+                run_file=lambda path, sources: snapshots.append(Program(path, sources)),
+                upload_file=lambda path, sources: snapshots.append(
+                    Program(path, sources)
+                ),
+            ),
+        )
         window.run_hub()
         window.upload_hub()
-        assert window.robot is None and not original_path.exists()
+        assert len(snapshots) == 2 and not original_path.exists()
+        assert all(p.entry.read_text() == before.source for p in snapshots)
+        assert window.recovery.path.is_file()
         monkeypatch.setattr(
             QMessageBox, "question", lambda *a: QMessageBox.StandardButton.Save
         )

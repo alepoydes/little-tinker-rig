@@ -510,10 +510,18 @@ return value. Respect result annotations and leave decorated callables unknown.
 Verify consecutive calls after editing an argument, alongside expression insertion.
 
 Unnamed-document state belongs to the document page and its recovery checkpoint.
-Save, Run, Upload and Save-on-close share the same cancellable naming operation.
-Do not create a file merely by launching the editor. Keep explicit-path saves and
-external-change checks intact. Test cancellation before starting any hub worker
-and preserve both text and Undo when the destination changes.
+Explicit Save and Save-on-close share the cancellable naming operation. Run and
+Upload instead use Program snapshots with in-memory overrides for open modules;
+flush recovery before submission. Do not create an ordinary file just by launching
+or running. Keep explicit-save external-change checks and Undo intact.
+
+ExampleWork owns persistent attempts under user data, with bundled relative
+identity and a current entry path. Repeated opens resume; an explicit restart
+creates a separate directory. Autosave uses Project and preserves invalid Python
+and Scratch. A failed autosave must still write recovery, never overwrite an
+external change or permit a destructive close. Save As plans all module targets
+before writing and preserves attempt identity. Test normal close/reopen, renaming,
+module collisions, earlier attempts and unchanged bundled source.
 
 Review translated layouts with Console open on a laptop-sized screen. Workspace
 navigation uses a narrow, fixed-width icon strip with localized tooltips. Keep

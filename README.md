@@ -104,6 +104,11 @@ connection requirements.
    press **F5** to run. For a real robot, select a matching example and connect a
    hub running Pybricks firmware.
 
+Run uses the current program without requiring a filename. Bundled examples open
+as autosaved working copies: reopening continues your last attempt. **File →
+Examples → Start this example again** creates another; **My attempts** keeps earlier
+work accessible. Save As retains the example association and local modules.
+
 The [first steps guide](doc/en/tutorial/first.md) walks through a small program.
 The command-line tools start with
 `uv run little-tinker-rig inspect examples/first.py`.

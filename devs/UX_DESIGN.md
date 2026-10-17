@@ -218,9 +218,11 @@ Changing tabs never commits unfinished Python. Hub tools, the console, and globa
 modes belong to the window. Closing checks every changed document; reopening a
 path selects its existing tab.
 
-Launching without a filename opens an unnamed document. Its first Save, Run or
-Upload asks for a destination; cancellation propagates through execution and
-closing. Explicit filenames retain direct-save behavior. The initial window size
+Launching without a filename opens an unnamed document. Explicit Save and
+Save-on-close ask for a destination. Run and Upload capture current source and
+open local modules without a naming dialog or an implicit ordinary-file save.
+The recovery checkpoint must succeed before submission. Example attempts autosave
+through their existing Project file checks, independently of execution. The initial window size
 fits the available screen, including the desktop's reserved panels.
 When Console reduces workspace height, only the mode list scrolls vertically.
 Scrolling never selects a mode. Keyboard navigation skips

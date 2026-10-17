@@ -41,6 +41,7 @@ class DocumentPage(QWidget):
         self.unnamed = False
         self.unsaved_scope = "unsaved:" + uuid4().hex
         self.lesson_project = None
+        self.example_work = None
         self.session.editor.select(0)
         self.code_active = False
         self.source = SourceView(self.session)
@@ -240,6 +241,12 @@ class DocumentPage(QWidget):
             if self.code_active
             else tr("Drag blocks. Click a parameter to edit it.")
         )
+        if self.example_work:
+            self.message.setToolTip(
+                tr(
+                    "Your example work is saved automatically, including unfinished Python."
+                )
+            )
 
     def change_mode(self, index):
         if bool(index) == self.code_active:

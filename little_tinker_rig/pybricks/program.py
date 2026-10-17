@@ -6,10 +6,13 @@ import tokenize
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from little_tinker_rig.core.source_file import utf8_source
+
 
 class Program:
-    def __init__(self, path):
+    def __init__(self, path, sources=None):
         self.path = Path(path).resolve()
+        overrides = {Path(p).resolve(): text for p, text in (sources or {}).items()}
         self.directory = TemporaryDirectory(prefix="little-tinker-rig-program-")
         self.entry = Path(self.directory.name) / self.path.name
         self.sources = {}
@@ -20,10 +23,14 @@ class Program:
                 file = pending.pop().resolve()
                 if file in seen or not file.is_relative_to(root):
                     continue
-                if file != self.path and not file.is_file():
+                if file != self.path and file not in overrides and not file.is_file():
                     continue
                 seen.add(file)
-                raw = file.read_bytes()
+                raw = (
+                    utf8_source(overrides[file]).encode("utf-8")
+                    if file in overrides
+                    else file.read_bytes()
+                )
                 encoding, _ = tokenize.detect_encoding(io.BytesIO(raw).readline)
                 source = raw.decode(encoding)
                 tree = ast.parse(source)

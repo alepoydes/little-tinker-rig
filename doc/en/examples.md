@@ -8,6 +8,11 @@ Open a file using **File → Examples → pybricks** or **File → Open**. Selec
 library to find every component used by a program. The level filter limits new
 choices, never the blocks already in the document.
 
+Opening a bundled example creates or resumes your own autosaved attempt.
+**File → Examples → My attempts** lists earlier work; **Start this example again**
+creates a new attempt. **Save as** keeps its association and local modules.
+See [working with examples](usage.md#recovery-examples-and-runtime-errors).
+
 | File | Robot and connections | What it does |
 |---|---|---|
 | `boost_17101_auto_builder.py` | BOOST Auto Builder: conveyor B, arm D | Homes both mechanisms, stacks five components and ejects the result |

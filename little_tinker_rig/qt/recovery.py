@@ -48,6 +48,11 @@ class Recovery(QObject):
         if not window.documents.count():
             return True
         try:
+            autosave_error = None
+            try:
+                window.example_workspaces.autosave()
+            except (OSError, ValueError) as error:
+                autosave_error = error
             data = {
                 "format": 1,
                 "active": window.documents.currentIndex(),
@@ -57,6 +62,8 @@ class Recovery(QObject):
                 ],
             }
             if data == self.previous:
+                if autosave_error:
+                    raise autosave_error
                 return True
             self.path.parent.mkdir(parents=True, exist_ok=True)
             if self.lock is None:
@@ -66,6 +73,8 @@ class Recovery(QObject):
                     raise OSError("Could not lock the recovery file")
             atomic_write(self.path, json.dumps(data, ensure_ascii=False))
             self.previous = data
+            if autosave_error:
+                raise autosave_error
             self.reported_error = False
             return True
         except (OSError, ValueError) as error:

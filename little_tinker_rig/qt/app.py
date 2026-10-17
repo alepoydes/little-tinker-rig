@@ -92,7 +92,12 @@ class Studio(QMainWindow):
         lesson_path = (
             path if path and path.suffix in {".ltr", ".pylesson", ".pyblocks"} else None
         )
-        if lesson_path:
+        example_path = (
+            path
+            if path and path.resolve().is_relative_to(examples_directory().resolve())
+            else None
+        )
+        if lesson_path or example_path:
             path = None
         self.setWindowFlags(
             Qt.WindowType.Window
@@ -133,6 +138,9 @@ class Studio(QMainWindow):
         self.documents.setDocumentMode(True)
         self.documents.setTabsClosable(True)
         self.documents.setMovable(True)
+        from .example_work import ExampleWorkspaces
+
+        self.example_workspaces = ExampleWorkspaces(self)
         self.open_document(path or self.new_document_path(), unnamed=path is None)
         self.library = Library(self.session.available_snippets, self.settings)
         self.library.set_scope(self.document_page.catalog_scope)
@@ -291,6 +299,11 @@ class Studio(QMainWindow):
             self.restoreGeometry(geometry)
         if lesson_path:
             self.perform(lambda: self.lessons.open(lesson_path))
+        elif example_path:
+            placeholder = self.document_page
+            self.perform(lambda: self.open_document(example_path))
+            if self.documents.count() > 1:
+                self.close_document(self.documents.indexOf(placeholder))
 
     def _icon(self, theme, fallback):
         return QIcon.fromTheme(
@@ -845,6 +858,8 @@ class Studio(QMainWindow):
 
     def open_document(self, path, *, unnamed=False):
         path = Path(path).resolve()
+        if path.is_file() and path.is_relative_to(examples_directory().resolve()):
+            return self.example_workspaces.open(path)
         if path.suffix in {".pylesson", ".ltr", ".pyblocks"} and hasattr(
             self, "lessons"
         ):
@@ -874,6 +889,8 @@ class Studio(QMainWindow):
             )
         page = DocumentPage(path, collections)
         page.lesson_project = project
+        page.example_work = self.example_workspaces.owner(path) if not project else None
+        page.update_mode()
         page.unnamed = unnamed
         page.changed.connect(self.refresh_views)
         page.failed.connect(self.error)
@@ -947,6 +964,7 @@ class Studio(QMainWindow):
             self.error(str(error))
         if not self.examples_menu.actions():
             self.examples_menu.addAction(tr("No examples found")).setEnabled(False)
+        self.example_workspaces.menu(self.examples_menu, examples_directory())
 
     def refresh_recent_files(self):
         self.recent_menu.clear()
@@ -1010,6 +1028,8 @@ class Studio(QMainWindow):
     def confirm_close(self, page):
         if not self.finish_parameters():
             return False
+        if page.example_work:
+            return self.recovery.flush()
         project = page.lesson_project
         pages = (
             [
@@ -1740,7 +1760,7 @@ class Studio(QMainWindow):
         self.open_document(
             self.new_document_path(
                 None
-                if self.document_page.lesson_project
+                if self.document_page.lesson_project or self.document_page.example_work
                 else self.session.project.path.parent
             ),
             unnamed=True,
@@ -1779,12 +1799,22 @@ class Studio(QMainWindow):
             from little_tinker_rig.core.project import Project
 
             destination = Path(path).resolve()
+            if destination.is_relative_to(examples_directory().resolve()):
+                raise ValueError(tr("Save your work outside the bundled examples."))
+            owner = self.example_workspaces.owner(destination)
+            if owner is not None and owner is not page.example_work:
+                raise ValueError(tr("This file belongs to another example attempt."))
             if copy_only and destination == session.project.path:
                 raise ValueError(tr("Choose another file to keep both versions."))
             for index in range(self.documents.count()):
                 other = self.documents.widget(index)
                 if other is not page and other.session.project.path == destination:
                     raise ValueError(tr("This file is already open in another tab"))
+            relocation = (
+                self.example_workspaces.relocation(page, destination)
+                if page.example_work
+                else None
+            )
             if destination == session.project.path:
                 page.save()
             else:
@@ -1793,7 +1823,13 @@ class Studio(QMainWindow):
                 project.draft = session.project.draft
                 project.collections = session.project.collections
                 project.pins = session.project.pins
+                project.example_attempt = session.project.example_attempt
+                if page.example_work:
+                    project.example_attempt = page.example_work.identity
                 project.save()
+            if relocation:
+                self.example_workspaces.relocate(page, *relocation)
+            if destination != session.project.path:
                 session.project = project
                 page.code.path = destination
             page.unnamed = False
@@ -1897,18 +1933,26 @@ class Studio(QMainWindow):
             self.device_dock.raise_()
 
     def run_hub(self):
-        self.controls.armed.setChecked(False)
-        self.commit_code()
-        if self.save():
-            self.console_dock.show()
-            self._robot().run_file(self.session.project.path)
+        self.transfer_hub(run=True)
 
     def upload_hub(self):
+        self.transfer_hub(run=False)
+
+    def transfer_hub(self, *, run):
         self.controls.armed.setChecked(False)
-        self.commit_code()
-        if self.save():
-            self.console_dock.show()
-            self._robot().upload_file(self.session.project.path)
+        if not self.finish_parameters():
+            return
+        self.document_page.commit_code()
+        if not self.recovery.flush():
+            return
+        sources = {
+            self.documents.widget(i).session.project.path: self.documents.widget(i).text
+            for i in range(self.documents.count())
+        }
+        self.console_dock.show()
+        robot = self._robot()
+        transfer = robot.run_file if run else robot.upload_file
+        transfer(self.session.project.path, sources)
 
     def run_stored_hub(self):
         self.controls.armed.setChecked(False)

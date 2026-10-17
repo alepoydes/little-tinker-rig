@@ -160,14 +160,18 @@ class HubWorker:
             operation=True,
         )
 
-    def run_file(self, path):
+    def run_file(self, path, sources=None):
         if self.connection:
-            return self.submit(self._transfer(Program(path), run=True), operation=True)
+            return self.submit(
+                self._transfer(Program(path, sources), run=True), operation=True
+            )
         self._failed(tr("Connect a hub first"))
 
-    def upload_file(self, path):
+    def upload_file(self, path, sources=None):
         if self.connection:
-            return self.submit(self._transfer(Program(path), run=False), operation=True)
+            return self.submit(
+                self._transfer(Program(path, sources), run=False), operation=True
+            )
         self._failed(tr("Connect a hub first"))
 
     def run_stored(self):
