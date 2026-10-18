@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import math
 import tempfile
 from pathlib import Path
 from zipfile import BadZipFile
@@ -23,6 +24,52 @@ CONVERTER = hashlib.sha256(
 
 
 def _decode(archive, data):
+    if not isinstance(data, dict):
+        raise ValueError("Invalid cached metadata")
+
+    def number(value):
+        try:
+            return type(value) in (int, float) and math.isfinite(value)
+        except OverflowError:
+            return False
+
+    if type(data.get("steps")) is not int or not 0 < data["steps"] <= 2**31 - 1:
+        raise ValueError("Invalid cached steps")
+    meshes_data = data.get("meshes")
+    if not isinstance(meshes_data, list) or any(
+        not isinstance(item, list)
+        or len(item) != 2
+        or not all(isinstance(value, str) for value in item)
+        for item in meshes_data
+    ):
+        raise ValueError("Invalid cached meshes")
+    instances_data = data.get("instances")
+    if not isinstance(instances_data, list) or any(
+        not isinstance(item, list)
+        or len(item) != 5
+        or not isinstance(item[0], str)
+        or not isinstance(item[1], str)
+        or type(item[2]) is not int
+        or type(item[3]) is not int
+        or not isinstance(item[4], list)
+        or not all(isinstance(group, str) for group in item[4])
+        for item in instances_data
+    ):
+        raise ValueError("Invalid cached instances")
+    colors_data = data.get("colors")
+    if not isinstance(colors_data, dict) or any(
+        not isinstance(pair, list)
+        or len(pair) != 2
+        or any(
+            not isinstance(color, list)
+            or len(color) != 4
+            or not all(number(channel) for channel in color)
+            for color in pair
+        )
+        for pair in colors_data.values()
+    ):
+        raise ValueError("Invalid cached colors")
+
     def array(name, dtype, shape):
         value = archive[name]
         if value.dtype != np.dtype(dtype) or value.shape[1:] != shape:
@@ -32,7 +79,7 @@ def _decode(archive, data):
         return value
 
     meshes = {}
-    for index, (name, title) in enumerate(data["meshes"]):
+    for index, (name, title) in enumerate(meshes_data):
         triangles = array(f"{index}_triangles", "float32", (3, 3))
         colors = array(f"{index}_colors", "int64", ())
         lines = array(f"{index}_lines", "float32", (4, 3))
@@ -44,7 +91,7 @@ def _decode(archive, data):
     instances = tuple(
         Instance(identity, part, color, transform, step, tuple(groups))
         for (identity, part, color, step, groups), transform in zip(
-            data["instances"], transforms, strict=True
+            instances_data, transforms, strict=True
         )
     )
     if not instances or any(
@@ -53,7 +100,7 @@ def _decode(archive, data):
         raise ValueError("Invalid cached instances")
     colors = {
         int(code): (tuple(face), tuple(edge))
-        for code, (face, edge) in data["colors"].items()
+        for code, (face, edge) in colors_data.items()
     }
     return Scene(meshes, instances, colors, data["steps"])
 

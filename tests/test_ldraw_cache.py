@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import subprocess
@@ -157,6 +158,36 @@ def test_changed_archive_and_corrupt_cache_are_rebuilt(model, tmp_path):
     for file in files:
         file.write_bytes(b"broken cache")
     assert load_scene(path, archive).meshes["part.dat"].bounds[1, 0] == 80
+
+
+@pytest.mark.parametrize(
+    "damage",
+    [
+        lambda data: data.update(colors=[]),
+        lambda data: data["meshes"][0].__setitem__(1, 42),
+    ],
+)
+def test_corrupt_cache_metadata_rebuilds_scene(model, damage, monkeypatch):
+    path, library = model
+    original = load_scene(path, library)
+    cache = next((parts_cache() / "scenes").glob("*.npz"))
+    with np.load(cache, allow_pickle=False) as archive:
+        arrays = {name: archive[name] for name in archive.files}
+    metadata = json.loads(arrays["metadata"].tobytes())
+    damage(metadata)
+    arrays["metadata"] = np.frombuffer(json.dumps(metadata).encode(), dtype=np.uint8)
+    np.savez(cache, **arrays)
+
+    parsed = []
+    parse = LDraw.scene
+
+    def record(reader):
+        parsed.append(True)
+        return parse(reader)
+
+    monkeypatch.setattr(LDraw, "scene", record)
+    same_scene(original, load_scene(path, library))
+    assert parsed == [True]
 
 
 def test_failed_cache_write_preserves_model_and_cleans_temporary_file(
