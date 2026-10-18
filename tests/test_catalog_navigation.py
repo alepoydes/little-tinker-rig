@@ -112,6 +112,32 @@ def test_family_navigation_filters_variants_and_retains_personal_links(
         library.close()
 
 
+def test_long_catalog_title_gains_a_second_line_in_compact_russian_view(
+    tmp_path, qt_app
+):
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "main.py")
+    window.show()
+    try:
+        window.change_language("ru")
+        qt_app.processEvents()
+        card = next(
+            item
+            for item in window.library.rows.values()
+            if item.text(0) == "Повернуть ходовую часть"
+        )
+        wide_height = window.library.visualItemRect(card).height()
+        window.resize(930, 620)
+        qt_app.processEvents()
+        qt_app.processEvents()
+        compact_height = window.library.visualItemRect(card).height()
+        assert compact_height > wide_height
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
 def test_catalog_insertions_count_once_in_program_and_both_scratch_paths(
     tmp_path, qt_app
 ):

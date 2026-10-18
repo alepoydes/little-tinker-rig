@@ -2,7 +2,9 @@
 
 Status: in progress. Stage 0 stabilized the in-progress header and task-panel
 pass on 2026-10-18. Stage 1 has responsive catalog sizing and a wider lesson
-overlay threshold; the other shell refinements and stages 2–6 remain open.
+overlay threshold; the other shell refinements and most of stages 2–6 remain open.
+Stage 2 now wraps long catalog titles at compact widths and recalculates card
+height when the catalog changes width; its broader discovery styling remains.
 This follows the first-pass
 [visual redesign](VISUAL_REDESIGN_PLAN.md) and uses the selected local mockups
 in `report/design_concepts` as visual

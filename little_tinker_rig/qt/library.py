@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from PySide6.QtCore import QEvent, QMimeData, QRect, QSize, Qt, Signal
+from PySide6.QtCore import QEvent, QMimeData, QRect, QSize, Qt, QTimer, Signal
 from PySide6.QtGui import (
     QActionGroup,
     QColor,
@@ -90,6 +90,40 @@ class CardDelegate(QStyledItemDelegate):
             key: svg_icon(key) for key in ("favorites", "favorite-active")
         }
 
+    def _card_width(self, index):
+        view = self.parent()
+        depth = 1
+        parent = index.parent()
+        while parent.isValid():
+            depth += 1
+            parent = parent.parent()
+        return view.viewport().width() - depth * view.indentation()
+
+    @staticmethod
+    def _title_lines(index, font, card_width):
+        metrics = QFontMetrics(font)
+        icon = index.data(ICON) or ""
+        icon_width = metrics.horizontalAdvance(icon) + (6 if icon else 0)
+        title_width = max(24, card_width - 49 - icon_width)
+        title = index.data(DESCRIPTION) or ""
+        if metrics.horizontalAdvance(title) <= title_width:
+            return icon_width, title_width, [title]
+        words = title.split()
+        first = []
+        for word in words:
+            candidate = " ".join((*first, word))
+            if metrics.horizontalAdvance(candidate) > title_width:
+                break
+            first.append(word)
+        if not first or len(first) == len(words):
+            return icon_width, title_width, [
+                metrics.elidedText(title, Qt.TextElideMode.ElideRight, title_width)
+            ]
+        second = metrics.elidedText(
+            " ".join(words[len(first) :]), Qt.TextElideMode.ElideRight, title_width
+        )
+        return icon_width, title_width, [" ".join(first), second]
+
     def paint(self, painter, option, index):
         icon = "favorite-active" if index.data(FAVORITE) else "favorites"
         if not index.data(IDENTITY):
@@ -118,24 +152,37 @@ class CardDelegate(QStyledItemDelegate):
         self.icons[icon].paint(painter, favorite_rect(option.rect))
         painter.setClipRect(rect)
         painter.setPen(QColor(colors()["text"]))
-        description = index.data(ICON) + "  " + index.data(DESCRIPTION)
         font = option.font
         font.setBold(True)
         painter.setFont(font)
-        painter.drawText(
-            rect.adjusted(10, 7, -32, 0),
-            Qt.AlignmentFlag.AlignTop,
-            QFontMetrics(font).elidedText(
-                description, Qt.TextElideMode.ElideRight, rect.width() - 44
-            ),
-        )
+        icon_width, title_width, lines = self._title_lines(index, font, rect.width())
+        line_height = QFontMetrics(font).lineSpacing()
+        title_top = rect.top() + 7
+        if icon_width:
+            painter.drawText(
+                QRect(rect.left() + 10, title_top, icon_width, line_height),
+                Qt.AlignmentFlag.AlignVCenter,
+                index.data(ICON),
+            )
+        for row, line in enumerate(lines):
+            painter.drawText(
+                QRect(
+                    rect.left() + 10 + icon_width,
+                    title_top + row * line_height,
+                    title_width,
+                    line_height,
+                ),
+                Qt.AlignmentFlag.AlignVCenter,
+                line,
+            )
+        title_extra = (len(lines) - 1) * line_height
         font.setBold(False)
         font.setPointSize(8)
         painter.setFont(font)
         variant = index.data(VARIANT)
         if variant:
             painter.drawText(
-                rect.adjusted(10, 26, -8, 0),
+                rect.adjusted(10, 26 + title_extra, -8, 0),
                 Qt.AlignmentFlag.AlignTop,
                 QFontMetrics(font).elidedText(
                     variant,
@@ -149,15 +196,21 @@ class CardDelegate(QStyledItemDelegate):
                 line, Qt.TextElideMode.ElideRight, rect.width() - 20
             )
             painter.drawText(
-                rect.left() + 10, rect.top() + 39 + bool(variant) * 18 + row * 17, text
+                rect.left() + 10,
+                rect.top() + 39 + title_extra + bool(variant) * 18 + row * 17,
+                text,
             )
         painter.restore()
 
     def sizeHint(self, option, index):
         if index.data(IDENTITY):
+            font = option.font
+            font.setBold(True)
+            _, _, lines = self._title_lines(index, font, self._card_width(index) - 7)
             return QSize(
                 270,
                 51
+                + (len(lines) - 1) * QFontMetrics(font).lineSpacing()
                 + bool(index.data(VARIANT)) * 18
                 + 17 * (min(2, len(index.data(PREVIEW).splitlines())) - 1),
             )
@@ -204,9 +257,30 @@ class Library(QTreeWidget):
         self.headings = {}
         self.snapshot = []
         self.favorite_press = None
+        self._card_layout_pending = False
         self.currentItemChanged.connect(lambda *_: self.variants_changed.emit())
         self.itemDoubleClicked.connect(lambda *_: self.insert_requested.emit())
         self.load(snippets)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if (
+            event.size().width() != event.oldSize().width()
+            and not self._card_layout_pending
+        ):
+            self._card_layout_pending = True
+            QTimer.singleShot(0, self, self._relayout_cards)
+
+    def _relayout_cards(self):
+        self._card_layout_pending = False
+        option = QStyleOptionViewItem()
+        option.font = self.font()
+        delegate = self.itemDelegate()
+        for item in self.rows.values():
+            if item.data(0, IDENTITY):
+                index = self.indexFromItem(item)
+                item.setSizeHint(0, delegate.sizeHint(option, index))
+        self.doItemsLayout()
 
     def remember_view(self):
         item = self.currentItem()
