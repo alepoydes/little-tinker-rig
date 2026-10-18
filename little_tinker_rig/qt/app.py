@@ -1421,6 +1421,8 @@ class Studio(QMainWindow):
         page = self.documents.widget(index)
         if not self.confirm_close(page):
             return
+        if page is self.startup_placeholder:
+            self.startup_placeholder = None
         if self.documents.count() == 1:
             self.new_file()
         self.documents.removeTab(self.documents.indexOf(page))

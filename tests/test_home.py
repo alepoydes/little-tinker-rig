@@ -79,6 +79,38 @@ def test_start_page_reuses_empty_document_and_creates_no_recovery(tmp_path, qt_a
         close(window)
 
 
+def test_closing_the_only_startup_document_leaves_a_usable_editor(qt_app):
+    window = Studio()
+    try:
+        original = window.document_page
+        assert window._unused_startup_placeholder()
+        window.close_document(0)
+        assert window.documents.count() == 1
+        assert window.document_page is not original
+        assert window.startup_placeholder is None
+        window.session.editor.commit("answer = 42\n")
+        assert window.document_page.text == "answer = 42\n"
+    finally:
+        close(window)
+
+
+def test_closing_edited_startup_tab_clears_its_stale_reference(qt_app):
+    window = Studio()
+    try:
+        original = window.document_page
+        window.session.editor.commit("draft = 1\n")
+        window.new_file()
+        assert window.documents.count() == 2
+        window.confirm_close = lambda *_: True
+        window.close_document(window.documents.indexOf(original))
+        qt_app.processEvents()
+        assert window.startup_placeholder is None
+        window.new_file()
+        assert window.documents.count() == 2
+    finally:
+        close(window)
+
+
 def test_home_first_project_resumes_one_attempt(tmp_path, qt_app):
     original = language()
     window = Studio()
