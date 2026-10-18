@@ -425,7 +425,7 @@ def test_scratch_commands_keep_their_owner_and_help_cannot_undo(windows):
     window.undo()
     assert window.session.document.state is before
     window.show_find()
-    assert window.help_page.search.hasFocus()
+    assert window.help_page.find_field.hasFocus()
 
 
 def test_find_preserves_position_on_miss_and_catalog_accepts_enter(windows):

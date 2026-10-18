@@ -1,12 +1,11 @@
 # Visual redesign implementation plan
 
-Status: in progress. The shared Light/Dark palette, unified menu/header row,
-left-aligned toolbar, dark workspace rail, and initial editor/catalog/lesson/Help
-theme integration have landed. First drive now has localized captions and
-alternative text for its build, motion, and obstacle diagrams in Help and the task
-panel. Remaining component polish and cross-platform acceptance still follow the
-delivery sequence below. The
-implementation follows the selected mockups and the toolbar alignment correction.
+Status: implemented on 2026-10-18. The Light/Dark palette, unified menu/header
+row, left-aligned toolbar, workspace rail, editor and catalog presentation,
+illustrated First drive lesson, and remaining app-owned surfaces follow the
+selected mockups and toolbar alignment correction. See the dated
+[acceptance record](VISUAL_REDESIGN_ACCEPTANCE.md) for checked behavior and
+desktop/platform verification that remains pending.
 
 The goal is a coherent robotics workshop interface: a distinct navigation rail,
 readable rounded Python blocks, compact controls, and an illustrated lesson
@@ -46,21 +45,21 @@ design artifacts out of those commits.
 - Keep developer documentation and comments English-only. Localize new interface
   and lesson content through the existing English and Russian resources.
 
-## Technical starting point
+## Technical starting point before implementation
 
-The current [window setup](../little_tinker_rig/qt/app.py) already uses a frameless
-window and a [custom title bar](../little_tinker_rig/qt/window.py), but stacks that
-bar and the menu vertically. The isolated header probe confirmed a shared row
+The original [window setup](../little_tinker_rig/qt/app.py) used a frameless
+window and a [custom title bar](../little_tinker_rig/qt/window.py), but stacked
+that bar and the menu vertically. The isolated header probe confirmed a shared row
 and working menu actions at 930 and 1380 logical pixels on Qt 6.11.2 using the
 offscreen platform. Desktop move, resize, snapping, and keyboard integration
-remain to be verified. The implementation should use the existing supported Qt
-baseline; a newer native title-area API is not required.
+remain to be verified. The implementation used the existing supported Qt
+baseline; a newer native title-area API was not required.
 
-Appearance currently spans widget styles, custom painters, text formats, HTML,
-and fixed SVG strokes. In particular, the
-[block renderer](../little_tinker_rig/qt/editor.py) multiplies color over already
-painted text. Its compositing strategy must be evaluated for dark backgrounds;
-a global stylesheet alone cannot implement the design.
+At baseline, appearance spanned widget styles, custom painters, text formats,
+HTML, and fixed SVG strokes. In particular, the
+[block renderer](../little_tinker_rig/qt/editor.py) multiplied color over already
+painted text. Its compositing strategy needed evaluation for dark backgrounds;
+a global stylesheet alone could not implement the design.
 
 [Semantic roles](../little_tinker_rig/core/presentation.py) are shared with other
 frontends and also accept source-authored color values. Resolve Qt theme colors
@@ -205,11 +204,11 @@ verified model assets or authored diagrams. Give instructional images localized
 captions and alternative text; avoid language baked into otherwise reusable
 images. Check legibility in both themes and at compact widths.
 
-Cover the remaining bundled lessons using appropriate existing model/build
-visuals where available. Record any lesson needing an authored explanatory image
-instead of filling it with unrelated decoration. Keep images local, include them
-in lesson resources and export, and verify installed/offline use. Illustrations
-are content assets; future lessons should follow the same authoring guidance.
+First drive is the only bundled guided lesson. Bundled Pybricks examples are
+sample projects with their own model/build resources, not task-card lessons.
+Keep lesson images local, include them in lesson resources and export, and
+verify installed/offline use. Illustrations are content assets; future guided
+lessons should follow the same authoring guidance.
 
 **Complete when:** First drive is usable end to end with accurate illustrations;
 task collapse, links, progress and points work unchanged; lesson image coverage
