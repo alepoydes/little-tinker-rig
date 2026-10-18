@@ -1,6 +1,6 @@
 """Connection choice, hub identity and live port inspection."""
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -22,17 +22,35 @@ from little_tinker_rig.pybricks.devices import describe_device
 from little_tinker_rig.pybricks.simulation import SENSOR_VALUES
 
 from .localization import localize
+from .theme import colors, svg_pixmap
 
 
 class ConnectDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
         self.setWindowTitle(N_("Connect hub"))
-        self.resize(470, 230)
+        self.resize(470, 285)
         layout = QVBoxLayout(self)
-        title = QLabel(N_("Start with a virtual hub or connect your robot."))
-        title.setWordWrap(True)
-        layout.addWidget(title)
+        header = QFrame()
+        header.setObjectName("dialogHeader")
+        header_row = QHBoxLayout(header)
+        header_row.setContentsMargins(16, 13, 16, 13)
+        mark = QLabel()
+        mark.setPixmap(
+            svg_pixmap("network-connect", QSize(30, 30), tint=colors()["accent_text"])
+        )
+        header_row.addWidget(mark)
+        heading = QVBoxLayout()
+        heading.setSpacing(2)
+        title = QLabel(N_("Connect hub"))
+        title.setObjectName("dialogHeaderTitle")
+        heading.addWidget(title)
+        description = QLabel(N_("Start with a virtual hub or connect your robot."))
+        description.setObjectName("dialogHeaderDescription")
+        description.setWordWrap(True)
+        heading.addWidget(description)
+        header_row.addLayout(heading, 1)
+        layout.addWidget(header)
         form = QFormLayout()
         self.transport = QComboBox()
         for label, key in (
@@ -75,11 +93,15 @@ class ConnectDialog(QDialog):
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
         buttons.button(QDialogButtonBox.StandardButton.Ok).setText(N_("Connect"))
+        buttons.button(QDialogButtonBox.StandardButton.Ok).setObjectName(
+            "dialogPrimary"
+        )
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         help_button = buttons.addButton(
             N_("USB connection help"), QDialogButtonBox.ButtonRole.HelpRole
         )
+        help_button.setObjectName("dialogHelp")
         help_button.clicked.connect(self.reject)
         help_button.clicked.connect(parent.show_usb_help)
         layout.addWidget(buttons)

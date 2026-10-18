@@ -214,6 +214,13 @@ def studio_stylesheet(name):
     c = colors(name)
     return f"""
         QMainWindow {{ background: {c['window']}; color: {c['text']}; }}
+        QDialog {{ background: {c['window']}; color: {c['text']}; }}
+        QFrame#dialogHeader {{ background: {c['accent']};
+            border-radius: 9px; }}
+        QLabel#dialogHeaderTitle {{ color: {c['accent_text']};
+            font-size: 16px; font-weight: 700; }}
+        QLabel#dialogHeaderDescription {{ color: {c['accent_text']};
+            font-size: 12px; }}
         QToolBar {{ border: 0; spacing: 6px; padding: 4px 7px;
                     background: {c['window']}; }}
         QToolButton {{ padding: 5px 8px; border-radius: 6px; color: {c['text']}; }}
@@ -275,12 +282,36 @@ def studio_stylesheet(name):
                      background: {c['panel']}; border: 1px solid {c['border']};
                      border-radius: 5px; }}
         QLineEdit:focus {{ border-color: {c['focus']}; }}
+        QDialog QComboBox {{ padding: 6px 8px;
+            color: {c['text']}; background: {c['panel']};
+            border: 1px solid {c['border']}; border-radius: 6px; }}
+        QDialog QComboBox:hover, QDialog QComboBox:focus {{
+            border-color: {c['focus']}; }}
+        QDialog QComboBox:disabled {{ background: {c['raised']};
+            color: {c['muted']}; }}
+        QDialog QComboBox QAbstractItemView {{
+            background: {c['panel']}; color: {c['text']};
+            selection-background-color: {c['selected']};
+            selection-color: {c['text']}; }}
         QTreeWidget, QListWidget {{ background: {c['panel']};
                                     color: {c['text']}; border: 0; }}
         QPushButton {{ padding: 6px 10px; color: {c['text']};
                        background: {c['raised']}; border: 1px solid {c['border']};
                        border-radius: 6px; }}
         QPushButton:hover {{ background: {c['hover']}; }}
+        QDialog QPushButton#dialogPrimary {{
+            background: {c['accent']}; color: {c['accent_text']};
+            border-color: {c['accent']}; font-weight: 700;
+            padding: 7px 13px; }}
+        QDialog QPushButton#dialogPrimary:hover {{ background: {c['focus']}; }}
+        QDialog QPushButton#dialogPrimary:disabled {{
+            background: {c['raised']}; color: {c['muted']};
+            border-color: {c['border']}; }}
+        QDialog QPushButton#dialogHelp {{
+            background: transparent; color: {c['link']}; border: 0;
+            padding: 7px 4px; }}
+        QDialog QPushButton#dialogHelp:hover {{
+            background: {c['hover']}; text-decoration: underline; }}
         QPushButton#manualStart, QPushButton#blockEditorNew {{ background: {c['accent']};
             color: {c['accent_text']}; border-color: {c['accent']};
             font-weight: 700; padding: 8px 12px; }}

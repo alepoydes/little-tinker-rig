@@ -117,6 +117,9 @@ class CatalogProperties(QDialog):
         self.buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
+        self.buttons.button(QDialogButtonBox.StandardButton.Ok).setObjectName(
+            "dialogPrimary"
+        )
         self.buttons.accepted.connect(self.apply)
         self.buttons.rejected.connect(self.reject)
         layout.addWidget(self.buttons)

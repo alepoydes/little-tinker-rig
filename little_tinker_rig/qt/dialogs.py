@@ -24,6 +24,7 @@ class EditDialog(QDialog):
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
+        buttons.button(QDialogButtonBox.StandardButton.Ok).setObjectName("dialogPrimary")
         buttons.accepted.connect(self.apply)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)

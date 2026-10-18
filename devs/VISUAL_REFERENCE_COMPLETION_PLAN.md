@@ -46,6 +46,13 @@ icon in both themes, making the creation path visible beside its secondary
 collection actions.
 The device panel now omits empty metadata instead of showing a dangling
 separator above the hub state.
+Connection now opens with a saturated, branded heading and a clear Connect
+action. Shared dialog controls and confirmation buttons use the same Light/Dark
+palette in Python editing, catalog properties, and variant forms; USB help
+remains a less prominent link. Connection, Python-edit, variant, and firmware
+dialogs were captured in English and Russian in both themes. The variant form
+fits at compact width; firmware still has a large blank log before any work and
+needs a clearer idle state.
 Assembly load failures now show a localized recovery message instead of a raw
 network exception, retranslate when the language changes, and clear after a
 successful retry. The model viewport now has a themed loading/error placeholder
