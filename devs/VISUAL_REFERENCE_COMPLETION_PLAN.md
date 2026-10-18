@@ -25,6 +25,8 @@ scrollable but needs a compact layout in a later Stage 5 pass.
 Block Editor and in-editor search now use the same theme-aware SVG icon path as
 the shell. This removes the opaque square artifacts from standard desktop
 icons in Dark while preserving the existing actions and tooltips.
+The device panel now omits empty metadata instead of showing a dangling
+separator above the hub state.
 This follows the first-pass
 [visual redesign](VISUAL_REDESIGN_PLAN.md) and uses the selected local mockups
 in `report/design_concepts` as visual

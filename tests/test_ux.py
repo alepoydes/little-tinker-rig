@@ -510,6 +510,7 @@ def test_translated_help_and_device_panel_keep_port_values(tmp_path, qt_app):
             assert title in window.help_page.browser.toPlainText()
             assert label in window.device_panel.rows["C"][1].text()
             assert "37" in window.device_panel.rows["C"][1].text()
+            assert window.device_panel.details.text().startswith("VIRTUAL · ")
             dialog = ConnectDialog(window)
             cancel = dialog.findChild(QDialogButtonBox).button(
                 QDialogButtonBox.StandardButton.Cancel

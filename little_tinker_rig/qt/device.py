@@ -180,8 +180,12 @@ class DevicePanel(QWidget):
         battery = (
             tr(" · {p0:.2f} V", p0=info.battery_mv / 1000) if info.battery_mv else ""
         )
+        identity = " · ".join(part for part in (info.kind, info.firmware) if part)
+        status = " · ".join(
+            part for part in (info.transport.upper(), state) if part
+        ) + battery
         self.details.setText(
-            f"{info.kind} · {info.firmware}\n{info.transport.upper()} · {state}{battery}"
+            "\n".join(part for part in (identity, status) if part)
             if info.connected
             else tr("Connect a hub at the top right of the window.")
         )
