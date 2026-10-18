@@ -149,21 +149,38 @@ class LDraw(AbstractContextManager):
         current = name.lower()
         first = None
         records = []
-        for line in text.splitlines():
+        lines = text.splitlines()
+        # MPD content before the first FILE or !DATA marker is outside any file.
+        active = not any(
+            line.split(maxsplit=2)[:2] in (["0", "FILE"], ["0", "!DATA"])
+            for line in lines
+        )
+        embedded = False
+        for line in lines:
             tokens = line.split()
             if not tokens:
                 continue
             if tokens[:2] == ["0", "FILE"]:
-                if records:
+                if active and (records or embedded):
                     self.files[current] = records
                 current = " ".join(tokens[2:]).replace("\\", "/").lower()
                 resource(self.root, current)
                 first = first or current
                 records = []
+                active = embedded = True
             elif tokens[:2] == ["0", "NOFILE"]:
-                self.files[current] = records
+                if active:
+                    self.files[current] = records
                 records = []
+                active = False
+            elif tokens[:2] == ["0", "!DATA"]:
+                if active and (records or embedded):
+                    self.files[current] = records
+                records = []
+                active = False
             else:
+                if not active:
+                    continue
                 records.append(tokens)
                 # Flexible components carry ordinary LDraw fallback geometry.
                 # Their segments belong to one physical component, not a sequence
@@ -199,7 +216,7 @@ class LDraw(AbstractContextManager):
                         ),
                         edge_color,
                     )
-        if records:
+        if active and (records or embedded or first is None):
             self.files[current] = records
         return first or name.lower()
 

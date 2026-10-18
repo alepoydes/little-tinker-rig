@@ -95,6 +95,63 @@ def test_circular_references_fail_without_recursion(model):
         LDraw(model).scene()
 
 
+def test_empty_embedded_submodel_is_a_valid_reference(tmp_path):
+    path = tmp_path / "robot.mpd"
+    path.write_text(
+        "0 FILE main.ldr\n"
+        "1 16 0 0 0 1 0 0 0 1 0 0 0 1 empty.ldr\n"
+        "1 16 0 0 0 1 0 0 0 1 0 0 0 1 part.dat\n"
+        "0 FILE empty.ldr\n"
+        "0 FILE part.dat\n"
+        "3 16 0 0 0 10 0 0 0 10 0\n",
+        encoding="utf-8",
+    )
+    with LDraw(path) as reader:
+        scene = reader.scene()
+    assert [item.part for item in scene.instances] == ["part.dat"]
+    assert len(scene.meshes["part.dat"].triangles) == 1
+
+
+def test_nofile_discards_trailing_content_until_next_file(tmp_path):
+    path = tmp_path / "robot.mpd"
+    path.write_text(
+        "0 FILE main.ldr\n"
+        "1 16 0 0 0 1 0 0 0 1 0 0 0 1 part.dat\n"
+        "0 NOFILE\n"
+        "0 Outside model text\n"
+        "0 FILE part.dat\n"
+        "3 16 0 0 0 10 0 0 0 10 0\n"
+        "0 NOFILE\n"
+        "0 Ending text\n",
+        encoding="utf-8",
+    )
+    with LDraw(path) as reader:
+        scene = reader.scene()
+    assert [item.part for item in scene.instances] == ["part.dat"]
+    assert len(scene.meshes["part.dat"].triangles) == 1
+
+
+def test_mpd_ignores_preamble_and_embedded_data_blocks(tmp_path):
+    path = tmp_path / "robot.mpd"
+    path.write_text(
+        "0 !COLOUR Preamble CODE 99 VALUE #FF0000 EDGE #000000\n"
+        "0 FILE main.ldr\n"
+        "1 16 0 0 0 1 0 0 0 1 0 0 0 1 part.dat\n"
+        "0 !DATA texture.png\n"
+        "0 !: SGVsbG8=\n"
+        "0 FILE part.dat\n"
+        "3 16 0 0 0 10 0 0 0 10 0\n",
+        encoding="utf-8",
+    )
+    with LDraw(path) as reader:
+        scene = reader.scene()
+        assert reader.files["main.ldr"] == [
+            "1 16 0 0 0 1 0 0 0 1 0 0 0 1 part.dat".split()
+        ]
+    assert [item.part for item in scene.instances] == ["part.dat"]
+    assert 99 not in scene.colors
+
+
 def test_flexible_components_keep_geometry_without_exposing_generated_segments(
     tmp_path,
 ):
