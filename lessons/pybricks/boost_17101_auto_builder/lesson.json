@@ -46,8 +46,8 @@
         "ru": "Попробуй: программа"
       },
       "goal": {
-        "en": "Build a figure by moving the conveyor and the lifting arm.",
-        "ru": "Собери фигурку с помощью конвейера и подъёмного рычага."
+        "en": "Open `boost_17101_auto_builder.py`. Change the order of brick positions, predict the resulting figure, then compare it with the result. Adjust one conveyor position by a few degrees if alignment is poor.",
+        "ru": "Открой `boost_17101_auto_builder.py`. Измени порядок положений кирпичиков, предскажи форму фигурки и сравни с результатом. При неточном совмещении поправь одно положение конвейера на несколько градусов."
       },
       "description": {
         "en": "en.md#run-1",
@@ -83,8 +83,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "Change the order of brick positions, predict the resulting figure, then compare it with the result. Adjust one conveyor position by a few degrees if alignment is poor.",
+        "ru": "Измени порядок положений кирпичиков, предскажи форму фигурки и сравни с результатом. При неточном совмещении поправь одно положение конвейера на несколько градусов."
       },
       "description": {
         "en": "en.md#experiment",
@@ -113,5 +113,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

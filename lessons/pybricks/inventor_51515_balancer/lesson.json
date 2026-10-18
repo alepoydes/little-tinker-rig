@@ -46,8 +46,8 @@
         "ru": "Попробуй: программа"
       },
       "goal": {
-        "en": "Study how motor feedback keeps a two-wheel robot upright.",
-        "ru": "Разберись, как обратная связь удерживает двухколёсного робота."
+        "en": "Open `inventor_51515_balancer.py`. First read the control loop without running it. Identify measured and target values. On the exact built robot, compare one small parameter change while keeping a hand ready to catch it.",
+        "ru": "Открой `inventor_51515_balancer.py`. Сначала изучи цикл управления без запуска. Найди измеряемые и заданные величины. На точно собранной модели сравни одно небольшое изменение параметра, придерживая робота при потере равновесия."
       },
       "description": {
         "en": "en.md#run-1",
@@ -90,8 +90,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "First read the control loop without running it. Identify measured and target values. On the exact built robot, compare one small parameter change while keeping a hand ready to catch it.",
+        "ru": "Сначала изучи цикл управления без запуска. Найди измеряемые и заданные величины. На точно собранной модели сравни одно небольшое изменение параметра, придерживая робота при потере равновесия."
       },
       "description": {
         "en": "en.md#experiment",
@@ -127,5 +127,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

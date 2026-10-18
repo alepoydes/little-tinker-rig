@@ -13,6 +13,7 @@ import shutil
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from time import time_ns
 from uuid import uuid4
 from zipfile import ZIP_DEFLATED, BadZipFile, ZipFile
 
@@ -21,6 +22,8 @@ from little_tinker_rig.examples import examples_directory
 
 from .paths import personal_collection, resource
 from .project import atomic_write
+
+WORKSPACES = ("program", "control", "help", "block_editor", "assembly")
 
 
 def localized(value, language="en") -> str:
@@ -168,7 +171,27 @@ class Lesson:
             raise ValueError("A lesson needs an id")
         localized(data.get("title"))
         localized(data.get("group", ""))
+        if data.get("kind", "lesson") not in ("lesson", "project"):
+            raise ValueError("Unknown learning activity kind")
         lesson = cls(root, data)
+        if "instructions" in data:
+            instructions = data["instructions"]
+            localized(instructions)
+            for name in (
+                instructions.values()
+                if isinstance(instructions, dict)
+                else (instructions,)
+            ):
+                if "#" in name:
+                    raise ValueError(
+                        "Lesson instructions must name a whole Markdown file"
+                    )
+                lesson.material(name)
+        if "panel_intro" in data:
+            intro = data["panel_intro"]
+            localized(intro)
+            for name in intro.values() if isinstance(intro, dict) else (intro,):
+                lesson.material(name)
         examples = data.get("examples", {})
         if not isinstance(examples, dict):
             raise ValueError("Lesson examples must map local paths to bundled files")
@@ -209,12 +232,21 @@ class Lesson:
             ids.add(stage["id"])
             localized(stage.get("title"))
             localized(stage.get("goal", stage["title"]))
+            if type(stage.get("points", 1)) is not int or stage.get("points", 1) < 0:
+                raise ValueError("Task points must be a nonnegative integer")
             description = stage.get("description")
             localized(description)
             for name in (
                 description.values() if isinstance(description, dict) else [description]
             ):
                 lesson.material(name)
+            if "panel" in stage:
+                panel = stage["panel"]
+                localized(panel)
+                for name in panel.values() if isinstance(panel, dict) else (panel,):
+                    lesson.material(name)
+            if type(stage.get("panel_actions", True)) is not bool:
+                raise ValueError("Task panel_actions must be a boolean")
             blocks = stage.get("blocks", [])
             if not isinstance(blocks, list) or not all(
                 isinstance(b, str) for b in blocks
@@ -242,6 +274,41 @@ class Lesson:
                 or not stage["program"].endswith(".py")
             ):
                 raise ValueError("A stage must name an included Python program")
+            links = stage.get("links", [])
+            if not isinstance(links, list):
+                raise ValueError("Task links must be a list")
+            for link in links:
+                if not isinstance(link, dict) or link.get("kind") not in (
+                    "markdown",
+                    "program",
+                    "assembly",
+                    "control",
+                    "connect",
+                    "devices",
+                    "scratch",
+                ):
+                    raise ValueError("Unknown task link")
+                localized(link.get("label"))
+                kind = link["kind"]
+                target = link.get("target")
+                if kind == "markdown":
+                    localized(target)
+                    names = target.values() if isinstance(target, dict) else (target,)
+                    for name in names:
+                        lesson.material(name)
+                elif kind in ("program", "scratch"):
+                    if (
+                        not isinstance(target, str)
+                        or target
+                        not in (
+                            *programs,
+                            data.get("main", "main.py"),
+                        )
+                        or not target.endswith(".py")
+                    ):
+                        raise ValueError("Task link must name a student Python file")
+                elif target is not None:
+                    raise ValueError("Workspace task links have no target")
             steps = stage.get("assembly")
             if steps is not None and (
                 not isinstance(steps, list)
@@ -252,16 +319,52 @@ class Lesson:
                 raise ValueError(
                     "Assembly ranges use inclusive, one-based step numbers"
                 )
+        if "instructions" in data:
+            for stage in stages:
+                languages = {"en"}
+                for value in (data["instructions"], stage["description"]):
+                    if isinstance(value, dict):
+                        languages.update(value)
+                for code in languages:
+                    document = localized(data["instructions"], code)
+                    section_name = localized(stage["description"], code)
+                    path, _, anchor = section_name.partition("#")
+                    if path != document or (len(stages) > 1 and not anchor):
+                        raise ValueError(
+                            "Stage descriptions must reference sections of lesson instructions"
+                        )
         for key in ("robot", "starter", "collection"):
             if key in data and not lesson.file(data[key]).exists():
                 raise ValueError(f"Missing lesson {key}: {data[key]}")
+        seeds = data.get("scratch_seeds", {})
+        if not isinstance(seeds, dict):
+            raise ValueError("Scratch seeds must map student programs to lesson files")
+        for name, fragments in seeds.items():
+            if (
+                not isinstance(name, str)
+                or name
+                not in (
+                    *programs,
+                    data.get("main", "main.py"),
+                )
+                or not name.endswith(".py")
+            ):
+                raise ValueError("Scratch seed must name a student Python program")
+            if not isinstance(fragments, list) or not all(
+                isinstance(fragment, str) and lesson.file(fragment).is_file()
+                for fragment in fragments
+            ):
+                raise ValueError("Scratch seeds must name included files")
         if "robot" in data:
             robot = robot_description(resource(root, data["robot"]))
             devices = {d["instance"] for d in robot.get("devices", [])}
             if any(set(s.get("devices", [])) - devices for s in stages):
                 raise ValueError("A stage names an unknown robot device")
         elif any(
-            s.get("mode") == "assembly" or s.get("check") == "devices" for s in stages
+            s.get("mode") == "assembly"
+            or s.get("check") == "devices"
+            or any(link["kind"] == "assembly" for link in s.get("links", []))
+            for s in stages
         ):
             raise ValueError("Assembly and device checks need a robot description")
         return lesson
@@ -292,14 +395,66 @@ class Lesson:
     def description(self, stage, language="en"):
         return self.material(localized(stage["description"], language))
 
+    def instructions_document(self, language="en"):
+        """Return one readable document and its relative-link base for this lesson."""
+        if "instructions" in self.data:
+            name = localized(self.data["instructions"], language)
+            return self.material(name), name
+        names = [localized(stage["description"], language) for stage in self.stages]
+        sources = [name.partition("#")[0] for name in names]
+        if len(set(sources)) == 1 and (
+            len(self.stages) == 1 or all("#" in name for name in names)
+        ):
+            return self.material(sources[0]), sources[0]
+        parts = [f"# {localized(self.data['title'], language)}"]
+        for stage, name in zip(self.stages, names, strict=True):
+            title = localized(stage["title"], language)
+            body = self.material(name).strip()
+            if body.startswith("#"):
+                heading, _, rest = body.partition("\n")
+                heading = heading.lstrip("# ").strip()
+                body = (
+                    rest.strip()
+                    if heading.casefold() == title.casefold()
+                    else f"### {heading}\n\n{rest.strip()}"
+                )
+            parts.append(f'<a name="task-{stage["id"]}"></a>\n\n## {title}\n\n{body}')
+        return "\n\n".join(parts) + "\n", sources[0]
+
+    def instructions_anchor(self, stage, language="en"):
+        name = localized(stage["description"], language)
+        source, _, anchor = name.partition("#")
+        if "instructions" in self.data:
+            return anchor
+        sources = {
+            localized(item["description"], language).partition("#")[0]
+            for item in self.stages
+        }
+        if len(self.stages) == 1 or (
+            sources == {source}
+            and all(
+                "#" in localized(item["description"], language) for item in self.stages
+            )
+        ):
+            return anchor
+        return f"task-{stage['id']}"
+
+    def panel_text(self, stage, language="en"):
+        if "panel" in stage:
+            return self.material(localized(stage["panel"], language))
+        return localized(stage.get("goal", stage["title"]), language)
+
 
 class StudentProject:
     """One archive and its private, recoverable working directory."""
 
-    def __init__(self, root: Path, path: Path | None = None, disk_hash=None):
+    def __init__(
+        self, root: Path, path: Path | None = None, disk_hash=None, *, retain=False
+    ):
         self.root = root.resolve()
         self.path = path.resolve() if path else None
         self.disk_hash = disk_hash
+        self.retain = retain
         self.data = read_json(self.root / "project.json")
         if not isinstance(self.data, dict) or self.data.get("format") != 1:
             raise ValueError("Unsupported student project format")
@@ -323,14 +478,46 @@ class StudentProject:
             not isinstance(s, str) or s not in stage_ids for s in completed
         ):
             raise ValueError("Unknown completed lesson stage")
+        self.progress["completed"] = list(dict.fromkeys(completed))
+        evidence = self.progress.get("evidence", {})
+        if not isinstance(evidence, dict) or any(
+            key not in stage_ids or value not in ("manual", "devices")
+            for key, value in evidence.items()
+        ):
+            raise ValueError("Invalid task completion evidence")
+        self.progress["evidence"] = {
+            key: value for key, value in evidence.items() if key in completed
+        }
         hints = self.progress.get("hints", {})
         if not isinstance(hints, dict) or any(
             k not in stage_ids or type(v) is not int or v < 0 for k, v in hints.items()
         ):
             raise ValueError("Invalid hint progress")
-        mode = self.progress.get("mode", 4)
-        if type(mode) is not int or not 0 <= mode <= 5:
+        starter_files = self.progress.get("starter_files", {})
+        if not isinstance(starter_files, dict) or any(
+            key not in stage_ids
+            or not isinstance(name, str)
+            or not name.endswith(".py")
+            or resource(self.root / "programs", name).name != name
+            for key, name in starter_files.items()
+        ):
+            raise ValueError("Invalid task starter files")
+        mode = self.progress.get("mode", "program")
+        if type(mode) is int:
+            mode = (
+                ("program", "control", "help", "block_editor", "program", "assembly")[
+                    mode
+                ]
+                if 0 <= mode <= 5
+                else None
+            )
+        if mode not in WORKSPACES:
             raise ValueError("Unknown project workspace")
+        self.progress["mode"] = mode
+        panel = self.progress.get("panel_expanded", self.progress.get("guidance", True))
+        if type(panel) is not bool:
+            raise ValueError("Invalid task panel state")
+        self.progress["panel_expanded"] = panel
         assembly = self.progress.get("assembly", {})
         if (
             not isinstance(assembly, dict)
@@ -351,6 +538,39 @@ class StudentProject:
         root = personal_collection().parent / "projects" / uuid4().hex
         root.mkdir(parents=True)
         return root
+
+    @classmethod
+    def attempts(cls, lesson_path: Path | None = None):
+        origin = str(lesson_path.resolve()) if lesson_path else None
+        parent = personal_collection().parent / "projects"
+        candidates = []
+        for manifest in parent.glob("*/project.json"):
+            try:
+                data = read_json(manifest)
+                if isinstance(data, dict) and (
+                    data.get("template_attempt") is True
+                    and type(data.get("opened")) is int
+                    and (origin is None or data.get("origin") == origin)
+                ):
+                    candidates.append((data.get("opened", 0), manifest.parent))
+            except (OSError, ValueError, TypeError):
+                continue
+        attempts = []
+        for _, root in sorted(candidates, reverse=True):
+            try:
+                attempts.append(cls(root, retain=True))
+            except (OSError, ValueError, KeyError, TypeError):
+                continue
+        return attempts
+
+    @classmethod
+    def latest(cls, lesson_path: Path):
+        return next(iter(cls.attempts(lesson_path)), None)
+
+    def remember_opened(self):
+        if self.retain:
+            self.data["opened"] = time_ns()
+            write_json(self.root / "project.json", self.data)
 
     @classmethod
     def create(cls, lesson_path: Path):
@@ -381,36 +601,57 @@ class StudentProject:
                 shutil.copyfile(lesson.file(origin), destination)
             if not (programs / main).exists():
                 atomic_write(programs / main, source)
-            if "collection" in lesson.data:
-                collection = lesson.file(lesson.data["collection"])
+            if "collection" in lesson.data or lesson.data.get("scratch_seeds"):
+                collection = (
+                    lesson.file(lesson.data["collection"])
+                    if "collection" in lesson.data
+                    else None
+                )
                 for program in programs.rglob("*.py"):
+                    name = program.relative_to(programs).as_posix()
                     write_json(
                         program.with_suffix(".py.ltr.json"),
                         {
                             "format": 1,
-                            "scratch": [],
+                            "scratch": [
+                                lesson.file(fragment).read_text(encoding="utf-8")
+                                for fragment in lesson.data.get(
+                                    "scratch_seeds", {}
+                                ).get(name, [])
+                            ],
                             "pins": {},
                             "collections": [
                                 Path(
                                     os.path.relpath(collection, program.parent)
                                 ).as_posix()
-                            ],
+                            ]
+                            if collection
+                            else [],
                         },
                     )
             write_json(
                 root / "project.json",
-                {"format": 1, "id": uuid4().hex, "main": "programs/" + main},
+                {
+                    "format": 1,
+                    "id": uuid4().hex,
+                    "main": "programs/" + main,
+                    "origin": str(lesson_path.resolve()),
+                    "opened": time_ns(),
+                    "template_attempt": True,
+                },
             )
             write_json(
                 root / "progress.json",
                 {
                     "stage": lesson.stages[0]["id"],
                     "completed": [],
+                    "evidence": {},
                     "hints": {},
-                    "explore": False,
+                    "mode": "program",
+                    "panel_expanded": True,
                 },
             )
-            return cls(root)
+            return cls(root, retain=True)
         except Exception:
             shutil.rmtree(root)
             raise
@@ -421,7 +662,10 @@ class StudentProject:
         root = cls.directory()
         try:
             extract(data, root)
-            return cls(root, path, hashlib.sha256(data).hexdigest())
+            project = cls(root, path, hashlib.sha256(data).hexdigest())
+            project.data["template_attempt"] = False
+            write_json(root / "project.json", project.data)
+            return project
         except Exception:
             shutil.rmtree(root)
             raise
@@ -429,6 +673,17 @@ class StudentProject:
     @property
     def stage(self):
         return next(s for s in self.lesson.stages if s["id"] == self.progress["stage"])
+
+    @property
+    def score(self):
+        completed = set(self.progress["completed"])
+        earned = sum(
+            stage.get("points", 1)
+            for stage in self.lesson.stages
+            if stage["id"] in completed
+        )
+        total = sum(stage.get("points", 1) for stage in self.lesson.stages)
+        return earned, total
 
     @property
     def dirty(self):
@@ -449,6 +704,7 @@ class StudentProject:
             "disk_hash": self.disk_hash,
             "saved_progress": self.saved_progress,
             "pending": self.pending,
+            "retain": self.retain,
         }
 
     @classmethod
@@ -457,6 +713,7 @@ class StudentProject:
             Path(data["root"]),
             Path(data["path"]) if data["path"] else None,
             data["disk_hash"],
+            retain=data.get("retain", False),
         )
         project.saved_progress = data["saved_progress"]
         project.pending = data.get("pending", False)

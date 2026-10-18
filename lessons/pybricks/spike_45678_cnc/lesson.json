@@ -46,8 +46,8 @@
         "ru": "Попробуй: программа"
       },
       "goal": {
-        "en": "Draw a rectangle with two motor axes.",
-        "ru": "Нарисуй прямоугольник с помощью двух моторных осей."
+        "en": "Open `spike_45678_cnc.py`. Change width and height separately, then draw a square. The dimensions in this program are motor degrees, not millimetres. Explain why reversing each axis returns the pen to its start.",
+        "ru": "Открой `spike_45678_cnc.py`. Меняй ширину и высоту по отдельности, затем нарисуй квадрат. Здесь размеры заданы градусами мотора, а не миллиметрами. Объясни, почему обратные перемещения возвращают перо к началу."
       },
       "description": {
         "en": "en.md#run-1",
@@ -80,8 +80,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "Change width and height separately, then draw a square. The dimensions in this program are motor degrees, not millimetres. Explain why reversing each axis returns the pen to its start.",
+        "ru": "Меняй ширину и высоту по отдельности, затем нарисуй квадрат. Здесь размеры заданы градусами мотора, а не миллиметрами. Объясни, почему обратные перемещения возвращают перо к началу."
       },
       "description": {
         "en": "en.md#experiment",
@@ -107,5 +107,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

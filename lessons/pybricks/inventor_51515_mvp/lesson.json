@@ -46,8 +46,8 @@
         "ru": "Попробуй: программа"
       },
       "goal": {
-        "en": "Run the movement sequence for the matching M.V.P. mechanism.",
-        "ru": "Выполни последовательность движений для соответствующего механизма M.V.P."
+        "en": "Open `inventor_51515_mvp.py`. Identify the drive motors in the program and shorten the first movement. Predict the new stopping position before trying it.",
+        "ru": "Открой `inventor_51515_mvp.py`. Найди моторы движения и сократи первое перемещение. Предскажи новое место остановки до запуска."
       },
       "description": {
         "en": "en.md#run-1",
@@ -84,8 +84,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "Identify the drive motors in the program and shorten the first movement. Predict the new stopping position before trying it.",
+        "ru": "Найди моторы движения и сократи первое перемещение. Предскажи новое место остановки до запуска."
       },
       "description": {
         "en": "en.md#experiment",
@@ -115,5 +115,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

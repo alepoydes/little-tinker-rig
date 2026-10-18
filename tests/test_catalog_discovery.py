@@ -426,7 +426,7 @@ def test_unit_suggestions_exclude_unknown_reporters_but_allow_python_names(tmp_p
     assert "motor.angle()" not in values
 
 
-def test_pinned_provider_search_keeps_variants_restrictions_and_restores_catalog(
+def test_pinned_provider_search_keeps_variants_and_restores_catalog(
     tmp_path, qt_app
 ):
     from little_tinker_rig.qt.app import Studio
@@ -458,10 +458,10 @@ def test_pinned_provider_search_keeps_variants_restrictions_and_restores_catalog
         window.refresh_status()
         assert window.whole_blocks.isVisible()
         assert window.session.document.state is previous
-        window.library.lesson_ids = frozenset({"pybricks/sensors/create_color_sensor"})
+        window.library.stage_ids = frozenset({"pybricks/sensors/create_color_sensor"})
         window.library.filter("")
-        assert card.isHidden()
-        window.library.lesson_ids = None
+        assert not card.isHidden()
+        window.library.stage_ids = None
         window.clear_input_search()
         assert window.search.text() == "wait"
         assert window.library.eligible_ids is None

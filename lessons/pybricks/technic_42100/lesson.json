@@ -137,5 +137,10 @@
       ],
       "program": "technic_42100_base_xbox.py"
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

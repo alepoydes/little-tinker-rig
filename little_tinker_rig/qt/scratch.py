@@ -236,7 +236,6 @@ class ScratchPane(QScrollArea):
         super().__init__(parent)
         self.session = None
         self.history = parent
-        self.allowed_ids = None
         self.cells = []
         self.cell_cache = {}
         self.setWidgetResizable(True)
@@ -395,12 +394,6 @@ class ScratchPane(QScrollArea):
             self.column.activate()
 
     def catalog_snippet(self, identity):
-        if self.allowed_ids is not None and identity not in self.allowed_ids:
-            raise ValueError(
-                tr(
-                    "This block is outside the current lesson palette. Enable Show all blocks to use it."
-                )
-            )
         for snippet in self.session.available_snippets:
             if snippet.identity == identity and not snippet.historical:
                 return snippet

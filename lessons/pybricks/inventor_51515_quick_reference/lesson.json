@@ -46,8 +46,8 @@
         "ru": "Изучи справочник"
       },
       "goal": {
-        "en": "Study the API examples one section at a time.",
-        "ru": "Изучай примеры API по одному разделу."
+        "en": "Open `inventor_51515_quick_reference.py`. This is a reference, not a single robot mission. Open a new program and reconstruct one short example with blocks. Choose equipment matching that section.",
+        "ru": "Открой `inventor_51515_quick_reference.py`. Это справочник, а не одно задание для робота. Открой новую программу и составь один короткий пример из блоков. Подключи оборудование выбранного раздела."
       },
       "description": {
         "en": "en.md#run-1",
@@ -147,8 +147,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "This is a reference, not a single robot mission. Open a new program and reconstruct one short example with blocks. Choose equipment matching that section.",
+        "ru": "Это справочник, а не одно задание для робота. Открой новую программу и составь один короткий пример из блоков. Подключи оборудование выбранного раздела."
       },
       "description": {
         "en": "en.md#experiment",
@@ -241,5 +241,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

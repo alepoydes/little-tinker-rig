@@ -50,8 +50,8 @@
         "ru": "Попробуй: пульт"
       },
       "goal": {
-        "en": "Compare Powered Up remote and analog Xbox control.",
-        "ru": "Сравни пульт Powered Up и аналоговое управление Xbox."
+        "en": "Open `technic_42160_audi_remote.py`. Pair the Powered Up remote and compare gentle and stronger drive commands after steering calibration.",
+        "ru": "Открой `technic_42160_audi_remote.py`. Подключи пульт Powered Up и сравни слабые и сильные команды движения после калибровки руля."
       },
       "description": {
         "en": "en.md#run-1",
@@ -100,8 +100,8 @@
         "ru": "Попробуй: Xbox: вариант из блоков"
       },
       "goal": {
-        "en": "Compare Powered Up remote and analog Xbox control.",
-        "ru": "Сравни пульт Powered Up и аналоговое управление Xbox."
+        "en": "Open `technic_42160_audi_xbox_blocks.py`. Pair Xbox and inspect the block-derived Python variant. Compare small and large stick or trigger inputs.",
+        "ru": "Открой `technic_42160_audi_xbox_blocks.py`. Подключи Xbox и изучи вариант Python, полученный из блоков. Сравни малые и большие движения стика или курков."
       },
       "description": {
         "en": "en.md#run-2",
@@ -137,8 +137,8 @@
         "ru": "Попробуй: Xbox: Python"
       },
       "goal": {
-        "en": "Compare Powered Up remote and analog Xbox control.",
-        "ru": "Сравни пульт Powered Up и аналоговое управление Xbox."
+        "en": "Open `technic_42160_audi_xbox_python.py`. Pair Xbox and inspect the authored Python variant. Compare its input sampling and drive scaling with the block-derived version.",
+        "ru": "Открой `technic_42160_audi_xbox_python.py`. Подключи Xbox и изучи авторский вариант Python. Сравни чтение ввода и масштаб скорости с вариантом из блоков."
       },
       "description": {
         "en": "en.md#run-3",
@@ -175,8 +175,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "With Xbox, compare small and large stick/trigger movements. Read the two Xbox variants and notice when input is sampled. Change one drive scale factor while preserving steering calibration.",
+        "ru": "С Xbox сравни малые и большие движения стика и курков. В двух вариантах программы найди моменты чтения ввода. Измени один масштаб движения, сохранив калибровку руля."
       },
       "description": {
         "en": "en.md#experiment",
@@ -223,5 +223,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

@@ -2,7 +2,9 @@
 
 Status: initial delivery and the recorded catalog/dependency follow-ups are complete.
 The delivery sequence below records the October 16, 2026 baseline and completed
-work; it is not a list of outstanding tasks. Project/model applicability filtering
+work; it is not a list of outstanding tasks. Its lesson restrictions were later
+replaced by open task recommendations in the
+[lesson task panel](LESSON_TASK_PANEL_PLAN.md). Project/model applicability filtering
 remains deferred. Use the source-derived inventory for current catalog membership.
 
 The source-derived [inventory](BLOCK_LIBRARY_INVENTORY.md) accounts for all 253

@@ -58,8 +58,8 @@
         "ru": "Попробуй: основная программа"
       },
       "goal": {
-        "en": "Explore walking, obstacle avoidance, tricks and remote control.",
-        "ru": "Исследуй ходьбу, обход препятствий, трюки и управление пультом."
+        "en": "Open `inventor_51515_gelo_basic.py`. Run a short and a long walk from the standing pose; compare front and rear leg timing.",
+        "ru": "Открой `inventor_51515_gelo_basic.py`. Запусти короткую и длинную прогулку из исходной позы; сравни движения передних и задних ног."
       },
       "description": {
         "en": "en.md#run-1",
@@ -105,8 +105,8 @@
         "ru": "Попробуй: пульт"
       },
       "goal": {
-        "en": "Explore walking, obstacle avoidance, tricks and remote control.",
-        "ru": "Исследуй ходьбу, обход препятствий, трюки и управление пультом."
+        "en": "Open `inventor_51515_gelo_remote.py`. Connect the Powered Up remote. Compare how the left buttons change speed and the right buttons steer; test either red stop button.",
+        "ru": "Открой `inventor_51515_gelo_remote.py`. Подключи пульт Powered Up. Сравни изменение скорости левыми кнопками и поворот правыми; проверь красную кнопку остановки."
       },
       "description": {
         "en": "en.md#run-2",
@@ -161,8 +161,8 @@
         "ru": "Попробуй: командная строка"
       },
       "goal": {
-        "en": "Explore walking, obstacle avoidance, tricks and remote control.",
-        "ru": "Исследуй ходьбу, обход препятствий, трюки и управление пультом."
+        "en": "Open `inventor_51515_gelo_repl.py`. Check whether your firmware shows a `>>>` prompt. If it does, send `gelo.walk()` from Console; otherwise continue with the template activity.",
+        "ru": "Открой `inventor_51515_gelo_repl.py`. Проверь, появляется ли на прошивке приглашение `>>>`. Если да, отправь `gelo.walk()` из консоли; иначе продолжи с шаблоном."
       },
       "description": {
         "en": "en.md#run-3",
@@ -194,8 +194,8 @@
         "ru": "Попробуй: обход препятствий"
       },
       "goal": {
-        "en": "Explore walking, obstacle avoidance, tricks and remote control.",
-        "ru": "Исследуй ходьбу, обход препятствий, трюки и управление пультом."
+        "en": "Open `inventor_51515_gelo_roam.py`. Watch the distance reading as Gelo walks. Compare when an obstacle causes a turn and walking resumes.",
+        "ru": "Открой `inventor_51515_gelo_roam.py`. Наблюдай расстояние во время ходьбы Gelo. Сравни, когда препятствие вызывает поворот и ходьба продолжается."
       },
       "description": {
         "en": "en.md#run-4",
@@ -234,8 +234,8 @@
         "ru": "Попробуй: своя программа"
       },
       "goal": {
-        "en": "Explore walking, obstacle avoidance, tricks and remote control.",
-        "ru": "Исследуй ходьбу, обход препятствий, трюки и управление пультом."
+        "en": "Open `inventor_51515_gelo_template.py`. Add two Gelo actions inside the template context and compare their order. Keep the shared module next to this file.",
+        "ru": "Открой `inventor_51515_gelo_template.py`. Добавь два действия Gelo в контекст шаблона и сравни их порядок. Оставь общий модуль рядом с этим файлом."
       },
       "description": {
         "en": "en.md#run-5",
@@ -268,8 +268,8 @@
         "ru": "Попробуй: трюки"
       },
       "goal": {
-        "en": "Explore walking, obstacle avoidance, tricks and remote control.",
-        "ru": "Исследуй ходьбу, обход препятствий, трюки и управление пультом."
+        "en": "Open `inventor_51515_gelo_tricks.py`. Show different colored bones to the color sensor and compare Gelo’s tricks on a surface with good grip.",
+        "ru": "Открой `inventor_51515_gelo_tricks.py`. Покажи датчику цвета кости разных цветов и сравни трюки Gelo на нескользкой поверхности."
       },
       "description": {
         "en": "en.md#run-6",
@@ -313,8 +313,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "Use the template to combine two existing Gelo actions. Keep the shared Gelo module beside the program. Compare a short walk with a longer one before changing the gait itself.",
+        "ru": "Объедини два действия Gelo в шаблоне. Оставь общий модуль Gelo рядом с программой. Сравни короткую и длинную прогулку, прежде чем менять саму походку."
       },
       "description": {
         "en": "en.md#experiment",
@@ -378,5 +378,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

@@ -18,15 +18,20 @@
         "ru": "Собери шаги 1–7. Колёса и опорный шар должны свободно вращаться."
       },
       "description": {
-        "en": "en/build.md",
-        "ru": "ru/build.md"
+        "en": "en.md#build",
+        "ru": "ru.md#build"
       },
       "mode": "assembly",
       "blocks": [],
       "assembly": [
         1,
         7
-      ]
+      ],
+      "points": 1,
+      "panel": {
+        "en": "en/panel/build.md",
+        "ru": "ru/panel/build.md"
+      }
     },
     {
       "id": "connect",
@@ -39,8 +44,8 @@
         "ru": "Подключи левый мотор к A, правый — к B."
       },
       "description": {
-        "en": "en/connect.md",
-        "ru": "ru/connect.md"
+        "en": "en.md#connect",
+        "ru": "ru.md#connect"
       },
       "mode": "control",
       "blocks": [
@@ -50,7 +55,35 @@
       "devices": [
         "left-motor",
         "right-motor"
-      ]
+      ],
+      "points": 1,
+      "links": [
+        {
+          "kind": "assembly",
+          "label": {
+            "en": "Review build",
+            "ru": "Проверить сборку"
+          }
+        },
+        {
+          "kind": "connect",
+          "label": {
+            "en": "Connect hub",
+            "ru": "Подключить хаб"
+          }
+        },
+        {
+          "kind": "devices",
+          "label": {
+            "en": "Hub and devices",
+            "ru": "Хаб и устройства"
+          }
+        }
+      ],
+      "panel": {
+        "en": "en/panel/connect.md",
+        "ru": "ru/panel/connect.md"
+      }
     },
     {
       "id": "drive",
@@ -63,8 +96,8 @@
         "ru": "Составь программу движения вперёд на 200 мм."
       },
       "description": {
-        "en": "en/drive.md",
-        "ru": "ru/drive.md"
+        "en": "en.md#drive",
+        "ru": "ru.md#drive"
       },
       "mode": "program",
       "blocks": [
@@ -81,7 +114,12 @@
           "en": "Place “Drive straight” after setup. Set distance to 200.",
           "ru": "После настройки добавь «Проехать прямо». Расстояние — 200."
         }
-      ]
+      ],
+      "points": 2,
+      "panel": {
+        "en": "en/panel/drive.md",
+        "ru": "ru/panel/drive.md"
+      }
     },
     {
       "id": "experiment",
@@ -94,8 +132,8 @@
         "ru": "Попробуй 400 мм, затем −200 мм. Добавь поворот на 90°."
       },
       "description": {
-        "en": "en/experiment.md",
-        "ru": "ru/experiment.md"
+        "en": "en.md#experiment",
+        "ru": "ru.md#experiment"
       },
       "mode": "program",
       "blocks": [
@@ -108,7 +146,12 @@
           "en": "A negative distance reverses the robot. A positive turn is to the right.",
           "ru": "Отрицательное расстояние означает движение назад. Положительный угол — поворот направо."
         }
-      ]
+      ],
+      "points": 2,
+      "panel": {
+        "en": "en/panel/experiment.md",
+        "ru": "ru/panel/experiment.md"
+      }
     },
     {
       "id": "sensor",
@@ -121,8 +164,8 @@
         "ru": "Собери шаги 8–11. Подключи датчик расстояния к D."
       },
       "description": {
-        "en": "en/sensor.md",
-        "ru": "ru/sensor.md"
+        "en": "en.md#sensor",
+        "ru": "ru.md#sensor"
       },
       "mode": "assembly",
       "blocks": [
@@ -133,6 +176,20 @@
       "assembly": [
         8,
         11
+      ],
+      "points": 1,
+      "panel": {
+        "en": "en/panel/sensor.md",
+        "ru": "ru/panel/sensor.md"
+      },
+      "links": [
+        {
+          "kind": "devices",
+          "label": {
+            "en": "Hub and devices",
+            "ru": "Хаб и устройства"
+          }
+        }
       ]
     },
     {
@@ -146,8 +203,8 @@
         "ru": "Останови робота за 100 мм до большого вертикального препятствия."
       },
       "description": {
-        "en": "en/stop.md",
-        "ru": "ru/stop.md"
+        "en": "en.md#stop",
+        "ru": "ru.md#stop"
       },
       "mode": "program",
       "blocks": [
@@ -164,7 +221,16 @@
           "en": "Add “Stop near object”. Keep speed 100 mm/s and distance 100 mm.",
           "ru": "Добавь «Остановиться у объекта». Скорость — 100 мм/с, расстояние — 100 мм."
         }
-      ]
+      ],
+      "points": 3,
+      "panel": {
+        "en": "en/panel/stop.md",
+        "ru": "ru/panel/stop.md"
+      }
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  }
 }

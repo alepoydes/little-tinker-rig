@@ -46,8 +46,8 @@
         "ru": "Попробуй: программа"
       },
       "goal": {
-        "en": "Follow the edge of a line using steering and reflected light.",
-        "ru": "Следуй вдоль края линии с помощью руля и отражённого света."
+        "en": "Open `inventor_51515_steerbot.py`. Compare reflection on the dark line and light surface. Identify the target reflection and steering correction. Lower driving speed before testing a tighter curve.",
+        "ru": "Открой `inventor_51515_steerbot.py`. Сравни отражение над тёмной линией и светлой поверхностью. Найди целевое отражение и поправку руля. Перед крутым поворотом уменьши скорость движения."
       },
       "description": {
         "en": "en.md#run-1",
@@ -100,8 +100,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "Compare reflection on the dark line and light surface. Identify the target reflection and steering correction. Lower driving speed before testing a tighter curve.",
+        "ru": "Сравни отражение над тёмной линией и светлой поверхностью. Найди целевое отражение и поправку руля. Перед крутым поворотом уменьши скорость движения."
       },
       "description": {
         "en": "en.md#experiment",
@@ -147,5 +147,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

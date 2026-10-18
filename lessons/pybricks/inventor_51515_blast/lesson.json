@@ -50,8 +50,8 @@
         "ru": "Попробуй: программа"
       },
       "goal": {
-        "en": "Follow Blast’s movement sequence and identify its sensor inputs.",
-        "ru": "Проследи последовательность движений Blast и найди используемые датчики."
+        "en": "Open `inventor_51515_blast.py`. Find the coordinated motor movements. Reduce one movement speed and compare the timing, retaining the original motor directions and initial pose.",
+        "ru": "Открой `inventor_51515_blast.py`. Найди согласованные движения моторов. Уменьши одну скорость и сравни длительность, сохранив направления моторов и исходную позу."
       },
       "description": {
         "en": "en.md#run-1",
@@ -97,8 +97,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "Find the coordinated motor movements. Reduce one movement speed and compare the timing, retaining the original motor directions and initial pose.",
+        "ru": "Найди согласованные движения моторов. Уменьши одну скорость и сравни длительность, сохранив направления моторов и исходную позу."
       },
       "description": {
         "en": "en.md#experiment",
@@ -138,5 +138,10 @@
       ]
     }
   ],
-  "robot": "robot/robot.json"
+  "robot": "robot/robot.json",
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

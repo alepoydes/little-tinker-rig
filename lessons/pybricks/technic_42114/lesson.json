@@ -46,8 +46,8 @@
         "ru": "Попробуй: самосвал"
       },
       "goal": {
-        "en": "Explore steering, dumping and automatic/manual gear changes.",
-        "ru": "Исследуй руление, разгрузку и автоматическое/ручное переключение передач."
+        "en": "Open `technic_42114_hauler.py`. The green remote button switches automatic/manual mode. In manual mode the red buttons change gears. In automatic mode right red selects dumping and left red returns to driving. Observe the remote light and change only one gearbox threshold.",
+        "ru": "Открой `technic_42114_hauler.py`. Зелёная кнопка переключает автоматический и ручной режим. В ручном красные кнопки меняют передачи. В автоматическом правая красная включает разгрузку, левая возвращает движение. Наблюдай индикатор пульта и меняй только один порог коробки."
       },
       "description": {
         "en": "en.md#run-1",
@@ -110,8 +110,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "The green remote button switches automatic/manual mode. In manual mode the red buttons change gears. In automatic mode right red selects dumping and left red returns to driving. Observe the remote light and change only one gearbox threshold.",
+        "ru": "Зелёная кнопка переключает автоматический и ручной режим. В ручном красные кнопки меняют передачи. В автоматическом правая красная включает разгрузку, левая возвращает движение. Наблюдай индикатор пульта и меняй только один порог коробки."
       },
       "description": {
         "en": "en.md#experiment",
@@ -167,5 +167,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

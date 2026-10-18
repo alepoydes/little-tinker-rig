@@ -46,8 +46,8 @@
         "ru": "Попробуй: программа"
       },
       "goal": {
-        "en": "Observe how Kiki reacts to colored objects.",
-        "ru": "Понаблюдай за реакцией Кики на цветные предметы."
+        "en": "Open `spike_45678_kiki.py`. Find the branches for different colors. Predict and change one response, then test the same colored object under the same lighting.",
+        "ru": "Открой `spike_45678_kiki.py`. Найди ветви для разных цветов. Предскажи и измени одну реакцию, затем проверь тот же предмет при том же освещении."
       },
       "description": {
         "en": "en.md#run-1",
@@ -85,8 +85,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "Find the branches for different colors. Predict and change one response, then test the same colored object under the same lighting.",
+        "ru": "Найди ветви для разных цветов. Предскажи и измени одну реакцию, затем проверь тот же предмет при том же освещении."
       },
       "description": {
         "en": "en.md#experiment",
@@ -117,5 +117,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

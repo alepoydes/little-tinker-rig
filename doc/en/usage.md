@@ -16,8 +16,11 @@ separately, as described below.
 Use the two document icons or **View → Blocks / Python** to change the editor mode.
 Global workspaces appear as icons in the narrow left sidebar. Hover over an icon
 to see its full name. The selected mode has a shaded background and a left accent.
-Short panels scroll vertically without changing the current mode. Lesson and
-Assembly appear when the open project provides them.
+Short panels scroll vertically without changing the current mode. Assembly is
+available from the sidebar; a lesson project adds a full-height task panel on the
+right, without changing the workspace modes. At narrow widths it opens over the
+workspace. Its collapse icon leaves a progress control beside hub connection;
+Scratch shares the right dock area on wide windows.
 **Block Editor** (**Ctrl+Alt+3**) edits template definitions with a preview above
 the source, or beside it when vertical space is limited; see
 [its guide](block-editor.md).
@@ -28,11 +31,13 @@ Undoing a transfer restores both its source and destination, including in Python
 Find, Format Python, Create block from selection, Name diagnostics and the
 editor-mode shortcuts target the selected program or Scratch cell. The catalog
 follows that editor's Blocks / Python mode. Undo is unavailable in Help, Control
-and Assembly. In Help, Ctrl+F focuses the guide search; Escape clears its filter.
-An empty result is explained beside the search, and following a link clears a
-filter that would hide its destination. In a program or Scratch, Enter finds the
-next match,
-Shift+Enter the previous match, and Escape closes search. A missed search reports
+and Assembly. In Help, the always-visible in-document search highlights matches
+and provides next/previous controls and a match count. Ctrl+F focuses that field;
+Escape clears it while leaving the controls visible. The sidebar search filters guide
+pages and blocks; Escape clears its filter. An empty sidebar result is explained,
+and following a link clears a filter that would hide its destination. In a program
+or Scratch, Enter finds the next match, Shift+Enter the previous match, and
+Escape closes search. A missed search reports
 **Not found** without moving the cursor. Select a catalog block and press Enter
 to insert it at the current structural selection; double-clicking does the same.
 
@@ -196,11 +201,11 @@ or Python API name. Search includes English names in every interface language.
 Direct title matches appear before incidental matches within each category.
 Search previews the best matching variant; you can still choose another variant.
 Clearing search restores the previous selection and open branches. A message
-explains matches hidden by the level, lesson palette, or explicit input search.
+explains matches hidden by the level, current task view, or explicit input search.
 
 A card represents a family of related operations. Right-click it and choose a
 **Variant**; the card's preview shows the Python that will be inserted.
-The level, lesson palette, and explicit input search also filter variants.
+The level and explicit input search also filter variants.
 Changing a catalog variant does not edit code already in the program.
 Drag the card to the intended position. Double-click also inserts
 at the current selection.
@@ -216,9 +221,9 @@ at the current selection.
   current and previous 29 UTC calendar days, then latest use and stable identity.
   The order stays fixed until you leave and return to the view. **Reset usage
   history** icon clears Recent and Frequent while preserving Favorites.
-- **For this lesson:** the blocks permitted by the current stage, regardless of
-  the ordinary level filter. Without an open lesson, the view explains how to
-  populate it. **Show all blocks** retains its existing exploration behavior.
+- **For this task:** blocks recommended for the selected lesson task, regardless
+  of the ordinary level filter. Without an open lesson, the view explains how to
+  populate it. The full Catalog remains available during every task.
 
 Personal lists stay on this computer and do not change project files. Only
 successful catalog insertions count, including insertions into Scratch. Opening,
@@ -239,7 +244,7 @@ Undo restores the declaration, references and other field edits together.
 
 Right-click a recognized block in the program or Scratch and choose **Variant**
 for an immediate switch. The current form is checked, and the other choices
-follow the level and lesson palette. Compatible field values are retained;
+follow the level. Compatible field values are retained;
 the switch uses one Undo and does not count as another catalog insertion.
 
 Select a recognized family block in the program or Scratch and press **F3**, or
@@ -247,7 +252,7 @@ choose **Variants and parameters…** from its context menu. Choose an operation
 and edit its Python expressions. Shared fields retain compatible values; newly
 exposed options retain fixed behavior such as `wait=False`. The current form stays
 available even if it is above the selected level. Other choices follow the level
-and lesson palette.
+without restricting them to the current task's recommendations.
 
 **Additional settings** holds optional fields. Existing non-default values open
 the section initially and remain visible in a summary when you collapse it.
@@ -276,7 +281,8 @@ only a filter choice. A fresh installation starts with Beginner; the selected
 level is remembered. See the [learning paths](learning.md). Cards use the same semantic
 color as inserted blocks. Hover shows the full preview. F1 opens the selected
 block's section on its group page or the guide. Help includes offline Markdown and snippet
-parameters/source, with search, internal links and Back.
+parameters/source, with search, internal links, a compact Back control, and a
+Recent pages menu that lists unique documents.
 
 Scratch is a vertical ribbon of independent editable fragments. Drag blocks from
 the program or library into the ribbon. The ⠿ handle moves a whole cell; a block
@@ -493,8 +499,9 @@ Quick measurement suggestions contain declared readouts, such as `motor.angle()`
 motor movements remain explicit catalog actions even when they return a number.
 
 Creation search uses what a block produces: a Motor input finds motor constructors,
-and a ForceSensor input selects that variant of the shared sensor family. Level
-and lesson restrictions still apply. Place a variable's creation before its use
+and a ForceSensor input selects that variant of the shared sensor family. The
+chosen catalog level still applies; task recommendations do not limit the search.
+Place a variable's creation before its use
 in an accessible scope. After **Find creation blocks**, Enter or a double-click
 places a declaration block immediately before the consumer; dragging lets you
 choose its location. A public declaration reuses a compatible missing name, such

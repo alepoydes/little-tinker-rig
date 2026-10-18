@@ -48,8 +48,8 @@
         "ru": "Попробуй: клавиатура"
       },
       "goal": {
-        "en": "Control the car from the keyboard or an Xbox controller.",
-        "ru": "Управляй машиной с клавиатуры или Xbox-контроллера."
+        "en": "Open `technic_42109_keyboard.py`. Use q/a to drive, o/p to steer, and r or 0 to center steering. Compare two steering increments.",
+        "ru": "Открой `technic_42109_keyboard.py`. Используй q/a для движения, o/p для поворота, r или 0 для центрирования руля. Сравни два шага поворота."
       },
       "description": {
         "en": "en.md#run-1",
@@ -95,8 +95,8 @@
         "ru": "Попробуй: Xbox"
       },
       "goal": {
-        "en": "Control the car from the keyboard or an Xbox controller.",
-        "ru": "Управляй машиной с клавиатуры или Xbox-контроллера."
+        "en": "Open `technic_42109_xbox.py`. Pair the Xbox controller. Compare small and large trigger inputs while steering with the left stick.",
+        "ru": "Открой `technic_42109_xbox.py`. Подключи контроллер Xbox. Сравни малое и большое нажатие курков, поворачивая левым стиком."
       },
       "description": {
         "en": "en.md#run-2",
@@ -133,8 +133,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "Keyboard: q/a drive, o/p change steering, r or 0 centers it. Xbox: left stick steers and triggers control drive. Compare small changes to keyboard steering increments or Xbox speed scaling. Steering uses B, drive uses D.",
+        "ru": "Клавиатура: q/a — движение, o/p — поворот, r или 0 — центрирование. Xbox: левый стик — руль, курки — движение. Сравни небольшие изменения шага руля или масштаба скорости. Руль подключён к B, привод — к D."
       },
       "description": {
         "en": "en.md#experiment",
@@ -177,5 +177,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

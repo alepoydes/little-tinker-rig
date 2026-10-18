@@ -61,7 +61,7 @@ VIEW_TITLES = {
     "favorites": N_("Favorites"),
     "recent": N_("Recent"),
     "frequent": N_("Frequent"),
-    "lesson": N_("For this lesson"),
+    "lesson": N_("For this task"),
 }
 EMPTY_VIEWS = {
     "favorites": N_("Click a block's star to add it to Favorites."),
@@ -187,7 +187,6 @@ class Library(QTreeWidget):
         self.search = ""
         self.context_key = None
         self.eligible_ids = None
-        self.lesson_ids = None
         self.stage_ids = None
         self.selected_variants = {}
         self.search_variants = {}
@@ -436,7 +435,7 @@ class Library(QTreeWidget):
     def allowed(self):
         if self.view == "lesson":
             return self.stage_ids if self.stage_ids is not None else frozenset()
-        return self.lesson_ids
+        return None
 
     def choices(self, family):
         return family.choices(
@@ -575,7 +574,7 @@ class Library(QTreeWidget):
                 self.verticalScrollBar().setValue(scroll)
             self.search_states.pop(self.view, None)
         if self.view == "lesson" and self.stage_ids is None:
-            status = tr("Open a lesson to see its current blocks.")
+            status = tr("Open a lesson to see blocks suggested for the current task.")
         elif not visible:
             status = (
                 tr("No blocks match these filters.")
@@ -586,7 +585,7 @@ class Library(QTreeWidget):
             status = ""
         if hidden and (words or self.view == "favorites" or self.context_key):
             status += ("\n" if status else "") + tr(
-                "{count} matching families hidden by level, lesson or selected input.",
+                "{count} matching families hidden by level, task or selected input.",
                 count=hidden,
             )
         self.status_changed.emit(status)

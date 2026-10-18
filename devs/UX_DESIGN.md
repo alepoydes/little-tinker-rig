@@ -1,12 +1,20 @@
 # LittleTinker Rig interaction design
 
+The [lesson task panel plan](LESSON_TASK_PANEL_PLAN.md) records the delivered
+project-scoped lesson design. Earlier catalog delivery notes below describe their
+October 2026 baseline; the task panel and open recommendations supersede their
+references to lesson restrictions.
+
 LittleTinker Rig supports a first introduction to robotics and everyday Python work.
 Every frontend uses the same document model and core editing operations.
 
 ## Workspace
 
-- A left sidebar switches between Program, Control, Help, and Block Editor.
-  Lesson and Assembly appear for the corresponding student project. Each row has
+- A left sidebar switches between Program, Control, Help, Block Editor, and
+  Assembly. A lesson adds a right task panel; only the selected task expands
+  into Markdown and inline links. Narrow windows open it as a transient overlay.
+  Its collapsed progress chip sits beside hub connection.
+  Scratch shares that dock area. Each sidebar row has
   a centered 24-pixel SVG icon in a 48-pixel row. The sidebar is 48 pixels wide;
   names appear only in localized tooltips and remain available to assistive
   technology. Active rows use a neutral background and a left accent.
@@ -31,7 +39,7 @@ The catalog implements the following layout:
 - Use one exclusive button group for Beginner, Intermediate, Advanced, Expert,
   and All. Preserve cumulative level filtering and the separate All choice.
 - Use a separate exclusive button group for Catalog, Favorites, Recent, Frequent,
-  and For this lesson. View buttons use icons with localized names and tooltips,
+  and For this task. View buttons use icons with localized names and tooltips,
   accessible labels, and a visible active state. Level buttons also use icons:
   numbered badges 1–4, and infinity for All. Neither group has a persistent
   caption. Collapse/expand-all icons share the view row; personal usage resets
@@ -41,8 +49,8 @@ The catalog implements the following layout:
   category button bar or an extra Python/devices/model hierarchy above them.
 - Personal views preserve their own manual, recent, or frequency order. They
   reference the same cards and do not add duplicates inside a view.
-- For this lesson consumes the existing current-stage block selection. The stage
-  determines its palette without an unrelated level selection hiding required cards.
+- For this task shows the selected task's recommendations without an unrelated
+  level selection hiding them. Other catalog views and Scratch remain available.
 
 Each card has an outlined or filled favorite star; clicking it toggles membership
 without insertion or dragging, including unavailable favorite references. The

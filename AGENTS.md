@@ -13,6 +13,11 @@
 - Keep Python keywords, identifiers, and executable code independent of UI
   language. Translation must not change program semantics.
 
+## Development workflow
+
+- After completing and successfully verifying each work stage, commit it with
+  a short description. Keep unrelated or unfinished changes out of the commit.
+
 ## Documentation consistency
 
 - Update affected guides, lesson steps and hints in every supported user language

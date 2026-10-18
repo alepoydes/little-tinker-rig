@@ -46,8 +46,8 @@
         "ru": "Попробуй: программа"
       },
       "goal": {
-        "en": "Use the force sensor to control a grabber.",
-        "ru": "Управляй захватом с помощью датчика силы."
+        "en": "Open `spike_45678_grabber.py`. Press the force sensor to close the gripper; release it to open against its mechanical stop. This program uses pressed/released, not proportional force. Lower the speed argument of force_gripper and compare closing and opening times.",
+        "ru": "Открой `spike_45678_grabber.py`. Нажми датчик силы, чтобы закрыть захват; отпусти, чтобы открыть его до механического упора. Программа различает нажатие и отпускание, а не задаёт скорость пропорционально силе. Уменьши аргумент скорости force_gripper и сравни время закрытия и открытия."
       },
       "description": {
         "en": "en.md#run-1",
@@ -81,8 +81,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "Press the force sensor to close the gripper; release it to open against its mechanical stop. This program uses pressed/released, not proportional force. Lower the speed argument of force_gripper and compare closing and opening times.",
+        "ru": "Нажми датчик силы, чтобы закрыть захват; отпусти, чтобы открыть его до механического упора. Программа различает нажатие и отпускание, а не задаёт скорость пропорционально силе. Уменьши аргумент скорости force_gripper и сравни время закрытия и открытия."
       },
       "description": {
         "en": "en.md#experiment",
@@ -109,5 +109,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

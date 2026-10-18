@@ -46,8 +46,8 @@
         "ru": "Попробуй: программа"
       },
       "goal": {
-        "en": "Drive the loader and operate its lifting mechanism with the remote.",
-        "ru": "Управляй погрузчиком и подъёмным механизмом с пульта."
+        "en": "Open `inventor_51515_mini_loader.py`. Trace each remote button to its motor action. Change one speed, leaving the stop behavior intact, and compare driving and lifting.",
+        "ru": "Открой `inventor_51515_mini_loader.py`. Проследи связь каждой кнопки пульта с мотором. Измени одну скорость, сохранив остановку, и сравни движение и подъём."
       },
       "description": {
         "en": "en.md#run-1",
@@ -106,8 +106,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "Trace each remote button to its motor action. Change one speed, leaving the stop behavior intact, and compare driving and lifting.",
+        "ru": "Проследи связь каждой кнопки пульта с мотором. Измени одну скорость, сохранив остановку, и сравни движение и подъём."
       },
       "description": {
         "en": "en.md#experiment",
@@ -159,5 +159,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

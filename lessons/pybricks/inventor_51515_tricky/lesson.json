@@ -48,8 +48,8 @@
         "ru": "Попробуй: программа"
       },
       "goal": {
-        "en": "Compare Tricky’s basic movement and soccer programs.",
-        "ru": "Сравни обычную программу Tricky и игру в футбол."
+        "en": "Open `inventor_51515_tricky.py`. Follow the basic movement sequence and identify when the distance sensor changes Tricky’s behavior.",
+        "ru": "Открой `inventor_51515_tricky.py`. Проследи основную последовательность движений и найди момент, когда датчик расстояния меняет поведение Tricky."
       },
       "description": {
         "en": "en.md#run-1",
@@ -88,8 +88,8 @@
         "ru": "Попробуй: футбол"
       },
       "goal": {
-        "en": "Compare Tricky’s basic movement and soccer programs.",
-        "ru": "Сравни обычную программу Tricky и игру в футбол."
+        "en": "Open `inventor_51515_tricky_soccer.py`. Run the soccer variant and find the distance condition that triggers its ball action. Predict the effect of one threshold change.",
+        "ru": "Открой `inventor_51515_tricky_soccer.py`. Запусти футбольный вариант и найди условие расстояния, запускающее действие с мячом. Предскажи результат изменения одного порога."
       },
       "description": {
         "en": "en.md#run-2",
@@ -145,8 +145,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "Find the distance-sensor condition and predict how changing its threshold changes the moment of action. Change only one threshold at a time.",
+        "ru": "Найди условие датчика расстояния и предскажи, как порог меняет момент действия. Изменяй только один порог за раз."
       },
       "description": {
         "en": "en.md#experiment",
@@ -198,5 +198,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

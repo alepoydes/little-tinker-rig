@@ -35,6 +35,558 @@ def make_lesson(tmp_path):
     return root
 
 
+def test_lesson_template_resumes_latest_attempt_after_clean_close(tmp_path, qt_app):
+    from little_tinker_rig.qt.app import Studio
+
+    source = make_lesson(tmp_path)
+    first_window = Studio(tmp_path / "plain.py")
+    try:
+        page = first_window.lessons.open(source)
+        project = page.lesson_project
+        page.session.editor.commit("answer = 42\n")
+        page.session.document.commit(page.text, ("print(answer)\n",))
+        first_window.lessons.select_stage(1)
+        assert first_window.lessons.open(source) is page
+        assert first_window.documents.count() == 2
+        root = project.root
+        assert first_window.close()
+        assert root.is_dir()
+    finally:
+        first_window.recovery.close()
+        first_window.deleteLater()
+
+    second_window = Studio(tmp_path / "other.py")
+    try:
+        resumed = second_window.lessons.open(source)
+        assert resumed.lesson_project.root == root
+        assert resumed.text == "answer = 42\n"
+        assert resumed.session.document.state.scratch == ("print(answer)\n",)
+        assert resumed.lesson_project.stage["id"] == "stop"
+        new = second_window.lessons.open(source, new=True)
+        assert new.lesson_project.root != root
+        assert second_window.lessons.open(source) is new
+        assert root.is_dir()
+        older = next(
+            attempt
+            for attempt in StudentProject.attempts(source)
+            if attempt.root == root
+        )
+        assert (
+            second_window.lessons.open(source, attempt=older).lesson_project.root
+            == root
+        )
+        assert second_window.lessons.open(source).lesson_project.root == root
+    finally:
+        second_window.recovery.close()
+        second_window.deleteLater()
+
+
+def test_open_template_in_second_window_returns_to_live_attempt(tmp_path, qt_app):
+    from little_tinker_rig.qt.app import Studio
+
+    source = make_lesson(tmp_path)
+    first = Studio(tmp_path / "first.py")
+    second = Studio(tmp_path / "second.py")
+    try:
+        page = first.lessons.open(source)
+        first.set_mode(0)
+        assert second.lessons.open(source) is page
+        assert first.pages.currentIndex() == 2
+        assert first.help_page.current == "lesson/instructions#task-drive"
+        assert second.lessons.current is None
+        assert first.lessons.current is page.lesson_project
+        assert len(StudentProject.attempts(source)) == 1
+    finally:
+        first.recovery.close()
+        second.recovery.close()
+        first.deleteLater()
+        second.deleteLater()
+
+
+def test_task_panel_collapses_to_progress_chip_on_small_window(tmp_path, qt_app):
+    from PySide6.QtCore import Qt
+    from PySide6.QtTest import QTest
+    from PySide6.QtWidgets import QTabBar
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "plain.py")
+    window.resize(1024, 768)
+    window.show()
+    try:
+        window.lessons.open(make_lesson(tmp_path))
+        qt_app.processEvents()
+        assert window.pages.currentIndex() == 2
+        assert not window.lessons.panel.isVisible()
+        assert window.lessons.progress_button.isVisible()
+        assert window.lessons.progress_button.parent() is window.main_toolbar
+        actions = window.main_toolbar.actions()
+        assert actions.index(window.lessons.progress_action) + 1 == actions.index(
+            window.hub_button_action
+        )
+        QTest.mouseClick(window.lessons.progress_button, Qt.MouseButton.LeftButton)
+        qt_app.processEvents()
+        assert window.lessons.overlay.isVisible()
+        assert not window.lessons.dock.isVisible()
+        assert window.lessons.panel.isVisible()
+        assert window.lessons.overlay.height() > 500
+        assert window.pages.width() > 600
+        window.lessons.set_panel_expanded(False)
+        qt_app.processEvents()
+        QTest.mouseClick(window.lessons.progress_button, Qt.MouseButton.LeftButton)
+        qt_app.processEvents()
+        assert window.lessons.panel.isVisible()
+        window.lessons.cards["drive"]["body"].setFocus()
+        QTest.keyClick(window.lessons.cards["drive"]["body"], Qt.Key.Key_Escape)
+        qt_app.processEvents()
+        assert window.lessons.progress_button.isVisible()
+        QTest.mouseClick(window.lessons.progress_button, Qt.MouseButton.LeftButton)
+        qt_app.processEvents()
+        QTest.mouseClick(window.source.viewport(), Qt.MouseButton.LeftButton)
+        qt_app.processEvents()
+        assert window.lessons.progress_button.isVisible()
+        assert window.lessons.current.progress["panel_expanded"]
+        assert not window.lessons.guidance.isChecked()
+        window.lessons.guidance.trigger()
+        qt_app.processEvents()
+        assert window.lessons.overlay.isVisible()
+        window.resize(1440, 900)
+        qt_app.processEvents()
+        assert window.lessons.dock.isVisible()
+        assert window.lessons.panel.isVisible()
+        window.scratch_dock.show()
+        qt_app.processEvents()
+        tabs = next(
+            bar
+            for bar in window.findChildren(QTabBar)
+            if window.scratch_dock.windowTitle()
+            in (bar.tabText(i) for i in range(bar.count()))
+        )
+        scratch_index = next(
+            i
+            for i in range(tabs.count())
+            if tabs.tabText(i) == window.scratch_dock.windowTitle()
+        )
+        QTest.mouseClick(
+            tabs, Qt.MouseButton.LeftButton, pos=tabs.tabRect(scratch_index).center()
+        )
+        qt_app.processEvents()
+        assert window.scratch_dock.isVisible()
+        assert window.lessons.progress_button.isVisible()
+        assert window.lessons.current.progress["panel_expanded"]
+        QTest.mouseClick(window.lessons.progress_button, Qt.MouseButton.LeftButton)
+        qt_app.processEvents()
+        assert window.lessons.dock.isVisible()
+        assert not window.lessons.progress_button.isVisible()
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
+def test_collapsing_task_panel_reclaims_help_width_on_wide_window(tmp_path, qt_app):
+    from pathlib import Path
+
+    from PySide6.QtWidgets import QSplitter
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "plain.py")
+    window.resize(1920, 1050)
+    window.show()
+    try:
+        source = Path(__file__).resolve().parents[1] / "lessons" / "first_drive"
+        window.lessons.open(source, new=True)
+        qt_app.processEvents()
+        assert window.lessons.dock.isVisible()
+        help_page = window.help_page
+        splitter = help_page.findChild(QSplitter)
+        pane_width = help_page.browser.width()
+        sidebar_width = splitter.widget(0).width()
+        window.lessons.set_panel_expanded(False)
+        qt_app.processEvents()
+        assert not window.lessons.dock.isVisible()
+        assert help_page.browser.width() >= pane_width + 250
+        assert splitter.widget(0).width() == sidebar_width
+        assert help_page.browser.viewport().width() <= 1120
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
+def test_help_recent_pages_deduplicates_lesson_sections_and_back(tmp_path, qt_app):
+    from pathlib import Path
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "plain.py")
+    window.show()
+    try:
+        source = Path(__file__).resolve().parents[1] / "lessons" / "first_drive"
+        window.lessons.open(source, new=True)
+        help_page = window.help_page
+        initial_history = help_page.history[:]
+        help_page.show_page("lesson/instructions#build")
+        help_page.show_page("lesson/instructions#experiment")
+        assert help_page.history == initial_history
+        assert [action.data() for action in help_page.recent_menu.actions()] == [
+            "index.md"
+        ]
+        help_page.show_page("usage.md")
+        assert help_page.history == initial_history + ["lesson/instructions#experiment"]
+        assert help_page.recent_menu.actions()[0].data() == (
+            "lesson/instructions#experiment"
+        )
+        help_page.back_button.click()
+        assert help_page.current == "lesson/instructions#experiment"
+        help_page.show_page("usage.md")
+        help_page.show_page("index.md")
+        help_page.show_page("usage.md")
+        assert (
+            len([key for key in help_page.recent_pages if key.startswith("usage.md")])
+            == 1
+        )
+        assert [action.data() for action in help_page.recent_menu.actions()][:2] == [
+            "index.md",
+            "lesson/instructions#experiment",
+        ]
+        help_page.recent_menu.actions()[1].trigger()
+        assert help_page.current == "lesson/instructions#experiment"
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
+def test_language_change_skips_closed_window_with_removed_lesson(tmp_path, qt_app):
+    import shutil
+
+    from little_tinker_rig.qt.app import Studio
+
+    first = Studio(tmp_path / "first.py")
+    first.show()
+    first.lessons.open(make_lesson(tmp_path))
+    first.confirm_close = lambda *_: True
+    assert first.close()
+    assert not first.isVisible()
+    lesson_root = first.help_page.lesson.root
+    shutil.rmtree(lesson_root)
+    second = Studio(tmp_path / "second.py")
+    second.show()
+    try:
+        second.change_language("ru")
+        assert second.help_page.root.name == "ru"
+    finally:
+        first.recovery.close()
+        second.recovery.close()
+        first.deleteLater()
+        second.deleteLater()
+
+
+def test_task_checkbox_points_and_evidence_are_idempotent(tmp_path, qt_app):
+    from little_tinker_rig.pybricks.devices import HubInfo
+    from little_tinker_rig.qt.app import Studio
+
+    root = make_lesson(tmp_path)
+    (root / "robot.ldr").write_text("0 Original model\n", encoding="utf-8")
+    (root / "robot.json").write_text(
+        json.dumps(
+            {
+                "format": 1,
+                "model": "robot.ldr",
+                "devices": [
+                    {
+                        "instance": "left",
+                        "name": "Left motor",
+                        "port": "A",
+                        "type": "motor",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    data = json.loads((root / "lesson.json").read_text(encoding="utf-8"))
+    data["robot"] = "robot.json"
+    data["stages"][0]["points"] = 2
+    data["stages"][1].update(check="devices", devices=["left"], points=3)
+    (root / "lesson.json").write_text(json.dumps(data), encoding="utf-8")
+    window = Studio(tmp_path / "plain.py")
+    try:
+        window.lessons.open(root)
+        lesson = window.lessons
+        lesson.cards["drive"]["check"].setChecked(True)
+        assert lesson.current.score == (2, 5)
+        lesson.cards["drive"]["check"].setChecked(False)
+        assert lesson.current.score == (0, 5)
+        lesson.set_completion("stop", True)
+        assert lesson.current.score == (0, 5)
+        window.update_hub(
+            HubInfo(connected=True, monitoring=True, ports={"A": {"type": "motor"}})
+        )
+        lesson.cards["stop"]["check"].setChecked(True)
+        assert lesson.current.score == (3, 5)
+        assert lesson.current.progress["evidence"] == {"stop": "devices"}
+        lesson.cards["stop"]["check"].setChecked(True)
+        assert lesson.current.score == (3, 5)
+        assert "1/2" in lesson.progress_button.text()
+        assert "3/5" in lesson.summary.text()
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
+def test_task_material_links_open_markdown_controls_and_seeded_scratch(
+    tmp_path, qt_app
+):
+    from PySide6.QtCore import QUrl
+
+    from little_tinker_rig.qt.app import Studio
+
+    root = make_lesson(tmp_path)
+    (root / "extra.md").write_text(
+        "# Extra help\nTry another idea.\n", encoding="utf-8"
+    )
+    (root / "idea.py").write_text("distance = 200\n", encoding="utf-8")
+    data = json.loads((root / "lesson.json").read_text(encoding="utf-8"))
+    data["scratch_seeds"] = {"main.py": ["idea.py"]}
+    data["stages"][0]["links"] = [
+        {"kind": "markdown", "label": "Extra help", "target": "extra.md"},
+        {"kind": "control", "label": "Try controls"},
+        {"kind": "scratch", "label": "Scratch idea", "target": "main.py"},
+    ]
+    (root / "lesson.json").write_text(json.dumps(data), encoding="utf-8")
+    window = Studio(tmp_path / "plain.py")
+    window.show()
+    try:
+        page = window.lessons.open(root)
+        lesson = window.lessons
+        assert window.help_page.lesson_group.childCount() == 1
+        assert page.session.document.state.scratch == ("distance = 200\n",)
+        body = lesson.cards["drive"]["body"]
+        assert "Extra help" in body.toPlainText()
+        lesson.follow_task_anchor("drive", QUrl("task:extra/0"), body)
+        assert window.pages.currentIndex() == 2
+        assert "Try another idea" in window.help_page.browser.toPlainText()
+        assert window.help_page.lesson_group.childCount() == 1
+        window.help_page.tree.itemClicked.emit(window.help_page.lesson_item, 0)
+        assert window.help_page.current == "lesson/instructions"
+        assert "Make the robot move" in window.help_page.browser.toPlainText()
+        lesson.follow_task_anchor("drive", QUrl("task:extra/1"), body)
+        assert window.pages.currentIndex() == 1
+        lesson.follow_task_anchor("drive", QUrl("task:extra/2"), body)
+        assert window.pages.currentIndex() == 0
+        assert window.document_page is page
+        assert window.scratch_dock.isVisible()
+        assert not lesson.current.progress["completed"]
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
+def test_authored_task_card_link_opens_instructions_from_visible_markdown(
+    tmp_path, qt_app
+):
+    from PySide6.QtCore import Qt
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.app import Studio
+
+    root = make_lesson(tmp_path)
+    (root / "panel.md").write_text("Try a short journey.\n", encoding="utf-8")
+    data = json.loads((root / "lesson.json").read_text(encoding="utf-8"))
+    data["stages"][0]["panel"] = "panel.md"
+    (root / "lesson.json").write_text(json.dumps(data), encoding="utf-8")
+    window = Studio(tmp_path / "plain.py")
+    window.resize(1440, 900)
+    window.show()
+    try:
+        window.lessons.open(root)
+        qt_app.processEvents()
+        body = window.lessons.cards["drive"]["body"]
+        assert "Try a short journey." in body.toPlainText()
+        assert "Instructions" in body.toPlainText()
+        cursor = body.document().find("Instructions")
+        cursor.setPosition(cursor.selectionStart() + 5)
+        position = body.cursorRect(cursor).center()
+        assert body.viewport().rect().contains(position)
+        QTest.mouseClick(body.viewport(), Qt.MouseButton.LeftButton, pos=position)
+        qt_app.processEvents()
+        assert window.pages.currentIndex() == 2
+        assert "Make the robot move" in window.help_page.browser.toPlainText()
+        assert not window.lessons.current.progress["completed"]
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
+def test_bundled_lesson_sections_share_one_help_document(tmp_path, qt_app):
+    from pathlib import Path
+
+    from little_tinker_rig.qt.app import Studio
+
+    source = Path(__file__).resolve().parents[1] / "lessons" / "first_drive"
+    window = Studio(tmp_path / "plain.py")
+    window.resize(1024, 768)
+    window.show()
+    try:
+        window.lessons.open(source)
+        qt_app.processEvents()
+        assert window.pages.currentIndex() == 2
+        assert window.help_page.current == "lesson/instructions"
+        assert window.help_page.lesson_group.childCount() == 1
+        assert "Build a rolling base" in window.help_page.browser.toPlainText()
+        assert "Stop before the obstacle" in window.help_page.browser.toPlainText()
+        window.lessons.select_stage(2)
+        window.lessons.show_stage()
+        qt_app.processEvents()
+        first = window.help_page.current
+        first_scroll = window.help_page.browser.verticalScrollBar().value()
+        assert first == "lesson/instructions#drive"
+        assert window.pages.currentIndex() == 2
+        assert window.lessons.progress_button.isVisible()
+        assert "Build a rolling base" in window.help_page.browser.toPlainText()
+        assert "Stop before the obstacle" in window.help_page.browser.toPlainText()
+        window.lessons.select_stage(5)
+        window.lessons.show_stage()
+        qt_app.processEvents()
+        assert window.help_page.current == "lesson/instructions#stop"
+        assert window.help_page.browser.verticalScrollBar().value() > first_scroll
+        assert window.help_page.page_paths["lesson/instructions"].name == "en.md"
+        assert window.help_page.lesson_group.childCount() == 1
+        window.change_language("ru")
+        qt_app.processEvents()
+        assert window.help_page.current == "lesson/instructions#stop"
+        assert "Остановись перед препятствием" in window.help_page.browser.toPlainText()
+        assert window.help_page.lesson_group.childCount() == 1
+        window.help_page.tree.itemClicked.emit(window.help_page.lesson_item, 0)
+        assert window.help_page.current == "lesson/instructions"
+        assert window.help_page.browser.verticalScrollBar().value() == 0
+        window.lessons.show_stage()
+        assert window.help_page.current == "lesson/instructions#stop"
+        window.lessons.open(source)
+        assert window.help_page.current == "lesson/instructions#stop"
+        assert window.pages.currentIndex() == 2
+        window.open_document(tmp_path / "plain.py")
+        assert window.help_page.lesson is None
+        assert not window.help_page.current.startswith("lesson/")
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
+def test_task_title_navigates_checkbox_stays_put_and_help_finds_text(tmp_path, qt_app):
+    from pathlib import Path
+
+    from PySide6.QtCore import Qt, QUrl
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.app import Studio
+
+    source = Path(__file__).resolve().parents[1] / "lessons" / "first_drive"
+    window = Studio(tmp_path / "plain.py")
+    window.resize(1440, 900)
+    window.show()
+    try:
+        window.lessons.open(source, new=True)
+        help_page = window.help_page
+        assert help_page.lesson_item.text(0).startswith("First drive")
+        assert "Tasks in this lesson" in help_page.browser.toPlainText()
+        window.lessons.cards["experiment"]["title"].linkActivated.emit("task:select")
+        qt_app.processEvents()
+        assert window.lessons.current.stage["id"] == "experiment"
+        assert help_page.current == "lesson/instructions#experiment"
+        assert window.lessons.cards["experiment"]["body"].isVisible()
+        assert not window.lessons.cards["build"]["body"].isVisible()
+        window.lessons.cards["build"]["check"].setChecked(True)
+        assert window.lessons.current.stage["id"] == "experiment"
+        assert help_page.current == "lesson/instructions#experiment"
+        QTest.keyClick(
+            help_page.browser, Qt.Key.Key_F, Qt.KeyboardModifier.ControlModifier
+        )
+        assert help_page.find_field.isVisible()
+        help_page.find_field.setText("motor")
+        assert len(help_page.find_matches) > 1
+        first = help_page.find_index
+        help_page.next_match(1)
+        assert help_page.find_index != first
+        before = help_page.browser.verticalScrollBar().value()
+        help_page.find_field.setText("no-such-lesson-word-99321")
+        assert help_page.find_count.text() == "0/0"
+        assert help_page.browser.verticalScrollBar().value() == before
+        QTest.keyClick(help_page.find_field, Qt.Key.Key_Escape)
+        assert help_page.find_field.isVisible()
+        assert not help_page.find_field.text()
+        assert not help_page.find_count.isVisible()
+        assert help_page.current == "lesson/instructions#experiment"
+        assert 'href="devices:"' in help_page.browser.toHtml()
+        help_page.follow_link(QUrl("devices:"))
+        assert window.device_dock.isVisible()
+        window.lessons.select_stage(1)
+        body = window.lessons.cards["connect"]["body"]
+        assert "Hub and devices" in body.toPlainText()
+        window.lessons.follow_task_anchor("connect", QUrl("task:extra/2"), body)
+        assert window.device_dock.isVisible()
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
+def test_guided_lessons_and_exploration_projects_are_separate(tmp_path, qt_app):
+    from pathlib import Path
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "plain.py")
+    try:
+        window.lessons.populate()
+        menus = {
+            action.text(): action.menu()
+            for action in window.lessons.menu.actions()
+            if action.menu()
+        }
+        assert "Guided lessons" in menus
+        assert "Explore projects" in menus
+        assert any(
+            "First drive" in action.text()
+            for action in menus["Guided lessons"].actions()
+        )
+        assert any(action.menu() for action in menus["Explore projects"].actions())
+        project = (
+            Path(__file__).resolve().parents[1] / "lessons/pybricks/spike_45678_cnc"
+        )
+        window.lessons.open(project, new=True)
+        assert window.lessons.progress_button.text().startswith("Project ·")
+        assert window.help_page.lesson_group.text(0) == "This project"
+        assert "Activities in this project" in window.help_page.browser.toPlainText()
+        window.change_language("ru")
+        assert window.lessons.progress_button.text().startswith("Проект ·")
+        assert window.help_page.lesson_group.text(0) == "Этот проект"
+        assert window.help_page.back_button.toolTip() == "Назад"
+        assert window.help_page.recent_button.toolTip() == "Недавние страницы"
+        assert window.help_page.search.placeholderText() == "Поиск в справке…"
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
+def test_missing_task_recommendation_keeps_lesson_usable(tmp_path, qt_app, monkeypatch):
+    from little_tinker_rig.qt.app import Studio
+
+    root = make_lesson(tmp_path)
+    data = json.loads((root / "lesson.json").read_text(encoding="utf-8"))
+    data["stages"][0]["blocks"] = ["removed/block"]
+    (root / "lesson.json").write_text(json.dumps(data), encoding="utf-8")
+    window = Studio(tmp_path / "plain.py")
+    monkeypatch.setattr(window, "error", lambda message: pytest.fail(message))
+    try:
+        page = window.lessons.open(root)
+        assert page.lesson_project is window.lessons.current
+        assert "removed/block" in window.lessons.status.text()
+        assert len(window.lessons.cards) == 2
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
 @pytest.mark.parametrize("decision", ["Discard", "Save", "Cancel"])
 def test_window_close_decides_once_for_whole_lesson_project(
     tmp_path, qt_app, monkeypatch, decision
@@ -79,7 +631,7 @@ def test_window_close_decides_once_for_whole_lesson_project(
         monkeypatch.setattr(QMessageBox, "question", answer)
         assert window.close() == (decision != "Cancel")
         assert len(prompts) == 1
-        assert "lesson.ltr" in prompts[0] and "all open programs" in prompts[0]
+        assert "lesson.ltr" in prompts[0] and "local attempt" in prompts[0]
         if decision == "Save":
             with ZipFile(project.path) as archive:
                 assert [archive.read(name).decode() for name in names] == texts
@@ -96,7 +648,7 @@ def test_window_close_decides_once_for_whole_lesson_project(
         window.close()
 
 
-def test_stage_palette_preserves_source_and_free_exploration(tmp_path, qt_app):
+def test_task_recommendations_keep_full_catalog_and_source(tmp_path, qt_app):
     from little_tinker_rig.qt.app import Studio
     from little_tinker_rig.qt.library import IDENTITY
 
@@ -109,7 +661,9 @@ def test_stage_palette_preserves_source_and_free_exploration(tmp_path, qt_app):
         window.lessons.select_stage(1)
         assert page.text == before
         assert not page.lesson_project.progress["completed"]
-        assert window.source.expression_ids == frozenset(["pybricks/drive/brake"])
+        assert window.source.expression_ids is None
+        assert window.level_filter.isEnabled()
+        window.library.set_view("lesson")
         visible = {
             card.data(0, IDENTITY)
             for card in window.library.rows.values()
@@ -117,8 +671,13 @@ def test_stage_palette_preserves_source_and_free_exploration(tmp_path, qt_app):
         }
         assert visible <= {"pybricks/drive/brake"}
         assert len(page.session.snippets) > 20
-        window.lessons.set_explore(True)
-        assert window.source.expression_ids is None
+        window.library.set_view("catalog")
+        visible = {
+            card.data(0, IDENTITY)
+            for card in window.library.rows.values()
+            if not card.isHidden()
+        }
+        assert len(visible) > 1
         page.change_mode(1)
         page.code.setPlainText("if distance >\n")
         page.session.document.commit(
@@ -136,7 +695,11 @@ def test_stage_palette_preserves_source_and_free_exploration(tmp_path, qt_app):
         window.deleteLater()
 
 
-def test_lesson_navigation_is_explicit_and_restores_workspace(tmp_path, qt_app):
+def test_lesson_navigation_opens_instructions_and_preserves_explicit_moves(
+    tmp_path, qt_app
+):
+    from PySide6.QtCore import Qt
+
     from little_tinker_rig.qt.app import Studio
 
     window = Studio(tmp_path / "plain.py")
@@ -144,57 +707,60 @@ def test_lesson_navigation_is_explicit_and_restores_workspace(tmp_path, qt_app):
     try:
         page = window.lessons.open(make_lesson(tmp_path))
         lesson = window.lessons
-        assert window.pages.currentIndex() == 4
-        assert lesson.card.isVisible()
-        assert not lesson.explore.isVisible()
+        assert window.pages.currentIndex() == 2
+        assert window.help_page.current == "lesson/instructions"
+        assert lesson.panel.isVisible()
+        assert window.pages.count() == 5
         window.set_mode(2)
-        assert not lesson.card.isVisible()
+        assert lesson.panel.isVisible()
         window.set_mode(3)
-        assert not lesson.card.isVisible()
-        window.set_mode(4)
+        assert lesson.panel.isVisible()
         assert not lesson.actions["previous"].isEnabled()
         assert lesson.actions["next"].isEnabled()
         lesson.actions["next"].trigger()
         assert lesson.current.stage["id"] == "stop"
+        assert window.pages.currentIndex() == 3
         assert not lesson.current.progress["completed"]
         assert not lesson.actions["next"].isEnabled()
         lesson.actions["previous"].trigger()
         assert lesson.current.stage["id"] == "drive"
-        assert not lesson.actions["hint"].isVisible()
-        assert not lesson.actions["starter"].isVisible()
-        lesson.actions["start"].trigger()
+        assert "Next hint" not in lesson.cards["drive"]["body"].toPlainText()
+        assert "Open starter program" not in lesson.cards["drive"]["body"].toPlainText()
+        lesson.open_task_program()
         assert window.pages.currentIndex() == 0
-        assert lesson.card.isVisible()
-        assert lesson.explore.isVisible()
-        assert not lesson.actions["start"].isVisible()
+        assert lesson.panel.isVisible()
         page.session.editor.commit("drive.straight(200)\n")
-        lesson.actions["complete"].trigger()
-        assert not lesson.stages.item(0).icon().isNull()
-        assert lesson.stages.item(1).icon().isNull()
+        lesson.cards["drive"]["check"].setChecked(True)
+        assert lesson.cards["drive"]["check"].checkState() == Qt.CheckState.Checked
+        assert lesson.current.score == (1, 2)
         assert window.pages.currentIndex() == 0
         assert lesson.actions["next"].isEnabled()
         lesson.actions["next"].trigger()
-        assert window.pages.currentIndex() == 4
+        assert window.pages.currentIndex() == 0
         assert lesson.current.stage["id"] == "stop"
         assert page.text == "drive.straight(200)\n"
-        lesson.actions["start"].trigger()
         lesson.guidance.trigger()
-        assert not lesson.card.isVisible()
+        qt_app.processEvents()
+        assert not lesson.panel.isVisible()
+        assert lesson.progress_button.isVisible()
         window.set_mode(1)
         project = lesson.current
         project.path = tmp_path / "work.ltr"
         lesson.save(project)
         window.open_document(tmp_path / "plain.py")
-        assert not lesson.card.isVisible()
+        qt_app.processEvents()
+        assert not lesson.progress_button.isVisible()
         lesson.open(project.path)
-        assert window.pages.currentIndex() == 1
+        assert window.pages.currentIndex() == 2
+        assert window.help_page.current == "lesson/instructions#task-stop"
         assert not lesson.guidance.isChecked()
         lesson.guidance.trigger()
-        assert lesson.card.isVisible()
+        assert lesson.panel.isVisible()
         window.confirm_close = lambda *_: True
         window.close_document(window.documents.currentIndex())
         page = lesson.open(project.path)
-        assert window.pages.currentIndex() == 1
+        assert window.pages.currentIndex() == 2
+        assert window.help_page.current == "lesson/instructions#task-stop"
         assert page.text == "drive.straight(200)\n"
         assert not lesson.guidance.isChecked()
     finally:
@@ -221,7 +787,7 @@ def test_independent_assembly_survives_lesson_and_document_changes(tmp_path, qt_
         page = window.lessons.open(make_lesson(tmp_path))
         window.open_document(tmp_path / "plain.py")
         assert window.lessons.current is None
-        assert not window.modes.item(5).isHidden()
+        assert not window.modes.item(4).isHidden()
         assert assembly.free_page is viewer and viewer.step == 1
         assert assembly.pages.currentWidget() is viewer
         before = page.lesson_project.progress.copy()
@@ -248,9 +814,11 @@ def test_assembly_link_works_without_task_card_and_selects_lesson_robot(
     root = make_lesson(tmp_path)
     (root / "goal.md").write_text(
         "# Build the robot\n\n"
+        + "[Open 3D building instructions](assembly:)\n\n"
         + "Read the instructions and check each connection.\n\n" * 30
         + "| Port | Device |\n|---|---|\n| A | Motor |\n"
     )
+    (root / "other.md").write_text("# Another task\n", encoding="utf-8")
     (root / "robot.ldr").write_text("0 Original model\n")
     (root / "robot.json").write_text(
         json.dumps(
@@ -260,6 +828,7 @@ def test_assembly_link_works_without_task_card_and_selects_lesson_robot(
     data = json.loads((root / "lesson.json").read_text())
     data["robot"] = "robot.json"
     data["stages"][0].update(mode="assembly", assembly=[2, 3])
+    data["stages"][1]["description"] = "other.md"
     (root / "lesson.json").write_text(json.dumps(data))
     window = Studio(tmp_path / "plain.py")
     window.show()
@@ -269,32 +838,38 @@ def test_assembly_link_works_without_task_card_and_selects_lesson_robot(
         page.session.editor.commit("unfinished_work = 42\n")
         lesson.guidance.trigger()
         qt_app.processEvents()
-        assert lesson.card.isHidden()
-        assert 'href="assembly:"' in lesson.description.toHtml()
-        assert lesson.description.verticalScrollBar().maximum() > 0
-        assert lesson.description.verticalScrollBar().value() == 0
+        assert not lesson.panel.isVisible()
+        assert lesson.progress_button.isVisible()
+        lesson.show_stage()
+        browser = window.help_page.browser
+        assert window.pages.currentIndex() == 2
+        assert 'href="assembly:"' in browser.toHtml()
+        assert browser.verticalScrollBar().maximum() > 0
+        assert browser.verticalScrollBar().value() > 0
         assert not lesson.assembly.attempted
         lesson.assembly_host.open(root / "robot.json")
         assert not lesson.assembly_host.showing_lesson
-        cursor = lesson.description.document().find("Open 3D building instructions")
+        cursor = browser.document().find("Open 3D building instructions")
         cursor.setPosition(cursor.selectionStart() + 5)
-        position = lesson.description.cursorRect(cursor).center()
-        assert lesson.description.viewport().rect().contains(position)
-        QTest.mouseClick(
-            lesson.description.viewport(), Qt.MouseButton.LeftButton, pos=position
-        )
-        assert window.pages.currentIndex() == 5
+        position = browser.cursorRect(cursor).center()
+        assert browser.viewport().rect().contains(position)
+        QTest.mouseClick(browser.viewport(), Qt.MouseButton.LeftButton, pos=position)
+        assert window.pages.currentIndex() == 4
         assert lesson.assembly_host.showing_lesson
         assert lesson.assembly.step == 1
         lesson.assembly.set_step(2)
         lesson.follow_link(QUrl("lesson:"))
-        lesson.description.anchorClicked.emit(QUrl("assembly:"))
+        browser.anchorClicked.emit(QUrl("assembly:"))
         assert lesson.assembly.step == 2
         assert page.text == "unfinished_work = 42\n"
         assert lesson.current.stage["id"] == "drive"
         assert not lesson.current.progress["completed"]
         lesson.select_stage(1)
-        assert 'href="assembly:"' not in lesson.description.toHtml()
+        lesson.show_stage()
+        assert window.help_page.current == "lesson/instructions#task-stop"
+        assert "Another task" in browser.toPlainText()
+        assert 'href="assembly:"' in browser.toHtml()
+        assert window.help_page.lesson_group.childCount() == 1
     finally:
         window.recovery.close()
         window.deleteLater()
@@ -329,12 +904,13 @@ def test_starter_preserves_draft_and_device_check_uses_stage_ports(tmp_path, qt_
         assert starter is not page
         assert starter.lesson_project is project
         assert "new_value = 2" in starter.text
-        assert not starter.session.project.path.exists()
+        assert starter.session.project.path.exists()
+        count = window.documents.count()
+        window.lessons.open_starter()
+        assert window.document_page is starter
+        assert window.documents.count() == count
         assert page.text == "unfinished(\n"
         assert (root / "starter.py").read_text() == "new_value = 2\n"
-        window.lessons.open_starter()
-        assert window.document_page is not starter
-        assert window.document_page.session.project.path != starter.session.project.path
         project.lesson.data["robot"] = "robot.json"
         project.stage.update(check="devices", devices=["left"])
         window.lessons.update_check()
@@ -471,20 +1047,21 @@ def test_named_program_links_preserve_drafts_and_stage_navigation(tmp_path, qt_a
         first.code.setPlainText("if unfinished >\n")
         lesson.select_stage(1)
         assert window.document_page is first
-        lesson.follow_link(QUrl("program:second.py"))
+        lesson.show_stage()
+        window.help_page.follow_link(QUrl("program:second.py"))
         assert window.document_page is not first
         assert window.document_page.text == "second = 2\n"
         assert window.document_page.lesson_project is first.lesson_project
         lesson.select_stage(0)
-        assert lesson.actions["start"].isVisible()
-        lesson.start_stage()
+        lesson.open_task_program()
         assert window.document_page is first
         assert first.text == "if unfinished >\n"
-        assert not lesson.actions["start"].isVisible()
-        lesson.follow_link(QUrl("LICENSE.txt"))
-        assert "Lesson license" in lesson.description.toPlainText()
+        assert not lesson.panel.isHidden() or not lesson.progress_button.isHidden()
+        lesson.show_stage()
+        window.help_page.follow_link(QUrl("LICENSE.txt"))
+        assert "Lesson license" in window.help_page.browser.toPlainText()
         lesson.follow_link(QUrl("lesson:"))
-        assert "Make the robot move." in lesson.description.toPlainText()
+        assert "Make the robot move." in window.help_page.browser.toPlainText()
     finally:
         window.recovery.close()
         window.deleteLater()

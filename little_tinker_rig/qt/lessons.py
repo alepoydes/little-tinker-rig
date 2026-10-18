@@ -1,23 +1,29 @@
-"""Optional lesson workspaces; the existing document editor owns all Python edits."""
+"""Project-scoped lesson tasks alongside the ordinary desktop workspaces."""
 
+from datetime import datetime
+from html import escape
+from math import ceil
 from pathlib import Path
 
-from PySide6.QtCore import QObject, Qt, QThreadPool, QUrl
-from PySide6.QtGui import QAction, QDesktopServices, QIcon
+from PySide6.QtCore import QEvent, QObject, Qt, QThreadPool, QTimer, QUrl
+from PySide6.QtGui import QAction, QDesktopServices
 from PySide6.QtWidgets import (
+    QApplication,
     QCheckBox,
+    QDockWidget,
     QFileDialog,
+    QFrame,
     QHBoxLayout,
     QLabel,
-    QListWidget,
-    QListWidgetItem,
     QProgressDialog,
-    QPushButton,
-    QSplitter,
+    QScrollArea,
+    QSizePolicy,
+    QTextBrowser,
     QToolButton,
     QVBoxLayout,
     QWidget,
 )
+from shiboken6 import isValid
 
 from little_tinker_rig.core.lessons import (
     Lesson,
@@ -29,9 +35,38 @@ from little_tinker_rig.core.lessons import (
     resource,
     write_json,
 )
+from little_tinker_rig.core.project import atomic_write
 from little_tinker_rig.i18n import N_, language, tr
 
-from .help import HelpBrowser
+
+class TaskMarkdown(QTextBrowser):
+    """A Markdown link surface that grows with its content inside the task scroll area."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFrameShape(QFrame.Shape.NoFrame)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setOpenLinks(False)
+        self.setOpenExternalLinks(False)
+        self.document().setDocumentMargin(0)
+        self.setStyleSheet("QTextBrowser { background: transparent; border: 0; }")
+        self.document().documentLayout().documentSizeChanged.connect(
+            lambda *_: QTimer.singleShot(0, self, self.fit_height)
+        )
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        QTimer.singleShot(0, self, self.fit_height)
+
+    def fit_height(self):
+        width = max(1, self.viewport().width())
+        if self.document().textWidth() != width:
+            self.document().setTextWidth(width)
+        height = max(24, ceil(self.document().size().height()) + 4)
+        if self.height() != height:
+            self.setFixedHeight(height)
 
 
 class Lessons(QObject):
@@ -41,27 +76,63 @@ class Lessons(QObject):
         self.projects = {}
         self.current = None
         self.export_job = None
-        self.page = QWidget()
-        layout = QVBoxLayout(self.page)
+        self._updating_panel = False
+        self._dock_active = False
+        self._transient_hidden = False
+        self._narrow = window.width() < 1180
+        self.panel = QWidget()
+        self.panel.setObjectName("lessonTaskPanel")
+        self.panel.setAccessibleName(N_("Task panel"))
+        self.panel.setStyleSheet(
+            "#lessonTaskPanel { background: #f8fafc; }"
+            "#lessonTaskCard { background: white; border: 1px solid #d8e2ec; "
+            "border-radius: 8px; }"
+            '#lessonTaskCard[selected="true"] { border: 2px solid #6a9bc9; }'
+        )
+        layout = QVBoxLayout(self.panel)
+        layout.setContentsMargins(10, 8, 10, 8)
+        header = QHBoxLayout()
         self.title = QLabel()
         self.title.setWordWrap(True)
-        layout.addWidget(self.title)
-        split = QSplitter()
-        self.stages = QListWidget()
-        self.stages.setWordWrap(True)
-        self.stages.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.stages.currentRowChanged.connect(self.select_stage)
-        self.description = HelpBrowser()
-        self.description.setOpenLinks(False)
-        self.description.anchorClicked.connect(
+        self.title.setStyleSheet("font-weight: 600; font-size: 14px;")
+        header.addWidget(self.title, 1)
+        collapse = QToolButton()
+        collapse.setIcon(window._icon("go-next", "SP_ArrowForward"))
+        collapse.setToolTip(N_("Collapse task panel"))
+        collapse.setAccessibleName(N_("Collapse task panel"))
+        collapse.clicked.connect(lambda: self.set_panel_expanded(False))
+        header.addWidget(collapse)
+        layout.addLayout(header)
+        self.summary = QLabel()
+        self.summary.setAccessibleName(N_("Lesson progress"))
+        layout.addWidget(self.summary)
+        self.task_area = QScrollArea()
+        self.task_area.setObjectName("lessonTaskScroll")
+        self.task_area.setWidgetResizable(True)
+        self.task_area.setFrameShape(QFrame.Shape.NoFrame)
+        self.task_content = QWidget()
+        self.task_layout = QVBoxLayout(self.task_content)
+        self.task_layout.setContentsMargins(0, 4, 2, 4)
+        self.task_layout.setSpacing(9)
+        self.intro = TaskMarkdown()
+        self.intro.anchorClicked.connect(
+            lambda url: window.perform(
+                lambda: self.follow_task_anchor(None, url, self.intro)
+            )
+        )
+        self.intro.hide()
+        self.task_layout.addWidget(self.intro)
+        self.task_layout.addStretch(1)
+        self.task_area.setWidget(self.task_content)
+        layout.addWidget(self.task_area, 1)
+        self.cards = {}
+        self.status = QLabel()
+
+        window.help_page.lesson_action_requested.connect(
             lambda url: window.perform(lambda: self.follow_link(url))
         )
-        split.addWidget(self.stages)
-        split.addWidget(self.description)
-        split.setSizes([220, 850])
-        layout.addWidget(split, 1)
-        self.status = QLabel()
-        self.status.setWordWrap(True)
+
+        # Actions remain shared by menus and shortcuts; task links own the visible UI.
         self.actions = {}
         for name, label, callback in (
             ("start", "", self.start_stage),
@@ -77,62 +148,57 @@ class Lessons(QObject):
                 lambda checked=False, fn=callback: window.perform(fn)
             )
             self.actions[name] = action
-        for name, theme, fallback in (
-            ("hint", "help-hint", "SP_MessageBoxQuestion"),
-            ("starter", "document-new", "SP_FileIcon"),
-            ("previous", "go-previous", "SP_ArrowBack"),
-            ("next", "go-next", "SP_ArrowForward"),
-            ("complete", "dialog-ok-apply", "SP_DialogApplyButton"),
-        ):
-            self.actions[name].setIcon(window._icon(theme, fallback))
-
-        def add_actions(row, names):
-            for name in names:
-                button = QToolButton()
-                action = self.actions[name]
-                button.setDefaultAction(action)
-                if name in ("hint", "starter", "previous", "next", "complete"):
-                    button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
-                    button.setAccessibleName(action.text())
-                # QToolButton shares text/enabled state, but not action visibility.
-                action.changed.connect(
-                    lambda a=action, b=button: b.setVisible(a.isVisible())
-                )
-                row.addWidget(button)
-
-        self.explore = QCheckBox(N_("Show all blocks"))
-        self.explore.toggled.connect(self.set_explore)
-        window.library_pane.layout().insertWidget(3, self.explore)
-        self.explore.hide()
         self.guidance = window._action(
-            window.view_menu, N_("Current task"), None, self.toggle_guidance
+            window.view_menu, N_("Task panel"), None, self.toggle_guidance
         )
         self.guidance.setCheckable(True)
         self.guidance.setEnabled(False)
-        self.card = QWidget()
-        card_layout = QVBoxLayout(self.card)
-        card_layout.setContentsMargins(8, 4, 8, 4)
-        self.task = QLabel()
-        self.task.setWordWrap(True)
-        self.task.setTextFormat(self.task.textFormat().PlainText)
-        card_layout.addWidget(self.task)
-        row = QHBoxLayout()
-        self.open_lesson = QPushButton(N_("Open lesson"))
-        self.open_lesson.clicked.connect(self.show_stage)
-        row.addWidget(self.open_lesson)
-        add_actions(row, ("start", "hint", "starter"))
-        row.addStretch()
-        add_actions(row, ("previous", "complete", "next"))
-        hide = QToolButton()
-        hide.setText("×")
-        hide.setToolTip(N_("Hide task"))
-        hide.clicked.connect(lambda: self.guidance.trigger())
-        row.addWidget(hide)
-        card_layout.addLayout(row)
-        card_layout.addWidget(self.status)
-        window.workspace_body.insertWidget(0, self.card)
-        window.pages.addWidget(self.page)
-        window.modes.add_mode("lesson", N_("Lesson"))
+
+        self.progress_button = QToolButton()
+        self.progress_button.setObjectName("lessonProgressChip")
+        self.progress_button.setIcon(window._icon("view-list", "SP_FileDialogListView"))
+        self.progress_button.setToolButtonStyle(
+            Qt.ToolButtonStyle.ToolButtonTextBesideIcon
+        )
+        self.progress_button.setText(N_("Lesson"))
+        self.progress_button.setToolTip(N_("Open task panel"))
+        self.progress_button.setAccessibleName(N_("Open task panel"))
+        self.progress_button.setStyleSheet(
+            "#lessonProgressChip { background: #dbeafe; color: #203040; "
+            "border: 1px solid #94abc5; border-radius: 7px; padding: 5px 8px; }"
+            "#lessonProgressChip:hover { background: #bfdbfe; }"
+        )
+        self.progress_button.clicked.connect(lambda: self.set_panel_expanded(True))
+        self.progress_action = window.main_toolbar.insertWidget(
+            window.hub_button_action, self.progress_button
+        )
+        self.dock = window.dock(
+            N_("Task panel"), self.panel, Qt.DockWidgetArea.RightDockWidgetArea
+        )
+        self.dock.setObjectName("lessonTaskDock")
+        self.dock.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
+        self.dock.setTitleBarWidget(QWidget())
+        self.dock.setMinimumWidth(320)
+        self.dock.setMaximumWidth(460)
+        self.overlay = QFrame(window.workspace)
+        self.overlay.setObjectName("lessonTaskOverlay")
+        self.overlay.setStyleSheet(
+            "#lessonTaskOverlay { background: #f8fafc; border: 1px solid #94abc5; "
+            "border-radius: 8px; }"
+        )
+        overlay_layout = QVBoxLayout(self.overlay)
+        overlay_layout.setContentsMargins(0, 0, 0, 0)
+        self.overlay.hide()
+        window.setCorner(
+            Qt.Corner.BottomRightCorner, Qt.DockWidgetArea.RightDockWidgetArea
+        )
+        window.tabifyDockWidget(window.scratch_dock, self.dock)
+        self.dock.visibilityChanged.connect(self._dock_visibility_changed)
+        app = QApplication.instance()
+        app.installEventFilter(self)
+        window.destroyed.connect(lambda *_: app.removeEventFilter(self))
+        self.dock.hide()
+        self.progress_action.setVisible(False)
         from .assembly import AssemblyWorkspace
 
         self.assembly_host = AssemblyWorkspace(window.settings)
@@ -141,8 +207,6 @@ class Lessons(QObject):
         self.assembly_host.failed.connect(window.error)
         window.pages.addWidget(self.assembly_host)
         window.modes.add_mode("assembly", N_("Assembly"))
-        window.modes.set_mode_visible(4, False)
-        self.card.hide()
         self.menu = window.file_menu.addMenu(N_("Lessons"))
         self.menu.aboutToShow.connect(self.populate)
         window._action(self.menu, N_("Open lesson or project…"), None, self.choose)
@@ -167,7 +231,35 @@ class Lessons(QObject):
     def populate(self):
         self.menu.clear()
         self.window._action(self.menu, tr("Open lesson or project…"), None, self.choose)
+        if self.current and self.current.data.get("origin"):
+            restart = self.window._action(
+                self.menu,
+                tr("Start new attempt"),
+                None,
+                lambda: self.open(Path(self.current.data["origin"]), new=True),
+            )
+            restart.setEnabled(Path(self.current.data["origin"]).exists())
+        attempts = StudentProject.attempts()
+        if attempts:
+            own = self.menu.addMenu(tr("My lesson attempts"))
+            groups = {}
+            for attempt in attempts:
+                title = localized(attempt.lesson.data["title"], language())
+                if title not in groups:
+                    groups[title] = own.addMenu(title.replace("&", "&&"))
+                group = groups[title]
+                when = datetime.fromtimestamp(attempt.data["opened"] / 1e9)
+                label = when.strftime("%Y-%m-%d %H:%M")
+                action = group.addAction(label)
+                action.setToolTip(str(attempt.root))
+                action.triggered.connect(
+                    lambda checked=False, project=attempt: self.window.perform(
+                        lambda: self.open(Path(project.data["origin"]), attempt=project)
+                    )
+                )
         self.menu.addSeparator()
+        guided = self.menu.addMenu(tr("Guided lessons"))
+        projects = self.menu.addMenu(tr("Explore projects"))
         groups = {}
         for path in sorted(lessons_directory().rglob("lesson.json")):
             try:
@@ -177,10 +269,12 @@ class Lessons(QObject):
                 continue
             label = localized(lesson.data["title"], language())
             group = localized(lesson.data.get("group", ""), language())
-            if group and group not in groups:
-                groups[group] = self.menu.addMenu(group)
+            parent = projects if lesson.data.get("kind") == "project" else guided
+            key = (parent, group)
+            if group and key not in groups:
+                groups[key] = parent.addMenu(group)
             self.window._action(
-                groups.get(group, self.menu),
+                groups.get(key, parent),
                 label,
                 None,
                 lambda p=path.parent: self.open(p),
@@ -189,7 +283,13 @@ class Lessons(QObject):
     def open_program(self, name):
         if (
             self.current is None
-            or name not in self.current.lesson.data.get("programs", {})
+            or name
+            not in (
+                *self.current.lesson.data.get("programs", {}),
+                self.current.main.relative_to(
+                    self.current.root / "programs"
+                ).as_posix(),
+            )
             or not name.endswith(".py")
         ):
             raise ValueError("Unknown lesson program")
@@ -201,31 +301,61 @@ class Lessons(QObject):
             self.open_program(url.path())
         elif url.scheme() == "assembly":
             self.open_assembly()
+        elif url.scheme() == "control":
+            self.window.set_mode(1)
+        elif url.scheme() == "devices":
+            self.window.device_dock.show()
+            self.window.device_dock.raise_()
+        elif url.scheme() == "connect":
+            self.window.connect_hub()
+        elif url.scheme() == "scratch":
+            name = (
+                url.path()
+                or self.current.main.relative_to(
+                    self.current.root / "programs"
+                ).as_posix()
+            )
+            self.open_program(name)
+            self.window.scratch_dock.show()
+            self.window.scratch_dock.raise_()
         elif url.scheme() == "lesson":
             self.show_stage()
-        elif url.scheme() in ("http", "https"):
-            QDesktopServices.openUrl(url)
-        elif not url.path() and url.fragment():
-            self.description.scrollToAnchor(url.fragment())
-        else:
-            resolved = self.description.document().baseUrl().resolved(url)
-            if not resolved.isLocalFile():
-                return
-            path = Path(resolved.toLocalFile()).resolve()
-            if self.current and path.is_relative_to(self.current.lesson.root):
-                text = path.read_text(encoding="utf-8")
-                self.description.document().setBaseUrl(
-                    QUrl.fromLocalFile(str(path.parent) + "/")
-                )
-                self.description.setMarkdown(
-                    f"[{tr('Back to task')}](lesson:)\n\n{text}"
-                )
-                self.description.style_document()
-                self.description.scrollToAnchor(url.fragment())
 
     def show_stage(self):
-        self.refresh()
-        self.window.set_mode(4)
+        if self.current:
+            self.window.help_page.show_lesson_stage(
+                self.current.lesson, self.current.stage
+            )
+            self.window.set_mode(2)
+            self._collapse_for_destination()
+
+    def follow_task_link(self, link):
+        if self.current is None:
+            return
+        kind = link["kind"]
+        target = link.get("target")
+        if kind == "markdown":
+            name = localized(target, language())
+            self.window.help_page.show_lesson_material(
+                self.current.lesson, name, localized(link["label"], language())
+            )
+            self.window.set_mode(2)
+            self._collapse_for_destination()
+        elif kind in ("program", "scratch"):
+            self.window.open_document(resource(self.current.root / "programs", target))
+            self.window.set_mode(0)
+            if kind == "scratch":
+                self.window.scratch_dock.show()
+                self.window.scratch_dock.raise_()
+        elif kind == "assembly":
+            self.open_assembly()
+        elif kind == "control":
+            self.window.set_mode(1)
+        elif kind == "devices":
+            self.window.device_dock.show()
+            self.window.device_dock.raise_()
+        elif kind == "connect":
+            self.window.connect_hub()
 
     def choose(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -237,9 +367,26 @@ class Lessons(QObject):
         if path:
             self.open(Path(path))
 
-    def open(self, path):
+    def open(self, path, *, new=False, attempt=None):
         path = Path(path).resolve()
-        project = next((p for p in self.projects.values() if p.path == path), None)
+        template = path.suffix not in {".ltr", ".pyblocks"}
+        created = False
+        if attempt is not None:
+            project = self.projects.get(attempt.root, attempt)
+        elif new:
+            project = None
+        elif template:
+            project = max(
+                (
+                    p
+                    for p in self.projects.values()
+                    if p.retain and p.data.get("origin") == str(path)
+                ),
+                key=lambda p: p.data.get("opened", 0),
+                default=None,
+            )
+        else:
+            project = next((p for p in self.projects.values() if p.path == path), None)
         if project is not None:
             pages = self.window.documents
             page = next(
@@ -251,33 +398,57 @@ class Lessons(QObject):
                 None,
             )
             if page is not None:
+                project.remember_opened()
                 pages.setCurrentWidget(page)
-                self.window.set_mode(project.progress.get("mode", 4))
+                self.window.help_page.show_lesson_stage(project.lesson, project.stage)
+                self.window.set_mode(2)
+                self._collapse_for_destination()
                 return page
         if project is None:
-            project = (
-                StudentProject.open(path)
-                if path.suffix in {".ltr", ".pyblocks"}
-                else StudentProject.create(path)
-            )
+            if template:
+                project = None if new else StudentProject.latest(path)
+                if project is None:
+                    project = StudentProject.create(path)
+                    created = True
+            else:
+                project = StudentProject.open(path)
             self.projects[project.root] = project
-        # Activating documents may update workspace widgets; preserve the saved mode.
-        mode = project.progress.get("mode", 4)
+        else:
+            self.projects[project.root] = project
+        if project.retain:
+            for other in QApplication.topLevelWidgets():
+                manager = getattr(other, "lessons", None)
+                if other is self.window or manager is None:
+                    continue
+                if getattr(getattr(other, "recovery", None), "closed", False):
+                    continue
+                pages = other.documents
+                owner_page = next(
+                    (
+                        pages.widget(i)
+                        for i in range(pages.count())
+                        if getattr(pages.widget(i).lesson_project, "root", None)
+                        == project.root
+                    ),
+                    None,
+                )
+                if owner_page is not None:
+                    owner_page.lesson_project.remember_opened()
+                    pages.setCurrentWidget(owner_page)
+                    other.help_page.show_lesson_stage(
+                        owner_page.lesson_project.lesson,
+                        owner_page.lesson_project.stage,
+                    )
+                    other.set_mode(2)
+                    manager._collapse_for_destination()
+                    other.show()
+                    other.raise_()
+                    other.activateWindow()
+                    self.projects.pop(project.root, None)
+                    return owner_page
+        project.remember_opened()
         page = self.window.open_document(project.main)
         page.lesson_project = project
-        available = {s.identity for s in page.session.available_snippets}
-        missing = {
-            identity
-            for stage in project.lesson.stages
-            for identity in stage.get("blocks", [])
-        } - available
-        if missing:
-            self.window.error(
-                tr(
-                    "Lesson blocks are unavailable: {blocks}",
-                    blocks=", ".join(sorted(missing)),
-                )
-            )
         workspace = project.root / "workspace.json"
         if workspace.is_file():
             saved = read_json(workspace)
@@ -291,7 +462,12 @@ class Lessons(QObject):
             if active.is_file():
                 page = self.window.open_document(active)
         self.activate()
-        self.window.set_mode(mode)
+        if created:
+            self.window.help_page.show_lesson_home(project.lesson)
+        else:
+            self.window.help_page.show_lesson_stage(project.lesson, project.stage)
+        self.window.set_mode(2)
+        self._collapse_for_destination()
         if project.path:
             self.window.remember_file(project.path)
         self.changed()
@@ -311,137 +487,450 @@ class Lessons(QObject):
         self.export_action.setEnabled(project is not None and self.export_job is None)
         self.guidance.setEnabled(project is not None)
         self.guidance.setChecked(
-            project is not None and project.progress.get("guidance", True)
+            project is not None and project.progress.get("panel_expanded", True)
         )
-        self.window.modes.set_mode_visible(4, project is not None)
-        if project is None:
-            if self.window.pages.currentIndex() == 4:
-                self.window.set_mode(0)
-        else:
-            self.refresh()
+        if project is not None:
+            self.refresh(reveal=different)
+        self.window.help_page.set_lesson(project.lesson if project else None)
         if different:
             self.load_robot()
         self.update_card()
+        self.update_panel_visibility()
         self.palette()
 
-    def refresh(self):
+    def _task_links(self, stage):
+        def link(label, destination):
+            label = label.replace("\\", "\\\\").replace("[", "\\[").replace("]", "\\]")
+            return f"[{label}]({destination})"
+
+        links = [link(tr("Instructions"), "task:instructions")]
+        mode = stage.get("mode", "program")
+        links.append(
+            link(
+                tr(
+                    {
+                        "assembly": N_("Assembly"),
+                        "control": N_("Controls"),
+                        "program": N_("Program"),
+                    }[mode]
+                ),
+                f"task:{mode}",
+            )
+        )
+        if stage.get("blocks"):
+            links.append(link(tr("Suggested blocks"), "task:blocks"))
+        if stage.get("starter"):
+            links.append(link(tr("Open starter program"), "task:starter"))
+        shown = self.current.progress.get("hints", {}).get(stage["id"], 0)
+        if shown < len(stage.get("hints", [])):
+            links.append(link(tr("Next hint"), "task:hint"))
+        for index, extra in enumerate(stage.get("links", [])):
+            links.append(
+                link(localized(extra["label"], language()), f"task:extra/{index}")
+            )
+        return " · ".join(links)
+
+    def _task_markdown(self, stage):
+        text = self.current.lesson.panel_text(stage, language())
+        shown = self.current.progress.get("hints", {}).get(stage["id"], 0)
+        for hint in stage.get("hints", [])[:shown]:
+            text += "\n\n> **" + tr("Hint") + ":** " + localized(hint, language())
+        if stage.get("panel_actions", True):
+            text += "\n\n" + self._task_links(stage)
+        return text
+
+    def _material_base(self, name):
+        return QUrl.fromLocalFile(
+            str(self.current.lesson.file(name.split("#", 1)[0]).parent) + "/"
+        )
+
+    def _build_card(self, stage, index):
+        identity = stage["id"]
+        title = localized(stage["title"], language())
+        card = QFrame()
+        card.setObjectName("lessonTaskCard")
+        card.setAccessibleName(title)
+        card.setProperty("selected", identity == self.current.stage["id"])
+        frame = QVBoxLayout(card)
+        frame.setContentsMargins(10, 8, 10, 8)
+        frame.setSpacing(5)
+        header = QHBoxLayout()
+        check = QCheckBox()
+        check.setAccessibleName(tr("Mark {title} complete", title=title))
+        check.setToolTip(title)
+        check.blockSignals(True)
+        check.setChecked(identity in self.current.progress["completed"])
+        check.blockSignals(False)
+        check.toggled.connect(
+            lambda checked, key=identity: self.set_completion(key, checked)
+        )
+        header.addWidget(check)
+        name = QLabel(
+            f'<a href="task:select" style="color:#193650;">{escape(title)}</a>'
+        )
+        name.setWordWrap(True)
+        name.setAccessibleName(title)
+        name.setTextInteractionFlags(
+            Qt.TextInteractionFlag.LinksAccessibleByMouse
+            | Qt.TextInteractionFlag.LinksAccessibleByKeyboard
+        )
+        name.linkActivated.connect(lambda _, row=index: self.open_task(row))
+        header.addWidget(name, 1)
+        points = QLabel(f"★ {stage.get('points', 1)}")
+        points.setToolTip(tr("Points for this task"))
+        header.addWidget(points)
+        frame.addLayout(header)
+        body = TaskMarkdown()
+        if "panel" in stage:
+            body.document().setBaseUrl(
+                self._material_base(localized(stage["panel"], language()))
+            )
+        else:
+            body.document().setBaseUrl(
+                QUrl.fromLocalFile(str(self.current.lesson.root) + "/")
+            )
+        body.setMarkdown(self._task_markdown(stage))
+        body.anchorClicked.connect(
+            lambda url, key=identity, view=body: self.window.perform(
+                lambda: self.follow_task_anchor(key, url, view)
+            )
+        )
+        frame.addWidget(body)
+        body.setVisible(identity == self.current.stage["id"])
+        status = QLabel()
+        status.setWordWrap(True)
+        status.setStyleSheet("color: #4b6276; font-size: 11px;")
+        frame.addWidget(status)
+        status.setVisible(identity == self.current.stage["id"])
+        self.cards[identity] = {
+            "frame": card,
+            "check": check,
+            "title": name,
+            "body": body,
+            "status": status,
+        }
+        self.task_layout.insertWidget(self.task_layout.count() - 1, card)
+        body.fit_height()
+
+    def refresh(self, *, reveal=False):
         project = self.current
         if project is None:
             return
         self.title.setText(localized(project.lesson.data["title"], language()))
-        self.stages.blockSignals(True)
-        self.stages.clear()
-        for stage in project.lesson.stages:
-            done = stage["id"] in project.progress["completed"]
-            item = QListWidgetItem(localized(stage["title"], language()))
-            if done:
-                icon = QIcon(str(Path(__file__).with_name("icons") / "completed.svg"))
-                # Preserve green even when Qt paints the selected row's icon.
-                icon.addFile(
-                    str(Path(__file__).with_name("icons") / "completed.svg"),
-                    mode=QIcon.Mode.Selected,
-                )
-                item.setIcon(icon)
-                item.setToolTip(tr("Completed"))
-            self.stages.addItem(item)
-        self.stages.setCurrentRow(project.lesson.stages.index(project.stage))
-        self.stages.blockSignals(False)
-        stage = project.stage
-        text = project.lesson.description(stage, language())
-        if stage.get("mode") == "assembly":
-            text = f"**[{tr('Open 3D building instructions')}](assembly:)**\n\n{text}"
-        shown = project.progress.get("hints", {}).get(stage["id"], 0)
-        for hint in stage.get("hints", [])[:shown]:
-            text += "\n\n---\n\n" + localized(hint, language())
-        self.description.document().setBaseUrl(
-            QUrl.fromLocalFile(
-                str(
-                    project.lesson.file(
-                        localized(stage["description"], language()).partition("#")[0]
-                    ).parent
-                )
-                + "/"
-            )
-        )
-        self.description.setMarkdown(text)
-        self.description.style_document()
-        self.description.verticalScrollBar().setValue(0)
-        self.explore.blockSignals(True)
-        self.explore.setChecked(project.progress.get("explore", False))
-        self.explore.blockSignals(False)
+        scroll = self.task_area.verticalScrollBar().value()
+        for widgets in self.cards.values():
+            card = widgets["frame"]
+            self.task_layout.removeWidget(card)
+            card.hide()
+            card.deleteLater()
+        self.cards.clear()
+        if "panel_intro" in project.lesson.data:
+            name = localized(project.lesson.data["panel_intro"], language())
+            self.intro.document().setBaseUrl(self._material_base(name))
+            self.intro.setMarkdown(project.lesson.material(name))
+            self.intro.show()
+            self.intro.fit_height()
+        else:
+            self.intro.hide()
+        for index, stage in enumerate(project.lesson.stages):
+            self._build_card(stage, index)
+        self.status = self.cards[project.stage["id"]]["status"]
         self.actions["start"].setText(
             tr(
                 {
                     "assembly": N_("Open assembly"),
                     "control": N_("Open controls"),
                     "program": N_("Open program"),
-                }[stage.get("mode", "program")]
+                }[project.stage.get("mode", "program")]
             )
         )
-        self.actions["hint"].setVisible(bool(stage.get("hints")))
-        self.actions["hint"].setEnabled(shown < len(stage.get("hints", [])))
-        self.actions["starter"].setVisible(bool(stage.get("starter")))
         self.update_check()
         self.update_card()
+        if reveal:
+            QTimer.singleShot(0, self, self.reveal_selected)
+        else:
+            QTimer.singleShot(
+                0,
+                self.task_area,
+                lambda: self.task_area.verticalScrollBar().setValue(scroll),
+            )
+
+    def reveal_selected(self):
+        if self.current and self.current.stage["id"] in self.cards:
+            self.task_area.ensureWidgetVisible(
+                self.cards[self.current.stage["id"]]["frame"], 0, 24
+            )
 
     def update_card(self):
-        mode = self.window.pages.currentIndex()
-        self.card.setVisible(
-            self.current is not None
-            and self.guidance.isChecked()
-            and mode in (0, 1, 4, 5)
-            and (mode != 5 or self.assembly_host.showing_lesson)
+        project = self.current
+        if project is None:
+            return
+        completed = len(project.progress["completed"])
+        total = len(project.lesson.stages)
+        earned, available = project.score
+        position = project.lesson.stages.index(project.stage) + 1
+        kind = project.lesson.data.get("kind", "lesson")
+        progress_label = (
+            N_("Project · {position}/{total} · {completed} done")
+            if kind == "project"
+            else N_("Lesson · {position}/{total} · {completed} done")
         )
-        self.open_lesson.setVisible(mode != 4)
-        if self.current:
-            stage = self.current.stage
-            self.task.setText(
-                tr(
-                    "Stage {current} of {total} · {title}",
-                    current=self.current.lesson.stages.index(stage) + 1,
-                    total=len(self.current.lesson.stages),
-                    title=localized(stage["title"], language()),
-                )
-                + (
-                    "\n" + localized(stage.get("goal", stage["title"]), language())
-                    if mode == 4
-                    else ""
-                )
+        self.progress_button.setText(
+            tr(
+                progress_label,
+                position=position,
+                total=total,
+                completed=completed,
             )
-            self.task.setToolTip(
-                localized(stage.get("goal", stage["title"]), language())
+        )
+        label = tr(
+            "Task {position}/{total} · {completed} done · Points {earned}/{available}",
+            position=position,
+            completed=completed,
+            total=total,
+            earned=earned,
+            available=available,
+        )
+        self.summary.setText(label)
+        self.progress_button.setToolTip(
+            localized(project.lesson.data["title"], language()) + " · " + label
+        )
+        self.progress_button.setAccessibleName(tr("Open task panel") + " · " + label)
+
+    def _dock_visibility_changed(self, visible):
+        if self._updating_panel:
+            return
+        # Tabifying Scratch can obscure this dock without collapsing the lesson.
+        # The progress chip remains a way back to the task list in that case.
+        self._dock_active = visible
+        QTimer.singleShot(0, self, self._sync_panel_toggle)
+
+    def _sync_panel_toggle(self):
+        if not isValid(self.dock):
+            return
+        visible = self.overlay.isVisible() if self._narrow else self._dock_active
+        self.guidance.setChecked(bool(self.current and visible))
+        show_chip = bool(self.current and not visible)
+        self.progress_action.setVisible(show_chip)
+        self.progress_button.setVisible(show_chip)
+
+    def set_panel_expanded(self, expanded):
+        if self.current is None:
+            return
+        self.current.progress["panel_expanded"] = bool(expanded)
+        self._transient_hidden = False
+        self.update_panel_visibility()
+        self.changed()
+
+    def _move_panel(self, narrow):
+        if narrow and self.panel.parent() is not self.overlay:
+            self.panel.setParent(None)
+            self.dock.setWidget(QWidget())
+            self.overlay.layout().addWidget(self.panel)
+        elif not narrow and self.panel.parent() is self.overlay:
+            self.overlay.layout().removeWidget(self.panel)
+            self.panel.setParent(None)
+            self.dock.setWidget(self.panel)
+
+    def _position_overlay(self):
+        workspace = self.window.workspace
+        width = min(380, max(280, workspace.width() - 52))
+        self.overlay.setGeometry(
+            workspace.width() - width - 4, 4, width, max(80, workspace.height() - 8)
+        )
+        self.overlay.raise_()
+
+    def update_panel_visibility(self):
+        expanded = bool(
+            self.current and self.current.progress.get("panel_expanded", True)
+        )
+        narrow = self.window.width() < 1180
+        self._updating_panel = True
+        try:
+            self.dock.hide()
+            self.overlay.hide()
+            self._move_panel(narrow)
+            visible = expanded and not self._transient_hidden
+            if narrow:
+                self._position_overlay()
+                self.overlay.setVisible(visible)
+            else:
+                self.dock.setVisible(visible)
+            if visible and not narrow:
+                self.dock.raise_()
+            self._dock_active = visible
+        finally:
+            self._updating_panel = False
+        self._sync_panel_toggle()
+        QTimer.singleShot(0, self, self._sync_panel_toggle)
+        if expanded and not narrow and not self._transient_hidden:
+            QTimer.singleShot(
+                0,
+                self.window,
+                lambda: self.window.resizeDocks(
+                    [self.dock], [370], Qt.Orientation.Horizontal
+                ),
             )
-            self.status.setVisible(mode == 4 or bool(stage.get("check")))
-            target = {"program": 0, "control": 1, "assembly": 5}[
-                self.current.stage.get("mode", "program")
-            ]
-            program = self.current.stage.get("program")
-            other_program = (
-                program
-                and self.window.document_page.session.project.path
-                != resource(self.current.root / "programs", program)
-            )
-            self.actions["start"].setVisible(mode != target or bool(other_program))
+
+    def eventFilter(self, watched, event):
+        kind = event.type()
+        if watched is self.window and kind == QEvent.Type.Resize:
+            narrow = self.window.width() < 1180
+            if narrow != self._narrow:
+                self._narrow = narrow
+                self._transient_hidden = narrow
+                QTimer.singleShot(0, self, self.update_panel_visibility)
+        if (
+            watched is self.window.workspace
+            and kind == QEvent.Type.Resize
+            and self.overlay.isVisible()
+        ):
+            self._position_overlay()
+        if kind not in (
+            QEvent.Type.ShortcutOverride,
+            QEvent.Type.KeyPress,
+            QEvent.Type.MouseButtonPress,
+        ):
+            return False
+        if self.current and isValid(self.dock) and self._dock_active:
+            surface = self.overlay if self._narrow else self.dock
+            if (
+                kind in (QEvent.Type.ShortcutOverride, QEvent.Type.KeyPress)
+                and event.key() == Qt.Key.Key_Escape
+                and isinstance(watched, QWidget)
+                and (watched is surface or surface.isAncestorOf(watched))
+            ):
+                self._collapse_for_destination()
+                event.accept()
+                return True
+            if (
+                self._narrow
+                and kind == QEvent.Type.MouseButtonPress
+                and isinstance(watched, QWidget)
+                and watched.window() is self.window
+                and watched is not surface
+                and not surface.isAncestorOf(watched)
+            ):
+                self._collapse_for_destination()
+        return False
 
     def toggle_guidance(self):
-        if self.current:
-            self.current.progress["guidance"] = self.guidance.isChecked()
-            self.update_card()
-            self.changed()
+        self.set_panel_expanded(self.guidance.isChecked())
 
     def navigate_stage(self, offset):
         if self.current:
             index = self.current.lesson.stages.index(self.current.stage) + offset
             if 0 <= index < len(self.current.lesson.stages):
                 self.select_stage(index)
-                self.window.set_mode(4)
 
     def select_stage(self, index):
-        if self.current is None or index < 0:
+        if self.current is None or not 0 <= index < len(self.current.lesson.stages):
             return
         self.current.progress["stage"] = self.current.lesson.stages[index]["id"]
-        self.refresh()
+        self.refresh(reveal=True)
         self.changed()
+
+    def open_task(self, index):
+        self.select_stage(index)
+        self.show_stage()
+
+    def _collapse_for_destination(self):
+        if self.window.width() < 1180:
+            self._transient_hidden = True
+            self.update_panel_visibility()
+
+    def follow_task_anchor(self, identity, url, browser):
+        if self.current is None:
+            return
+        base = browser.document().baseUrl()
+        if identity is not None and self.current.stage["id"] != identity:
+            index = next(
+                i
+                for i, task in enumerate(self.current.lesson.stages)
+                if task["id"] == identity
+            )
+            self.select_stage(index)
+        scheme = url.scheme()
+        action = url.path().lstrip("/") if scheme == "task" else ""
+        if scheme == "task":
+            if action == "select":
+                return
+            if action == "instructions":
+                self.show_stage()
+            elif action == "program":
+                self.open_task_program()
+                self._collapse_for_destination()
+            elif action == "assembly":
+                self.open_assembly()
+                self._collapse_for_destination()
+            elif action == "control":
+                self.window.set_mode(1)
+                self._collapse_for_destination()
+            elif action == "blocks":
+                self.window.set_mode(0)
+                self.window.view_filter.select("lesson")
+                self._collapse_for_destination()
+            elif action == "starter":
+                self.open_starter()
+                self._collapse_for_destination()
+            elif action == "hint":
+                self.hint()
+            elif action.startswith("extra/"):
+                index = int(action.partition("/")[2])
+                links = self.current.stage.get("links", [])
+                if not 0 <= index < len(links):
+                    raise ValueError("Unknown task link")
+                self.follow_task_link(links[index])
+                if links[index]["kind"] != "markdown":
+                    self._collapse_for_destination()
+            return
+        if scheme == "program":
+            self.open_program(
+                url.path()
+                or self.current.stage.get("program")
+                or self.current.main.name
+            )
+            self._collapse_for_destination()
+        elif scheme == "assembly":
+            self.open_assembly()
+            self._collapse_for_destination()
+        elif scheme == "control":
+            self.window.set_mode(1)
+            self._collapse_for_destination()
+        elif scheme == "devices":
+            self.window.device_dock.show()
+            self.window.device_dock.raise_()
+            self._collapse_for_destination()
+        elif scheme == "connect":
+            self._collapse_for_destination()
+            self.window.connect_hub()
+        elif scheme == "scratch":
+            target = (
+                url.path()
+                or self.current.main.relative_to(
+                    self.current.root / "programs"
+                ).as_posix()
+            )
+            self.open_program(target)
+            self.window.scratch_dock.show()
+            self.window.scratch_dock.raise_()
+            self._collapse_for_destination()
+        elif scheme in ("http", "https"):
+            QDesktopServices.openUrl(url)
+        elif not url.path() and url.fragment():
+            browser.scrollToAnchor(url.fragment())
+        elif not scheme:
+            resolved = base.resolved(url)
+            if resolved.isLocalFile():
+                path = Path(resolved.toLocalFile()).resolve()
+                if path.is_relative_to(self.current.lesson.root):
+                    name = path.relative_to(self.current.lesson.root).as_posix()
+                    self.window.help_page.show_lesson_material(
+                        self.current.lesson,
+                        name + ("#" + url.fragment() if url.fragment() else ""),
+                    )
+                    self.window.set_mode(2)
+                    self._collapse_for_destination()
 
     def start_stage(self):
         if self.current:
@@ -453,13 +942,23 @@ class Lessons(QObject):
                 self.open_program(self.current.stage["program"])
             self.window.set_mode({"program": 0, "control": 1}[mode])
 
+    def open_task_program(self):
+        if self.current is None:
+            return
+        name = self.current.stage.get("program")
+        if name:
+            self.open_program(name)
+        else:
+            self.window.open_document(self.current.main)
+            self.window.set_mode(0)
+
     def open_assembly(self):
         if self.current and self.assembly:
             self.assembly_host.select_lesson()
             steps = self.current.stage.get("assembly")
             if steps and not steps[0] - 1 <= self.assembly.step < steps[1]:
                 self.assembly.set_step(steps[0] - 1)
-            self.window.set_mode(5)
+            self.window.set_mode(4)
 
     def hint(self):
         if self.current:
@@ -470,7 +969,7 @@ class Lessons(QObject):
             )
             self.refresh()
             self.changed()
-            self.window.set_mode(4)
+            self.set_panel_expanded(True)
 
     def open_starter(self):
         if self.current is None:
@@ -479,34 +978,50 @@ class Lessons(QObject):
         if name is None:
             self.status.setText(tr("This stage has no starter program."))
             return
-        source = self.current.lesson.file(name).read_text(encoding="utf-8")
-        self.new_program()
-        page = self.window.document_page
-        page.session.editor.commit(source, focus=0)
-        page.source.refresh_source()
-        page.changed.emit()
+        project = self.current
+        identity = project.stage["id"]
+        saved = project.progress.setdefault("starter_files", {})
+        if identity in saved:
+            destination = resource(project.root / "programs", saved[identity])
+            if not destination.is_file():
+                raise ValueError("The task starter program is missing")
+        else:
+            index = project.lesson.stages.index(project.stage) + 1
+            stem = f"task_{index}_starter"
+            destination = project.root / "programs" / f"{stem}.py"
+            number = 2
+            while destination.exists():
+                destination = project.root / "programs" / f"{stem}_{number}.py"
+                number += 1
+            source = project.lesson.file(name).read_text(encoding="utf-8")
+            atomic_write(destination, source)
+            saved[identity] = destination.name
+            project.pending = True
+        self.window.open_document(destination)
+        self.window.set_mode(0)
+        self.changed()
 
-    def connections(self):
+    def connections(self, stage=None):
         if self.current is None or "robot" not in self.current.lesson.data:
             return []
         robot = read_json(
             resource(self.current.lesson.root, self.current.lesson.data["robot"])
         )
-        required = self.current.stage.get("devices")
+        required = (stage or self.current.stage).get("devices")
         return [
             d
             for d in robot.get("devices", [])
             if required is None or d["instance"] in required
         ]
 
-    def check_ready(self):
+    def check_ready(self, stage=None):
         info = self.window.hub_info
         return (
             info.connected
             and info.monitoring
             and all(
                 info.ports.get(d["port"], {}).get("type") == d["type"]
-                for d in self.connections()
+                for d in self.connections(stage)
             )
         )
 
@@ -517,91 +1032,110 @@ class Lessons(QObject):
         done = project.stage["id"] in project.progress["completed"]
         ready = project.stage.get("check") != "devices" or self.check_ready()
         self.actions["complete"].setText(
-            tr("Completed") if done else tr("Mark complete")
+            tr("Mark incomplete") if done else tr("Mark complete")
         )
-        self.actions["complete"].setEnabled(not done and ready)
+        self.actions["complete"].setEnabled(done or ready)
         index = project.lesson.stages.index(project.stage)
         self.actions["previous"].setEnabled(index > 0)
         self.actions["next"].setEnabled(index + 1 < len(project.lesson.stages))
-        if len(project.progress["completed"]) == len(project.lesson.stages):
-            text = tr(
-                "Lesson complete. Save your project to keep the program and progress."
-            )
-        elif done:
-            text = tr(
-                "Stage complete. Continue with Next stage, or keep experimenting."
-            )
-        elif project.stage.get("check") == "devices":
-            info = self.window.hub_info
-            if not info.connected:
-                text = tr("Connect a hub at the top right of the window.")
-            elif not info.monitoring:
-                text = tr("Open the port monitor to check the expected connections.")
-            elif ready:
-                text = tr("Connections match the lesson.")
-            else:
-                from .device import KINDS
-
-                text = tr(
-                    "Check connections: {devices}",
-                    devices=", ".join(
-                        f'{d["port"]} · {tr(KINDS.get(d["type"], "Device"))}'
-                        for d in self.connections()
-                        if info.ports.get(d["port"], {}).get("type") != d["type"]
-                    ),
+        available = {
+            snippet.identity
+            for snippet in self.window.document_page.session.available_snippets
+        }
+        for stage in project.lesson.stages:
+            identity = stage["id"]
+            widgets = self.cards[identity]
+            checked = identity in project.progress["completed"]
+            can_check = stage.get("check") != "devices" or self.check_ready(stage)
+            checkbox = widgets["check"]
+            checkbox.blockSignals(True)
+            checkbox.setChecked(checked)
+            checkbox.blockSignals(False)
+            checkbox.setEnabled(checked or can_check)
+            widgets["frame"].setProperty("selected", identity == project.stage["id"])
+            widgets["frame"].style().unpolish(widgets["frame"])
+            widgets["frame"].style().polish(widgets["frame"])
+            if checked:
+                text = (
+                    tr("Connection was verified when this task was completed.")
+                    if project.progress.get("evidence", {}).get(identity) == "devices"
+                    else tr("Marked complete by learner. You can keep experimenting.")
                 )
-        else:
-            text = tr("Complete the task, then mark it complete.")
-        self.status.setText(text)
-        self.actions["complete"].setToolTip(text)
+            elif stage.get("check") == "devices":
+                info = self.window.hub_info
+                if not info.connected:
+                    text = tr("Connect a hub at the top right of the window.")
+                elif not info.monitoring:
+                    text = tr(
+                        "Open the port monitor to check the expected connections."
+                    )
+                elif can_check:
+                    text = tr("Connections match the lesson.")
+                else:
+                    from .device import KINDS
+
+                    text = tr(
+                        "Check connections: {devices}",
+                        devices=", ".join(
+                            f"{d['port']} · {tr(KINDS.get(d['type'], 'Device'))}"
+                            for d in self.connections(stage)
+                            if info.ports.get(d["port"], {}).get("type") != d["type"]
+                        ),
+                    )
+            elif identity == project.stage["id"]:
+                text = tr("Complete the task, then mark it complete.")
+            else:
+                text = ""
+            missing = set(stage.get("blocks", ())) - available
+            if missing:
+                text += "\n" + tr(
+                    "Suggested blocks unavailable: {blocks}. Use the full catalog or Python editor.",
+                    blocks=", ".join(sorted(missing)),
+                )
+            widgets["status"].setText(text.strip())
+            checkbox.setToolTip(text.strip() or localized(stage["title"], language()))
+        self.status = self.cards[project.stage["id"]]["status"]
+        self.actions["complete"].setToolTip(self.status.text())
 
     def complete(self):
         if self.current is None:
             return
-        if self.current.stage.get("check") == "devices" and not self.check_ready():
-            self.update_check()
+        identity = self.current.stage["id"]
+        done = identity in self.current.progress["completed"]
+        self.set_completion(identity, not done)
+
+    def set_completion(self, identity, checked):
+        if self.current is None:
+            return
+        stage = next(s for s in self.current.lesson.stages if s["id"] == identity)
+        if checked and stage.get("check") == "devices" and not self.check_ready(stage):
+            self.refresh()
             return
         completed = self.current.progress["completed"]
-        identity = self.current.stage["id"]
-        if identity not in completed:
+        if checked and identity not in completed:
             completed.append(identity)
+            self.current.progress.setdefault("evidence", {})[identity] = (
+                "devices" if stage.get("check") == "devices" else "manual"
+            )
+        elif not checked and identity in completed:
+            completed.remove(identity)
+            self.current.progress.setdefault("evidence", {}).pop(identity, None)
         self.refresh()
         self.changed()
-
-    def set_explore(self, enabled):
-        if self.current:
-            self.current.progress["explore"] = enabled
-            self.changed()
 
     def palette(self):
         window = self.window
         project = self.current
-        self.explore.setVisible(project is not None)
-        restricted = project is not None and not project.progress.get("explore", False)
-        ids = frozenset(project.stage.get("blocks", [])) if restricted else None
-        level = "all" if project else window.block_level
-        window.level_filter.blockSignals(True)
-        window.level_filter.select(level)
-        window.level_filter.blockSignals(False)
-        window.level_filter.setEnabled(project is None)
+        level = window.block_level
+        window.level_filter.setEnabled(True)
         stage_ids = frozenset(project.stage.get("blocks", [])) if project else None
-        window.scratch.allowed_ids = ids
-        if (
-            window.library.lesson_ids != ids
-            or window.library.stage_ids != stage_ids
-            or window.library.level != level
-        ):
+        if window.library.stage_ids != stage_ids or window.library.level != level:
             window.library.stage_ids = stage_ids
-            window.library.lesson_ids = ids
             window.library.filter(window.search.text(), level)
-            if restricted:
-                window.library.expandAll()
         view = window.editing_source
         view.expression_level = level
-        view.expression_ids = ids
-        view.expression_operations = (
-            frozenset(project.stage.get("operations", [])) if restricted else None
-        )
+        view.expression_ids = None
+        view.expression_operations = None
 
     def changed(self):
         self.palette()
@@ -623,7 +1157,7 @@ class Lessons(QObject):
         return self.assembly_host.lesson_page
 
     def open_robot(self):
-        self.window.set_mode(5)
+        self.window.set_mode(4)
         self.assembly_host.choose()
 
     def new_program(self):
@@ -648,7 +1182,15 @@ class Lessons(QObject):
             else set()
         )
         for root in self.projects.keys() - active:
-            self.projects.pop(root).discard_working_copy()
+            project = self.projects.pop(root)
+            if not project.retain:
+                project.discard_working_copy()
+
+    def autosave(self):
+        for project in tuple(self.projects.values()):
+            if project.retain:
+                self.store_documents(project)
+                project.checkpoint()
 
     def save(self, project, *, choose=False):
         path = project.path

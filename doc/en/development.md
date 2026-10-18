@@ -527,9 +527,9 @@ Review translated layouts with Console open on a laptop-sized screen. Workspace
 navigation uses a narrow, fixed-width icon strip with localized tooltips. Keep
 names in the item model for accessibility while suppressing painted labels; icons
 stay centered, and language/font changes do not widen the strip. Short panels
-scroll without selecting a mode. Hidden lesson modes are disabled and
-Home/End target visible rows: hiding a QListWidget row alone does not exclude it
-from keyboard navigation. Verify scrolling, selection, hidden modes, localized
+scroll without selecting a mode. Home/End target visible rows: hiding a
+QListWidget row alone does not exclude it from keyboard navigation. Verify
+scrolling, selection, localized
 tooltips and icon rendering. Initial window bounds respect screen space.
 
 ## Lesson and renderer invariants
@@ -538,17 +538,31 @@ Preserve a requested assembly step until the model supplies its actual step coun
 Sparse step annotations and failed loads must not clamp saved progress. Navigation
 becomes available after loading; only then clamp an out-of-range saved step.
 
-Use the editor's `commit` operation when applying lesson starters: a direct
-Document commit leaves selection pointing into the old syntax tree. Stage changes
-must never commit source. Save a project's raw drafts and Scratch before replacing
+Create a named lesson starter file only on its first request, then reopen it on
+later requests. Task selection must never commit source. Save a project's raw
+drafts and Scratch before replacing
 its archive, and keep it dirty if archive writing fails after the working files
 were saved. Recovery keeps the original archive hash to detect external changes.
-Remove a closed project's working directory only after the recovery checkpoint
-stops referencing it; a failed checkpoint must leave that directory recoverable.
+Retain template attempts across ordinary close; remove disposable archive
+extractions only after the recovery checkpoint stops referencing them.
 
-Keep palette policy separate from the session's recognition catalog. Verify that
-an existing block remains editable when hidden by the current stage, and that
-search, expression suggestions and direct drops respect the stage palette.
+Keep task recommendations separate from the session's recognition catalog.
+Verify that an existing block remains editable and that search, expression
+suggestions, Scratch, and direct drops can use compatible blocks outside the
+current task's recommendations.
+
+Task cards render optional localized Markdown and append inline workspace and
+resource links. Keep checkbox, points, verification status, and task identity in
+structured lesson data and progress. The right task dock shares space with Scratch
+and spans the editor and Console height; its toolbar chip belongs beside hub
+connection and is visible only when a lesson is active and the dock is obscured
+or collapsed.
+Full lesson instructions belong to one localized Markdown file with stable
+section anchors. Opening a lesson shows the full document in the existing Help
+workspace. The lesson has one tree entry; task Instructions links scroll to the
+selected section, and local lesson links stay within the lesson snapshot.
+Legacy stage files are combined for display without changing the saved lesson.
+Legacy stage files remain readable without opening a separate window.
 
 For OpenGL integration, verify a real QOpenGLWidget under both Wayland and X11,
 as well as headless shader results. An X11-only check misses EGL attachment errors.
@@ -585,10 +599,9 @@ project's MIT license; external parts retain their own license notices.
 
 ## Catalog navigation invariants
 
-Filter exact variants by level, lesson identity, and insertion type before choosing
-a representative card. A primary identity must not grant access to siblings in a
-restricted lesson. Enforce the same palette at all catalog insertion entry points,
-including a new Scratch cell and insertion into an existing cell. Record usage
+Filter exact variants by level and insertion type before choosing a representative
+card. The For this task view shows recommendations without restricting other
+catalog views or Scratch. Record usage
 only after a successful edit; transfer, recognition, Undo/Redo, and automatic helper
 management are not catalog use.
 

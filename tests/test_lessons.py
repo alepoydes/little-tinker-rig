@@ -72,6 +72,99 @@ def test_independent_projects_and_portable_draft(lesson, tmp_path):
     assert reopened.progress["completed"] == ["build"]
 
 
+def test_task_points_links_and_scratch_seed_are_portable(lesson, tmp_path):
+    (lesson / "idea.py").write_text("print('Try another distance')\n", encoding="utf-8")
+    data = json.loads((lesson / "lesson.json").read_text(encoding="utf-8"))
+    data["scratch_seeds"] = {"main.py": ["idea.py"]}
+    data["stages"][0]["points"] = 2
+    data["stages"][0]["links"] = [
+        {"kind": "markdown", "label": "More help", "target": "goal.md"},
+        {"kind": "scratch", "label": "Idea", "target": "main.py"},
+    ]
+    (lesson / "lesson.json").write_text(json.dumps(data), encoding="utf-8")
+    project = StudentProject.create(lesson)
+    assert Project(project.main).document.state.scratch == (
+        "print('Try another distance')\n",
+    )
+    project.progress["completed"] = ["build", "build"]
+    assert project.score == (2, 3)
+    project.checkpoint()
+    assert project.progress["completed"] == ["build", "build"]
+    destination = tmp_path / "project.ltr"
+    project.save(destination)
+    archived = StudentProject.open(destination)
+    assert archived.data["id"] == project.data["id"]
+    assert archived.data["origin"] == str(lesson.resolve())
+    assert archived.score == (2, 3)
+    assert StudentProject.latest(lesson).root == project.root
+    archived.discard_working_copy()
+
+
+@pytest.mark.parametrize("points", [-1, True, "3"])
+def test_task_points_reject_invalid_values(lesson, points):
+    data = json.loads((lesson / "lesson.json").read_text(encoding="utf-8"))
+    data["stages"][0]["points"] = points
+    (lesson / "lesson.json").write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(ValueError, match="points"):
+        Lesson.load(lesson)
+
+
+def test_localized_task_card_markdown_is_packaged_and_validated(lesson):
+    (lesson / "panel-en.md").write_text("Build a car.\n", encoding="utf-8")
+    (lesson / "panel-ru.md").write_text("Собери машину.\n", encoding="utf-8")
+    data = json.loads((lesson / "lesson.json").read_text(encoding="utf-8"))
+    data["stages"][0]["panel"] = {"en": "panel-en.md", "ru": "panel-ru.md"}
+    data["stages"][0]["panel_actions"] = False
+    (lesson / "lesson.json").write_text(json.dumps(data), encoding="utf-8")
+    loaded = Lesson.load(lesson)
+    assert loaded.panel_text(loaded.stages[0], "ru") == "Собери машину.\n"
+    assert loaded.panel_text(loaded.stages[1], "en") == "Drive"
+    assert b"panel-ru.md" in loaded.archive()
+    data["stages"][0]["panel_actions"] = "no"
+    (lesson / "lesson.json").write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(ValueError, match="panel_actions"):
+        Lesson.load(lesson)
+
+
+def test_one_instruction_file_uses_stable_task_sections(lesson):
+    (lesson / "full.md").write_text(
+        '# A car\n\n<a name="build"></a>\n\n## Build\n\nAssemble it.\n\n'
+        '<a name="drive"></a>\n\n## Drive\n\nMake it move.\n',
+        encoding="utf-8",
+    )
+    data = json.loads((lesson / "lesson.json").read_text(encoding="utf-8"))
+    data["instructions"] = "full.md"
+    for stage in data["stages"]:
+        stage["description"] = f"full.md#{stage['id']}"
+    (lesson / "lesson.json").write_text(json.dumps(data), encoding="utf-8")
+    loaded = Lesson.load(lesson)
+    assert "Assemble it." in loaded.description(loaded.stages[0])
+    assert "Make it move." not in loaded.description(loaded.stages[0])
+    assert "Make it move." in loaded.description(loaded.stages[1])
+    assert b"full.md" in loaded.archive()
+    data["stages"][1]["description"] = "goal.md"
+    (lesson / "lesson.json").write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(ValueError, match="sections of lesson instructions"):
+        Lesson.load(lesson)
+
+
+def test_legacy_stage_files_form_one_navigable_instruction_document(lesson):
+    (lesson / "finish.md").write_text(
+        "# Finish\n\nStop at the line.\n", encoding="utf-8"
+    )
+    data = json.loads((lesson / "lesson.json").read_text(encoding="utf-8"))
+    data["stages"][1]["description"] = "finish.md"
+    (lesson / "lesson.json").write_text(json.dumps(data), encoding="utf-8")
+    loaded = Lesson.load(lesson)
+    document, source = loaded.instructions_document()
+    assert source == "goal.md"
+    assert "Drive to the finish." in document
+    assert "Stop at the line." in document
+    assert '<a name="task-build"></a>' in document
+    assert '<a name="task-drive"></a>' in document
+    assert loaded.instructions_anchor(loaded.stages[1]) == "task-drive"
+
+
 def test_package_and_recovery_keep_original_save_baseline(lesson, tmp_path):
     archive = tmp_path / "car.pylesson"
     archive.write_bytes(pack(lesson))
@@ -107,6 +200,22 @@ def test_lesson_references_cannot_escape(lesson):
     data["stages"][0]["description"] = "../outside.md"
     (lesson / "lesson.json").write_text(json.dumps(data))
     with pytest.raises(ValueError, match="escapes"):
+        Lesson.load(lesson)
+
+
+@pytest.mark.parametrize(
+    "link",
+    [
+        {"kind": "markdown", "label": "Outside", "target": "../outside.md"},
+        {"kind": "program", "label": "Unknown", "target": "missing.py"},
+        {"kind": "shell", "label": "Run"},
+    ],
+)
+def test_task_links_reject_unsafe_or_unknown_targets(lesson, link):
+    data = json.loads((lesson / "lesson.json").read_text(encoding="utf-8"))
+    data["stages"][0]["links"] = [link]
+    (lesson / "lesson.json").write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(ValueError):
         Lesson.load(lesson)
 
 
@@ -228,10 +337,15 @@ def test_bundled_pybricks_lessons_have_resolvable_materials_programs_and_palette
     assert paths
     for path in paths:
         lesson = Lesson.load(path.parent)
+        assert lesson.data["kind"] == "project"
         for stage in lesson.stages:
             assert set(stage["blocks"]) <= available
             for lang in ("en", "ru"):
                 text = lesson.description(stage, lang)
+                goal = stage["goal"][lang]
+                assert goal and "one controlled change" not in goal
+                if stage["id"].startswith("run-"):
+                    assert stage["program"] in goal
                 for name in re.findall(r"\]\(program:([^)]+)\)", text):
                     assert name in lesson.data["programs"], (path, name)
                 assert "{%" not in text

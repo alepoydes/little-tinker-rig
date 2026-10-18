@@ -723,7 +723,7 @@ source bodies or adding a parallel catalog file.
 
 For an inserted, currently recognized family block, the **Variant** context submenu
 applies a chosen form immediately with one Undo. The current form is checked;
-level and exact lesson restrictions filter the other forms. Stale source/selection
+level restrictions filter the other forms. Stale source/selection
 and incompatible edits fail atomically. No extra insertion or usage is recorded.
 F3 or **Variants and
 parameters…** opens an explicit edit dialog. Compatible shared fields retain
@@ -737,7 +737,7 @@ The dialog previews the complete Python diff, including imports and helpers.
 Applying revalidates the selected source revision and commits one undoable edit;
 Cancel and invalid input leave source, Scratch, and history intact. Existing forms
 remain selectable even when above the current level or retained only as aliases.
-Other choices obey exact lesson and level restrictions. Returned values must fit
+Other choices obey level restrictions. Returned values must fit
 the parent input's known type. Declaration names, literal contents, comments, and
 the evaluation order of retained call arguments survive the edit. When compatible
 keyword spelling can preserve that order, it is retained; otherwise the edit is
@@ -1802,7 +1802,7 @@ expansion when cleared. Python view is the
 path to broader language/API features; levels never restrict editable source.
 Search, category branches, and persisted icon-only level buttons combine; help retains
 module groups and the same source definitions. Independent view buttons open
-Catalog, Favorites, Recent, Frequent, and For this lesson. Exact variants are
+Catalog, Favorites, Recent, Frequent, and For this task. Exact variants are
 selected through context menus; category expansion controls share the view row.
 Names remain in localized tooltips and accessible labels. Each family card shows
 its own clickable favorite star, filled when selected. Exact variants are
@@ -2022,45 +2022,60 @@ Workspace navigation stays on the left in a 48-pixel strip with centered 24-pixe
 SVG icons and 48-pixel rows. Names appear only in localized tooltips and remain
 available to assistive technology. Language and font changes do not widen the
 strip. When height is limited, the list scrolls without changing the current
-workspace. Lesson is shown only for a student project; Assembly is also available
-independently. Hidden modes cannot be
-selected from the keyboard. Dimensions use logical pixels for display scaling.
+workspace. Assembly is also available independently. A lesson project shows a
+full-height right task panel in every workspace, collapsible to a progress
+control beside hub connection. At narrow widths the panel opens as an overlay
+without shrinking the editor; Scratch shares the right dock area on wide windows;
+ordinary files show neither. Hidden modes cannot be selected from the keyboard.
+Dimensions use logical pixels for display scaling.
 
 Lessons (`.pylesson`) are immutable, localized materials with goals, stages,
-progressive hints, allowed block identities and explicit completion criteria.
+progressive hints, recommended block identities and explicit completion criteria.
 Student projects (`.ltr`) snapshot these materials together with ordinary
 Python files, per-file Scratch, editor state and lesson progress. The writable
 working directory belongs to the user data directory. Archives are atomic, detect
 external modifications and retain unfinished Python. Recovery retains archive
-save baselines; normal close removes private working copies.
+save baselines; template attempts remain in user data across normal close.
 
-Bundled Pybricks lessons reuse licensed example programs through explicit file
+Bundled Pybricks exploration projects reuse licensed example programs through explicit file
 references; packaging resolves them into immutable lesson resources. The `programs`
 mapping creates independent student copies, including shared modules and licenses,
 and `main` selects the entry point. Named stage programs and `program:` document
 links reopen the existing copy, preserving unfinished edits. Localized Markdown
-sections provide stage descriptions without one file per short page. Lesson groups
-form submenus and nested lesson directories are discovered recursively.
+sections provide stage descriptions without one file per short page. Guided
+lessons and exploration projects occupy separate menu groups; localized activity
+groups form submenus, and nested directories are discovered recursively.
 Only explicitly licensed repository material is reproduced; website-only content
 and heavy media remain external links. No assembly sequence is inferred from a
 project page. Console input supplies line or focused immediate-key input to a
 physical hub, serialized with other writes and unavailable during port monitoring.
 
-Stage navigation never edits program source or depends on completion. Previous
-and Next open neighboring descriptions whenever they exist. Opening a starter
-creates a new unsaved document in the current project; it never replaces another
-document, including unfinished Python drafts.
+Selecting a task title opens its section in the same Help document, changes
+recommendations, and reveals its card. Other cards remain compact with their
+checkboxes, titles, and points visible. Checking a task changes completion only;
+it does not change the selected task or workspace. Opening a starter creates one named document
+in the current project and reopens that document on later clicks; it never
+replaces another document, including unfinished Python drafts.
 Visiting an assembly step, changing a camera or viewing a hint never completes a
 physical task. Manual completion and observable device checks remain distinct.
-A single task card stays above the workspaces, including the lesson overview,
-with completion status and actions in one place. Completion does not navigate;
-completed stages have green check icons, including in the selected list row.
+A right-side task panel shows the selected task's Markdown, revealed hints,
+links and completion status across workspaces. Help shows the whole localized
+lesson instruction file from the top on first open, or at the selected task
+when an attempt is resumed. The lesson
+has one tree entry; task Instructions links scroll that same document to the
+selected task's stable section anchor without creating section leaves. Legacy
+stage files are combined into one navigable document at runtime.
+Instruction links do not open a dialog. At narrow widths they temporarily hide
+the task overlay without changing the saved panel preference. The document has
+an inline task list and in-document Find; reading another section does not select
+its task. The Help tree keeps one lesson leaf and no section leaves.
+Completion does not navigate; completed tasks have checked rows and earned points.
 Assembly stages also expose an `assembly:` link at the start of their description,
-so instructions remain reachable when the task card is hidden. Opening a stage
-description starts at the top after layout and formatting. Both entry points
+so instructions remain reachable when the task panel is collapsed. Opening a stage
+description scrolls to its anchored section after layout and formatting. Both entry points
 select the active lesson's robot and preserve its step within the stage range,
 independently of any separately opened robot instructions.
-Hints and starter actions are available only where authored. Opening a saved project restores its workspace,
+Hints and starter actions are available only where authored. Opening a saved project shows its instructions in Help,
 including when its document is already open. Hub callbacks after closing must not
 read removed project resources.
 
@@ -2071,10 +2086,10 @@ its last model, step and camera in user settings and loads resources lazily.
 Robot descriptions may declare a localized title. The model chooser appears only
 for multiple open models; opening instructions belongs to File and the empty viewer.
 
-The lesson palette restricts library search and contextual expression proposals,
-without removing recognition definitions. A stage may expose a block above the
-global learning level. Free exploration lifts the palette constraint and preserves
-progress. This option belongs to the block library, not the lesson overview.
+The For this task library view shows task recommendations, including blocks above
+the selected level. It does not restrict normal catalog search, contextual
+expressions, Scratch, editing, or existing source. The full catalog remains
+available while the task panel is open.
 The main toolbar uses 24-pixel icons with localized tooltips and shortcuts;
 hub name and connection status retain text. Multiple programs can belong to one
 project; saving any of them saves the project's open programs and progress together.

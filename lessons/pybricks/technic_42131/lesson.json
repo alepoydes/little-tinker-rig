@@ -46,8 +46,8 @@
         "ru": "Попробуй: пульт"
       },
       "goal": {
-        "en": "Operate the tracks and attachments with the remote.",
-        "ru": "Управляй гусеницами и навесными механизмами с пульта."
+        "en": "Open `technic_42131_bulldozer.py`. Read the button mappings and gearbox positions before running. Try each attachment separately, then change one operating speed and compare the response.",
+        "ru": "Открой `technic_42131_bulldozer.py`. До запуска изучи кнопки и положения коробки передач. Проверь каждый механизм отдельно, затем измени одну рабочую скорость и сравни реакцию."
       },
       "description": {
         "en": "en.md#run-1",
@@ -105,8 +105,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "Read the button mappings and gearbox positions before running. Try each attachment separately, then change one operating speed and compare the response.",
+        "ru": "До запуска изучи кнопки и положения коробки передач. Проверь каждый механизм отдельно, затем измени одну рабочую скорость и сравни реакцию."
       },
       "description": {
         "en": "en.md#experiment",
@@ -157,5 +157,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

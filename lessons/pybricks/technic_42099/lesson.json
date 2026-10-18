@@ -58,8 +58,8 @@
         "ru": "Попробуй: автономное движение"
       },
       "goal": {
-        "en": "Compare autonomous driving, keyboard, remote and obstacle detection.",
-        "ru": "Сравни автономную поездку, клавиатуру, пульт и обнаружение препятствий."
+        "en": "Open `technic_42099_off_roader.py`. Find the steering-centering step and `drive` function. Compare straight driving with one turn at low speed.",
+        "ru": "Открой `technic_42099_off_roader.py`. Найди центрирование руля и функцию `drive`. Сравни прямое движение и один поворот на малой скорости."
       },
       "description": {
         "en": "en.md#run-1",
@@ -99,8 +99,8 @@
         "ru": "Попробуй: клавиатура"
       },
       "goal": {
-        "en": "Compare autonomous driving, keyboard, remote and obstacle detection.",
-        "ru": "Сравни автономную поездку, клавиатуру, пульт и обнаружение препятствий."
+        "en": "Open `technic_42099_keyboard.py`. Use Console’s immediate key mode to drive with 7/8/9 and reverse with 1/2/3; press 5 to stop.",
+        "ru": "Открой `technic_42099_keyboard.py`. Включи немедленную отправку клавиш в консоли: 7/8/9 — вперёд, 1/2/3 — назад, 5 — остановка."
       },
       "description": {
         "en": "en.md#run-2",
@@ -145,8 +145,8 @@
         "ru": "Попробуй: чтение клавиш"
       },
       "goal": {
-        "en": "Compare autonomous driving, keyboard, remote and obstacle detection.",
-        "ru": "Сравни автономную поездку, клавиатуру, пульт и обнаружение препятствий."
+        "en": "Open `technic_42099_keyboard_monitor.py`. Read the keyboard monitor output in Console and compare the reported keys with the keys you send.",
+        "ru": "Открой `technic_42099_keyboard_monitor.py`. Читай вывод клавиатурного монитора в консоли и сравни показанные клавиши с отправленными."
       },
       "description": {
         "en": "en.md#run-3",
@@ -181,8 +181,8 @@
         "ru": "Попробуй: обход препятствий"
       },
       "goal": {
-        "en": "Compare autonomous driving, keyboard, remote and obstacle detection.",
-        "ru": "Сравни автономную поездку, клавиатуру, пульт и обнаружение препятствий."
+        "en": "Open `technic_42099_obstacle_avoidance.py`. Fit the distance sensor named in the program, then compare obstacle detection at two distances.",
+        "ru": "Открой `technic_42099_obstacle_avoidance.py`. Установи датчик расстояния из программы и сравни обнаружение препятствия на двух дистанциях."
       },
       "description": {
         "en": "en.md#run-4",
@@ -227,8 +227,8 @@
         "ru": "Попробуй: пульт"
       },
       "goal": {
-        "en": "Compare autonomous driving, keyboard, remote and obstacle detection.",
-        "ru": "Сравни автономную поездку, клавиатуру, пульт и обнаружение препятствий."
+        "en": "Open `technic_42099_off_roader_remote.py`. Pair the Powered Up remote and compare its steering and drive controls with the keyboard variant.",
+        "ru": "Открой `technic_42099_off_roader_remote.py`. Подключи пульт Powered Up и сравни управление рулём и приводом с клавиатурным вариантом."
       },
       "description": {
         "en": "en.md#run-5",
@@ -271,8 +271,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "For the keypad program, 7/8/9 drive forward, 1/2/3 reverse, and 5 stops. For obstacle avoidance attach the exact sensor named in the program. Change one steering or distance setting and predict the result.",
+        "ru": "В программе для цифровой клавиатуры 7/8/9 едут вперёд, 1/2/3 — назад, 5 останавливает. Для обхода препятствий нужен датчик, указанный в программе. Измени один параметр руля или расстояния и предскажи результат."
       },
       "description": {
         "en": "en.md#experiment",
@@ -321,5 +321,10 @@
       ]
     }
   ],
-  "robot": "robot/robot.json"
+  "robot": "robot/robot.json",
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

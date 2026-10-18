@@ -51,6 +51,7 @@ class Recovery(QObject):
             autosave_error = None
             try:
                 window.example_workspaces.autosave()
+                window.lessons.autosave()
             except (OSError, ValueError) as error:
                 autosave_error = error
             data = {

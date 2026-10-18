@@ -46,8 +46,8 @@
         "ru": "Попробуй: программа"
       },
       "goal": {
-        "en": "Identify the rover motors and try one movement sequence.",
-        "ru": "Найди моторы вездехода и проверь одну последовательность движений."
+        "en": "Open `inventor_51515_exploration_rover.py`. Name the mechanism driven by each port. During calibration point the color sensor at the floor. Compare a red or cyan rock with an obstacle, then shorten one reversing duration and predict the stopping position.",
+        "ru": "Открой `inventor_51515_exploration_rover.py`. Назови механизм каждого порта. При калибровке направь датчик цвета на пол. Сравни красный или голубой камень с препятствием, затем сократи одно движение назад и предскажи место остановки."
       },
       "description": {
         "en": "en.md#run-1",
@@ -98,8 +98,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "Name the mechanism driven by each port. During calibration point the color sensor at the floor. Compare a red or cyan rock with an obstacle, then shorten one reversing duration and predict the stopping position.",
+        "ru": "Назови механизм каждого порта. При калибровке направь датчик цвета на пол. Сравни красный или голубой камень с препятствием, затем сократи одно движение назад и предскажи место остановки."
       },
       "description": {
         "en": "en.md#experiment",
@@ -143,5 +143,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

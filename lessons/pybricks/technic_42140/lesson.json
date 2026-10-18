@@ -48,8 +48,8 @@
         "ru": "Попробуй: управление гусеницами"
       },
       "goal": {
-        "en": "Compare tank-style and car-style control when the vehicle flips.",
-        "ru": "Сравни гусеничное и автомобильное управление при перевороте машины."
+        "en": "Open `technic_42140_transformation.py`. Control the two tracks separately with the remote and compare movement before and after flipping the vehicle.",
+        "ru": "Открой `technic_42140_transformation.py`. Управляй двумя гусеницами по отдельности с пульта и сравни движение до и после переворота машины."
       },
       "description": {
         "en": "en.md#run-1",
@@ -98,8 +98,8 @@
         "ru": "Попробуй: движение и поворот"
       },
       "goal": {
-        "en": "Compare tank-style and car-style control when the vehicle flips.",
-        "ru": "Сравни гусеничное и автомобильное управление при перевороте машины."
+        "en": "Open `technic_42140_transformation_flipped.py`. Use the second remote layout: left +/− for driving, right +/− for turning. Compare orientation handling with the first variant.",
+        "ru": "Открой `technic_42140_transformation_flipped.py`. Используй второй вариант пульта: левые +/− для движения, правые +/− для поворота. Сравни учёт ориентации с первым вариантом."
       },
       "description": {
         "en": "en.md#run-2",
@@ -143,8 +143,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "Both variants handle flipping. The first remote layout controls each track separately and changes speed with the red buttons. The second uses left +/− for drive and right +/− for turning. Compare how each reads the hub orientation and changes motor commands.",
+        "ru": "Оба варианта учитывают переворот. В первом каждая сторона пульта управляет своей гусеницей, красные кнопки меняют скорость. Во втором левые +/− задают движение, правые +/− — поворот. Сравни чтение ориентации хаба и изменение команд моторам."
       },
       "description": {
         "en": "en.md#experiment",
@@ -189,5 +189,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

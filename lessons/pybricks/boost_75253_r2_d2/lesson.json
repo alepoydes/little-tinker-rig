@@ -50,8 +50,8 @@
         "ru": "Попробуй: программа"
       },
       "goal": {
-        "en": "Make R2-D2 move, turn, and return to a stable standing position.",
-        "ru": "Научи R2-D2 ехать, поворачивать и возвращаться в устойчивое положение."
+        "en": "Open `boost_75253_r2_d2.py`. Start with the MAIN PROGRAM section. Change one travel distance while keeping the tipping and support sequence unchanged. Explain why the body must tilt before travelling.",
+        "ru": "Открой `boost_75253_r2_d2.py`. Начни с раздела MAIN PROGRAM. Измени одну дистанцию, сохранив последовательность наклона и опоры. Объясни, зачем корпус наклоняется перед движением."
       },
       "description": {
         "en": "en.md#run-1",
@@ -102,8 +102,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "Start with the MAIN PROGRAM section. Change one travel distance while keeping the tipping and support sequence unchanged. Explain why the body must tilt before travelling.",
+        "ru": "Начни с раздела MAIN PROGRAM. Измени одну дистанцию, сохранив последовательность наклона и опоры. Объясни, зачем корпус наклоняется перед движением."
       },
       "description": {
         "en": "en.md#experiment",
@@ -148,5 +148,10 @@
       ]
     }
   ],
-  "robot": "robot/robot.json"
+  "robot": "robot/robot.json",
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

@@ -43,7 +43,7 @@ from little_tinker_rig.core.authoring import (
 )
 from little_tinker_rig.core.edit import Target, target_position
 from little_tinker_rig.core.expressions import navigate as navigate_expression
-from little_tinker_rig.core.lessons import localized
+from little_tinker_rig.core.lessons import WORKSPACES, localized
 from little_tinker_rig.core.parameters import default_bindings
 from little_tinker_rig.core.project import ExternalChangeError
 from little_tinker_rig.core.snippets import LEVELS, load_collection
@@ -256,8 +256,8 @@ class Studio(QMainWindow):
             self.pages.addWidget(page)
         self.modes = ModeList()
         self.modes.currentRowChanged.connect(self.set_mode)
-        workspace = QWidget()
-        workspace_layout = QHBoxLayout(workspace)
+        workspace = self.workspace = QWidget()
+        workspace_layout = self.workspace_layout = QHBoxLayout(workspace)
         workspace_layout.setContentsMargins(0, 0, 0, 0)
         workspace_layout.setSpacing(4)
         workspace_layout.addWidget(self.modes)
@@ -419,6 +419,7 @@ class Studio(QMainWindow):
 
     def _menus(self):
         toolbar = self.addToolBar(N_("Program"))
+        self.main_toolbar = toolbar
         toolbar.setObjectName("programTools")
         toolbar.setMovable(False)
         toolbar.setIconSize(QSize(24, 24))
@@ -577,7 +578,7 @@ class Studio(QMainWindow):
             action = self._action(
                 view,
                 label,
-                f"Ctrl+Alt+{index+1}",
+                f"Ctrl+Alt+{index + 1}",
                 lambda mode=index: self.change_editor(mode),
             )
             action.setCheckable(True)
@@ -656,7 +657,7 @@ class Studio(QMainWindow):
         self.hub_button.setIcon(self._icon("network-connect", "SP_ComputerIcon"))
         self.hub_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         self.hub_button.clicked.connect(self.connect_hub)
-        toolbar.addWidget(self.hub_button)
+        self.hub_button_action = toolbar.addWidget(self.hub_button)
         self.console_button = QToolButton()
         self.console_button.setIcon(
             self._icon("utilities-terminal", "SP_FileDialogListView")
@@ -815,7 +816,8 @@ class Studio(QMainWindow):
         set_language(code)
         application_settings().setValue("language", code)
         for window in QApplication.topLevelWidgets():
-            if isinstance(window, Studio):
+            # Qt can retain closed windows here until deferred deletion runs.
+            if isinstance(window, Studio) and (window is self or window.isVisible()):
                 window.retranslate()
 
     def retranslate(self):
@@ -974,7 +976,7 @@ class Studio(QMainWindow):
             self.recent_menu.addAction(tr("No recent files")).setEnabled(False)
             return
         for index, path in enumerate(recent, 1):
-            action = self.recent_menu.addAction(f'&{index}  {path.replace("&", "&&")}')
+            action = self.recent_menu.addAction(f"&{index}  {path.replace('&', '&&')}")
             action.setToolTip(path)
             action.setData(path)
             action.setEnabled(Path(path).is_file())
@@ -1031,6 +1033,8 @@ class Studio(QMainWindow):
         if page.example_work:
             return self.recovery.flush()
         project = page.lesson_project
+        if project and project.retain and project.path is None:
+            return self.recovery.flush()
         pages = (
             [
                 self.documents.widget(i)
@@ -1042,8 +1046,13 @@ class Studio(QMainWindow):
         )
         if not any(p.dirty for p in pages) and not (project and project.dirty):
             return True
-        message = (
-            tr(
+        if project and project.retain:
+            message = tr(
+                "Update saved lesson project {name} before closing? Your local attempt remains available either way.",
+                name=project.path.name,
+            )
+        elif project:
+            message = tr(
                 "Save lesson project {name} before closing? Saving includes all open programs in this project.",
                 name=(
                     project.path.name
@@ -1051,9 +1060,8 @@ class Studio(QMainWindow):
                     else localized(project.lesson.data["title"], language())
                 ),
             )
-            if project
-            else tr("Save {p0} before closing?", p0=page.session.project.path.name)
-        )
+        else:
+            message = tr("Save {p0} before closing?", p0=page.session.project.path.name)
         result = QMessageBox.question(
             self,
             tr("Unsaved changes"),
@@ -1121,7 +1129,7 @@ class Studio(QMainWindow):
             return
         self.pages.setCurrentIndex(index)
         if self.document_page.lesson_project:
-            self.document_page.lesson_project.progress["mode"] = index
+            self.document_page.lesson_project.progress["mode"] = WORKSPACES[index]
             if hasattr(self, "recovery"):
                 self.recovery.schedule()
         self.modes.blockSignals(True)
@@ -1246,7 +1254,9 @@ class Studio(QMainWindow):
         selection = (
             snippet_title(match.snippet)
             if match and match.snippet.help
-            else "Python" if page and page.code_active else tr("Select a block")
+            else "Python"
+            if page and page.code_active
+            else tr("Select a block")
         )
         self.statusBar().showMessage(
             tr("Python · changes not checked")
@@ -1268,7 +1278,7 @@ class Studio(QMainWindow):
                 + " · "
                 + name
             )
-        self.setWindowTitle(f'{"● " if dirty else ""}{name} — LittleTinker Rig')
+        self.setWindowTitle(f"{'● ' if dirty else ''}{name} — LittleTinker Rig")
         text_editor = self.text_editor()
         self.undo_action.setEnabled(
             (
@@ -1467,17 +1477,6 @@ class Studio(QMainWindow):
             raise ValueError(
                 tr("Switch this editor to Blocks before inserting a block.")
             )
-        if (
-            self.library.lesson_ids is not None
-            and identity not in self.library.lesson_ids
-        ):
-            self.error(
-                tr(
-                    "This block is outside the current lesson palette. Enable Show all blocks to use it."
-                )
-            )
-            return
-
         view = view or (self.editing_source if target is None else self.source)
         session = view.session
         snippet = next(
@@ -1625,12 +1624,11 @@ class Studio(QMainWindow):
         self.console_dock.show()
 
     def show_find(self):
-        if self.pages.currentIndex() in (2, 3):
-            search = (
-                self.help_page.search
-                if self.pages.currentIndex() == 2
-                else self.block_editor.search
-            )
+        if self.pages.currentIndex() == 2:
+            self.help_page.open_find()
+            return
+        if self.pages.currentIndex() == 3:
+            search = self.block_editor.search
             search.setFocus()
             search.selectAll()
             return
@@ -1889,7 +1887,9 @@ class Studio(QMainWindow):
             else (
                 tr("Cancel connection")
                 if action == "connecting"
-                else tr("Disconnect hub") if info.connected else tr("＋ Connect hub")
+                else tr("Disconnect hub")
+                if info.connected
+                else tr("＋ Connect hub")
             )
         )
         self.hub_button.setToolTip(

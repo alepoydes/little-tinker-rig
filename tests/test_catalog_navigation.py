@@ -87,7 +87,7 @@ def test_family_navigation_filters_variants_and_retains_personal_links(
         assert library.topLevelItemCount() == 2
         library.set_view("catalog")
         alias = "pybricks/motor_motion/motor_run_target_speed_target_angle_then_wait"
-        library.stage_ids = library.lesson_ids = frozenset({alias})
+        library.stage_ids = frozenset({alias})
         library.set_view("lesson")
         library.filter("", "beginner")
         item = library.rows[key]
@@ -96,7 +96,6 @@ def test_family_navigation_filters_variants_and_retains_personal_links(
         assert [s.identity for s in library.current_choices()] == [alias]
         library.select_variant(variant)
         assert item.data(0, IDENTITY) == alias
-        library.lesson_ids = None
         library.set_view("favorites")
         set_language("ru")
         library.load(())
@@ -155,12 +154,11 @@ def test_catalog_insertions_count_once_in_program_and_both_scratch_paths(
         assert event.isAccepted() and count() == 2
         window.scratch.cells[0].insert_snippet(identity)
         assert count() == 3
-        window.scratch.allowed_ids = frozenset()
         failures = []
         window.scratch.failed.disconnect(window.error)
         window.scratch.failed.connect(failures.append)
         window.scratch.cells[0].insert_snippet(identity)
-        assert failures and count() == 3
+        assert not failures and count() == 4
         QTest.mouseClick(
             window.view_filter.buttons["recent"], Qt.MouseButton.LeftButton
         )
@@ -171,7 +169,7 @@ def test_catalog_insertions_count_once_in_program_and_both_scratch_paths(
         QTest.mouseClick(window.library.viewport(), Qt.MouseButton.LeftButton, pos=star)
         assert window.library.history.favorites == [key]
         assert item.data(0, FAVORITE)
-        assert window.session.document.state is before and count() == 3
+        assert window.session.document.state is before and count() == 4
         QTest.mouseClick(window.library.viewport(), Qt.MouseButton.LeftButton, pos=star)
         assert not window.library.history.favorites and not item.data(0, FAVORITE)
         QTest.mouseClick(window.library.viewport(), Qt.MouseButton.LeftButton, pos=star)
@@ -183,7 +181,7 @@ def test_catalog_insertions_count_once_in_program_and_both_scratch_paths(
         assert not window.library.history.favorites
         window.view_filter.select("recent")
         QTest.mouseClick(window.clear_usage, Qt.MouseButton.LeftButton)
-        assert window.library.history.recent == [] and count() == 3
+        assert window.library.history.recent == [] and count() == 4
     finally:
         with patch.object(
             QMessageBox, "question", return_value=QMessageBox.StandardButton.Discard

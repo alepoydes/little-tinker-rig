@@ -46,8 +46,8 @@
         "ru": "Попробуй: программа"
       },
       "goal": {
-        "en": "Move two blocks between platforms with the four-motor arm.",
-        "ru": "Переложи два кубика между платформами четырёхмоторным манипулятором."
+        "en": "Open `inventor_51515_block_flipper.py`. Start with blocks on the two outside platforms and the arm near the middle. Identify which operations wait and which overlap. Reduce one speed before changing destinations.",
+        "ru": "Открой `inventor_51515_block_flipper.py`. Поставь кубики на две крайние платформы, рычаг — около середины. Найди последовательные и одновременные действия. Сначала уменьши одну скорость, затем меняй положения."
       },
       "description": {
         "en": "en.md#run-1",
@@ -98,8 +98,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "Start with blocks on the two outside platforms and the arm near the middle. Identify which operations wait and which overlap. Reduce one speed before changing destinations.",
+        "ru": "Поставь кубики на две крайние платформы, рычаг — около середины. Найди последовательные и одновременные действия. Сначала уменьши одну скорость, затем меняй положения."
       },
       "description": {
         "en": "en.md#experiment",
@@ -143,5 +143,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }

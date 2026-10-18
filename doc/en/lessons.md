@@ -1,28 +1,47 @@
 # Lessons and student projects
 
-Lessons are optional. **File → Lessons → First drive · SPIKE Prime 45678** starts
-an independent student project. Ordinary Python editing works as before.
+Lessons are optional. **File → Lessons → Guided lessons → First drive · SPIKE Prime 45678** opens
+your latest attempt at that lesson, or creates one if this is the first time.
+**File → Lessons → Start new attempt** explicitly creates another attempt. Ordinary
+Python editing and the workspace controls stay the same. Opening or reopening a
+new lesson shows its complete instructions in **Help** from the top. Resuming an
+attempt opens the selected task's section in that same document.
 
-The **Lesson** workspace presents the goal, stages and progressive hints.
-**Open program**, **Open controls** or **Open assembly** opens the stage's workspace.
-The task and its controls stay together at the top in Program, Control, Lesson
-and the lesson's Assembly. Help and Block Editor use the full height. Outside
-Lesson, the card shows a compact stage title; its tooltip contains the goal.
-Previous, next and complete actions use icons with tooltips.
-**Mark complete** records the result without changing workspace;
-completed stages get green checkmarks in the list. **← Previous stage** and
-**Next stage →** open neighboring descriptions, even before completion.
-**Open lesson** returns to the overview. Hide the task card with **×** and restore
-it with **View → Current task**. Visiting a stage never completes it or replaces
-code. **Open starter program** opens a new unsaved program tab in this lesson
-project, preserving the current program. Physical assembly and experiments are
-marked complete by the learner; a connection-check stage requires live readings
-from the port monitor. Its status explains any missing connection or device.
+The right-side **Task panel** shows every task with a checkbox, title, and points.
+The selected task expands to show its goal, completion guidance, links and hints;
+other tasks stay compact. It appears only while a lesson project is active.
+Clicking a task title selects it, updates suggested blocks, and opens its section
+in **Help**; it does not change code or completion. A checkbox only records
+completion and does not navigate. **Instructions** opens the lesson's full
+localized Markdown in **Help**, positioned at that task's section; it does not
+open another window or add a task page to the Help tree. **This lesson** has one
+document entry; clicking it returns to the top. An inline task list jumps between
+sections. The always-visible **Find in document** field searches with highlighted
+matches, next/previous controls, and a match count; Ctrl+F focuses it. Reading
+or scrolling a section does not change the selected task or its recommended blocks.
+**Program**, **Assembly**,
+**Controls**, and links to **Hub and devices** open the relevant file or panel. **Next hint**
+reveals help on that card. The panel is available in every workspace.
+Use its collapse icon or **View → Task panel** to hide it. A progress control
+such as **Lesson · 1/6 · 0 done** beside the hub connection opens it again. On narrow
+windows the panel opens over the workspace, so it does not shrink the editor.
+Escape, a click outside it, or following a destination link hides it temporarily;
+resizing to a wide window restores the saved expanded preference. Scratch and
+the task panel share the right-hand dock area; the Console can stay open below
+the editor.
 
-Each stage shows a small palette, including its permitted contextual expression
-operations. Existing code still uses the full library for recognition and editing.
-**Show all blocks**, in the block library, enables free experiments while retaining
-lesson progress.
+Check a task's box after doing it. Its points are counted once and removed if you
+clear the box. The panel identifies learner-reported completion; a connection
+task needs fresh readings from the port monitor before it can be checked and is
+then labeled as verified. The app does not claim to verify physical assembly or
+whether a program achieved its real-world goal. Visiting a task or following a
+link never marks it complete. **Open starter program**, when offered, creates one
+named student file on first use and opens that same file thereafter. It preserves
+your current program and never reapplies the template over your edits.
+
+**For this task** shows recommended blocks regardless of the chosen difficulty.
+The ordinary catalog, level buttons, Scratch, expressions, and Python editor
+remain available throughout the lesson.
 Selecting or hovering over an input does not filter the library. Right-click the
 input and choose **Find value blocks** to search for compatible expressions, or
 **Find creation blocks** to find a declaration for a missing variable. The back
@@ -32,18 +51,19 @@ Ordinary **File → New** creates a program outside the lesson, with the normal 
 
 ## Pybricks projects
 
-**File → Lessons → Pybricks · BOOST / Robot Inventor / SPIKE Prime / Technic**
-offers 24 project lessons with English/Russian goals, port tables, experiments and
-restricted block palettes. A lesson can contain several runnable variants and
-shared modules. **Open program** and program links select the indicated student
-copy; reopening it preserves edits. Stage navigation only changes the task.
+**File → Lessons → Explore projects → Pybricks · BOOST / Robot Inventor / SPIKE Prime / Technic**
+offers 24 projects for exploration. They have English/Russian activity goals,
+port tables, experiments and recommended blocks. A project can contain several runnable variants and shared
+modules. **Program** and program links select the indicated student copy;
+reopening it preserves edits. The progress control says **Project** for these
+activities. Task goals identify the relevant program and action for each variant.
 
 Programs, dependencies, descriptions, licenses and progress are saved together.
 Blast 51515, R2-D2 75253, X-treme Off-Roader 42099 and Liebherr 42100 include
 community LDraw models with authored steps. Select **Open 3D building instructions**
-at the top of the preparation description, or **Open assembly** in the task card.
-The description link remains available when the card is hidden and opens the
-lesson robot even if another model was opened separately.
+in the preparation description, or **Assembly** in the task panel. The panel
+reopens from its progress button and selects the lesson robot even if another
+model was opened separately.
 Author credits, licenses and official LEGO PDF links
 remain available. Steps follow the MPD rather than PDF page numbers. Other lessons
 retain their building links. PDFs, photos and videos open in your browser and
@@ -66,9 +86,11 @@ every activity. EV3 is not included.
 
 **Save** writes a portable `.ltr` archive containing ordinary Python programs,
 Scratch, a copy of the lesson materials and robot arrangement, editor view state,
-hints and progress. Invalid unfinished Python can be saved too. Open this file to
-continue; open the lesson again to start a separate project. Use **File → New
-program in lesson project** for another program in the same archive.
+hints, task points, and progress. Invalid unfinished Python can be saved too.
+Opening the lesson template resumes the latest local attempt; open a saved `.ltr`
+to continue that portable archive. **File → Lessons → My lesson attempts** opens
+an earlier attempt, while **Start new attempt** creates another. Use **File → New
+program in lesson project** for another program in the same project.
 
 Downloaded part libraries are referenced by version and checksum. **File → Export
 lesson project with resources…** creates a separate offline copy containing only
@@ -78,10 +100,12 @@ remain in the project; they are never placed only in a disposable cache.
 
 Working files and crash recovery live in the platform's user data directory,
 under `little-tinker-rig/projects` and `little-tinker-rig/recovery`, never in the
-installation or lesson directory. Recovery is debounced; it is not a replacement
-for saving the portable archive. A changed archive is not silently overwritten.
-The working copy is removed after a normal close; an abnormal close leaves it
-available for recovery. Archive contents can also be extracted with a ZIP tool.
+installation or lesson directory. The latest template attempt is saved locally
+after edits and retained on normal close. Explicit **Save** writes or updates a
+portable archive; local persistence does not silently update that archive.
+A changed archive is not overwritten without a conflict decision. An abnormal
+close also offers a recovery checkpoint. Archive contents can be extracted with
+a ZIP tool.
 
 ## Assembly
 
@@ -168,27 +192,53 @@ Use stable stage and block identities:
   "format": 1,
   "id": "my-first-drive",
   "title": {"en": "First drive", "ru": "Первая поездка"},
+  "instructions": {"en": "en.md", "ru": "ru.md"},
   "robot": "robot/robot.json",
   "stages": [{
     "id": "drive",
     "title": {"en": "Drive", "ru": "Поездка"},
-    "description": {"en": "en/drive.md", "ru": "ru/drive.md"},
+    "description": {"en": "en.md#drive", "ru": "ru.md#drive"},
+    "panel": {"en": "en/panel/drive.md", "ru": "ru/panel/drive.md"},
     "mode": "program",
+    "points": 2,
     "blocks": ["pybricks/drive/create_robot", "pybricks/drive/straight"],
     "hints": [{"en": "Set distance to 200.", "ru": "Укажи расстояние 200."}]
   }]
 }
 ```
 
-English is the fallback. Descriptions are Markdown files; titles, goals and hints
-are localized strings. Optional `starter` names a Python file (at the lesson level
-it initializes a new project; at stage level it opens a new program explicitly).
-Optional `collection` names a normal block collection included in the lesson.
+English is the fallback. Author one full `instructions` Markdown file per
+language for a lesson. Each stage's `description` points to a section in that
+file, such as `en.md#drive`. A preceding `<a name="drive"></a>` gives the
+section a stable identity across translations. Clicking a task's Instructions
+link opens the whole document in Help at that section; the compact Help Back
+control returns to the previously viewed document, and Recent pages lists
+previously opened documents without repeating instruction sections. Older lessons without
+`instructions` display their stage files as one combined Help document. If
+several tasks share an unsectioned file, that text appears under each task so
+every **Instructions** link has a destination.
 
-Optional localized `group` creates a submenu in **File → Lessons**. Nested lesson
-directories are discovered recursively. A description may select an ATX Markdown
-section, for example `en.md#prepare`; preceding HTML anchors provide stable stage
-names across translations. Subheadings and fenced code remain in that section.
+Titles, goals and hints are localized strings. Optional localized `panel` Markdown supplies the short
+task-card content. Without it, the localized `goal` appears there. Optional
+lesson-level `panel_intro` adds Markdown above all cards. Each card automatically
+ends with relevant Instructions, workspace, suggested-block, starter, hint, and
+extra-resource links. Set `panel_actions: false` on a task only when its authored
+Markdown supplies the desired links itself; internal links can use
+`task:instructions`, `task:program`, `task:assembly`, `task:control`,
+`task:blocks`, `task:starter`, or `task:hint`. `points` is a nonnegative integer,
+defaulting to 1.
+Completion points are derived from unique completed stage IDs. `blocks` lists
+recommendations for the **For this task** view and never restricts other views.
+Optional `starter` names a Python file: at lesson level it initializes the main
+program once; at stage level its action creates one named student file on first
+use and reopens that file later. Optional `collection` names a normal block
+collection included in the lesson.
+
+Optional `kind: "project"` places an activity under **Explore projects**; the
+default `kind: "lesson"` places it under **Guided lessons**. An optional localized
+`group` creates a submenu there. Nested lesson directories are discovered
+recursively. The full instruction file may contain
+subheadings and fenced code within each task section.
 
 For multi-file activities, `programs` maps workspace paths to lesson files and
 `main` names the initial Python program, for example:
@@ -202,8 +252,22 @@ For multi-file activities, `programs` maps workspace paths to lesson files and
 
 A stage's optional `program` selects one of these Python files. Markdown links
 such as `[Open robot](program:robot.py)` open its editable copy without resetting
-it. Other files, such as licenses, may also be copied through `programs`.
+it. `assembly:`, `devices:`, and `connect:` open the assembly workspace, the
+Hub and devices panel, and the connection dialog respectively. Other files,
+such as licenses, may also be copied through `programs`.
 Local documentation links stay inside the lesson; HTTP(S) links open the browser.
+
+Optional `scratch_seeds` maps a student Python filename to a list of lesson
+fragment files. Their text enters that program's Scratch once, when the attempt
+is created, and does not overwrite later edits. For example,
+`"scratch_seeds": {"main.py": ["ideas/try_distance.py"]}`. A stage can add
+typed links such as
+`{"kind": "scratch", "label": {"en": "Try an idea", "ru": "Попробуй идею"}, "target": "main.py"}`.
+Link kinds are `markdown`, `program`, `scratch`, `assembly`, `control`,
+`devices`, and `connect`.
+Markdown targets may be localized lesson paths; program and Scratch targets name
+student Python files. Assembly and control links have no target. All local paths
+are validated inside the portable lesson snapshot.
 
 Bundled lessons may additionally map local paths to installed examples, e.g.
 `"examples": {"code/main.py": "pybricks/boost_17101_auto_builder.py"}`.
@@ -214,9 +278,8 @@ its author's installation or a future version of the example catalog.
 
 Stage `mode` is `program`, `control` or `assembly`; `assembly: [1, 7]` names an
 inclusive range of model steps. `check` is `manual` (default) or `devices`; a stage's
-`devices` can restrict the robot-device check to named instances. `operations`
-optionally lists expression templates, such as `"$ + ..."` and `"$ < ..."`;
-names and literals remain editable. It is empty by default in a restricted lesson.
+`devices` can restrict the robot-device check to named instances. The legacy
+`operations` field is accepted but no longer restricts expression editing.
 
 `robot.json` uses `format: 1` and gives `model`, optional `library`, localized
 `title` and `description`, optional `parts` descriptions, `steps` keyed by one-based

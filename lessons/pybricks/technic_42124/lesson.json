@@ -46,8 +46,8 @@
         "ru": "Попробуй: багги"
       },
       "goal": {
-        "en": "Center steering and drive using a Powered Up remote.",
-        "ru": "Отцентруй руль и управляй багги пультом Powered Up."
+        "en": "Open `technic_42124_buggy.py`. Trace the steering calibration, then lower the driving speed. Compare straight motion and a turn; keep motor ports, directions and mechanical limits unchanged.",
+        "ru": "Открой `technic_42124_buggy.py`. Проследи калибровку руля, затем уменьши скорость. Сравни прямое движение и поворот, сохранив порты, направления и механические пределы."
       },
       "description": {
         "en": "en.md#run-1",
@@ -90,8 +90,8 @@
         "ru": "Предскажи, измени, объясни"
       },
       "goal": {
-        "en": "Make one controlled change and explain its effect.",
-        "ru": "Сделай одно изменение и объясни его результат."
+        "en": "Trace the steering calibration, then lower the driving speed. Compare straight motion and a turn; keep motor ports, directions and mechanical limits unchanged.",
+        "ru": "Проследи калибровку руля, затем уменьши скорость. Сравни прямое движение и поворот, сохранив порты, направления и механические пределы."
       },
       "description": {
         "en": "en.md#experiment",
@@ -127,5 +127,10 @@
         "$[...]"
       ]
     }
-  ]
+  ],
+  "instructions": {
+    "en": "en.md",
+    "ru": "ru.md"
+  },
+  "kind": "project"
 }
