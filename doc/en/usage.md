@@ -204,6 +204,8 @@ shows every level. Both groups use icons: numbered badges 1–4 indicate the
 four levels, and infinity means All. Hover for localized names, or reach a button
 with Tab and activate it with Space. The active choice stays highlighted.
 The two chevron buttons beside the views collapse or expand all category branches.
+Click a category or nested group name, or its disclosure arrow, to toggle that
+branch.
 
 **Catalog** groups cards into Program, Values and calculations, Variables and
 collections, Functions, Motors and movement, Sensors and input, Light and sound,

@@ -112,6 +112,55 @@ def test_family_navigation_filters_variants_and_retains_personal_links(
         library.close()
 
 
+def test_group_titles_toggle_once_for_top_level_and_nested_branches(qt_app):
+    from PySide6.QtCore import QPoint, Qt
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.library import Library
+
+    library = Library(builtin_snippets())
+    library.resize(320, 520)
+    library.show()
+    try:
+        def click_title(item):
+            library.scrollToItem(item)
+            qt_app.processEvents()
+            rect = library.visualItemRect(item)
+            QTest.mouseClick(
+                library.viewport(),
+                Qt.MouseButton.LeftButton,
+                pos=QPoint(rect.left() + 55, rect.center().y()),
+            )
+
+        top = library.headings["movement"]
+        top.setExpanded(False)
+        click_title(top)
+        assert top.isExpanded()
+        click_title(top)
+        assert not top.isExpanded()
+
+        rect = library.visualItemRect(top)
+        QTest.mouseClick(
+            library.viewport(),
+            Qt.MouseButton.LeftButton,
+            pos=QPoint(max(2, rect.left() - 6), rect.center().y()),
+        )
+        assert top.isExpanded()
+
+        nested = next(
+            item
+            for key, item in library.headings.items()
+            if key.startswith("movement/") and item.parent() is top
+        )
+        nested.setExpanded(False)
+        click_title(nested)
+        assert nested.isExpanded()
+        click_title(nested)
+        assert not nested.isExpanded()
+    finally:
+        library.close()
+
+
 def test_long_catalog_title_gains_a_second_line_in_compact_russian_view(
     tmp_path, qt_app
 ):

@@ -13,6 +13,7 @@ from PySide6.QtGui import (
     QPen,
 )
 from PySide6.QtWidgets import (
+    QApplication,
     QStyle,
     QStyledItemDelegate,
     QStyleOptionViewItem,
@@ -333,6 +334,7 @@ class Library(QTreeWidget):
         self.empty_message = ""
         self.snapshot = []
         self.favorite_press = None
+        self.group_press = None
         self._card_layout_pending = False
         self.currentItemChanged.connect(lambda *_: self.variants_changed.emit())
         self.itemDoubleClicked.connect(lambda *_: self.insert_requested.emit())
@@ -846,18 +848,27 @@ class Library(QTreeWidget):
 
     def mousePressEvent(self, event):
         self.favorite_press = None
+        self.group_press = None
         if event.button() == Qt.MouseButton.LeftButton:
-            if item := self.favorite_at(event.position().toPoint()):
+            point = event.position().toPoint()
+            if item := self.favorite_at(point):
                 self.favorite_press = item.data(0, REFERENCE)
                 self.setCurrentItem(item)
                 event.accept()
                 return
+            item = self.itemAt(point)
+            if item and item.data(0, GROUP_KIND):
+                self.group_press = (item, point, item.isExpanded())
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
         if self.favorite_press:
             event.accept()
             return
+        if self.group_press and (
+            event.position().toPoint() - self.group_press[1]
+        ).manhattanLength() > QApplication.startDragDistance():
+            self.group_press = None
         super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
@@ -870,10 +881,25 @@ class Library(QTreeWidget):
             event.accept()
             return
         super().mouseReleaseEvent(event)
+        pressed, self.group_press = self.group_press, None
+        if pressed and event.button() == Qt.MouseButton.LeftButton:
+            item, _, was_expanded = pressed
+            if self.itemAt(event.position().toPoint()) is item:
+                # Qt already toggles its disclosure arrow; the rest of the row
+                # should have the same one-click behavior.
+                if item.isExpanded() == was_expanded:
+                    item.setExpanded(not was_expanded)
+                event.accept()
 
     def mouseDoubleClickEvent(self, event):
         if self.favorite_at(event.position().toPoint()):
             self.mousePressEvent(event)
+            return
+        if (item := self.itemAt(event.position().toPoint())) and item.data(
+            0, GROUP_KIND
+        ):
+            self.group_press = None
+            event.accept()
             return
         super().mouseDoubleClickEvent(event)
 
