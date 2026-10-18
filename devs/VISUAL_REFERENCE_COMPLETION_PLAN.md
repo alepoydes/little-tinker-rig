@@ -34,6 +34,9 @@ compact layout in a later Stage 5 pass.
 Block Editor and in-editor search now use the same theme-aware SVG icon path as
 the shell. This removes the opaque square artifacts from standard desktop
 icons in Dark while preserving the existing actions and tooltips.
+The Block Editor's New block action now uses the primary accent and a matching
+icon in both themes, making the creation path visible beside its secondary
+collection actions.
 The device panel now omits empty metadata instead of showing a dangling
 separator above the hub state.
 Assembly load failures now show a localized recovery message instead of a raw

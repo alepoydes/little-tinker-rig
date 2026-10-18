@@ -237,6 +237,7 @@ class BlockEditor(QWidget):
             N_("Module in your collection; its functions share a help page.")
         )
         self.new_button = QPushButton(N_("New block"))
+        self.new_button.setObjectName("blockEditorNew")
         self.new_button.clicked.connect(
             lambda: self.attempt(
                 lambda: self.create(STARTERS[self.starters.currentData()])
@@ -396,8 +397,12 @@ class BlockEditor(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(splitter)
         self.update_status()
+        self.apply_theme()
 
     def apply_theme(self):
+        self.new_button.setIcon(
+            svg_icon("document-new", tint=colors()["accent_text"])
+        )
         self.catalog_button.setIcon(svg_icon("catalog"))
         self.preview.apply_theme()
         self.card.itemDelegate().apply_theme()
