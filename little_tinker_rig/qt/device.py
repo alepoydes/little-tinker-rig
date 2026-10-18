@@ -142,7 +142,9 @@ class DevicePanel(QWidget):
             box = QVBoxLayout(card)
             row = QHBoxLayout()
             label = QLabel(port)
-            label.setStyleSheet("font-size: 18px; font-weight: bold")
+            label.setObjectName("portLetter")
+            label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            label.setFixedSize(26, 26)
             row.addWidget(label)
             kind = QComboBox()
             for key, text in KINDS.items():

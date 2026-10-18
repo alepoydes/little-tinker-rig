@@ -47,7 +47,9 @@ The Block Editor's New block action now uses the primary accent and a matching
 icon in both themes, making the creation path visible beside its secondary
 collection actions.
 The device panel now omits empty metadata instead of showing a dangling
-separator above the hub state.
+separator above the hub state. Port letters now use fixed-size accent badges
+that remain legible beside selectors in the compact Russian layout and the
+wide Dark layout.
 Connection now opens with a saturated, branded heading and a clear Connect
 action. Shared dialog controls and confirmation buttons use the same Light/Dark
 palette in Python editing, catalog properties, and variant forms; USB help

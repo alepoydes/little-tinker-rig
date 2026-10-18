@@ -227,6 +227,9 @@ def studio_stylesheet(name):
             font-size: 17px; font-weight: 700; border: 0; }}
         QLabel#firmwareIdleHint {{ color: {c['text']};
             font-size: 12px; border: 0; }}
+        QLabel#portLetter {{ background: {c['accent']};
+            color: {c['accent_text']}; border-radius: 7px;
+            font-size: 14px; font-weight: 700; }}
         QToolBar {{ border: 0; spacing: 6px; padding: 4px 7px;
                     background: {c['window']}; }}
         QToolButton {{ padding: 5px 8px; border-radius: 6px; color: {c['text']}; }}
