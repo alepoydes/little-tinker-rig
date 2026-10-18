@@ -36,6 +36,99 @@ def make_lesson(tmp_path):
     return root
 
 
+@pytest.mark.parametrize(
+    "workspace",
+    [
+        {"documents": [], "active": "main.py"},
+        {"documents": {"main.py": {"python": "yes"}}, "active": "main.py"},
+        {"documents": {"main.py": {"scroll": 2**100}}, "active": "main.py"},
+        {"documents": {}, "active": 5},
+    ],
+)
+def test_bad_lesson_tab_layout_does_not_prevent_opening_program(
+    tmp_path, qt_app, workspace
+):
+    from little_tinker_rig.qt.app import Studio
+
+    project = StudentProject.create(make_lesson(tmp_path))
+    project.main.write_text("answer = 7\n", encoding="utf-8")
+    (project.root / "workspace.json").write_text(
+        json.dumps(workspace), encoding="utf-8"
+    )
+    window = Studio(tmp_path / "plain.py")
+    try:
+        page = window.lessons.open(project.data["origin"], attempt=project)
+        assert page.lesson_project is project
+        assert page.text == "answer = 7\n"
+        assert window.documents.count() == 2
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
+def test_lesson_tab_layout_cannot_replace_program_checkpoint(tmp_path, qt_app):
+    from little_tinker_rig.qt.app import Studio
+
+    project = StudentProject.create(make_lesson(tmp_path))
+    project.main.write_text("answer = 7\n", encoding="utf-8")
+    (project.root / "workspace.json").write_text(
+        json.dumps(
+            {
+                "documents": {
+                    "main.py": {
+                        "python": True,
+                        "cursor": 0,
+                        "scroll": 0,
+                        "source": "answer = 99\n",
+                        "committed": "answer = 99\n",
+                    }
+                },
+                "active": "main.py",
+            }
+        ),
+        encoding="utf-8",
+    )
+    window = Studio(tmp_path / "plain.py")
+    try:
+        page = window.lessons.open(project.data["origin"], attempt=project)
+        assert page.text == "answer = 7\n"
+        assert page.code_active
+        assert project.main.read_text(encoding="utf-8") == "answer = 7\n"
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
+def test_invalid_later_lesson_tab_does_not_partly_restore_layout(tmp_path, qt_app):
+    from little_tinker_rig.qt.app import Studio
+
+    project = StudentProject.create(make_lesson(tmp_path))
+    helper = project.main.parent / "helper.py"
+    helper.write_text("value = 2\n", encoding="utf-8")
+    (project.root / "workspace.json").write_text(
+        json.dumps(
+            {
+                "documents": {
+                    "main.py": {"python": True, "cursor": 0, "scroll": 0},
+                    "helper.py": {"python": "invalid"},
+                },
+                "active": "helper.py",
+            }
+        ),
+        encoding="utf-8",
+    )
+    window = Studio(tmp_path / "plain.py")
+    try:
+        page = window.lessons.open(project.data["origin"], attempt=project)
+        assert window.documents.count() == 2
+        assert window.document_page is page
+        assert not page.code_active
+        assert helper.read_text(encoding="utf-8") == "value = 2\n"
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
 def test_lesson_template_resumes_latest_attempt_after_clean_close(tmp_path, qt_app):
     from little_tinker_rig.qt.app import Studio
 

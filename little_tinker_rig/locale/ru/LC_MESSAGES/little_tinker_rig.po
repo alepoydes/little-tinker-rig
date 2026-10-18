@@ -1454,6 +1454,10 @@ msgstr "Не удалось восстановить работу: {detail}"
 msgid "Could not save recovery data: {detail}"
 msgstr "Не удалось записать данные для восстановления: {detail}"
 
+#: little_tinker_rig/qt/lessons.py
+msgid "Lesson tab layout could not be restored. Program files are still available."
+msgstr "Не удалось восстановить расположение вкладок урока. Файлы программ по-прежнему доступны."
+
 #: little_tinker_rig/snippets/python/basics.py:38
 msgid "Count"
 msgstr "Повторить заданное число раз"

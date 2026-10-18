@@ -435,6 +435,45 @@ class Lessons(QObject):
         if path:
             self.open(Path(path))
 
+    def saved_workspace(self, project):
+        path = project.root / "workspace.json"
+        if not path.is_file():
+            return None
+        try:
+            saved = read_json(path)
+            if not isinstance(saved, dict) or not isinstance(
+                saved.get("documents", {}), dict
+            ):
+                raise ValueError("Invalid lesson workspace")
+            programs = project.root / "programs"
+            active = saved.get("active", "main.py")
+            resource(programs, active)
+            documents = {}
+            for name, state in saved.get("documents", {}).items():
+                resource(programs, name)
+                if not isinstance(state, dict):
+                    raise ValueError("Invalid lesson tab state")
+                for key, value in state.items():
+                    if key == "python" and type(value) is not bool:
+                        raise ValueError("Invalid lesson tab state")
+                    if key in ("cursor", "scroll") and (
+                        type(value) is not int or not 0 <= value <= 2**31 - 1
+                    ):
+                        raise ValueError("Invalid lesson tab state")
+                documents[name] = {
+                    key: state[key]
+                    for key in ("python", "cursor", "scroll")
+                    if key in state
+                }
+            return {"documents": documents, "active": active}
+        except (OSError, ValueError, TypeError):
+            message = tr(
+                "Lesson tab layout could not be restored. Program files are still available."
+            )
+            self.window.statusBar().showMessage(message, 15000)
+            self.window.append_output(message + "\n")
+            return None
+
     def open(self, path, *, new=False, attempt=None):
         path = Path(path).resolve()
         template = path.suffix not in {".ltr", ".pyblocks"}
@@ -521,12 +560,11 @@ class Lessons(QObject):
                     other.activateWindow()
                     self.projects.pop(project.root, None)
                     return owner_page
+        saved = self.saved_workspace(project)
         project.remember_opened()
         page = self.window.open_document(project.main)
         page.lesson_project = project
-        workspace = project.root / "workspace.json"
-        if workspace.is_file():
-            saved = read_json(workspace)
+        if saved is not None:
             for name, state in saved.get("documents", {}).items():
                 program = resource(project.root / "programs", name)
                 if program.is_file():
