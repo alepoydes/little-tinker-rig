@@ -152,6 +152,79 @@ def test_recovery_restores_tabs_scratch_drafts_and_original_disk_baseline(
             assert not recovery_path.exists()
 
 
+def test_cancel_recovery_keeps_all_pending_checkpoints(tmp_path, qt_app, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio()
+    try:
+        qt_app.processEvents()
+        window.recovery.path.parent.mkdir(parents=True, exist_ok=True)
+        pending = [
+            window.recovery.path.with_name(f"abandoned_{index}.json")
+            for index in range(2)
+        ]
+        for path in pending:
+            path.write_text(
+                json.dumps(
+                    {
+                        "format": 1,
+                        "active": 0,
+                        "documents": [{"path": str(tmp_path / "work.py")}],
+                    }
+                ),
+                encoding="utf-8",
+            )
+        prompts = []
+
+        def cancel(*args):
+            prompts.append(args)
+            return QMessageBox.StandardButton.Cancel
+
+        monkeypatch.setattr(QMessageBox, "question", cancel)
+        window.recovery.offer()
+        assert len(prompts) == 1
+        assert all(path.exists() for path in pending)
+    finally:
+        close(window)
+
+
+def test_invalid_recovery_active_tab_is_rejected_before_opening(qt_app, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio()
+    try:
+        qt_app.processEvents()
+        window.recovery.path.parent.mkdir(parents=True, exist_ok=True)
+        abandoned = window.recovery.path.with_name("abandoned.json")
+        abandoned.write_text(
+            json.dumps(
+                {
+                    "format": 1,
+                    "active": -9,
+                    "documents": [window.document_page.checkpoint()],
+                }
+            ),
+            encoding="utf-8",
+        )
+        prompts = []
+        monkeypatch.setattr(
+            QMessageBox,
+            "question",
+            lambda *args: prompts.append(args) or QMessageBox.StandardButton.Yes,
+        )
+        window.recovery.offer()
+        assert not prompts
+        assert window.documents.count() == 1
+        assert abandoned.exists()
+        assert "Could not restore recovery data" in window.last_error
+    finally:
+        close(window)
+
+
 def test_examples_follow_directory_changes_and_reuse_existing_tabs(
     tmp_path, qt_app, monkeypatch
 ):

@@ -99,7 +99,20 @@ class Recovery(QObject):
                 continue
             try:
                 data = json.loads(path.read_text(encoding="utf-8"))
-                if data["format"] != 1 or not isinstance(data["documents"], list):
+                if (
+                    not isinstance(data, dict)
+                    or data.get("format") != 1
+                    or not isinstance(data.get("documents"), list)
+                    or not data["documents"]
+                    or type(data.get("active")) is not int
+                    or not 0 <= data["active"] < len(data["documents"])
+                    or not all(
+                        isinstance(item, dict)
+                        and isinstance(item.get("path"), str)
+                        and Path(item["path"]).is_absolute()
+                        for item in data["documents"]
+                    )
+                ):
                     raise ValueError("Unsupported recovery format")
                 names = "\n".join(item["path"] for item in data["documents"])
                 answer = QMessageBox.question(
@@ -161,6 +174,8 @@ class Recovery(QObject):
                         path.unlink()
                 elif answer == QMessageBox.StandardButton.No:
                     path.unlink()
+                elif answer == QMessageBox.StandardButton.Cancel:
+                    break
             except (OSError, ValueError, KeyError, TypeError, SyntaxError) as error:
                 self.window.error(
                     tr("Could not restore recovery data: {detail}", detail=str(error))
