@@ -186,7 +186,8 @@ class HubWorker:
         if self.connection and self.info.connected:
 
             async def run():
-                await self.connection.stop()
+                if self.info.running:
+                    await self.connection.stop()
                 self._start_trace(self.stored_program)
                 await self.connection.run()
                 self._output(tr("Program started.") + "\n")
@@ -198,11 +199,12 @@ class HubWorker:
         if self.connection and self.info.connected:
 
             async def monitor():
-                await self.connection.stop()
-                self.tracebacks = None
+                try:
+                    await self.connection.start_monitor()
+                finally:
+                    self.tracebacks = None
                 if not isinstance(self.connection, VirtualConnection):
                     self.stored_program = None
-                await self.connection.start_monitor()
 
             return self.submit(monitor(), operation=True)
         self._failed(tr("Connect a hub first"))
@@ -213,7 +215,8 @@ class HubWorker:
 
     async def _transfer(self, program, *, run):
         self._output(tr("Uploading {name}…", name=program.entry.name) + "\n")
-        await self.connection.stop()
+        if self.info.running:
+            await self.connection.stop()
         self.tracebacks = None
         self.stored_program = None
         path = (

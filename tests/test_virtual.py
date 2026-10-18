@@ -206,6 +206,55 @@ async def test_virtual_hub_program_sensors_console_and_stop(tmp_path):
     assert not hub.info.connected and hub.process is None
 
 
+@pytest.mark.asyncio
+async def test_virtual_run_does_not_spawn_an_unused_monitor_between_programs(
+    tmp_path, monkeypatch
+):
+    launches = []
+    original = VirtualConnection._spawn
+
+    async def counted(self, path=None):
+        launches.append(path)
+        return await original(self, path)
+
+    monkeypatch.setattr(VirtualConnection, "_spawn", counted)
+    hub = VirtualConnection()
+    path = tmp_path / "main.py"
+    path.write_text("print('hello')\n", encoding="utf-8")
+    try:
+        await hub.connect()
+        await hub.run(path, wait=True)
+        assert launches[0] is None
+        assert len(launches) == 2 and launches[1] is not None
+    finally:
+        await hub.disconnect()
+
+
+@pytest.mark.asyncio
+async def test_virtual_run_keeps_previous_snapshot_until_old_process_stops(
+    tmp_path, monkeypatch
+):
+    first = tmp_path / "first.py"
+    second = tmp_path / "second.py"
+    first.write_text("print('first')\n", encoding="utf-8")
+    second.write_text("print('second')\n", encoding="utf-8")
+    hub = VirtualConnection()
+    try:
+        await hub.connect()
+        await hub.run(first, wait=True)
+        old_entry = hub.stored_path
+        original = hub._spawn
+
+        async def inspect_old_snapshot(path=None):
+            assert old_entry.is_file()
+            return await original(path)
+
+        monkeypatch.setattr(hub, "_spawn", inspect_old_snapshot)
+        await hub.run(second, wait=True)
+    finally:
+        await hub.disconnect()
+
+
 @pytest.fixture
 def generated_helper_program(tmp_path):
     from little_tinker_rig.core.session import Session

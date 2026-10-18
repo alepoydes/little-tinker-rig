@@ -124,24 +124,29 @@ class VirtualConnection:
             self.process.stdin.write(data)
             await self.process.stdin.drain()
 
-    async def upload(self, path):
-        """Keep a source snapshot for the local simulator, without executing it."""
+    async def _store(self, path, *, monitor):
         if not self.info.connected:
             raise ValueError("Connect a virtual hub first")
         snapshot = path if isinstance(path, Program) else Program(path)
         try:
             for file, source in snapshot.sources.items():
                 compile(source, str(file), "exec")
-            await self.stop()
+            if monitor:
+                await self.stop()
         except BaseException:
             if snapshot is not path:
                 snapshot.cleanup()
             raise
         self.stored, self.stored_path = snapshot, snapshot.entry
 
+    async def upload(self, path):
+        """Keep a source snapshot for the local simulator, without executing it."""
+        await self._store(path, monitor=True)
+
     async def run(self, path=None, *, wait=False):
+        previous = self.stored
         if path is not None:
-            await self.upload(path)
+            await self._store(path, monitor=False)
         if self.stored_path is None:
             raise ValueError("Upload a program before running it")
         path = self.stored_path
@@ -149,7 +154,11 @@ class VirtualConnection:
             raise ValueError("Connect a virtual hub first")
         if not Path(path).is_file():
             raise FileNotFoundError(path)
-        await self._spawn(path)
+        try:
+            await self._spawn(path)
+        finally:
+            # Keep the old snapshot available until its process has stopped.
+            del previous
         if wait:
             await self.done.wait()
             if self.info.error:

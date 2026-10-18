@@ -9,6 +9,7 @@ import pytest
 from little_tinker_rig.pybricks.connection import Connection
 from little_tinker_rig.pybricks.devices import HubInfo
 from little_tinker_rig.pybricks.program import Program
+from little_tinker_rig.pybricks.virtual import VirtualConnection
 from little_tinker_rig.pybricks.worker import HubWorker
 
 
@@ -168,6 +169,45 @@ def test_transfer_rejected_during_snapshot_creation_cleans_temporary_files(
         assert worker.run_file(path) is None
         assert snapshots and not snapshots[0].exists()
         assert failures == ["Wait for the hub operation to finish"]
+    finally:
+        worker.close()
+
+
+def test_virtual_worker_uses_one_process_transition_per_program_action(
+    tmp_path, monkeypatch
+):
+    launches, failures = [], []
+    original = VirtualConnection._spawn
+
+    async def counted(self, path=None):
+        launches.append(path)
+        return await original(self, path)
+
+    monkeypatch.setattr(VirtualConnection, "_spawn", counted)
+    worker = HubWorker(
+        output=lambda *_: None,
+        failed=failures.append,
+        updated=lambda *_: None,
+        busy_changed=lambda *_: None,
+        problem=lambda *_: None,
+        program_started=lambda *_: None,
+    )
+    path = tmp_path / "main.py"
+    path.write_text("print('hello')\n", encoding="utf-8")
+    try:
+        worker.connect_hub(transport="virtual").result(timeout=8)
+        assert len(launches) == 1
+        worker.upload_file(path).result(timeout=8)
+        assert len(launches) == 2
+        worker.run_stored().result(timeout=8)
+        assert len(launches) == 3 and launches[-1] is not None
+        worker.stop_program().result(timeout=8)
+        before = len(launches)
+        worker.run_file(path).result(timeout=8)
+        assert len(launches) == before + 1 and launches[-1] is not None
+        worker.start_monitor().result(timeout=8)
+        assert len(launches) == before + 2 and launches[-1] is None
+        assert not failures
     finally:
         worker.close()
 
