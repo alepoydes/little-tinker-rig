@@ -65,7 +65,7 @@ class Recovery(QObject):
                     for i in range(window.documents.count())
                 ],
             }
-            if data == self.previous:
+            if data == self.previous and self.path.is_file():
                 if autosave_error:
                     raise autosave_error
                 return True

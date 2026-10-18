@@ -152,6 +152,36 @@ def test_recovery_restores_tabs_scratch_drafts_and_original_disk_baseline(
             assert not recovery_path.exists()
 
 
+def test_recovery_refreshes_mutated_pins_and_recreates_missing_checkpoint(
+    tmp_path, qt_app
+):
+    from little_tinker_rig.qt.app import Studio
+
+    path = tmp_path / "work.py"
+    path.write_text("print(1)\n", encoding="utf-8")
+    window = Studio(path)
+    try:
+        project = window.session.project
+        project.pins = {"course": "1.0"}
+        assert window.recovery.flush()
+        checkpoint = window.recovery.path
+        assert json.loads(checkpoint.read_text(encoding="utf-8"))["documents"][0][
+            "pins"
+        ] == {"course": "1.0"}
+
+        project.pins["course"] = "1.1"
+        assert window.recovery.flush()
+        assert json.loads(checkpoint.read_text(encoding="utf-8"))["documents"][0][
+            "pins"
+        ] == {"course": "1.1"}
+
+        checkpoint.unlink()
+        assert window.recovery.flush()
+        assert checkpoint.exists()
+    finally:
+        close(window)
+
+
 def test_cancel_recovery_keeps_all_pending_checkpoints(qt_app, monkeypatch):
     from PySide6.QtWidgets import QMessageBox
 

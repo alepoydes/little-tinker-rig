@@ -120,7 +120,7 @@ class Project:
             "committed": self.document.state.source,
             "scratch": list(self.document.state.scratch),
             "collections": [str(p) for p in self.collections],
-            "pins": self.pins,
+            "pins": dict(self.pins),
             "encoding": self.encoding,
             "example_attempt": self.example_attempt,
             "disk_hash": self._disk_hash,
