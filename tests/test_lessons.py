@@ -1,5 +1,6 @@
 import io
 import json
+import os
 from zipfile import ZIP_STORED, ZipFile
 
 import pytest
@@ -295,6 +296,64 @@ def test_corrupt_archive_member_cannot_overwrite_existing_files(tmp_path):
         extract(bytes(corrupted), destination)
     assert existing.read_text(encoding="utf-8") == "Original notes"
     assert not (destination / "last.txt").exists()
+
+
+def test_archive_rejects_case_collisions_in_parent_directories(tmp_path):
+    data = io.BytesIO()
+    with ZipFile(data, "w") as archive:
+        archive.writestr("good.txt", "safe")
+        archive.writestr("Robot/left.py", "left")
+        archive.writestr("robot/right.py", "right")
+    destination = tmp_path / "output"
+    with pytest.raises(ValueError, match="conflict"):
+        extract(data.getvalue(), destination)
+    assert not destination.exists()
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Windows cannot create both directories")
+def test_pack_rejects_case_collisions_in_parent_directories(tmp_path):
+    project = tmp_path / "project"
+    (project / "Robot").mkdir(parents=True)
+    (project / "robot").mkdir()
+    (project / "Robot" / "left.py").write_text("left = 1\n")
+    (project / "robot" / "right.py").write_text("right = 1\n")
+    with pytest.raises(ValueError, match="conflict"):
+        pack(project)
+
+
+@pytest.mark.parametrize(
+    "name",
+    ["CON.txt", "aux/child.py", "folder./main.py", "bad?.py", " leading.py", "end "],
+)
+def test_extract_rejects_names_that_windows_cannot_preserve(tmp_path, name):
+    data = io.BytesIO()
+    with ZipFile(data, "w") as archive:
+        archive.writestr("good.txt", "safe")
+        archive.writestr(name, "bad")
+    destination = tmp_path / "output"
+    with pytest.raises(ValueError, match="not portable"):
+        extract(data.getvalue(), destination)
+    assert not destination.exists()
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Windows cannot create these filenames")
+@pytest.mark.parametrize(
+    "name",
+    ["CON.txt", "aux/child.py", "folder./main.py", "bad?.py", " leading.py", "end "],
+)
+def test_pack_rejects_names_that_windows_cannot_preserve(tmp_path, name):
+    project = tmp_path / "project"
+    path = project / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("bad", encoding="utf-8")
+    with pytest.raises(ValueError, match="not portable"):
+        pack(project)
+
+
+def test_pack_checks_case_collisions_with_generated_archive_files(tmp_path):
+    (tmp_path / "lesson.json").write_text("original", encoding="utf-8")
+    with pytest.raises(ValueError, match="conflict"):
+        pack(tmp_path, {"LESSON.JSON": "replacement"})
 
 
 def test_pack_only_ignores_cache_directories_inside_project(tmp_path):

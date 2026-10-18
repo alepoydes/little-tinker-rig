@@ -263,6 +263,11 @@ msgstr "Применять функцию к каждому элементу п�
 msgid "Archive entries conflict: {name}"
 msgstr "Конфликт путей в архиве: {name}"
 
+#: little_tinker_rig/core/lessons.py:141
+#, python-brace-format
+msgid "Archive path is not portable: {name}"
+msgstr "Путь в архиве несовместим с Windows: {name}"
+
 #: little_tinker_rig/qt/authoring.py:1170
 #, python-brace-format
 msgid ""

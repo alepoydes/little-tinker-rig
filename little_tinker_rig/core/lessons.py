@@ -11,7 +11,7 @@ import math
 import os
 import shutil
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from tempfile import TemporaryDirectory
 from time import time_ns
 from uuid import uuid4
@@ -26,6 +26,14 @@ from .project import atomic_write
 from .timestamps import valid_unix_ns
 
 WORKSPACES = ("program", "control", "help", "block_editor", "assembly")
+WINDOWS_DEVICE_NAMES = {
+    "CON",
+    "PRN",
+    "AUX",
+    "NUL",
+    *(f"COM{number}" for number in "123456789¹²³"),
+    *(f"LPT{number}" for number in "123456789¹²³"),
+}
 
 
 def localized(value, language="en") -> str:
@@ -119,6 +127,43 @@ def robot_description(path):
     return data
 
 
+def _check_archive_names(entries):
+    """Reject names that alias or cannot be created on common Windows volumes."""
+    spellings = {}
+    full_paths = set()
+    files = set()
+    for name, directory in entries:
+        if not isinstance(name, str):
+            raise ValueError(tr("Archive path is not portable: {name}", name=name))
+        parts = PurePosixPath(name).parts
+        if not parts or any(
+            part.startswith(" ")
+            or part.endswith((" ", "."))
+            or part.split(".", 1)[0].upper() in WINDOWS_DEVICE_NAMES
+            or any(
+                ord(character) < 32 or character in '<>:"\\|?*' for character in part
+            )
+            for part in parts
+        ):
+            raise ValueError(tr("Archive path is not portable: {name}", name=name))
+        for length in range(1, len(parts) + 1):
+            spelling = parts[:length]
+            key = tuple(part.casefold() for part in spelling)
+            if key in spellings and spellings[key] != spelling:
+                raise ValueError(tr("Archive entries conflict: {name}", name=name))
+            spellings[key] = spelling
+        if parts in full_paths:
+            raise ValueError(tr("Archive entries conflict: {name}", name=name))
+        full_paths.add(parts)
+        if not directory:
+            files.add(parts)
+    for parts in full_paths:
+        if any(parts[:length] in files for length in range(1, len(parts))):
+            raise ValueError(
+                tr("Archive entries conflict: {name}", name="/".join(parts))
+            )
+
+
 def extract(data: bytes, destination: Path):
     """Validate the entire member list before creating any files."""
     try:
@@ -130,6 +175,7 @@ def extract(data: bytes, destination: Path):
                 or sum(m.file_size for m in members) > 256 * 1024**2
             ):
                 raise ValueError("The project archive is too large")
+            _check_archive_names((m.filename, m.is_dir()) for m in members)
             paths = [resource(destination, m.filename) for m in members]
             if len(set(paths)) != len(paths):
                 raise ValueError("Duplicate archive entries")
@@ -167,21 +213,28 @@ def extract(data: bytes, destination: Path):
 
 def pack(directory: Path, additions=None) -> bytes:
     additions = additions or {}
+    files = []
+    for path in sorted(directory.rglob("*")):
+        if path.is_symlink():
+            raise ValueError("Packages cannot contain symbolic links")
+        relative = path.relative_to(directory)
+        name = relative.as_posix()
+        if (
+            path.is_file()
+            and "__pycache__" not in relative.parts
+            and name not in additions
+        ):
+            files.append((name, path))
+    names = [name for name, _ in files]
+    names.extend(additions)
+    _check_archive_names((name, False) for name in names)
+    for name in additions:
+        resource(directory, name)
     output = io.BytesIO()
     with ZipFile(output, "w", ZIP_DEFLATED) as archive:
-        for path in sorted(directory.rglob("*")):
-            if path.is_symlink():
-                raise ValueError("Packages cannot contain symbolic links")
-            relative = path.relative_to(directory)
-            name = relative.as_posix()
-            if (
-                path.is_file()
-                and "__pycache__" not in relative.parts
-                and name not in additions
-            ):
-                archive.write(path, name)
+        for name, path in files:
+            archive.write(path, name)
         for name, data in additions.items():
-            resource(directory, name)
             archive.writestr(name, data)
     return output.getvalue()
 
