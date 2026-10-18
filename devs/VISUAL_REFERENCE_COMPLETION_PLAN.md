@@ -22,6 +22,10 @@ refresh when those declarations change, removing false missing-name emphasis
 without excusing reads before a fragment's own later assignment.
 The structural view now shares Python keyword, number, string, and comment
 highlighting with the ordinary text editor; theme switches rehighlight it.
+Opening another Studio window no longer reapplies the same global Fusion style
+to every existing widget. The 12 editor workflow scenarios, which timed out at
+90 seconds before this change, complete in 42.48 seconds afterward; Light/Dark
+switches and the multi-window theme scenario still pass.
 Its canvas now uses a subtle 32 px grid in Light and Dark. A theme-switch
 pixel check guards against Qt restoring a white viewport in Dark. Offscreen
 editor timing before/after the grid stayed within normal run variation:

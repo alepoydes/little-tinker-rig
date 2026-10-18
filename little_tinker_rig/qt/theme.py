@@ -189,8 +189,14 @@ def apply_application_theme(name):
     """Update shared Qt widget defaults without replacing document widgets."""
     app = QApplication.instance()
     name = theme_name(name)
+    if (
+        app.property("ltrVisualTheme") == name
+        and app.style().objectName().lower() == "fusion"
+    ):
+        return
     app.setProperty("ltrVisualTheme", name)
-    app.setStyle("Fusion")
+    if app.style().objectName().lower() != "fusion":
+        app.setStyle("Fusion")
     c = colors(name)
     palette = QPalette()
     for role, key in (
