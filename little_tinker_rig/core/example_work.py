@@ -64,11 +64,13 @@ class ExampleWork:
 
     @classmethod
     def all(cls):
-        return sorted(
-            (cls(path.parent) for path in attempts_directory().glob("*/work.json")),
-            key=lambda work: work.data["opened"],
-            reverse=True,
-        )
+        works = []
+        for path in attempts_directory().glob("*/work.json"):
+            try:
+                works.append(cls(path.parent))
+            except (OSError, ValueError, KeyError, TypeError):
+                continue
+        return sorted(works, key=lambda work: work.data["opened"], reverse=True)
 
     @property
     def identity(self):

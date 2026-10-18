@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from little_tinker_rig.core.example_work import ExampleWork, attempts_directory
+from little_tinker_rig.core.example_work import ExampleWork
 from little_tinker_rig.core.lessons import StudentProject, lessons_directory, localized
 from little_tinker_rig.examples import examples_directory
 from little_tinker_rig.i18n import language, tr
@@ -222,12 +222,7 @@ class HomePage(QScrollArea):
     def refresh(self):
         self._clear(self.recent_layout)
         entries = []
-        works = []
-        for manifest in attempts_directory().glob("*/work.json"):
-            try:
-                works.append(ExampleWork(manifest.parent))
-            except (OSError, ValueError, KeyError, TypeError):
-                continue
+        works = ExampleWork.all()
         attempts = [
             self.window.lessons.projects.get(attempt.root, attempt)
             for attempt in StudentProject.attempts()

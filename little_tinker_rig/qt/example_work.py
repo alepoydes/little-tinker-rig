@@ -41,7 +41,11 @@ class ExampleWorkspaces:
             identity = source.resolve().relative_to(examples_directory()).as_posix()
             work = (
                 next(
-                    (w for w in ExampleWork.all() if w.data["example"] == identity),
+                    (
+                        w
+                        for w in ExampleWork.all()
+                        if w.data["example"] == identity and w.entry.is_file()
+                    ),
                     None,
                 )
                 if not new
@@ -61,12 +65,12 @@ class ExampleWorkspaces:
                     work = owner
                     window = other
                     break
+        if not work.entry.is_file():
+            raise FileNotFoundError(work.entry)
         manager = window.example_workspaces
         manager.works[work.identity] = work
         work.data["opened"] = time_ns()
         work.save()
-        if not work.entry.is_file():
-            raise FileNotFoundError(work.entry)
         page = window.open_document(work.entry)
         if hasattr(window, "pages"):
             window.set_mode(0)

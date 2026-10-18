@@ -2,7 +2,7 @@ import ast
 
 import pytest
 
-from little_tinker_rig.core.example_work import ExampleWork
+from little_tinker_rig.core.example_work import ExampleWork, attempts_directory
 from little_tinker_rig.pybricks.program import Program
 
 
@@ -24,6 +24,71 @@ def test_snapshots_use_unsaved_modules_and_keep_original_paths(tmp_path):
     with pytest.raises(SyntaxError):
         Program(entry, {**sources, helper: "unfinished("})
     program.cleanup()
+
+
+def test_corrupt_attempt_does_not_hide_other_examples(tmp_path, qt_app, monkeypatch):
+    from little_tinker_rig.qt.app import Studio
+
+    examples = tmp_path / "bundled"
+    examples.mkdir()
+    source = examples / "main.py"
+    source.write_text("print(1)\n", encoding="utf-8")
+    valid = ExampleWork.create(source, examples)
+    broken = attempts_directory() / "broken"
+    broken.mkdir()
+    (broken / "work.json").write_text("{unfinished", encoding="utf-8")
+    incomplete = attempts_directory() / "incomplete"
+    incomplete.mkdir()
+    (incomplete / "work.json").write_text('{"format": 1}', encoding="utf-8")
+    undecodable = attempts_directory() / "undecodable"
+    undecodable.mkdir()
+    (undecodable / "work.json").write_bytes(b"\xff")
+    monkeypatch.setattr("little_tinker_rig.qt.app.examples_directory", lambda: examples)
+
+    window = Studio()
+    try:
+        assert [work.identity for work in ExampleWork.all()] == [valid.identity]
+        window.refresh_examples()
+        attempts = next(
+            action.menu()
+            for action in window.examples_menu.actions()
+            if action.text() == "My attempts"
+        )
+        assert attempts.isEnabled() and len(attempts.actions()) == 1
+        page = window.example_workspaces.open(source)
+        assert page.example_work.identity == valid.identity
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
+@pytest.mark.parametrize("older_present", [False, True])
+def test_open_example_skips_attempt_with_missing_program(
+    tmp_path, qt_app, monkeypatch, older_present
+):
+    from little_tinker_rig.qt.app import Studio
+
+    examples = tmp_path / "bundled"
+    examples.mkdir()
+    source = examples / "main.py"
+    source.write_text("print(1)\n", encoding="utf-8")
+    older = ExampleWork.create(source, examples) if older_present else None
+    missing = ExampleWork.create(source, examples)
+    missing.entry.unlink()
+    monkeypatch.setattr("little_tinker_rig.qt.app.examples_directory", lambda: examples)
+
+    window = Studio()
+    try:
+        selected = window.example_workspaces.open(source).example_work
+        assert selected is not None and selected.identity != missing.identity
+        if older is not None:
+            assert selected.identity == older.identity
+        else:
+            assert selected.entry.is_file()
+            assert len(ExampleWork.all()) == 2
+    finally:
+        window.recovery.close()
+        window.deleteLater()
 
 
 def test_example_resume_restart_autosave_and_save_as_with_modules(
