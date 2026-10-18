@@ -47,6 +47,18 @@ VARIANT = int(IDENTITY) + 8
 REFERENCE = int(IDENTITY) + 9
 ORDER = int(IDENTITY) + 10
 FAVORITE = int(IDENTITY) + 11
+GROUP_KIND = int(IDENTITY) + 12
+
+CATEGORY_APPEARANCE = {
+    "program": ("loop", "▣"),
+    "values": ("value", "＝"),
+    "data": ("state", "▣"),
+    "functions": ("definition", "ƒ"),
+    "movement": ("action", "⚙"),
+    "input": ("value", "◎"),
+    "output": ("control", "✦"),
+    "devices": ("snippet", "◇"),
+}
 
 LEVEL_TITLES = {
     "beginner": N_("Beginner"),
@@ -127,6 +139,63 @@ class CardDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         icon = "favorite-active" if index.data(FAVORITE) else "favorites"
         if not index.data(IDENTITY):
+            if group := index.data(GROUP_KIND):
+                category, nested = group
+                painter.save()
+                painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+                rect = option.rect.adjusted(2, 1, -3, -1)
+                selected = bool(option.state & QStyle.StateFlag.State_Selected)
+                hovered = bool(option.state & QStyle.StateFlag.State_MouseOver)
+                if selected or hovered:
+                    painter.setPen(Qt.PenStyle.NoPen)
+                    painter.setBrush(
+                        QColor(colors()["selected" if selected else "hover"])
+                    )
+                    painter.drawRoundedRect(rect, 5, 5)
+                role, symbol = CATEGORY_APPEARANCE.get(
+                    category, ("snippet", "◇")
+                )
+                accent = block_color(role)
+                accent = (
+                    accent.lighter(135)
+                    if colors() is DARK
+                    else saturated(accent, 0.9).darker(135)
+                )
+                if nested:
+                    painter.setPen(Qt.PenStyle.NoPen)
+                    painter.setBrush(accent)
+                    painter.drawEllipse(
+                        QRect(rect.left() + 6, rect.center().y() - 3, 6, 6)
+                    )
+                    label_left = rect.left() + 19
+                else:
+                    badge = QRect(rect.left() + 3, rect.center().y() - 10, 20, 20)
+                    painter.setPen(Qt.PenStyle.NoPen)
+                    painter.setBrush(accent)
+                    painter.drawRoundedRect(badge, 5, 5)
+                    painter.setPen(QColor("#ffffff"))
+                    painter.drawText(badge, Qt.AlignmentFlag.AlignCenter, symbol)
+                    label_left = rect.left() + 29
+                font = option.font
+                font.setBold(not nested)
+                painter.setFont(font)
+                painter.setPen(QColor(colors()["text"]))
+                painter.drawText(
+                    QRect(
+                        label_left,
+                        rect.top(),
+                        max(1, rect.right() - label_left - 4),
+                        rect.height(),
+                    ),
+                    Qt.AlignmentFlag.AlignVCenter,
+                    QFontMetrics(font).elidedText(
+                        index.data(Qt.ItemDataRole.DisplayRole),
+                        Qt.TextElideMode.ElideRight,
+                        max(1, rect.right() - label_left - 4),
+                    ),
+                )
+                painter.restore()
+                return
             text = QStyleOptionViewItem(option)
             if index.data(REFERENCE):
                 text.rect.adjust(0, 0, -30, 0)
@@ -208,6 +277,8 @@ class CardDelegate(QStyledItemDelegate):
         painter.restore()
 
     def sizeHint(self, option, index):
+        if group := index.data(GROUP_KIND):
+            return QSize(1, 25 if group[1] else 31)
         if index.data(IDENTITY):
             font = option.font
             font.setBold(True)
@@ -331,6 +402,7 @@ class Library(QTreeWidget):
                     else group_title(category, (members[0].primary,))
                 )
                 heading = QTreeWidgetItem(self, [title])
+                heading.setData(0, GROUP_KIND, (category, False))
                 heading.setToolTip(0, category)
                 heading.setFlags(heading.flags() & ~Qt.ItemFlag.ItemIsDragEnabled)
                 heading.setExpanded(expanded.get(category, self.level == "beginner"))
@@ -342,6 +414,7 @@ class Library(QTreeWidget):
                         path += "/" + segment
                         if path not in self.headings:
                             child = CardItem(parent, [tr(segment)])
+                            child.setData(0, GROUP_KIND, (category, True))
                             child.setData(0, ORDER, (-1, len(self.headings)))
                             child.setFlags(
                                 child.flags() & ~Qt.ItemFlag.ItemIsDragEnabled

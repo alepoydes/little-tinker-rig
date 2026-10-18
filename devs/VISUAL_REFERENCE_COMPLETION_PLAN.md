@@ -12,7 +12,9 @@ header badges. Plain imports no longer appear as colored control blocks. The
 selected workspace and catalog filters have stronger blue states, and Run/Stop
 icons keep contrast against their filled buttons. Stage 3 still needs source
 gutter, long-line handling, Scratch parity, and a full pointer/keyboard audit.
-This follows the first-pass
+Stage 2 now gives top-level catalog categories semantic icon badges and
+stronger type hierarchy; nested construction groups use a smaller color marker
+while retaining tree expansion and keyboard navigation. This follows the first-pass
 [visual redesign](VISUAL_REDESIGN_PLAN.md) and uses the selected local mockups
 in `report/design_concepts` as visual
 references. Those images and comparison captures remain ignored by Git. The
