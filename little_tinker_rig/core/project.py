@@ -129,8 +129,11 @@ class Project:
             "saved_scratch": list(self._saved.scratch),
         }
 
-    def restore(self, checkpoint: dict) -> None:
-        """Restore memory only; subsequent saves still check the pre-crash files."""
+    @staticmethod
+    def validate_checkpoint(checkpoint: dict) -> None:
+        """Check a recovery item without changing a live document."""
+        if not isinstance(checkpoint, dict):
+            raise ValueError("Invalid recovery document")
         for key in ("source", "committed", "saved_source", "encoding"):
             if not isinstance(checkpoint[key], str):
                 raise ValueError("Invalid recovery text")
@@ -144,6 +147,22 @@ class Project:
             for k, v in checkpoint["pins"].items()
         ):
             raise ValueError("Invalid recovery pins")
+        for key in ("disk_hash", "workspace_hash"):
+            if (
+                key not in checkpoint
+                or checkpoint[key] is not None
+                and not isinstance(checkpoint[key], str)
+            ):
+                raise ValueError("Invalid recovery baseline")
+        if checkpoint.get("example_attempt") is not None and not isinstance(
+            checkpoint["example_attempt"], str
+        ):
+            raise ValueError("Invalid recovery example attempt")
+        Document(checkpoint["committed"], tuple(checkpoint["scratch"]))
+
+    def restore(self, checkpoint: dict) -> None:
+        """Restore memory only; subsequent saves still check the pre-crash files."""
+        self.validate_checkpoint(checkpoint)
         prepare, self.document.prepare = self.document.prepare, None
         try:
             self.document.commit(checkpoint["committed"], tuple(checkpoint["scratch"]))

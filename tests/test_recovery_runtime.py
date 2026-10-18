@@ -152,7 +152,7 @@ def test_recovery_restores_tabs_scratch_drafts_and_original_disk_baseline(
             assert not recovery_path.exists()
 
 
-def test_cancel_recovery_keeps_all_pending_checkpoints(tmp_path, qt_app, monkeypatch):
+def test_cancel_recovery_keeps_all_pending_checkpoints(qt_app, monkeypatch):
     from PySide6.QtWidgets import QMessageBox
 
     from little_tinker_rig.qt.app import Studio
@@ -171,7 +171,7 @@ def test_cancel_recovery_keeps_all_pending_checkpoints(tmp_path, qt_app, monkeyp
                     {
                         "format": 1,
                         "active": 0,
-                        "documents": [{"path": str(tmp_path / "work.py")}],
+                        "documents": [window.document_page.checkpoint()],
                     }
                 ),
                 encoding="utf-8",
@@ -221,6 +221,56 @@ def test_invalid_recovery_active_tab_is_rejected_before_opening(qt_app, monkeypa
         assert window.documents.count() == 1
         assert abandoned.exists()
         assert "Could not restore recovery data" in window.last_error
+    finally:
+        close(window)
+
+
+@pytest.mark.parametrize("corruption", ["cursor", "committed", "lesson"])
+def test_invalid_later_recovery_document_does_not_partly_restore(
+    tmp_path, qt_app, monkeypatch, corruption
+):
+    from PySide6.QtWidgets import QMessageBox
+
+    from little_tinker_rig.qt.app import Studio
+
+    first = tmp_path / "first.py"
+    first.write_text("value = 1\n", encoding="utf-8")
+    window = Studio(first)
+    try:
+        qt_app.processEvents()
+        first_item = window.document_page.checkpoint()
+        first_item.update(source="value = 2\n", committed="value = 2\n")
+        invalid_item = dict(
+            first_item,
+            path=str(tmp_path / "second.py"),
+            source="other = 3\n",
+            committed="other = 3\n",
+        )
+        if corruption == "cursor":
+            invalid_item["cursor"] = "invalid"
+        elif corruption == "committed":
+            invalid_item["committed"] = "if True:\n"
+        else:
+            invalid_item["lesson_project"] = {"root": str(tmp_path / "missing")}
+        window.recovery.path.parent.mkdir(parents=True, exist_ok=True)
+        abandoned = window.recovery.path.with_name("abandoned.json")
+        abandoned.write_text(
+            json.dumps(
+                {"format": 1, "active": 0, "documents": [first_item, invalid_item]}
+            ),
+            encoding="utf-8",
+        )
+        prompts = []
+        monkeypatch.setattr(
+            QMessageBox,
+            "question",
+            lambda *args: prompts.append(args) or QMessageBox.StandardButton.Yes,
+        )
+        window.recovery.offer()
+        assert not prompts
+        assert window.documents.count() == 1
+        assert window.document_page.text == "value = 1\n"
+        assert abandoned.exists()
     finally:
         close(window)
 

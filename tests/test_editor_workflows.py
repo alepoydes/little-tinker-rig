@@ -268,6 +268,24 @@ def test_cancelled_close_does_not_replace_saved_geometry(tmp_path, qt_app):
         close_window(window)
 
 
+def test_failed_recovery_cleanup_keeps_window_controls_open(tmp_path, qt_app):
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "main.py")
+    window.confirm_close = lambda *_: True
+    window.show()
+    try:
+        with (
+            patch.object(window.recovery, "close", side_effect=OSError("read only")),
+            patch.object(window.controls, "close") as controls_close,
+        ):
+            assert not window.close()
+            assert window.isVisible()
+            controls_close.assert_not_called()
+    finally:
+        window.close()
+
+
 def test_notes_have_owned_colors_rows_and_drop_boundary(tmp_path, qt_app):
     from little_tinker_rig.qt.app import Studio
 

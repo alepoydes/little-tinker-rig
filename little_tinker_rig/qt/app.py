@@ -2472,15 +2472,15 @@ class Studio(QMainWindow):
                 event.ignore()
                 return
             confirmed.add(owner)
-        self.controls.close()
-        if self.robot:
-            self.robot.close()
         try:
             self.recovery.close()
         except OSError as error:
             self.error(str(error))
             event.ignore()
             return
+        self.controls.close()
+        if self.robot:
+            self.robot.close()
         self.settings.setValue("windowGeometry", self.saveGeometry())
         self.lessons.release_unused(all_projects=True)
         self.settings.sync()

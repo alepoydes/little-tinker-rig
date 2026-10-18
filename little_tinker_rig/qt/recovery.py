@@ -7,8 +7,9 @@ from uuid import uuid4
 from PySide6.QtCore import QLockFile, QObject, QTimer
 from PySide6.QtWidgets import QMessageBox
 
+from little_tinker_rig.core.lessons import StudentProject
 from little_tinker_rig.core.paths import personal_collection
-from little_tinker_rig.core.project import atomic_write
+from little_tinker_rig.core.project import Project, atomic_write
 from little_tinker_rig.i18n import tr
 
 
@@ -88,6 +89,40 @@ class Recovery(QObject):
                 )
             return False
 
+    def validate_document(self, item):
+        Project.validate_checkpoint(item)
+        if (
+            type(item.get("python")) is not bool
+            or type(item.get("unnamed", False)) is not bool
+            or type(item.get("cursor")) is not int
+            or item["cursor"] < 0
+            or type(item.get("scroll")) is not int
+            or item["scroll"] < 0
+        ):
+            raise ValueError("Invalid recovery editor state")
+        Project(Path(item["path"]), allow_draft=True)
+        lesson = item.get("lesson_project")
+        if lesson is not None:
+            if (
+                not isinstance(lesson, dict)
+                or not isinstance(lesson.get("root"), str)
+                or not Path(lesson["root"]).is_absolute()
+                or (
+                    lesson.get("path") is not None
+                    and not isinstance(lesson["path"], str)
+                )
+                or not isinstance(lesson.get("saved_progress"), str)
+                or (
+                    lesson.get("disk_hash") is not None
+                    and not isinstance(lesson["disk_hash"], str)
+                )
+                or type(lesson.get("retain", False)) is not bool
+                or type(lesson.get("pending", False)) is not bool
+            ):
+                raise ValueError("Invalid recovery lesson")
+            if Path(lesson["root"]) not in self.window.lessons.projects:
+                StudentProject.restore(lesson)
+
     def offer(self):
         if self.closed:
             return
@@ -114,6 +149,12 @@ class Recovery(QObject):
                     )
                 ):
                     raise ValueError("Unsupported recovery format")
+                if len({item["path"] for item in data["documents"]}) != len(
+                    data["documents"]
+                ):
+                    raise ValueError("Duplicate recovery document")
+                for item in data["documents"]:
+                    self.validate_document(item)
                 names = "\n".join(item["path"] for item in data["documents"])
                 answer = QMessageBox.question(
                     self.window,
