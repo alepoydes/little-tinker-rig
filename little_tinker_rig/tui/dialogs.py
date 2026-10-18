@@ -86,3 +86,39 @@ class Unsaved(ModalScreen):
     @on(Button.Pressed)
     def button(self, event):
         self.dismiss(event.button.id)
+
+
+class RecoveryPrompt(ModalScreen):
+    DEFAULT_CSS = """
+    RecoveryPrompt { align: center middle; }
+    RecoveryPrompt > Vertical { width: 75; height: auto; border: round $accent; padding: 1 2; background: $surface; }
+    RecoveryPrompt Horizontal { height: auto; margin-top: 1; }
+    RecoveryPrompt Button { margin-right: 1; }
+    """
+    BINDINGS = [Binding("escape", "later", show=False)]
+
+    def __init__(self, path):
+        super().__init__()
+        self.path = path
+
+    def compose(self):
+        with Vertical():
+            yield Static(tr("Recover work"))
+            yield Static(
+                tr(
+                    "An earlier terminal session left unsaved Python work: {file}",
+                    file=self.path or tr("Untitled"),
+                ),
+                markup=False,
+            )
+            with Horizontal():
+                yield Button(tr("Restore"), id="restore", variant="primary")
+                yield Button(tr("Discard"), id="discard", variant="error")
+                yield Button(tr("Later"), id="later")
+
+    def action_later(self):
+        self.dismiss("later")
+
+    @on(Button.Pressed)
+    def button(self, event):
+        self.dismiss(event.button.id)

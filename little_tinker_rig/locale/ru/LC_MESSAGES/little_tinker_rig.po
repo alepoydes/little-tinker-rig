@@ -191,6 +191,11 @@ msgstr "Обязательная очистка"
 msgid "Ambient light"
 msgstr "Внешнее освещение"
 
+#: little_tinker_rig/tui/dialogs.py:111
+#, python-brace-format
+msgid "An earlier terminal session left unsaved Python work: {file}"
+msgstr "Предыдущая терминальная сессия оставила несохранённый код Python: {file}"
+
 #: little_tinker_rig/qt/recovery.py:107
 #, python-brace-format
 msgid ""
@@ -3102,6 +3107,10 @@ msgstr "Лямбда-функция"
 #: little_tinker_rig/tui/app.py:621 little_tinker_rig/tui/app.py:625
 msgid "Language"
 msgstr "Язык"
+
+#: little_tinker_rig/tui/dialogs.py:121
+msgid "Later"
+msgstr "Позже"
 
 #: little_tinker_rig/pybricks/firmware.py:446
 msgid "Leave only one matching hub in Bluetooth bootloader mode"

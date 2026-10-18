@@ -21,8 +21,9 @@ from little_tinker_rig.pybricks.devices import DEVICE_KINDS, HubInfo, describe_d
 from little_tinker_rig.pybricks.simulation import PROFILES
 from little_tinker_rig.pybricks.worker import HubWorker
 
-from .dialogs import Form, Unsaved
+from .dialogs import Form, RecoveryPrompt, Unsaved
 from .editor import PythonEditor
+from .recovery import Recovery
 
 
 class HubEvent(Message):
@@ -79,6 +80,9 @@ class Studio(App):
         self.execution_path = None
         self.unread = 0
         self.closing = False
+        self.exit_approved = False
+        self.recovery = Recovery()
+        self.recovery_timer = None
 
     def compose(self):
         self.status = Static(id="status", markup=False)
@@ -131,6 +135,7 @@ class Studio(App):
         )
         self.load_file(self.file)
         self.translate()
+        self.offer_recovery()
 
     def translate(self):
         self.shortcuts.update(
@@ -164,6 +169,7 @@ class Studio(App):
             (N_("Open program"), self.action_open),
             (N_("Save"), self.action_save),
             (N_("Save as"), self.action_save_as),
+            (N_("Recover work"), self.offer_recovery),
             (N_("Find / replace"), self.action_find),
             (N_("Check Python syntax"), self.action_check),
             (N_("Python completion"), self.editor.action_complete),
@@ -202,10 +208,50 @@ class Studio(App):
         self.problem = None
         self.query_one("#error-line").display = False
         self.update_status()
+        self.flush_recovery()
 
     @on(PythonEditor.Changed)
     def edited(self):
         self.update_status()
+        self.schedule_recovery()
+
+    def schedule_recovery(self):
+        if self.recovery_timer is not None:
+            self.recovery_timer.stop()
+        self.recovery_timer = self.set_timer(0.75, self.flush_recovery)
+
+    def flush_recovery(self):
+        try:
+            self.recovery.flush(
+                self.file, self.editor.text, self.editor.cursor_location
+            )
+            return True
+        except (OSError, ValueError, UnicodeError) as error:
+            self.failed(tr("Could not save recovery data: {detail}", detail=str(error)))
+            return False
+
+    @work(group="recovery", exclusive=True)
+    async def offer_recovery(self):
+        for path, lock in self.recovery.stale():
+            try:
+                file, source, cursor = Recovery.read(path)
+                answer = await self.push_screen_wait(RecoveryPrompt(file.path))
+                if answer == "discard":
+                    path.unlink()
+                elif answer == "restore":
+                    if not await self.may_leave():
+                        break
+                    self.load_file(file)
+                    self.editor.load_text(source)
+                    self.editor.move_cursor(cursor, center=True)
+                    if self.flush_recovery():
+                        path.unlink()
+            except (OSError, ValueError, UnicodeError) as error:
+                self.failed(
+                    tr("Could not restore recovery data: {detail}", detail=str(error))
+                )
+            finally:
+                Recovery.release(lock)
 
     def update_status(self):
         file = str(self.file.path) if self.file.path else tr("Untitled")
@@ -277,6 +323,7 @@ class Studio(App):
                 self.editor.history.checkpoint()
             self.editor.path = self.file.path
             self.update_status()
+            self.flush_recovery()
             return True
         except (ValueError, OSError, UnicodeError) as error:
             self.failed(str(error))
@@ -529,6 +576,8 @@ class Studio(App):
         if not self.info.connected:
             self.failed(tr("Connect a hub first"))
             return
+        if not self.flush_recovery():
+            return
         if not self.action_check():
             return
         path = self.file.path or (Path.cwd() / "untitled.py")
@@ -644,13 +693,31 @@ class Studio(App):
     @work(group="files", exclusive=True)
     async def action_quit(self):
         if await self.may_leave():
+            self.exit_approved = True
             self.exit()
 
     async def on_unmount(self):
         self.closing = True
-        self.end_capture_print(self)
-        if self.robot:
-            await asyncio.to_thread(self.robot.close)
+        if self.recovery_timer is not None:
+            self.recovery_timer.stop()
+        try:
+            if not self.exit_approved:
+                try:
+                    self.recovery.flush(
+                        self.file, self.editor.text, self.editor.cursor_location
+                    )
+                except (OSError, ValueError, UnicodeError):
+                    pass
+            try:
+                self.recovery.close(
+                    remove=self.exit_approved or not self.file.dirty(self.editor.text)
+                )
+            except (OSError, ValueError, UnicodeError):
+                pass
+        finally:
+            self.end_capture_print(self)
+            if self.robot:
+                await asyncio.to_thread(self.robot.close)
 
 
 def launch(path=None):

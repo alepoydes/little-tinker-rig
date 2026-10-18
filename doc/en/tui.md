@@ -41,6 +41,12 @@ BOM and updates the encoding declaration in the editor. Line endings are retaine
 The declaration change can be undone. A file changed externally cannot
 be silently overwritten; reopen it or save your version under another name.
 
+Unsaved edits are checkpointed after a short pause and before upload or run.
+If the terminal session closes unexpectedly, the next launch offers **Restore**,
+**Discard** or **Later**. Restoring opens the draft in the editor without writing
+the Python file; an external change still blocks an ordinary save to that file.
+After choosing **Later**, use **Recover work** from F10 to revisit the draft.
+
 ## Connect and run
 
 F7 opens the connection dialog when disconnected. During connection it cancels
@@ -58,8 +64,9 @@ program state.
 | F9 | Open or close the port monitor |
 
 **Run uploaded program** and **Disconnect hub** are available through F10.
-Upload requires valid Python. F4 and F5 use a snapshot of the current editor
-text, even for an untitled program; they do not save or overwrite your file.
+Upload requires valid Python. F4 and F5 first checkpoint unsaved work, then use
+a snapshot of the current editor text, even for an untitled program; they do not
+save or overwrite your Python file.
 Imported local Python modules are included from disk. Output and transport
 progress appear in the console; the progress bar tracks percentages reported by
 the transport. Errors offer **Go to error**. Navigation refuses to point into

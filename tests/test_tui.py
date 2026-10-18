@@ -8,6 +8,14 @@ import pytest
 from little_tinker_rig.core.source_file import SourceFile
 
 
+@pytest.fixture(autouse=True)
+def isolate_tui_recovery(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        "little_tinker_rig.tui.recovery.recovery_directory",
+        lambda: tmp_path / "tui-recovery",
+    )
+
+
 def test_utf8_saves_preserve_drafts_newlines_metadata_and_detect_disk_changes(tmp_path):
     path = tmp_path / "main.py"
     raw = "# coding: cp1251\r\n# Привет\r\nvalue =".encode("cp1251")
@@ -189,7 +197,10 @@ async def test_tui_runs_unsaved_editor_snapshot_without_overwriting_file(tmp_pat
         await pilot.press("f5")
         await until(lambda: app.robot.stored_program is not None and not app.hub_busy)
         await until(lambda: any("draft" in line for line in app.output_log.lines))
-        assert app.robot.stored_program.sources[path] == 'print("draft")\nprint(1 / 0)\n'
+        assert (
+            app.robot.stored_program.sources[path] == 'print("draft")\nprint(1 / 0)\n'
+        )
+        assert app.recovery.path.exists()
         assert path.read_text(encoding="utf-8") == 'print("external")\n'
         assert app.file.dirty(app.editor.text)
         await until(lambda: app.problem is not None)
@@ -219,6 +230,84 @@ async def test_tui_runs_untitled_snapshot_and_navigates_its_error(
         assert app.problem.path == tmp_path / "untitled.py"
         app.action_error()
         await until(lambda: app.editor.cursor_location[0] == 1)
+
+
+def test_tui_recovery_skips_live_sessions_and_preserves_disk_conflicts(tmp_path):
+    from little_tinker_rig.tui.recovery import Recovery
+
+    path = tmp_path / "main.py"
+    path.write_text("saved = True\n", encoding="utf-8")
+    file = SourceFile(path)
+    first = Recovery()
+    second = Recovery()
+    first.flush(file, "draft = True\n", (0, 5))
+    assert list(second.stale()) == []
+    first.close(remove=False)
+    stale = list(second.stale())
+    assert [candidate for candidate, _ in stale] == [first.path]
+    for _, lock in stale:
+        Recovery.release(lock)
+    restored, text, cursor = Recovery.read(first.path)
+    assert text == "draft = True\n" and cursor == (0, 5)
+    path.write_text("external = True\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="outside"):
+        restored.save(text)
+    assert path.read_text(encoding="utf-8") == "external = True\n"
+
+
+async def test_tui_restores_draft_after_unclean_close(tmp_path):
+    from little_tinker_rig.tui.app import Studio
+    from little_tinker_rig.tui.dialogs import RecoveryPrompt, Unsaved
+
+    path = tmp_path / "main.py"
+    path.write_text("saved = True\n", encoding="utf-8")
+    first = Studio(path)
+    async with first.run_test(size=(120, 40)):
+        first.editor.load_text("draft = True\n")
+        await until(lambda: first.recovery.path.exists())
+        assert first.recovery.path.exists()
+    assert first.recovery.path.exists()
+    second = Studio(path)
+    async with second.run_test(size=(120, 40)) as pilot:
+        await until(lambda: isinstance(second.screen, RecoveryPrompt))
+        await pilot.click("#later")
+        await until(lambda: not isinstance(second.screen, RecoveryPrompt))
+        assert first.recovery.path.exists()
+        await pilot.pause()
+        second.offer_recovery()
+        await until(lambda: isinstance(second.screen, RecoveryPrompt))
+        await pilot.click("#restore")
+        await until(lambda: second.editor.text == "draft = True\n")
+        assert second.file.path == path and second.file.dirty(second.editor.text)
+        assert path.read_text(encoding="utf-8") == "saved = True\n"
+        assert second.recovery.path.exists() and not first.recovery.path.exists()
+        await pilot.press("ctrl+q")
+        await until(lambda: isinstance(second.screen, Unsaved))
+        await pilot.click("#discard")
+    assert not second.recovery.path.exists()
+
+
+@pytest.mark.parametrize("key", ["f4", "f5"])
+async def test_tui_transfer_stops_if_draft_cannot_be_recovered(
+    tmp_path, monkeypatch, key
+):
+    from little_tinker_rig.tui.app import Studio
+
+    app = Studio(tmp_path / "main.py")
+    async with app.run_test(size=(120, 40)) as pilot:
+        await asyncio.wrap_future(app.robot.connect_hub(transport="virtual"))
+        await until(lambda: app.info.connected)
+        app.editor.load_text("print('draft')\n")
+
+        def fail(*args):
+            raise OSError("checkpoint failed")
+
+        monkeypatch.setattr(app.recovery, "flush", fail)
+        await pilot.press(key)
+        await until(
+            lambda: any("checkpoint failed" in line for line in app.output_log.lines)
+        )
+        assert app.robot.stored_program is None
 
 
 async def test_tui_completion_replaces_token_and_progress_is_visible(tmp_path):
