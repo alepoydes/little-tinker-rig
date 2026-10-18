@@ -111,11 +111,13 @@ def svg_icon(name, *, rail=False):
     icon = QIcon()
     for scale in (1, 2, 3):
         pixmap = QPixmap(24 * scale, 24 * scale)
-        pixmap.setDevicePixelRatio(scale)
         pixmap.fill(QColor(0, 0, 0, 0))
         painter = QPainter(pixmap)
         renderer.render(painter)
         painter.end()
+        # Render into physical pixels before assigning logical high-DPI size.
+        # Otherwise QSvgRenderer scales twice and clips the icon at 2x/3x.
+        pixmap.setDevicePixelRatio(scale)
         icon.addPixmap(pixmap)
     return icon
 
