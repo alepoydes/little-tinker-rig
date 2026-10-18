@@ -146,11 +146,10 @@ class CardDelegate(QStyledItemDelegate):
                 rect = option.rect.adjusted(2, 1, -3, -1)
                 selected = bool(option.state & QStyle.StateFlag.State_Selected)
                 hovered = bool(option.state & QStyle.StateFlag.State_MouseOver)
-                if selected or hovered:
+                if selected or hovered or not nested:
+                    background = "selected" if selected else "hover" if hovered else "raised"
                     painter.setPen(Qt.PenStyle.NoPen)
-                    painter.setBrush(
-                        QColor(colors()["selected" if selected else "hover"])
-                    )
+                    painter.setBrush(QColor(colors()[background]))
                     painter.drawRoundedRect(rect, 5, 5)
                 role, symbol = CATEGORY_APPEARANCE.get(
                     category, ("snippet", "◇")

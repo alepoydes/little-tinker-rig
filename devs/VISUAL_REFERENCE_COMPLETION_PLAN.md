@@ -29,6 +29,8 @@ Stage 2 now gives top-level catalog categories semantic icon badges and
 stronger type hierarchy; nested construction groups use a smaller color marker
 while retaining tree expansion and keyboard navigation. The search field now
 has a theme-aware search icon and built-in clear action without adding height.
+Category headings now also have a distinct rounded row background in both
+themes, separating tree branches from the colored block cards at a glance.
 Empty catalog views now present their localized reason and view icon within the
 catalog viewport, including Favorites and searches with no results, instead of
 leaving a blank tree and a distant status label.
