@@ -51,6 +51,18 @@ def read_file(path, dependencies):
     return data
 
 
+def directory_fingerprint(path, entries=None):
+    if entries is None:
+        if not path.is_dir():
+            return "directory:missing"
+        entries = list(path.iterdir())
+    checksum = hashlib.sha256()
+    for entry in sorted(entries, key=lambda item: item.name):
+        kind = b"d" if entry.is_dir() else b"f" if entry.is_file() else b"o"
+        checksum.update(kind + entry.name.encode("utf-8", "surrogatepass") + b"\0")
+    return "directory:" + checksum.hexdigest()
+
+
 def resolve_library(
     root, reference, *, download=False, local=None, progress=None, cancelled=None
 ):
@@ -128,10 +140,11 @@ def member_name(name):
 
 class PartLibrary(AbstractContextManager):
     def __init__(self, path, *, dependencies=None):
-        self.path = Path(path)
+        self.path = Path(path).resolve()
         self.archive = None
         self.members = {}
         self.used = {}
+        self.directory_entries = {}
         self.dependencies = dependencies if dependencies is not None else {}
         if self.path.is_dir():
             return
@@ -160,7 +173,7 @@ class PartLibrary(AbstractContextManager):
             raise ValueError(f"Invalid parts library: {error}") from error
 
     def read(self, name):
-        original = name
+        original = name.replace("\\", "/")
         name = member_name(name)
         if name in self.used:
             return self.used[name]
@@ -171,10 +184,41 @@ class PartLibrary(AbstractContextManager):
         else:
             path = resource(self.path, original)
             data = read_file(path, self.dependencies)
+            if data is None and original != name:
+                normalized = resource(self.path, name)
+                if normalized != path:
+                    data = read_file(normalized, self.dependencies)
             if data is None:
-                return None
+                actual = self.directory_path(name)
+                if actual is not None:
+                    data = read_file(actual, self.dependencies)
+                if data is None:
+                    return None
         self.used[name] = data
         return data
+
+    def directory_path(self, name):
+        current = self.path
+        for component in PurePosixPath(name).parts:
+            if not current.is_dir():
+                return None
+            entries = self.directory_entries.get(current)
+            if entries is None:
+                entries = {}
+                children = list(current.iterdir())
+                self.dependencies[current] = directory_fingerprint(current, children)
+                for child in children:
+                    key = child.name.casefold()
+                    entries[key] = None if key in entries else child
+                self.directory_entries[current] = entries
+            key = component.casefold()
+            if key in entries and entries[key] is None:
+                raise ValueError(f"Ambiguous LDraw resource: {name}")
+            child = entries.get(key)
+            if child is None:
+                return None
+            current = resource(self.path, child.relative_to(self.path).as_posix())
+        return current
 
     def close(self):
         if self.archive:

@@ -10,7 +10,7 @@ from zipfile import BadZipFile
 import numpy as np
 
 from .ldraw import Instance, LDraw, Mesh, Scene
-from .ldraw_parts import check_cancelled, digest, read_file
+from .ldraw_parts import check_cancelled, digest, directory_fingerprint, read_file
 from .paths import parts_cache, resource
 
 FORMAT = 1
@@ -167,8 +167,12 @@ def load_scene(path, library, *, library_digest=None, cancelled=None):
             for root, name, expected in data["dependencies"]:
                 check_cancelled(cancelled)
                 dependency = resource(roots[root], name)
-                read_file(dependency, current)
-                if current[dependency] != expected:
+                if isinstance(expected, str) and expected.startswith("directory:"):
+                    actual = directory_fingerprint(dependency)
+                else:
+                    read_file(dependency, current)
+                    actual = current[dependency]
+                if actual != expected:
                     break
             else:
                 scene = _decode(archive, data)

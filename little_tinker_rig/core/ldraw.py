@@ -126,14 +126,23 @@ class LDraw(AbstractContextManager):
             raise FileNotFoundError(path)
         self.main = self.add_file(path.name, data.decode("utf-8-sig"))
         self.library = PartLibrary(library or self.root, dependencies=self.dependencies)
+        self.local = (
+            self.library
+            if self.library.path == self.root
+            else PartLibrary(self.root, dependencies=self.dependencies)
+        )
         try:
             if config := self.library.read("LDConfig.ldr"):
                 self.add_file("ldconfig.ldr", config.decode("utf-8-sig"))
         except Exception:
+            if self.local is not self.library:
+                self.local.close()
             self.library.close()
             raise
 
     def __exit__(self, *args):
+        if self.local is not self.library:
+            self.local.close()
         self.library.close()
 
     def add_file(self, name, text):
@@ -196,8 +205,7 @@ class LDraw(AbstractContextManager):
 
     def records(self, name):
         if name not in self.files:
-            path = resource(self.root, name)
-            data = read_file(path, self.dependencies)
+            data = self.local.read(name)
             if data is None:
                 for prefix in ("parts/", "p/", ""):
                     data = self.library.read(prefix + name)

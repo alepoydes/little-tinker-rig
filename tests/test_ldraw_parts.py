@@ -73,6 +73,68 @@ def test_verified_cache_is_shared_without_extraction(parts, tmp_path, monkeypatc
         assert set(library.used) == {"parts/block.dat"}
 
 
+def test_directory_library_resolves_parts_and_colors_without_case_sensitivity(tmp_path):
+    from little_tinker_rig.core.ldraw import LDraw
+    from little_tinker_rig.core.ldraw_cache import load_scene
+
+    library = tmp_path / "library"
+    (library / "PARTS").mkdir(parents=True)
+    (library / "ldconfig.ldr").write_text(
+        "0 !COLOUR Lesson CODE 4 VALUE #AA0000 EDGE #222222\n",
+        encoding="utf-8",
+    )
+    (library / "PARTS/BLOCK.DAT").write_text(
+        "0 Authored test part\n3 16 0 0 0 20 0 0 0 -20 0\n",
+        encoding="utf-8",
+    )
+    model = tmp_path / "model.ldr"
+    model.write_text(
+        "0 Original model\n1 4 0 0 0 1 0 0 0 1 0 0 0 1 block.dat\n",
+        encoding="utf-8",
+    )
+    with LDraw(model, library) as reader:
+        scene = reader.scene()
+    assert scene.meshes["block.dat"].triangles.shape == (1, 3, 3)
+    assert scene.colors[4][0][:3] == pytest.approx((170 / 255, 0, 0))
+    assert load_scene(model, library).meshes["block.dat"].bounds[1, 0] == 20
+    (library / "parts").mkdir()
+    (library / "parts/block.dat").write_text(
+        "0 Override\n3 16 0 0 0 40 0 0 0 -40 0\n",
+        encoding="utf-8",
+    )
+    assert load_scene(model, library).meshes["block.dat"].bounds[1, 0] == 40
+
+
+def test_local_subassembly_keeps_case_insensitive_lookup_with_external_library(
+    tmp_path,
+):
+    from little_tinker_rig.core.ldraw import LDraw
+    from little_tinker_rig.core.ldraw_cache import load_scene
+
+    library = tmp_path / "library"
+    library.mkdir()
+    model = tmp_path / "model.ldr"
+    model.write_text(
+        "0 Original model\n1 4 0 0 0 1 0 0 0 1 0 0 0 1 arm.ldr\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "ARM.LDR").write_text(
+        "0 Local subassembly\n3 16 0 0 0 20 0 0 0 -20 0\n",
+        encoding="utf-8",
+    )
+    with LDraw(model, library) as reader:
+        scene = reader.scene()
+    assert len(scene.instances) == 1
+    assert scene.meshes[scene.instances[0].part].triangles.shape == (1, 3, 3)
+    assert load_scene(model, library).meshes[scene.instances[0].part].bounds[1, 0] == 20
+    (tmp_path / "arm.ldr").write_text(
+        "0 Local override\n3 16 0 0 0 40 0 0 0 -40 0\n",
+        encoding="utf-8",
+    )
+    updated = load_scene(model, library)
+    assert updated.meshes[updated.instances[0].part].bounds[1, 0] == 40
+
+
 def test_mismatch_and_cancellation_leave_no_partial_library(parts, tmp_path):
     archive, spec, _ = parts
     cancelled = Event()
