@@ -143,15 +143,17 @@ class CodeEdit(QPlainTextEdit):
 
     def update_gutter(self, *_):
         self.setViewportMargins(self.gutter_width(), 0, 0, 0)
+        self.position_gutter()
+
+    def position_gutter(self):
+        viewport = self.viewport().geometry()
+        self.gutter.setGeometry(
+            QRect(0, viewport.top(), viewport.left(), viewport.height())
+        )
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self.gutter.setGeometry(
-            QRect(
-                self.contentsRect().topLeft(),
-                QSize(self.gutter_width(), self.contentsRect().height()),
-            )
-        )
+        self.position_gutter()
 
     def highlight_line(self):
         from PySide6.QtWidgets import QTextEdit

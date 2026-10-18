@@ -159,6 +159,37 @@ def test_courier_ports_names_and_plain_fields_accept_real_clicks(tmp_path, qt_ap
         close_window(window)
 
 
+def test_python_line_numbers_stay_outside_source_after_resize_and_theme(tmp_path, qt_app):
+    from little_tinker_rig.qt.app import Studio
+
+    path = tmp_path / "main.py"
+    path.write_text("print('ready')\n", encoding="utf-8")
+    window = Studio(path)
+    window.resize(930, 620)
+    window.show()
+    try:
+        window.change_editor(1)
+        qt_app.processEvents()
+        code = window.code
+
+        def clear_of_source():
+            gutter = code.gutter.geometry()
+            viewport = code.viewport().geometry()
+            assert gutter.right() < viewport.left()
+            assert gutter.top() == viewport.top()
+            assert gutter.height() == viewport.height()
+
+        clear_of_source()
+        code.setPlainText("\n".join(f"value_{i} = {i}" for i in range(120)))
+        qt_app.processEvents()
+        clear_of_source()
+        window.change_visual_theme("dark")
+        qt_app.processEvents()
+        clear_of_source()
+    finally:
+        close_window(window)
+
+
 @pytest.mark.parametrize(
     "state", ["normal", "maximized", "fullscreen", "minimized", "maximized_minimized"]
 )

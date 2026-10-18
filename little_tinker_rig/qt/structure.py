@@ -154,7 +154,7 @@ class StructureBar(QWidget):
             return
         self.update_actions()
         self.adjustSize()
-        self.view.setViewportMargins(0, 0, 0, self.height())
+        self.view.reserve_structure_bar(self.height())
         self.place()
         self.show()
         self.raise_()
@@ -163,7 +163,7 @@ class StructureBar(QWidget):
         self.move(2, self.view.viewport().geometry().bottom() + 1)
 
     def hideEvent(self, event):
-        self.view.setViewportMargins(0, 0, 0, 0)
+        self.view.reserve_structure_bar(0)
         super().hideEvent(event)
 
     def current(self):

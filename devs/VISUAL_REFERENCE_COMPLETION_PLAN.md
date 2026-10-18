@@ -1,19 +1,25 @@
 # Reference design completion plan
 
-Status: in progress (2026-10-18). The shell, palette, catalog hierarchy,
-program cards, compact Scratch layout, and several auxiliary surfaces have
-verified visual passes. Long-line composition, complete lesson and dialog review,
-and final desktop acceptance remain open. The catalog wraps long titles at
-compact widths and recalculates card height when its width changes.
+Status: reference visual pass completed on Linux (2026-10-18). The shell,
+palette, catalog, program cards, lesson companion, compact Scratch/Control,
+dialogs, and auxiliary surfaces have been inspected in English/Russian and
+Light/Dark at wide and compact sizes. Native Wayland startup and theme switching
+passed; Windows, physical hub, live 3D, and compositor pointer movement remain
+outside this environment's acceptance evidence. The catalog wraps long titles
+at compact widths and recalculates card height when its width changes.
 The semantic block palette now uses the stronger blue, amber, green, and orange
 families from the selected reference. Catalog cards and program blocks share
 those colors, with clearer borders, separated program cards, and readable
 header badges. Plain imports no longer appear as colored control blocks. The
 selected workspace and catalog filters have stronger blue states, and Run/Stop
-icons keep contrast against their filled buttons. Stage 3 now includes a fixed
-source-line gutter outside the text viewport; more compact long-line
-composition, Scratch parity, and a full pointer/keyboard audit remain. At
-compact widths Scratch now docks below the program so both structural editors
+icons keep contrast against their filled buttons. Stage 3 includes a fixed
+source-line gutter outside the text viewport. Long Python lines stay unwrapped
+for structural hit geometry, with visible horizontal navigation controls. The
+argument/sequence bar now reserves bottom space without clearing the left
+gutter margin; switching theme or representation no longer lets program text
+run under line numbers. The ordinary Python editor positions its line-number
+gutter against the actual viewport edge, including after line-count changes.
+At compact widths Scratch now docks below the program so both structural editors
 keep enough horizontal
 room for Python; at wider widths it returns to the right. Manual dock moves
 stop automatic placement, and unfinished parameter input survives relocation.
@@ -40,6 +46,8 @@ while retaining tree expansion and keyboard navigation. The search field now
 has a theme-aware search icon and built-in clear action without adding height.
 Category headings now also have a distinct rounded row background in both
 themes, separating tree branches from the colored block cards at a glance.
+Clicking a category or nested group title now toggles its branch, while the
+existing disclosure-arrow behavior still toggles only once.
 Empty catalog views now present their localized reason and view icon within the
 catalog viewport, including Favorites and searches with no results, instead of
 leaving a blank tree and a distant status label.
@@ -96,7 +104,18 @@ set covers populated and empty catalog, Scratch, Control, Help, Block Editor,
 and Assembly in Light/Dark, English/Russian, wide/compact offscreen windows.
 The 26 front-end and variant scenarios also pass after fixing a repeated
 connection cancellation that could interrupt cleanup before the hub UI became
-idle.
+idle. In the final pass, all 31 workspace interaction scenarios and all 13
+editor workflow scenarios pass in independent Qt processes. Eight theme/Console
+scenarios and the focused lesson tab/language checks pass. A combined run of
+many GUI modules was stopped after increasing Qt restyle cost from accumulated
+closed test windows; it is not counted as a passing suite. A full 27-case lesson
+UI run timed out after 21 passing cases, while its changed tab path and the
+12-case introductory path passed in separate focused runs.
+An offline wheel built from the final code contains 42 SVG assets, 27 localized
+Help Markdown pages, and the Russian gettext catalog. A fresh 930 × 620
+Wayland window rendered both themes and closed successfully.
+The structural editor with its sequence bar open also rendered in Light/Dark
+through native Wayland with a 40 px gutter ending before the source viewport.
 This follows the first-pass
 [visual redesign](VISUAL_REDESIGN_PLAN.md) and uses the selected local mockups
 in `report/design_concepts` as visual
@@ -113,18 +132,17 @@ in the real Qt application, with every existing control and editing behavior
 accounted for. The mockups are a guide to hierarchy, color, spacing, and states;
 they are not a pixel specification or a reason to remove working features.
 
-Current offscreen captures of a populated First drive project at 1380 × 880
-and 930 × 620 show a clearer palette and card hierarchy than the first pass.
-The catalog uses 270 px by default at compact width, and Scratch moves below
-the program there. Python lines stay unwrapped to preserve structural hit
-geometry; the new arrows make their hidden portions reachable. Dense lesson
-states and some generic dialogs still need refinement. The populated project
-remains the primary fixture because an empty document conceals these gaps.
+Offscreen captures of a populated First drive project at 1380 × 880 and
+930 × 620 show the intended saturated palette and hierarchy. The catalog uses
+270 px by default at compact width, and Scratch moves below the program there.
+Python lines stay unwrapped to preserve structural hit geometry; the new arrows
+make hidden portions reachable. The populated project remains the primary
+fixture because an empty document conceals these gaps.
 
-The title/menu question has a concrete answer: the current frameless Qt window
-already embeds a real `QMenuBar` beside the brand in a custom title row. The
-remaining work is to refine spacing, truncation, contrast, keyboard access, and
-native move/resize behavior. No new window framework is required.
+The frameless Qt window embeds a real `QMenuBar` beside the brand in a custom
+title row. Spacing, contrast, truncation, and keyboard access were refined;
+native pointer move/resize remains a separate compositor check. No new window
+framework is required.
 
 ## Delivery sequence
 

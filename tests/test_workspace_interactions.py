@@ -211,6 +211,34 @@ def test_first_console_open_keeps_compact_program_visible(windows):
     assert not window.hub_input.isVisible()
 
 
+def test_sequence_bar_keeps_program_source_clear_of_line_numbers(windows):
+    from PySide6.QtCore import QPoint
+
+    window = windows("result = max(1, 2)\n")
+    window.resize(930, 620)
+    QApplication.processEvents()
+    view = window.source
+
+    def clear_of_numbers():
+        assert view.viewportMargins().left() == 40
+        assert view.gutter.geometry().right() < view.viewport().geometry().left()
+
+    clear_of_numbers()
+    rect = view._rect(1, 14)
+    view.structure_bar.activate(QPoint(int(rect.left()) + 2, int(rect.center().y())))
+    assert view.structure_bar.isVisible()
+    clear_of_numbers()
+    window.change_visual_theme("dark")
+    QApplication.processEvents()
+    clear_of_numbers()
+    view.structure_bar.hide()
+    clear_of_numbers()
+    window.change_editor(1)
+    window.change_editor(0)
+    QApplication.processEvents()
+    clear_of_numbers()
+
+
 def test_console_uses_compact_height_after_hidden_window_resize(windows):
     window = windows()
     window.resize(1380, 880)

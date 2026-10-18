@@ -205,7 +205,12 @@ class SourceView(QTextEdit):
         palette.setBrush(QPalette.ColorRole.Base, QBrush(tile))
         self.viewport().setPalette(palette)
         self.viewport().setAutoFillBackground(True)
-        self.setViewportMargins(40, 0, 0, 0)
+        bottom = (
+            self.structure_bar.height()
+            if hasattr(self, "structure_bar") and self.structure_bar.isVisible()
+            else 0
+        )
+        self.reserve_structure_bar(bottom)
         if getattr(self, "parameter_editor", None):
             self.parameter_editor.apply_theme()
         if hasattr(self, "structure_bar"):
@@ -214,6 +219,17 @@ class SourceView(QTextEdit):
             self.highlighter.rehighlight()
         self.viewport().update()
         self.gutter.update()
+
+    def reserve_structure_bar(self, height):
+        self.setViewportMargins(40, 0, 0, height)
+        if hasattr(self, "gutter"):
+            self.position_gutter()
+
+    def position_gutter(self):
+        viewport = self.viewport().geometry()
+        self.gutter.setGeometry(
+            0, viewport.top(), min(40, viewport.left()), viewport.height()
+        )
 
     def refresh_source(self):
         context = getattr(self.session, "context", None)
@@ -1715,7 +1731,7 @@ class SourceView(QTextEdit):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self.gutter.setGeometry(0, self.viewport().y(), 40, self.viewport().height())
+        self.position_gutter()
         if hasattr(self, "structure_bar") and self.structure_bar.isVisible():
             self.structure_bar.place()
 
