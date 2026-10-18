@@ -4,18 +4,21 @@ import ast
 from importlib.resources import files
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QUrl, Signal
+from PySide6.QtCore import QRectF, Qt, QUrl, Signal
 from PySide6.QtGui import (
     QColor,
     QDesktopServices,
     QFont,
     QFontDatabase,
+    QImage,
     QKeySequence,
+    QPainter,
     QShortcut,
     QTextBlockFormat,
     QTextCharFormat,
     QTextCursor,
     QTextFrameFormat,
+    QTextImageFormat,
     QTextTable,
 )
 from PySide6.QtWidgets import (
@@ -114,6 +117,77 @@ def group_document(identity, snippets):
 
 
 class HelpBrowser(QTextBrowser):
+    def __init__(self):
+        super().__init__()
+        self.lesson_numbers = {}
+
+    def lesson_number_image(self, number):
+        c = colors()
+        image = QImage(26, 26, QImage.Format.Format_ARGB32_Premultiplied)
+        image.fill(Qt.GlobalColor.transparent)
+        painter = QPainter(image)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setBrush(QColor(c["accent"]))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(QRectF(1, 1, 24, 24))
+        font = QFont("sans-serif", 10)
+        font.setWeight(QFont.Weight.Bold)
+        painter.setFont(font)
+        painter.setPen(QColor(c["accent_text"]))
+        painter.drawText(
+            QRectF(1, 1, 24, 24), Qt.AlignmentFlag.AlignCenter, str(number)
+        )
+        painter.end()
+        return image
+
+    def decorate_lesson_headings(self, numbers):
+        document = self.document()
+        block = document.begin()
+        while block.isValid():
+            following = block.next()
+            if block.blockFormat().headingLevel() == 2:
+                cursor = QTextCursor(block)
+                cursor.select(QTextCursor.SelectionType.BlockUnderCursor)
+                title_format = cursor.charFormat()
+                number = next(
+                    (
+                        numbers[name]
+                        for name in title_format.anchorNames()
+                        if name in numbers
+                    ),
+                    None,
+                )
+                if number is not None:
+                    url = QUrl(f"lesson-number:{number}")
+                    document.addResource(
+                        document.ResourceType.ImageResource,
+                        url,
+                        self.lesson_number_image(number),
+                    )
+                    badge = QTextImageFormat()
+                    badge.setName(url.toString())
+                    badge.setWidth(26)
+                    badge.setHeight(26)
+                    badge.setVerticalAlignment(
+                        QTextCharFormat.VerticalAlignment.AlignMiddle
+                    )
+                    badge.setToolTip(str(number))
+                    cursor.clearSelection()
+                    cursor.setPosition(block.position())
+                    cursor.insertImage(badge)
+                    cursor.insertText("  ", title_format)
+            block = following
+
+    def refresh_lesson_numbers(self):
+        document = self.document()
+        for number in self.lesson_numbers.values():
+            document.addResource(
+                document.ResourceType.ImageResource,
+                QUrl(f"lesson-number:{number}"),
+                self.lesson_number_image(number),
+            )
+        self.viewport().update()
+
     def resizeEvent(self, event):
         # Keep a readable text column while letting the page occupy its pane.
         inset = max(0, (self.width() - 1120) // 2)
@@ -152,7 +226,14 @@ class HelpBrowser(QTextBrowser):
                 text_format.setForeground(QColor(c["text"]))
                 cursor.mergeCharFormat(text_format)
             elif heading:
-                cursor.select(QTextCursor.SelectionType.BlockUnderCursor)
+                if block.text().startswith("\ufffc"):
+                    cursor.setPosition(block.position() + 1)
+                    cursor.movePosition(
+                        QTextCursor.MoveOperation.EndOfBlock,
+                        QTextCursor.MoveMode.KeepAnchor,
+                    )
+                else:
+                    cursor.select(QTextCursor.SelectionType.BlockUnderCursor)
                 text_format = cursor.charFormat()
                 text_format.setFontPointSize(
                     25 if heading == 1 else 18 if heading == 2 else 14
@@ -321,11 +402,11 @@ class HelpPage(QWidget):
             f"background: {c['panel']}; color: {c['text']}; "
             f"selection-background-color: {c['selected']}; }}"
         )
-        self.browser.document().setDefaultStyleSheet(
-            f"a {{ color: {c['link']}; }}"
-        )
+        self.browser.document().setDefaultStyleSheet(f"a {{ color: {c['link']}; }}")
         scroll = self.browser.verticalScrollBar().value()
         self.browser.style_document()
+        if self.current and self.current.startswith("lesson/instructions"):
+            self.browser.refresh_lesson_numbers()
         self.browser.verticalScrollBar().setValue(scroll)
 
     def set_lesson(self, lesson):
@@ -398,11 +479,11 @@ class HelpPage(QWidget):
             title = localized(self.lesson.data["title"], language())
             text, name = self.lesson.instructions_document(language())
             tasks = []
-            for stage in self.lesson.stages:
+            for index, stage in enumerate(self.lesson.stages, 1):
                 anchor = self.lesson.instructions_anchor(stage, language())
                 if anchor:
                     stage_title = localized(stage["title"], language())
-                    tasks.append(f"- [{stage_title}](#{anchor})")
+                    tasks.append(f"- [{index}. {stage_title}](#{anchor})")
             if tasks:
                 lines = text.splitlines(keepends=True)
                 heading_end = 1 if lines and lines[0].startswith("# ") else 0
@@ -559,6 +640,18 @@ class HelpPage(QWidget):
                     cursor.mergeCharFormat(format)
                 block = block.next()
             self.browser.style_document()
+            self.browser.lesson_numbers = {}
+            if page == "lesson/instructions":
+                self.browser.lesson_numbers = {
+                    stage_anchor: index
+                    for index, stage in enumerate(self.lesson.stages, 1)
+                    if (
+                        stage_anchor := self.lesson.instructions_anchor(
+                            stage, language()
+                        )
+                    )
+                }
+                self.browser.decorate_lesson_headings(self.browser.lesson_numbers)
             self.find_in_document(self.find_field.text())
         if anchor:
             self.browser.scrollToAnchor(anchor)

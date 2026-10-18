@@ -8,8 +8,10 @@ new lesson shows its complete instructions in **Help** from the top. Resuming an
 attempt opens the selected task's section in that same document.
 
 The right-side **Task panel** shows every task with its step number, checkbox,
-title, and points. First drive includes diagrams of the rolling base, travel
-directions, and obstacle distance in both the task cards and full instructions.
+title, and points. The matching sections in **Help** use blue numbered circles,
+and the instruction index includes those numbers. First drive includes diagrams
+of the rolling base, travel directions, and obstacle distance in both the task
+cards and full instructions.
 Use **Assembly** for the actual part-by-part model; the diagrams explain the
 connections and measurements.
 The selected task expands to show its goal, completion guidance, links and hints;
@@ -223,7 +225,9 @@ control returns to the previously viewed document, and Recent pages lists
 previously opened documents without repeating instruction sections. Older lessons without
 `instructions` display their stage files as one combined Help document. If
 several tasks share an unsectioned file, that text appears under each task so
-every **Instructions** link has a destination.
+every **Instructions** link has a destination. Write section headings without
+manual step numbers; Help adds the task number from the stage order at display
+time.
 
 Titles, goals and hints are localized strings. Optional localized `panel` Markdown supplies the short
 task-card content. Without it, the localized `goal` appears there. Optional

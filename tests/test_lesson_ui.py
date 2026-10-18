@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from little_tinker_rig.core.lessons import StudentProject
+from little_tinker_rig.core.lessons import Lesson, StudentProject
 from little_tinker_rig.i18n import language, set_language
 
 
@@ -451,10 +451,14 @@ def test_authored_task_card_link_opens_instructions_from_visible_markdown(
 def test_bundled_lesson_sections_share_one_help_document(tmp_path, qt_app):
     from pathlib import Path
 
+    from PySide6.QtCore import QPoint, QUrl
+
     from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.theme import colors
 
     source = Path(__file__).resolve().parents[1] / "lessons" / "first_drive"
     window = Studio(tmp_path / "plain.py")
+    original_theme = window.visual_theme
     window.resize(1024, 768)
     window.show()
     try:
@@ -475,6 +479,14 @@ def test_bundled_lesson_sections_share_one_help_document(tmp_path, qt_app):
         assert window.lessons.progress_button.isVisible()
         assert "Build a rolling base" in window.help_page.browser.toPlainText()
         assert "Stop before the obstacle" in window.help_page.browser.toPlainText()
+        window.change_language("ru")
+        qt_app.processEvents()
+        assert window.help_page.current == "lesson/instructions#drive"
+        assert (
+            "Первая поездка"
+            in window.help_page.browser.cursorForPosition(QPoint(20, 20)).block().text()
+        )
+        window.change_language("en")
         window.lessons.select_stage(5)
         window.lessons.show_stage()
         qt_app.processEvents()
@@ -495,15 +507,84 @@ def test_bundled_lesson_sections_share_one_help_document(tmp_path, qt_app):
         window.lessons.open(source)
         assert window.help_page.current == "lesson/instructions#stop"
         assert window.pages.currentIndex() == 2
+        window.change_visual_theme("light" if original_theme == "dark" else "dark")
+        badge = window.help_page.browser.document().resource(
+            window.help_page.browser.document().ResourceType.ImageResource,
+            QUrl("lesson-number:1"),
+        )
+        assert badge.pixelColor(13, 4).name() == colors()["accent"]
         window.open_document(tmp_path / "plain.py")
         assert window.help_page.lesson is None
         assert not window.help_page.current.startswith("lesson/")
     finally:
+        window.change_visual_theme(original_theme)
         window.recovery.close()
         window.deleteLater()
 
 
-def test_first_drive_illustrations_render_in_both_languages_and_export(tmp_path, qt_app):
+def test_instruction_heading_numbers_match_task_panel_order(tmp_path, qt_app):
+    from pathlib import Path
+
+    from little_tinker_rig.qt.help import HelpPage
+
+    root = Path(__file__).resolve().parents[1] / "lessons"
+    sources = [path.parent for path in root.rglob("lesson.json")]
+    sources.append(make_lesson(tmp_path))
+    original_language = language()
+    page = HelpPage([])
+    try:
+        for code in ("en", "ru"):
+            set_language(code)
+            for source in sources:
+                lesson = Lesson.load(source)
+                page.show_lesson_home(lesson)
+                expected = {
+                    lesson.instructions_anchor(stage, code): index
+                    for index, stage in enumerate(lesson.stages, 1)
+                }
+                numbered = {}
+                block = page.browser.document().begin()
+                while block.isValid():
+                    if block.blockFormat().headingLevel() == 2:
+                        fragments = []
+                        item = block.begin()
+                        while not item.atEnd():
+                            fragments.append(item.fragment())
+                            item += 1
+                        names = {
+                            name
+                            for fragment in fragments
+                            for name in fragment.charFormat().anchorNames()
+                        }
+                        anchors = names & expected.keys()
+                        if anchors:
+                            assert len(anchors) == 1
+                            anchor = anchors.pop()
+                            number = expected[anchor]
+                            image = fragments[0].charFormat().toImageFormat()
+                            assert image.name() == f"lesson-number:{number}"
+                            assert image.width() == image.height() == 26
+                            numbered[anchor] = number
+                    block = block.next()
+                assert numbered == expected
+                index_text = page.pages["lesson/instructions"][0]
+                assert all(
+                    f"](#{anchor})" in index_text and f"[{number}. " in index_text
+                    for anchor, number in expected.items()
+                )
+                page.show_lesson_stage(lesson, lesson.stages[-1])
+                assert page.current == (
+                    "lesson/instructions#"
+                    + lesson.instructions_anchor(lesson.stages[-1], code)
+                )
+    finally:
+        set_language(original_language)
+        page.deleteLater()
+
+
+def test_first_drive_illustrations_render_in_both_languages_and_export(
+    tmp_path, qt_app
+):
     from io import BytesIO
     from pathlib import Path
     from zipfile import ZipFile
@@ -537,7 +618,8 @@ def test_first_drive_illustrations_render_in_both_languages_and_export(tmp_path,
                         )
                         assert image is not None and image.width() > 0
                         assert 0 < fmt.width() <= browser.viewport().width()
-                        result.append(fmt.name())
+                        if not fmt.name().startswith("lesson-number:"):
+                            result.append(fmt.name())
                     fragment += 1
                 block = block.next()
             return result
@@ -561,7 +643,9 @@ def test_first_drive_illustrations_render_in_both_languages_and_export(tmp_path,
         window.deleteLater()
 
 
-def test_task_status_stays_below_illustrated_card_after_workspace_resize(tmp_path, qt_app):
+def test_task_status_stays_below_illustrated_card_after_workspace_resize(
+    tmp_path, qt_app
+):
     from pathlib import Path
 
     from little_tinker_rig.qt.app import Studio
