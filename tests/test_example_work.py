@@ -64,6 +64,27 @@ def test_snapshot_does_not_execute_entry_directory_initializer(tmp_path):
         program.cleanup()
 
 
+def test_disk_sources_are_utf8_in_snapshot_without_rewriting_originals(tmp_path):
+    entry, helper = tmp_path / "main.py", tmp_path / "helper.py"
+    main_bytes = (
+        '# coding: latin-1\nfrom helper import word\nprint("café", word)\n'
+    ).encode("latin-1")
+    helper_bytes = '# coding: cp1251\nword = "Привет"\n'.encode("cp1251")
+    entry.write_bytes(main_bytes)
+    helper.write_bytes(helper_bytes)
+
+    program = Program(entry)
+    try:
+        assert set(program.sources) == {entry, helper}
+        for file, original in ((entry, main_bytes), (helper, helper_bytes)):
+            snapshot = program.entry.parent / file.name
+            assert snapshot.read_bytes().decode("utf-8") == program.sources[file]
+            assert "coding: utf-8" in program.sources[file]
+            assert file.read_bytes() == original
+    finally:
+        program.cleanup()
+
+
 def test_failed_attempt_relocation_keeps_in_memory_file_ownership(tmp_path):
     examples = tmp_path / "bundled"
     examples.mkdir()

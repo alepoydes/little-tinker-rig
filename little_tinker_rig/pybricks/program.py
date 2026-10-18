@@ -1,13 +1,11 @@
 """Immutable local program snapshots, including imported project modules."""
 
 import ast
-import io
-import tokenize
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from little_tinker_rig.core.placeholders import unfinished_inputs
-from little_tinker_rig.core.source_file import utf8_source
+from little_tinker_rig.core.source_file import decode_source, utf8_source
 
 
 class Program:
@@ -27,13 +25,13 @@ class Program:
                 if file != self.path and file not in overrides and not file.is_file():
                     continue
                 seen.add(file)
-                raw = (
-                    utf8_source(overrides[file]).encode("utf-8")
+                source = (
+                    overrides[file]
                     if file in overrides
-                    else file.read_bytes()
+                    else decode_source(file.read_bytes())[0]
                 )
-                encoding, _ = tokenize.detect_encoding(io.BytesIO(raw).readline)
-                source = raw.decode(encoding)
+                source = utf8_source(source)
+                raw = source.encode("utf-8")
                 tree = ast.parse(source)
                 for node in unfinished_inputs(tree):
                     from little_tinker_rig.i18n import tr

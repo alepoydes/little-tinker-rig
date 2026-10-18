@@ -322,6 +322,40 @@ async def test_generated_block_helpers_compile_for_hub_abis(generated_helper_pro
 
 
 @pytest.mark.asyncio
+async def test_legacy_encoded_program_snapshot_compiles_as_utf8(tmp_path):
+    from pybricksdev.compile import compile_multi_file
+
+    from little_tinker_rig.pybricks.program import Program
+
+    entry = tmp_path / "main.py"
+    entry.write_bytes(
+        '# coding: latin-1\nfrom helper import word\nprint("café", word)\n'.encode(
+            "latin-1"
+        )
+    )
+    helper = tmp_path / "helper.py"
+    helper.write_bytes('# coding: cp1251\nword = "Привет"\n'.encode("cp1251"))
+    program = Program(entry)
+    try:
+        compiled = await compile_multi_file(str(program.entry), 6)
+        names = set()
+        offset = 0
+        while offset < len(compiled):
+            size = int.from_bytes(compiled[offset : offset + 4], "little")
+            offset += 4
+            end = compiled.index(0, offset)
+            names.add(compiled[offset:end].decode("utf-8"))
+            offset = end + 1
+            assert compiled[offset : offset + 2] == bytes((ord("M"), 6))
+            offset += size
+        assert names == {"__main__", "helper"}
+        assert entry.read_bytes().startswith(b"# coding: latin-1")
+        assert helper.read_bytes().startswith(b"# coding: cp1251")
+    finally:
+        program.cleanup()
+
+
+@pytest.mark.asyncio
 async def test_virtual_manual_motor_lease_and_disconnect():
     hub = VirtualConnection()
     await hub.connect()
