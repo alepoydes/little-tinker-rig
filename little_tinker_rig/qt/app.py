@@ -148,6 +148,10 @@ class Studio(QMainWindow):
         )
         self.search = QLineEdit()
         self.search.setPlaceholderText(N_("Find a block…"))
+        self.search_action = self.search.addAction(
+            svg_icon("search"), QLineEdit.ActionPosition.LeadingPosition
+        )
+        self.search.setClearButtonEnabled(True)
         self.search.textChanged.connect(self.library.filter)
         self.level_filter = ChoiceButtons({**LEVEL_TITLES, "all": N_("All")})
         self.level_filter.setAccessibleName(N_("Block level"))
@@ -941,6 +945,7 @@ class Studio(QMainWindow):
                 )
                 window.level_filter.apply_theme()
                 window.view_filter.apply_theme()
+                window.search_action.setIcon(svg_icon("search"))
                 window.modes.apply_theme()
                 for key, button in window.group_buttons.items():
                     button.setIcon(svg_icon(key))
