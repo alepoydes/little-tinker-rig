@@ -74,6 +74,9 @@ The 12 desktop introductory scenarios pass with an unsandboxed local
 `EPERM`, causing a virtual-hub timeout unrelated to the UI. The same capture
 set covers populated and empty catalog, Scratch, Control, Help, Block Editor,
 and Assembly in Light/Dark, English/Russian, wide/compact offscreen windows.
+The 26 front-end and variant scenarios also pass after fixing a repeated
+connection cancellation that could interrupt cleanup before the hub UI became
+idle.
 This follows the first-pass
 [visual redesign](VISUAL_REDESIGN_PLAN.md) and uses the selected local mockups
 in `report/design_concepts` as visual

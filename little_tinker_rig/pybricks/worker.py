@@ -80,7 +80,10 @@ class HubWorker:
                     # Console writes and device configuration share this lock
                     # too. Interrupt every earlier task, including queued work.
                     for previous in self.tasks:
-                        previous.cancel()
+                        # A second cancellation can abort the first task's
+                        # cleanup before it releases the connection lock.
+                        if not previous.cancelling():
+                            previous.cancel()
                 self.tasks.add(task)
                 async with self.lock:
                     return await coroutine
