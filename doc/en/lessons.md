@@ -96,6 +96,8 @@ Opening the lesson template resumes the latest local attempt; open a saved `.ltr
 to continue that portable archive. **File → Lessons → My lesson attempts** opens
 an earlier attempt, while **Start new attempt** creates another. Use **File → New
 program in lesson project** for another program in the same project.
+Program tabs from a lesson show **· Lesson** after the filename, so a lesson's
+`main.py` stays distinguishable from an ordinary file with the same name.
 
 Downloaded part libraries are referenced by version and checksum. **File → Export
 lesson project with resources…** creates a separate offline copy containing only

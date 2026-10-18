@@ -56,6 +56,9 @@ viewport at 930 × 620. Its empty state omits the redundant actions row and
 unavailable hub input; output reveals Clear, and a USB/Bluetooth connection
 reveals input. Reopening after a window resize uses the matching default,
 while a manually resized Console retains the chosen height.
+Lesson program tabs now include a localized Lesson suffix, separating a lesson
+`main.py` from an ordinary `main.py` in the same editor. The tooltip gives the
+lesson title and full path; switching languages refreshes the tab label.
 The Block Editor's New block action now uses the primary accent and a matching
 icon in both themes, making the creation path visible beside its secondary
 collection actions.

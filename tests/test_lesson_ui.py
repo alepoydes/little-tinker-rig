@@ -3,6 +3,7 @@ import json
 import pytest
 
 from little_tinker_rig.core.lessons import StudentProject
+from little_tinker_rig.i18n import language, set_language
 
 
 def make_lesson(tmp_path):
@@ -79,6 +80,28 @@ def test_lesson_template_resumes_latest_attempt_after_clean_close(tmp_path, qt_a
     finally:
         second_window.recovery.close()
         second_window.deleteLater()
+
+
+def test_lesson_program_tab_is_distinct_from_plain_main_file(tmp_path, qt_app):
+    from little_tinker_rig.qt.app import Studio
+
+    original_language = language()
+    window = Studio(tmp_path / "main.py")
+    try:
+        page = window.lessons.open(make_lesson(tmp_path))
+        lesson_index = window.documents.indexOf(page)
+        assert window.documents.tabText(0) == "main.py"
+        set_language("en")
+        window.retranslate()
+        assert window.documents.tabText(lesson_index) == "main.py · Lesson"
+        assert "Drive" in window.documents.tabToolTip(lesson_index)
+        set_language("ru")
+        window.retranslate()
+        assert window.documents.tabText(lesson_index) == "main.py · Урок"
+    finally:
+        set_language(original_language)
+        window.recovery.close()
+        window.deleteLater()
 
 
 def test_open_template_in_second_window_returns_to_live_attempt(tmp_path, qt_app):

@@ -1181,8 +1181,8 @@ class Studio(QMainWindow):
         page.scratch.definition_requested.connect(self.open_definition)
         page.scratch.help_requested.connect(self.open_block_help)
         page.scratch.input_search_requested.connect(self.find_input_blocks)
-        index = self.documents.addTab(page, path.name)
-        self.documents.setTabToolTip(index, str(path))
+        index = self.documents.addTab(page, self._document_tab_label(page))
+        self.documents.setTabToolTip(index, self._document_tab_tooltip(page))
         self.documents.setCurrentIndex(index)
         localize(page)
         self.remember_file(path)
@@ -1596,10 +1596,22 @@ class Studio(QMainWindow):
         for index in range(self.documents.count()):
             page = self.documents.widget(index)
             self.documents.setTabText(
-                index, ("● " if page.dirty else "") + page.session.project.path.name
+                index,
+                ("● " if page.dirty else "") + self._document_tab_label(page),
             )
-            self.documents.setTabToolTip(index, str(page.session.project.path))
+            self.documents.setTabToolTip(index, self._document_tab_tooltip(page))
         self.source.viewport().update()
+
+    def _document_tab_label(self, page):
+        name = page.session.project.path.name
+        return f"{name} · {tr('Lesson')}" if page.lesson_project else name
+
+    def _document_tab_tooltip(self, page):
+        path = str(page.session.project.path)
+        if page.lesson_project:
+            title = localized(page.lesson_project.lesson.data["title"], language())
+            return f"{title}\n{path}"
+        return path
 
     def finish_parameters(self):
         views = [self.documents.widget(i).source for i in range(self.documents.count())]
