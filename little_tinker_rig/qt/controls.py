@@ -12,7 +12,6 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QSlider,
-    QStyle,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -23,7 +22,7 @@ from little_tinker_rig.i18n import N_, tr
 from little_tinker_rig.pybricks.control import ControlState, Gamepad
 from little_tinker_rig.pybricks.devices import SOURCES, MotorBinding, motor_commands
 
-from .navigation import tool_button
+from .theme import colors, svg_icon
 
 
 class Joystick(QWidget):
@@ -287,9 +286,9 @@ class ControlsPage(QWidget):
         self.state_label.setWordWrap(True)
         self.notice = QLabel(N_("Connect a virtual or physical hub at the top right."))
         self.notice.setWordWrap(True)
-        self.start = tool_button(
-            N_("Start manual control"), QStyle.StandardPixmap.SP_MediaPlay
-        )
+        self.start = QPushButton(N_("Start manual control"))
+        self.start.setObjectName("manualStart")
+        self.apply_theme()
         self.start.setToolTip(N_("Stops the user program and starts the port monitor"))
         self.start.clicked.connect(self.monitor_requested)
         self.armed = QCheckBox(N_("Enable commands"))
@@ -358,6 +357,8 @@ class ControlsPage(QWidget):
                 self.table.setCellWidget(row, column, widget)
             self.rows[port] = (source, mode, scale, center, reverse)
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(18, 16, 18, 16)
+        layout.setSpacing(12)
         title = QLabel(N_("Manual control"))
         title.setStyleSheet("font-size: 23px; font-weight: bold")
         layout.addWidget(title)
@@ -375,7 +376,7 @@ class ControlsPage(QWidget):
         self.controller.setMaximumHeight(350)
         body.addWidget(self.controller, 1)
         body.addStretch()
-        layout.addLayout(body, 1)
+        layout.addLayout(body)
         layout.addWidget(self.state_label)
         self.assignment_hint = QLabel(
             N_(
@@ -385,10 +386,16 @@ class ControlsPage(QWidget):
         self.assignment_hint.setWordWrap(True)
         layout.addWidget(self.assignment_hint)
         layout.addWidget(self.table)
+        layout.addStretch()
         self.timer = QTimer(self)
         self.timer.setInterval(50)
         self.timer.timeout.connect(self.sample)
         self.controller.compact(True)
+
+    def apply_theme(self):
+        self.start.setIcon(
+            svg_icon("media-playback-start", tint=colors()["accent_text"])
+        )
 
     def bindings(self):
         return tuple(

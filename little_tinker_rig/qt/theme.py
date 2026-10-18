@@ -251,6 +251,12 @@ def studio_stylesheet(name):
                        background: {c['raised']}; border: 1px solid {c['border']};
                        border-radius: 6px; }}
         QPushButton:hover {{ background: {c['hover']}; }}
+        QPushButton#manualStart {{ background: {c['accent']};
+            color: {c['accent_text']}; border-color: {c['accent']};
+            font-weight: 700; padding: 8px 12px; }}
+        QPushButton#manualStart:hover {{ background: {c['focus']}; }}
+        QPushButton#manualStart:disabled {{ background: {c['raised']};
+            color: {c['muted']}; border-color: {c['border']}; }}
         QCheckBox::indicator:unchecked {{ width: 15px; height: 15px;
                                          background: {c['panel']};
                                          border: 1px solid {c['border']};

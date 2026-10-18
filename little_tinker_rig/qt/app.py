@@ -955,6 +955,7 @@ class Studio(QMainWindow):
                 window.help_page.apply_theme()
                 window.lessons.apply_theme()
                 window.device_panel.apply_theme()
+                window.controls.apply_theme()
                 window.runtime_panel.apply_theme()
                 for assembly_page in (
                     window.lessons.assembly_host.lesson_page,

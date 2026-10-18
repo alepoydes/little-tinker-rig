@@ -18,6 +18,10 @@ Stage 2 now gives top-level catalog categories semantic icon badges and
 stronger type hierarchy; nested construction groups use a smaller color marker
 while retaining tree expansion and keyboard navigation. The search field now
 has a theme-aware search icon and built-in clear action without adding height.
+Control now places its controller and actions near the top instead of centering
+them in empty height, and its monitor-start action has a visible labeled button.
+With the device panel open at 930 × 620, the motor-assignment table remains
+scrollable but needs a compact layout in a later Stage 5 pass.
 This follows the first-pass
 [visual redesign](VISUAL_REDESIGN_PLAN.md) and uses the selected local mockups
 in `report/design_concepts` as visual
