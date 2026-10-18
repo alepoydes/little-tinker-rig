@@ -19,7 +19,7 @@ from PySide6.QtGui import (
     QTextCharFormat,
     QTextCursor,
 )
-from PySide6.QtWidgets import QApplication, QTextEdit
+from PySide6.QtWidgets import QApplication, QTextEdit, QWidget
 
 from little_tinker_rig.core import edit
 from little_tinker_rig.core.display import Display
@@ -85,6 +85,16 @@ def source_offset(source: str, offset: int) -> int:
     )
 
 
+class SourceGutter(QWidget):
+    def __init__(self, owner):
+        super().__init__(owner)
+        self.owner = owner
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+    def paintEvent(self, event):
+        self.owner.paint_gutter(self)
+
+
 class SourceView(QTextEdit):
     block_drop_target = True
     selected = Signal()
@@ -115,6 +125,8 @@ class SourceView(QTextEdit):
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
         self.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
+        self.gutter = SourceGutter(self)
+        self.verticalScrollBar().valueChanged.connect(self.gutter.update)
         font = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
         font.setPointSize(11)
         self.setFont(font)
@@ -179,6 +191,7 @@ class SourceView(QTextEdit):
             f"QTextEdit {{ background: {c['canvas']}; color: {c['text']}; "
             "border: 0; padding: 8px; }"
         )
+        self.setViewportMargins(40, 0, 0, 0)
         if getattr(self, "parameter_editor", None):
             self.parameter_editor.apply_theme()
         if hasattr(self, "structure_bar"):
@@ -186,6 +199,7 @@ class SourceView(QTextEdit):
         if hasattr(self, "highlighter"):
             self.highlighter.rehighlight()
         self.viewport().update()
+        self.gutter.update()
 
     def refresh_source(self):
         context = getattr(self.session, "context", None)
@@ -952,6 +966,38 @@ class SourceView(QTextEdit):
                 if rect:
                     painter.fillRect(rect, color)
         painter.end()
+        self.gutter.update()
+
+    def paint_gutter(self, gutter):
+        painter = QPainter(gutter)
+        palette = colors()
+        painter.fillRect(gutter.rect(), QColor(palette["raised"]))
+        painter.setPen(QPen(QColor(palette["border"]), 1))
+        painter.drawLine(gutter.width() - 1, 0, gutter.width() - 1, gutter.height())
+        painter.setPen(QColor(palette["muted"]))
+        painter.setFont(self.font())
+        shown_text = self.display.text
+        syntax = self.session.document.syntax
+        block = self.cursorForPosition(QPoint(0, 0)).block()
+        previous_line = None
+        while block.isValid():
+            if block.isVisible():
+                rect = self.cursorRect(QTextCursor(block))
+                if rect.top() > gutter.height():
+                    break
+                offset = self.display.backward(
+                    source_offset(shown_text, block.position())
+                )
+                line = syntax.position(offset)[0]
+                if line != previous_line and rect.bottom() >= 0:
+                    painter.drawText(
+                        QRectF(0, rect.top(), gutter.width() - 8, rect.height()),
+                        Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+                        str(line),
+                    )
+                previous_line = line
+            block = block.next()
+        painter.end()
 
     def marker_height(self):
         return self.fontMetrics().height() + 10
@@ -1655,6 +1701,7 @@ class SourceView(QTextEdit):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
+        self.gutter.setGeometry(0, self.viewport().y(), 40, self.viewport().height())
         if hasattr(self, "structure_bar") and self.structure_bar.isVisible():
             self.structure_bar.place()
 
