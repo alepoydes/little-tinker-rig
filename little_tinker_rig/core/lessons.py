@@ -22,6 +22,7 @@ from little_tinker_rig.examples import examples_directory
 
 from .paths import personal_collection, resource
 from .project import atomic_write
+from .timestamps import valid_unix_ns
 
 WORKSPACES = ("program", "control", "help", "block_editor", "assembly")
 
@@ -573,7 +574,8 @@ class StudentProject:
                     data.get("template_attempt") is True
                     and isinstance(data.get("id"), str)
                     and isinstance(data.get("origin"), str)
-                    and type(data.get("opened")) is int
+                    and valid_unix_ns(data.get("opened"))
+                    and valid_unix_ns(data.get("created", data.get("opened")))
                     and (origin is None or data.get("origin") == origin)
                 ):
                     candidates.append((data.get("opened", 0), manifest.parent))

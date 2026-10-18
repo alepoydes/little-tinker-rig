@@ -82,6 +82,34 @@ def test_lesson_template_resumes_latest_attempt_after_clean_close(tmp_path, qt_a
         second_window.deleteLater()
 
 
+def test_invalid_attempt_date_does_not_break_lesson_menu(tmp_path, qt_app):
+    from little_tinker_rig.qt.app import Studio
+
+    source = make_lesson(tmp_path)
+    valid = StudentProject.create(source)
+    invalid = StudentProject.create(source)
+    manifest = invalid.root / "project.json"
+    data = json.loads(manifest.read_text(encoding="utf-8"))
+    data["opened"] = 10**100
+    manifest.write_text(json.dumps(data), encoding="utf-8")
+
+    window = Studio()
+    try:
+        assert [attempt.root for attempt in StudentProject.attempts(source)] == [
+            valid.root
+        ]
+        window.lessons.populate()
+        attempts = next(
+            action.menu()
+            for action in window.lessons.menu.actions()
+            if action.text() == "My lesson attempts"
+        )
+        assert len(attempts.actions()) == 1
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
 def test_lesson_program_tab_is_distinct_from_plain_main_file(tmp_path, qt_app):
     from little_tinker_rig.qt.app import Studio
 
@@ -966,7 +994,8 @@ def test_lesson_navigation_opens_instructions_and_preserves_explicit_moves(
         assert window.pages.currentIndex() == 2
         assert window.help_page.current == "lesson/instructions#task-stop"
         assert page.text == "drive.straight(200)\n"
-        assert not lesson.guidance.isChecked()
+        assert lesson.guidance.isChecked()
+        assert lesson.panel.isVisible()
     finally:
         window.confirm_close = lambda *_: True
         window.close()

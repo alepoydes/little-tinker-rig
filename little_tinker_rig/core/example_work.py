@@ -2,7 +2,6 @@
 
 import json
 import shutil
-from datetime import datetime
 from pathlib import Path
 from time import time_ns
 from uuid import uuid4
@@ -11,20 +10,11 @@ from little_tinker_rig.pybricks.program import Program
 
 from .paths import personal_collection, resource
 from .project import ExternalChangeError, atomic_write
+from .timestamps import valid_unix_ns
 
 
 def attempts_directory():
     return personal_collection().parent / "examples"
-
-
-def _valid_timestamp(value):
-    if type(value) is not int:
-        return False
-    try:
-        datetime.fromtimestamp(value / 1_000_000_000)
-    except (OverflowError, OSError, ValueError):
-        return False
-    return True
 
 
 class ExampleWork:
@@ -37,8 +27,8 @@ class ExampleWork:
             not isinstance(self.data, dict)
             or self.data.get("format") != 1
             or not isinstance(self.data.get("example"), str)
-            or not _valid_timestamp(self.data.get("opened"))
-            or not _valid_timestamp(self.data.get("created", self.data.get("opened")))
+            or not valid_unix_ns(self.data.get("opened"))
+            or not valid_unix_ns(self.data.get("created", self.data.get("opened")))
             or not isinstance(self.data.get("files"), list)
             or not all(isinstance(p, str) for p in self.data["files"])
             or self.data.get("entry") not in self.data["files"]
