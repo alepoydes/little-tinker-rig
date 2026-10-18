@@ -291,7 +291,7 @@ The dialog is available for recognized templates. After adding a body to a gener
 loop or condition, use its ordinary structural fields or Python view if it no
 longer matches the original construction template.
 
-![Reviewing a motor variant and its additional settings](images/block-variants.png)
+![Choosing a motor variant with a Python preview](images/block-variants.png)
 
 ## Library, Scratch and help
 
@@ -357,11 +357,7 @@ exit with 2. `little-tinker-rig --help` lists commands. Add a collection with
 remembers its path.
 See [authoring snippets](snippets.md) and [robot control](robotics.md).
 
-![Multiple documents, inline parameters and the English interface](images/editor.png)
-
-![Offline guide and block reference](images/help.png)
-
-![Previewing an insertion from the library](images/drop-preview.png)
+![The full lesson instructions in Help beside numbered tasks](images/help.png)
 
 ## Recent files and block descriptions
 
@@ -431,8 +427,6 @@ Search matches all entered words across the name, source, group and complete
 localized help text, regardless of word order. Comment rows start with `#`, followed
 by the enlarged block symbol and description, without additional line spacing.
 They share the block's background, hover and selection, including ancestor bands.
-
-![Function parameters, logical operands and a known call error](images/functions.png)
 
 ## Block context menu
 

@@ -1,117 +1,94 @@
-# First steps
+# First steps: learn the workspace
 
-A program is a sequence of actions. LittleTinker Rig keeps those actions in an ordinary
-Python file and shows their structure as colored blocks.
+This tutorial takes you from the Home page to a running Python program. You need
+no LEGO set or physical hub. If the app is not installed, follow
+[installation](../INSTALL.md) first.
 
-Open the editor using the shortcut or launcher from [installation](../INSTALL.md).
-The **Home** page opens first. Choose **First Python program** for a guided
-three-task activity, or **New program** to build from an empty file. **Open a
-file…** continues an ordinary program. The Home icon returns to this page
-without closing your work. Reopening a lesson or example resumes its latest
-attempt; merely browsing Home creates no copy. No terminal options are needed
-when opening the editor again.
+## 1. Start a guided program
 
-The narrow icon sidebar on the left switches workspaces, including **Home**, **Program**,
-**Control**, **Block Editor** and **Help**. Hover over an icon to see its name.
-The library shows a block's description and Python preview. Files open in tabs
-across the top. The two small icons at the top right of the document switch
-between **Blocks** and **Python**; the same commands are in the View menu.
-When a block line is wider than the editor, **← / →** appear beside these
-icons. Use them to reach parameters farther along the line without changing
-the program.
-**Scratch** starts hidden; open it with the bottom button and drag blocks there
-to set them aside.
-**Console** opens from the bottom bar.
+Launch LittleTinker Rig. **Home** opens with quick ways to begin. Choose
+**First Python program**. **New program** creates an empty document, while
+**Open a file…** resumes a Python file you already saved.
 
-The **File → Examples** menu opens the bundled programs, including all subdirectories.
-The first opening creates your own working copy, including local modules. Later
-openings continue your last attempt, even after restarting the app. Changes are
-saved automatically. **File → Examples → Start this example again** creates another
-attempt; **My attempts** opens earlier work. **Save as** keeps the link to the
-example and copies its local modules to your chosen folder.
+![Home with the First Python program card and quick actions](../images/home.png)
 
-## From an empty document
+The lesson opens its complete instructions in **Help**. The numbered sections in
+the document match the three tasks in the panel on the right. Click a task's
+**Instructions** link to jump to its section; the rest of the document remains
+available by scrolling. Choose **Open your program** in the instructions, or
+**Program** on the selected task card, to go to the editor.
 
-Choose **New program** on Home or **File → New** for an empty document.
-On first launch, the library starts at Beginner level; later it remembers your
-choice. Select the level button **1** (Beginner) and the **Catalog** view button
-using their tooltips. Open the **Program** category.
+![The complete lesson instructions and their matching numbered tasks](../images/help.png)
 
-1. Drag **Repeat with counter** into the empty program.
-2. Click `10`, type `3`, and press Enter.
-3. Drag **Display value**, also in **Program**, onto `pass` inside the loop.
-   The action replaces `pass` inside the loop.
-4. Change `"Hello!"` to your own quoted message and press Enter.
-5. Choose **Connect hub → Virtual hub → Robot Inventor / SPIKE Prime → Connect**.
-6. Press **Run**, then open **Console**. Your message appears three times.
-   Run uses the current text without asking for a filename.
+## 2. Find your way around the editor
 
-Use **Save** when you want to choose a filename and folder. Run first checkpoints
-your work for crash recovery; it does not save ordinary files or choose their names.
-Save remembers the chosen file. New documents and first launch never silently
-create `main.py` or `untitled.py` in the working directory. Close the document and
-use **File → Open** or **Open recent** to continue it later.
+The slim bar on the far left switches between workspaces such as **Home**,
+**Program**, **Control**, **Help**, **Block Editor**, and **Assembly**. Hover over
+an icon to see its name. In Program, the **library** is on the left, your open
+file is in the center, and the **task panel** is on the right. The **Console**
+opens from the bottom bar. Files appear in tabs above the program.
 
-## Change a parameter
+The library has numbered difficulty buttons. Button **1** shows Beginner blocks;
+the icons below it switch library views. The category tree can be opened by
+clicking a category name. The first lesson recommends useful blocks, but the
+whole catalog remains available.
 
-Click the quoted message in your `print(...)` block. Type `"Hello, robot!"`,
-including the quotes, and press Enter. If you opened `examples/first.py`, click
-`message` in `print(message)` instead. Suggestions have an arrow only when
-alternatives are available.
+![The block editor with its library, Python program, and three lesson tasks](../images/editor.png)
 
-Enter, choosing a suggestion or leaving the field applies valid input. Save and
-Run also apply it first. Escape cancels the edit. Invalid input stays visible and
-editable; correct or cancel it before saving, running or leaving the document.
-**Stop / F6** and disconnect remain available and preserve the unfinished field.
+You are editing a real `.py` file. The colored blocks show Python statements and
+their nesting. In the starter program, `message` stores some text, and the
+indented `print(message)` reads it inside a repeat loop.
 
-Quoted text is a string. An unquoted word refers to a variable. A number such as
-`42` needs no quotes. F3 opens the selected block's parameter editor.
+## 3. Edit two parameters
 
-## Add and move actions
+Click the quoted text in `message = "Hello from LittleTinker Rig!"`. Replace it
+with `"Hello, Python!"`, including the quotes, then press **Enter**. Keep the
+name `message`: the later block uses it. Check the first task's box when the
+change is visible. The checkbox records your progress; it does not edit code.
 
-Drag a library card into the program. A line and preview show the destination and
-indentation. Release to insert the default values immediately; no dialog appears.
-Click its parameter fields to adapt it. To insert a statement from the library
-without dragging, double-click its card; insertion uses the current selection.
+Click the title **Choose how many times** in the task panel. That opens its
+instructions. Return with the **Program** link, click the `3` in `range(3)`,
+type `5`, and press **Enter**. Before running, predict how many times your
+message will appear. Check the second task's box when you can explain why.
+If an input is invalid, correct it or press **Escape** to cancel that edit.
 
-Drag an existing block to move it. Its background and outline show selection.
-Python rules still apply: a `break` cannot move outside a loop. Empty loop,
-condition and function bodies contain `pass`. Click that row
-before double-clicking a library card, or drag onto it, to fill the body.
+## 4. Run and inspect the result
 
-To put an action after the final loop, drop it in the empty space below the
-program. Check the destination preview before releasing. Dropping onto the lower
-half of the last row inside the loop keeps it inside the loop.
+Select **Run and inspect** in the task panel. Use its **Connect virtual hub**
+link, or **Connect hub** in the top bar. Choose **Virtual hub**, then
+**Robot Inventor / SPIKE Prime**, and connect. This is an execution target for
+the lesson; it needs no robot build. Press **Run** or **F5**, then open **Console**
+from the bottom bar. Your message should appear five times. Console may also
+show connection or run status messages. Mark the third task complete after you
+have checked the output. **Stop / F6** interrupts a running program.
 
-Ctrl+Z undoes an operation; Ctrl+Shift+Z redoes it. The Python icon opens an ordinary
-text editor. It accepts unfinished text and formats valid Python when you save,
-run, return to blocks, or press Ctrl+Alt+L. F2 edits just the selected fragment.
+## 5. Try a block and see its Python
 
-## Run without a robot
+In the library, choose the **Catalog** view, expand **Program**, and drag
+**Display value** into the empty area *below* the loop. Watch the insertion
+preview before releasing: the new block should line up with the loop, rather
+than with its indented body. Change its quoted value to `"Done!"` and run
+again. You should see five greetings followed by `Done!` once. **Ctrl+Z**
+undoes the most recent edit; press it again to remove the inserted block.
+**Ctrl+Shift+Z** restores each undone change.
 
-Click **Connect hub** at the top right, choose **Virtual hub** and a model, then
-press **F5 / Run**. The Console button indicates new output. **F6 / Stop** stops
-the program, including an infinite loop.
+The two small icons above the document switch between **Blocks** and **Python**.
+Open Python to see the same program as text, then return to Blocks. The indented
+line is the loop body; the new `print("Done!")` line is outside it. You can
+edit either representation of the same document.
 
-For motor practice, open `examples/motor.py`. For a complete delivery-robot task,
-open `examples/courier.py` and follow the [robot guide](../robotics.md#delivery-robot).
+![The same lesson program in the Python text editor](../images/python-editor.png)
 
-## Work on several files
+## 6. Keep working
 
-Open selects one or more Python files and creates document tabs. Opening a file
-again selects its existing tab. Switching tabs preserves unfinished Python,
-selection, scrolling, and undo. The × button or Ctrl+W closes a file and asks about
-unsaved changes. Cancelling keeps it open.
+The task panel can be collapsed using the icon in its header. Its small progress
+control beside **Connect hub** opens it again. **Instructions** returns to the
+full lesson document in Help. The **Home** icon returns to quick actions without
+closing the program. Reopening the lesson continues your latest attempt; only
+**File → Lessons → Start new attempt** creates another. Lesson work is saved
+automatically.
 
-Ctrl+S saves the Python file. Scratch fragments and collection settings are stored
-beside it in `name.py.ltr.json`; the Python program does not need that file to
-run. In Blocks, Ctrl+X moves a fragment to Scratch. In Python, Ctrl+X is ordinary
-text cutting. If a file changes outside the editor, Save offers **Reload from
-disk**, **Save a copy…**, or Cancel. Reload replaces the open version; ordinary
-Open just selects its tab. See [editing and recovery](../usage.md#documents-and-views).
-
-Ctrl+S also saves unfinished Python. Fix its syntax before running or switching
-back to Blocks. After a crash, the editor offers to recover open tabs, unsaved text
-and Scratch. Execution errors show a short explanation and **Show block** in the
-Console; if you have edited the program meanwhile, it shows the executed source
-read-only. See [editing and recovery](../usage.md#recovery-examples-and-runtime-errors).
+For an ordinary file, use **Home → New program** and **Ctrl+S** to choose a
+filename. The [editing guide](../usage.md) covers Scratch, multiple files,
+variants, and recovery. When you want to build and program a robot, continue
+with [lessons and assembly](../lessons.md) and the [robotics guide](../robotics.md).

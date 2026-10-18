@@ -138,6 +138,8 @@ distance sensor: **D**. Wheel diameter: **56 mm**, axle track: **136 mm**.
 Its mounting geometry is checked digitally; physical fit and calibration need
 verification on a real set.
 
+![Partly assembled SPIKE Prime rolling base with the current step and parts list](images/assembly.png)
+
 - Left drag rotates, Shift+left drag or right/middle drag pans, and the wheel zooms.
   Zooming in holds the outer edges of the selected parts near the viewport boundary,
   gradually bringing their center into view. Without a selection it protects the

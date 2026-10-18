@@ -34,5 +34,3 @@ Search includes every block's description and code.
 - [Developer API](api.md)
 - [Architecture and boundaries](architecture.md)
 - [Development, tests, and translation workflow](development.md)
-
-![The editor with a Scratch ribbon](images/editor.png)

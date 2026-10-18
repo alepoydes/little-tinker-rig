@@ -8,13 +8,13 @@ Python: the program stays a `.py` file, and you can switch between blocks and te
 as you learn. Your code, documentation and downloaded building resources stay on
 your computer.
 
+![A robot program in the block editor, with a colorful catalog and guided task panel](doc/en/images/showcase.png)
+
 > **Early alpha — a personal project used with my own children.**
 > I am sharing it early to find out whether this approach is useful to other
 > families and educators. Expect bugs, changing interfaces and incomplete hardware
 > coverage. Public use is at your own risk; keep copies of your programs and
 > supervise children when running real robots.
-
-![Python blocks, the library and Scratch in LittleTinker Rig](doc/en/images/editor.png)
 
 ## Why this project exists
 
@@ -51,24 +51,16 @@ uncached building resources need a connection.
 - **English and Russian:** switch the interface and its offline documentation
   together through **View → Language**.
 
-Switch to ordinary Python to edit the same program as text, with code completion
-and contextual help for function arguments.
-
-![The Python editor showing the arguments and documentation for Motor.run_angle](doc/en/images/python-editor.png)
-
-Inspect how a block works, or write your own definition with a live preview.
-
-![A Python block definition with its live preview](doc/en/images/block-editor.png)
-
-Follow a robot's assembly in 3D, with instructions and a parts list for the
-current step. Here the SPIKE Prime rolling base is still under construction.
+Follow a robot's assembly in 3D. The view shows the current step, its parts and
+instructions; this SPIKE Prime rolling base is still under construction.
 
 ![A partly assembled SPIKE Prime robot with step instructions and the required parts](doc/en/images/assembly.png)
 
-Assign motors to sticks and triggers in **Manual control**. The virtual hub shown
-here lets you explore the controls and port monitor without connected hardware.
+Start with the illustrated [first steps tutorial](doc/en/tutorial/first.md): edit
+a message and a repeat count, run it on a virtual hub, then see the same program
+as Python. No LEGO set is needed for this first activity.
 
-![Manual control with motor assignments and the virtual hub's port monitor](doc/en/images/controls.png)
+![The first program in Python text view, with its lesson tasks beside it](doc/en/images/python-editor.png)
 
 Hardware support varies by model and firmware. The virtual hub is a programming
 simulator, not a simulation of the robot's mechanics. Some examples require
@@ -110,7 +102,8 @@ as autosaved working copies: reopening continues your last attempt. **File →
 Examples → Start this example again** creates another; **My attempts** keeps earlier
 work accessible. Save As retains the example association and local modules.
 
-The [first steps guide](doc/en/tutorial/first.md) walks through a small program.
+The [first steps tutorial](doc/en/tutorial/first.md) walks through the editor and
+a small program.
 The command-line tools start with
 `./.venv/bin/little-tinker-rig inspect examples/first.py` on Linux/macOS, or
 `.\.venv\Scripts\little-tinker-rig.exe inspect examples/first.py` on Windows.

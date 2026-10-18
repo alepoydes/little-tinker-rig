@@ -26,6 +26,10 @@
 - Verify documented workflows against the current controls and behavior. Link
   checks verify navigation, not factual accuracy; exercise the introductory path
   through the GUI when changing it.
+- Keep the README showcase in English with English interface screenshots. Put
+  localized UI screenshots only in instructional material for the matching
+  language. The first tutorial teaches the workspace and a runnable Python
+  program before robot assembly.
 - Keep current contracts distinct from proposed designs and dated delivery
   evidence. Remove resolved items from open decisions, and link to the maintained
   guide or source-derived inventory instead of duplicating changing details.

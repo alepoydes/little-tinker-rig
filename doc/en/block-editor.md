@@ -77,7 +77,7 @@ checks the complete collection, including primary references. Copying a built-in
 variant creates an independent card with its category retained; join it to a family
 in your own collection explicitly when needed.
 
-![Editing category, family and shared parameter fields](images/catalog-properties.png)
+![The block editor with a Python definition and live preview](images/block-editor.png)
 
 Edits are retained as drafts after a short pause, including invalid Python, and
 recovered on reopening the module. Switching modules preserves their text undo

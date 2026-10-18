@@ -13,7 +13,7 @@ Searching opens matching groups; clearing the search restores their previous
 expansion. Each help group describes its blocks together, with their introduction
 levels and complete Python source.
 
-![The beginner library and a complete robot activity](images/learning.png)
+![Beginner blocks beside the first Python program and its tasks](images/editor.png)
 
 ## Beginner: connect, act, wait
 

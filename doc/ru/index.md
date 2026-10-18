@@ -35,5 +35,3 @@ LittleTinker Rig позволяет редактировать обычный Py
 - [API для разработчиков (English)](../en/api.md)
 - [Архитектура и границы ответственности (English)](../en/architecture.md)
 - [Разработка, тесты и переводы (English)](../en/development.md)
-
-![Редактор с лентой Scratch](images/editor.png)

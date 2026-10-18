@@ -139,8 +139,6 @@ must match the physical robot before running on hardware. These parameters are
 editable in Blocks or Python. Virtual tests verify completion, an emergency,
 device failure and the route deadline, including obstacle stop/resume and delivery.
 
-![The courier stopped at a virtual obstacle](images/courier-running.png)
-
 ## Simulation limits
 
 The virtual hub runs ordinary Python in a separate stoppable process; it is not a

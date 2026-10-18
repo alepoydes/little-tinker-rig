@@ -196,8 +196,6 @@ Technic имеют другую конфигурацию портов. Пере�
 нужно согласовать с конструкцией диаметр колёс 56 мм, колею 112 мм, направление
 моторов, скорость и пороги. Параметры доступны в режиме блоков и в Python.
 
-![Программа курьера и несколько открытых файлов](images/editor.png)
-
 ## Учебный виртуальный хаб
 
 Подключите виртуальную модель и запустите `examples/motor.py`: мотор A повернётся
@@ -228,8 +226,6 @@ Bluetooth/USB или характеристик моторов. Аппаратн
 Справочники устройств: [Inventor/Prime](https://docs.pybricks.com/en/stable/hubs/primehub.html),
 [BOOST](https://docs.pybricks.com/en/stable/hubs/movehub.html),
 [Technic](https://docs.pybricks.com/en/stable/hubs/technichub.html).
-
-![Курьер остановился перед виртуальным препятствием; оба колёсных мотора заторможены](images/courier-running.png)
 
 ## Установка и восстановление прошивки
 

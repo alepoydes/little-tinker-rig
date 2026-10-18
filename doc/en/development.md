@@ -253,8 +253,13 @@ architecture, and development pages exist only in `doc/en/`; the help viewer use
 its existing English fallback for them. Put standalone developer documents in
 `devs/`, without translations. Language-specific
 screenshots belong to `doc/<language>/images/`; text-free shared assets may live
-in `doc/images/`. Help follows the selected interface language and retains the
-current page or block anchor. Missing translated pages fall back to English at
+in `doc/images/`. The README uses English interface screenshots only; translated
+screenshots belong in the corresponding language's instructional pages. Capture
+screenshots with `tools/capture_docs.py` in an isolated workspace, inspect them,
+then copy approved images into the guide. The first tutorial covers app navigation
+and a runnable Python program before robot assembly.
+Help follows the selected interface language and retains the current page or block
+anchor. Missing translated pages fall back to English at
 runtime; `tools/check_docs.py` rejects missing user-guide pages, translated developer
 pages, and broken local links or anchors. The root README, code comments, docstrings, design notes, and
 commit descriptions use English. Saved language choices remain authoritative;
