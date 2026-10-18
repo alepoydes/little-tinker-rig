@@ -233,11 +233,22 @@ class Studio(App):
     @work(group="recovery", exclusive=True)
     async def offer_recovery(self):
         for path, lock in self.recovery.stale():
+            removed = False
             try:
-                file, source, cursor = Recovery.read(path)
+                try:
+                    file, source, cursor = Recovery.read(path)
+                except (OSError, ValueError, UnicodeError) as error:
+                    answer = await self.push_screen_wait(
+                        RecoveryPrompt(path, error=str(error))
+                    )
+                    if answer == "discard":
+                        path.unlink()
+                        removed = True
+                    continue
                 answer = await self.push_screen_wait(RecoveryPrompt(file.path))
                 if answer == "discard":
                     path.unlink()
+                    removed = True
                 elif answer == "restore":
                     if not await self.may_leave():
                         break
@@ -246,12 +257,18 @@ class Studio(App):
                     self.editor.move_cursor(cursor, center=True)
                     if self.flush_recovery():
                         path.unlink()
+                        removed = True
             except (OSError, ValueError, UnicodeError) as error:
                 self.failed(
                     tr("Could not restore recovery data: {detail}", detail=str(error))
                 )
             finally:
                 Recovery.release(lock)
+                if removed:
+                    try:
+                        path.with_suffix(".lock").unlink(missing_ok=True)
+                    except OSError:
+                        pass
 
     def update_status(self):
         file = str(self.file.path) if self.file.path else tr("Untitled")

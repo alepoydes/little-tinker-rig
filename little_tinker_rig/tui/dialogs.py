@@ -97,22 +97,31 @@ class RecoveryPrompt(ModalScreen):
     """
     BINDINGS = [Binding("escape", "later", show=False)]
 
-    def __init__(self, path):
+    def __init__(self, path, *, error=None):
         super().__init__()
         self.path = path
+        self.error = error
 
     def compose(self):
         with Vertical():
             yield Static(tr("Recover work"))
-            yield Static(
-                tr(
-                    "An earlier terminal session left unsaved Python work: {file}",
-                    file=self.path or tr("Untitled"),
-                ),
-                markup=False,
-            )
+            if self.error is not None:
+                yield Static(
+                    tr("Could not restore recovery data: {detail}", detail=self.error),
+                    markup=False,
+                )
+                yield Static(str(self.path), markup=False)
+            else:
+                yield Static(
+                    tr(
+                        "An earlier terminal session left unsaved Python work: {file}",
+                        file=self.path or tr("Untitled"),
+                    ),
+                    markup=False,
+                )
             with Horizontal():
-                yield Button(tr("Restore"), id="restore", variant="primary")
+                if self.error is None:
+                    yield Button(tr("Restore"), id="restore", variant="primary")
                 yield Button(tr("Discard"), id="discard", variant="error")
                 yield Button(tr("Later"), id="later")
 

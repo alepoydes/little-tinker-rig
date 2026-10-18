@@ -282,10 +282,36 @@ async def test_tui_restores_draft_after_unclean_close(tmp_path):
         assert second.file.path == path and second.file.dirty(second.editor.text)
         assert path.read_text(encoding="utf-8") == "saved = True\n"
         assert second.recovery.path.exists() and not first.recovery.path.exists()
+        await until(lambda: not first.recovery.path.with_suffix(".lock").exists())
         await pilot.press("ctrl+q")
         await until(lambda: isinstance(second.screen, Unsaved))
         await pilot.click("#discard")
     assert not second.recovery.path.exists()
+
+
+async def test_tui_can_discard_broken_recovery_after_deferring_it(tmp_path):
+    from little_tinker_rig.tui.app import Studio
+    from little_tinker_rig.tui.dialogs import RecoveryPrompt
+    from little_tinker_rig.tui.recovery import recovery_directory
+
+    directory = recovery_directory()
+    directory.mkdir(parents=True)
+    broken = directory / "broken.json"
+    broken.write_text("{invalid", encoding="utf-8")
+    app = Studio(tmp_path / "main.py")
+    async with app.run_test(size=(120, 40)) as pilot:
+        await until(lambda: isinstance(app.screen, RecoveryPrompt))
+        assert not list(app.screen.query("#restore"))
+        await pilot.click("#later")
+        await until(lambda: not isinstance(app.screen, RecoveryPrompt))
+        assert broken.exists()
+        await pilot.pause()
+        app.offer_recovery()
+        await until(lambda: isinstance(app.screen, RecoveryPrompt))
+        await pilot.click("#discard")
+        await until(lambda: not isinstance(app.screen, RecoveryPrompt))
+        assert not broken.exists()
+        await until(lambda: not broken.with_suffix(".lock").exists())
 
 
 @pytest.mark.parametrize("key", ["f4", "f5"])

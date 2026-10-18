@@ -352,11 +352,13 @@ def test_qt_interrupts_pending_connection_before_disconnect(qt_app, monkeypatch)
     try:
         future = robot.connect_hub(transport="virtual")
         qt_wait(entered.is_set)
+        transport = robot.connection
         disconnected = robot.disconnect_hub()
         qt_wait(disconnected.done)
         disconnected.result()
         assert future.cancelled()
-        assert released.is_set() and not robot.connection.connected
+        assert released.is_set() and not transport.connected
+        assert robot.connection is None
     finally:
         robot.close()
     assert not robot.thread.is_alive()

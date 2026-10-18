@@ -46,6 +46,8 @@ If the terminal session closes unexpectedly, the next launch offers **Restore**,
 **Discard** or **Later**. Restoring opens the draft in the editor without writing
 the Python file; an external change still blocks an ordinary save to that file.
 After choosing **Later**, use **Recover work** from F10 to revisit the draft.
+If a checkpoint is damaged, the dialog shows its path and offers **Discard** or
+**Later**; no Python file is changed.
 
 ## Connect and run
 
