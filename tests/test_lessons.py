@@ -226,6 +226,44 @@ def test_archive_paths_are_checked_before_extraction(tmp_path, name):
     assert not (tmp_path / "output").exists()
 
 
+def test_archive_file_directory_conflicts_fail_before_writing(tmp_path):
+    data = io.BytesIO()
+    with ZipFile(data, "w") as archive:
+        archive.writestr("good.txt", "safe")
+        archive.writestr("folder", "file")
+        archive.writestr("folder/child.txt", "unreachable")
+    destination = tmp_path / "output"
+    with pytest.raises(ValueError, match="conflict"):
+        extract(data.getvalue(), destination)
+    assert not destination.exists()
+
+
+def test_archive_rejects_existing_file_parent_without_partial_extraction(tmp_path):
+    destination = tmp_path / "output"
+    destination.mkdir()
+    blocker = destination / "folder"
+    blocker.write_text("keep", encoding="utf-8")
+    data = io.BytesIO()
+    with ZipFile(data, "w") as archive:
+        archive.writestr("good.txt", "safe")
+        archive.writestr("folder/child.txt", "unreachable")
+    with pytest.raises(ValueError, match="conflict"):
+        extract(data.getvalue(), destination)
+    assert blocker.read_text(encoding="utf-8") == "keep"
+    assert not (destination / "good.txt").exists()
+
+
+def test_pack_only_ignores_cache_directories_inside_project(tmp_path):
+    project = tmp_path / "__pycache__" / "project"
+    project.mkdir(parents=True)
+    (project / "main.py").write_text("print(42)\n", encoding="utf-8")
+    cache = project / "__pycache__"
+    cache.mkdir()
+    (cache / "main.pyc").write_bytes(b"cache")
+    with ZipFile(io.BytesIO(pack(project))) as archive:
+        assert archive.namelist() == ["main.py"]
+
+
 def test_lesson_references_cannot_escape(lesson):
     data = json.loads((lesson / "lesson.json").read_text())
     data["stages"][0]["description"] = "../outside.md"

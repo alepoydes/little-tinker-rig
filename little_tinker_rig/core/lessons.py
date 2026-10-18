@@ -19,6 +19,7 @@ from zipfile import ZIP_DEFLATED, BadZipFile, ZipFile
 
 from little_tinker_rig.documentation import section
 from little_tinker_rig.examples import examples_directory
+from little_tinker_rig.i18n import tr
 
 from .paths import personal_collection, resource
 from .project import atomic_write
@@ -118,6 +119,7 @@ def extract(data: bytes, destination: Path):
     """Validate the entire member list before creating any files."""
     try:
         with ZipFile(io.BytesIO(data)) as archive:
+            root = destination.resolve()
             members = archive.infolist()
             if (
                 len(members) > 20000
@@ -127,6 +129,25 @@ def extract(data: bytes, destination: Path):
             paths = [resource(destination, m.filename) for m in members]
             if len(set(paths)) != len(paths):
                 raise ValueError("Duplicate archive entries")
+            files = {
+                path
+                for member, path in zip(members, paths, strict=True)
+                if not member.is_dir()
+            }
+            for member, path in zip(members, paths, strict=True):
+                if (
+                    (path == root and not member.is_dir())
+                    or any(parent in files for parent in path.parents)
+                    or any(
+                        parent.is_file()
+                        for parent in path.parents
+                        if parent.is_relative_to(root)
+                    )
+                    or (path.exists() and path.is_dir() != member.is_dir())
+                ):
+                    raise ValueError(
+                        tr("Archive entries conflict: {name}", name=member.filename)
+                    )
             for member, path in zip(members, paths, strict=True):
                 if member.is_dir():
                     path.mkdir(parents=True, exist_ok=True)
@@ -144,10 +165,11 @@ def pack(directory: Path, additions=None) -> bytes:
         for path in sorted(directory.rglob("*")):
             if path.is_symlink():
                 raise ValueError("Packages cannot contain symbolic links")
-            name = path.relative_to(directory).as_posix()
+            relative = path.relative_to(directory)
+            name = relative.as_posix()
             if (
                 path.is_file()
-                and "__pycache__" not in path.parts
+                and "__pycache__" not in relative.parts
                 and name not in additions
             ):
                 archive.write(path, name)
@@ -659,13 +681,15 @@ class StudentProject:
                                 ).get(name, [])
                             ],
                             "pins": {},
-                            "collections": [
-                                Path(
-                                    os.path.relpath(collection, program.parent)
-                                ).as_posix()
-                            ]
-                            if collection
-                            else [],
+                            "collections": (
+                                [
+                                    Path(
+                                        os.path.relpath(collection, program.parent)
+                                    ).as_posix()
+                                ]
+                                if collection
+                                else []
+                            ),
                         },
                     )
             created = time_ns()

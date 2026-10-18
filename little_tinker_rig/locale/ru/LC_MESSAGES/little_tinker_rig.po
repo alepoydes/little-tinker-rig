@@ -258,6 +258,11 @@ msgstr "Применить"
 msgid "Apply a function lazily as each item is consumed."
 msgstr "Применять функцию к каждому элементу по мере его чтения."
 
+#: little_tinker_rig/core/lessons.py:149
+#, python-brace-format
+msgid "Archive entries conflict: {name}"
+msgstr "Конфликт путей в архиве: {name}"
+
 #: little_tinker_rig/qt/authoring.py:1170
 #, python-brace-format
 msgid ""
