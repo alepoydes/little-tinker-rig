@@ -1,8 +1,10 @@
 # Visual redesign implementation plan
 
-Status: planned. No application styling changes have been delivered by this
-document. The implementation follows the selected light and dark mockups and the
-subsequent correction to toolbar alignment.
+Status: in progress. The shared Light/Dark palette, unified menu/header row,
+left-aligned toolbar, dark workspace rail, and initial editor/catalog/lesson/Help
+theme integration have landed. Remaining component polish, illustrations, and
+cross-platform acceptance still follow the delivery sequence below. The
+implementation follows the selected mockups and the toolbar alignment correction.
 
 The goal is a coherent robotics workshop interface: a distinct navigation rail,
 readable rounded Python blocks, compact controls, and an illustrated lesson

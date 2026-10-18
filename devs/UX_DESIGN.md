@@ -250,12 +250,17 @@ File → Open recent stores up to ten successfully opened or saved paths. Openin
 an existing tab preserves its draft. Missing files are disabled; the list can be
 cleared.
 
-Global navigation uses icons and a neutral active indicator. Blocks and
+Global navigation uses a dark rail with light icons and an accent active indicator. Blocks and
 Python use two icons in the document header and matching View menu actions.
-A visible title bar provides minimize, maximize/restore, and close on every
+A compact shared header holds the LittleTinker Rig wordmark, real menus, an eliding
+document title, and minimize, maximize/restore, and close on every
 desktop, including GNOME layouts that hide native buttons. Dragging and edge
 resizing use the compositor; double-clicking the title toggles maximization.
-F11 toggles full screen.
+F11 toggles full screen; the header and menus remain visible. View → Appearance
+selects a saved Light or Dark palette and holds the block color intensity slider.
+Theme changes update existing widgets without replacing document buffers or
+discarding an inline draft. Neutral SVG strokes are recolored for the active
+palette, while semantic favorite colors remain intact.
 
 English is the source language and the default on first launch. Russian is a
 gettext translation. The language menu uses native names from languages.json;
@@ -344,8 +349,9 @@ unrestricted level filter. First launch selects Beginner, and subsequent levels
 accumulate earlier ones. The [learning guide](../doc/en/learning.md) describes the
 current palette. The [catalog reduction and personal navigation proposal](BLOCK_CATALOG_RESEARCH.md#14-catalog-reduction-and-personal-navigation-proposal)
 records the rationale for family cards and the implemented personal views. The Python view remains
-available at every level. Selection and hover increase saturation at fixed hue and lightness in both
-library cards and source; nested blocks retain their own semantic colors.
+available at every level. Selection and hover strengthen the role color in both
+library cards and source; nested blocks retain their own semantic colors. Dark
+source blocks use a Screen composite so light code text stays readable.
 
 The toolbar keeps file, history and hub actions. Structural commands remain in
 menus and shortcuts. Upload sends without execution; Run uploads and executes;

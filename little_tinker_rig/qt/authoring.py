@@ -53,6 +53,7 @@ from .editor import SourceView, qt_offset
 from .library import LEVEL_TITLES, Library, group_title, snippet_title
 from .localization import localize
 from .navigation import tool_button
+from .theme import colors
 
 
 class DefinitionCode(CodeEdit):
@@ -76,6 +77,7 @@ class DefinitionCode(CodeEdit):
         selections = self.extraSelections()
         source = self.toPlainText()
         for span, color, background in self.semantic + self.references:
+            color = colors().get(color, color)
             selection = QTextEdit.ExtraSelection()
             selection.cursor = QTextCursor(self.document())
             selection.cursor.setPosition(qt_offset(source, span.start))
@@ -94,7 +96,7 @@ class DefinitionCode(CodeEdit):
                 selection = QTextEdit.ExtraSelection()
                 selection.cursor = QTextCursor(block)
                 selection.cursor.select(QTextCursor.SelectionType.LineUnderCursor)
-                selection.format.setUnderlineColor(QColor("#b42318"))
+                selection.format.setUnderlineColor(QColor(colors()["danger"]))
                 selection.format.setUnderlineStyle(
                     QTextCharFormat.UnderlineStyle.WaveUnderline
                 )
@@ -114,19 +116,19 @@ class DefinitionCode(CodeEdit):
                 if decorator(node) is None:
                     continue
                 for item in node.decorator_list:
-                    self.semantic.append((self.syntax.spans[item], "#754499", False))
-                self.semantic.append((name_span(self.syntax, node), "#754499", False))
+                    self.semantic.append((self.syntax.spans[item], "code_keyword", False))
+                self.semantic.append((name_span(self.syntax, node), "code_keyword", False))
                 for arg in (
                     *node.args.posonlyargs,
                     *node.args.args,
                     *node.args.kwonlyargs,
                 ):
                     self.semantic.append(
-                        (name_span(self.syntax, arg), "#17658e", False)
+                        (name_span(self.syntax, arg), "accent", False)
                     )
                     if arg.annotation:
                         self.semantic.append(
-                            (self.syntax.spans[arg.annotation], "#9c5318", False)
+                            (self.syntax.spans[arg.annotation], "code_number", False)
                         )
                 for value in ast.walk(node):
                     annotation = (
@@ -140,7 +142,7 @@ class DefinitionCode(CodeEdit):
                     )
                     if annotation is not None:
                         self.semantic.append(
-                            (self.syntax.spans[annotation], "#9c5318", False)
+                            (self.syntax.spans[annotation], "code_number", False)
                         )
             return None
         except (ValueError, SyntaxError) as error:
@@ -398,6 +400,13 @@ class BlockEditor(QWidget):
         layout.addWidget(splitter)
         self.update_status()
 
+    def apply_theme(self):
+        self.preview.apply_theme()
+        self.card.itemDelegate().apply_theme()
+        self.card.viewport().update()
+        for editor in self.findChildren(CodeEdit):
+            editor.apply_theme()
+
     @property
     def code(self):
         widget = self.code_stack.currentWidget()
@@ -613,7 +622,7 @@ class BlockEditor(QWidget):
         error = code.inspect()
         self.attempt(code.draft.persist)
         if error:
-            self.status.setStyleSheet("color: #b42318;")
+            self.status.setStyleSheet(f"color: {colors()['danger']};")
             self.status.setText(
                 tr(
                     "Line {line}: {error} · showing the last valid preview",
@@ -765,7 +774,7 @@ class BlockEditor(QWidget):
         try:
             expansion = instantiate(snippet, defaults | values)
         except (ValueError, SyntaxError) as error:
-            self.status.setStyleSheet("color: #b42318;")
+            self.status.setStyleSheet(f"color: {colors()['danger']};")
             self.status.setText(
                 tr(
                     "Invalid test value: {error} · showing the last valid preview",

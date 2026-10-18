@@ -111,11 +111,12 @@ class DevicePanel(QWidget):
         self.monitor.clicked.connect(self.monitor_requested)
         layout.addWidget(self.monitor)
         self.rows = {}
+        self.port_cards = []
         self.distance_sliders = {}
         for port in "ABCDEF":
             card = QFrame()
             card.setObjectName("portCard")
-            card.setStyleSheet("#portCard { background: #edf2f7; border-radius: 7px; }")
+            self.port_cards.append(card)
             box = QVBoxLayout(card)
             row = QHBoxLayout()
             label = QLabel(port)
@@ -147,6 +148,17 @@ class DevicePanel(QWidget):
         self.disconnect = QPushButton(N_("Disconnect hub"))
         self.disconnect.clicked.connect(self.disconnect_requested)
         layout.addWidget(self.disconnect)
+        self.apply_theme()
+
+    def apply_theme(self):
+        from .theme import colors
+
+        c = colors()
+        for card in self.port_cards:
+            card.setStyleSheet(
+                f"#portCard {{ background: {c['raised']}; "
+                f"color: {c['text']}; border-radius: 7px; }}"
+            )
 
     def configure(self, port, value=None):
         if self.info and self.info.transport == "virtual" and self.info.connected:

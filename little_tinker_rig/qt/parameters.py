@@ -17,6 +17,8 @@ from little_tinker_rig.core.parameters import change_parameter, suggestions
 from little_tinker_rig.core.types import known_type
 from little_tinker_rig.i18n import tr
 
+from .theme import colors
+
 
 def unit_text(annotation):
     value = known_type(annotation)
@@ -77,14 +79,23 @@ class ParameterEditor(QWidget):
             layout.addWidget(self.arrow)
         self.unit = QLabel(unit_text(slot.parameter.annotation), self.line_edit)
         self.unit.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-        self.unit.setStyleSheet("color: #68788a; background: transparent; padding: 0")
         self.unit.adjustSize()
         self.line_edit.setTextMargins(
             1, 0, self.unit.width() + 5 if self.unit.text() else 1, 0
         )
         self.line_edit.installEventFilter(self)
+        self.apply_theme()
+
+    def apply_theme(self):
+        c = colors()
+        self.unit.setStyleSheet(
+            f"color: {c['muted']}; background: transparent; padding: 0"
+        )
         self.setStyleSheet(
-            "ParameterEditor { background: white; color: #203040; border: 1px solid #4e8192; border-radius: 3px; padding: 0; } QLineEdit, QToolButton { border: 0; padding: 0; background: white; color: #203040; }"
+            f"ParameterEditor {{ background: {c['panel']}; color: {c['text']}; "
+            f"border: 1px solid {c['focus']}; border-radius: 3px; padding: 0; }}"
+            f"QLineEdit, QToolButton {{ border: 0; padding: 0; "
+            f"background: {c['panel']}; color: {c['text']}; }}"
         )
 
     def begin(self):

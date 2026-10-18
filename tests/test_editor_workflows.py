@@ -195,7 +195,8 @@ def test_window_geometry_and_state_survive_reopening(tmp_path, qt_app, state):
         assert not restored.isMinimized()
         assert restored.isMaximized() == state.startswith("maximized")
         assert restored.isFullScreen() == (state == "fullscreen")
-        assert restored.title_bar.isVisible() == (state != "fullscreen")
+        assert restored.title_bar.isVisible()
+        assert restored.title_bar.menu.isVisible()
         restored.showNormal()
         qt_app.processEvents()
         assert restored.geometry() == normal

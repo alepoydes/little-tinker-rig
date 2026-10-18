@@ -1,6 +1,5 @@
 """Compact workspace icons with localized tooltips and accessible names."""
 
-from pathlib import Path
 
 from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtGui import QIcon
@@ -18,6 +17,8 @@ from PySide6.QtWidgets import (
 )
 
 from little_tinker_rig.i18n import N_, tr
+
+from .theme import colors, svg_icon
 
 
 def tool_button(title, icon):
@@ -51,7 +52,7 @@ class ChoiceButtons(QWidget):
             button.setAccessibleName(title)
             button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
             button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-            button.setIcon(QIcon(str(Path(__file__).with_name("icons") / f"{key}.svg")))
+            button.setIcon(svg_icon(key))
             button.setIconSize(QSize(20, 20))
             button.clicked.connect(lambda checked=False, key=key: self.select(key))
             self.group.addButton(button)
@@ -74,6 +75,10 @@ class ChoiceButtons(QWidget):
         for key, button in self.buttons.items():
             button.setToolTip(tr(self.choices[key]))
             button.setAccessibleName(tr(self.choices[key]))
+
+    def apply_theme(self):
+        for key, button in self.buttons.items():
+            button.setIcon(svg_icon(key))
 
 
 class ModeDelegate(QStyledItemDelegate):
@@ -116,12 +121,7 @@ class ModeList(QListWidget):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollMode(QListWidget.ScrollMode.ScrollPerPixel)
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
-        self.setStyleSheet(
-            "ModeList { border: 0; background: transparent; color: #5b6572; }"
-            "ModeList::item { padding: 0; border-left: 3px solid transparent; border-right: 3px solid transparent; }"
-            "ModeList::item:hover { background: #f1f4f8; }"
-            "ModeList::item:selected { background: #e7eef6; color: #25303d; border-left-color: #344f73; }"
-        )
+        self.apply_theme()
         for icon, label in (
             ("program", N_("Program")),
             ("control", N_("Control")),
@@ -133,8 +133,23 @@ class ModeList(QListWidget):
         self.setAccessibleName(N_("Workspaces"))
 
     def add_mode(self, icon, label):
-        path = Path(__file__).with_name("icons") / f"{icon}.svg"
-        self.addItem(QListWidgetItem(QIcon(str(path)), label))
+        item = QListWidgetItem(svg_icon(icon, rail=True), label)
+        item.setData(Qt.ItemDataRole.UserRole, icon)
+        self.addItem(item)
+
+    def apply_theme(self):
+        c = colors()
+        self.setStyleSheet(
+            f"ModeList {{ border: 0; background: {c['rail']}; color: white; }}"
+            "ModeList::item { padding: 0; border-left: 3px solid transparent; "
+            "border-right: 3px solid transparent; }"
+            f"ModeList::item:hover {{ background: {c['rail_hover']}; }}"
+            f"ModeList::item:selected {{ background: {c['rail_hover']}; "
+            f"border-left-color: {c['accent']}; }}"
+        )
+        for index in range(self.count()):
+            item = self.item(index)
+            item.setIcon(svg_icon(item.data(Qt.ItemDataRole.UserRole), rail=True))
 
     def set_mode_visible(self, row, visible):
         item = self.item(row)

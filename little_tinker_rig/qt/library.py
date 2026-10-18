@@ -9,7 +9,6 @@ from PySide6.QtGui import (
     QContextMenuEvent,
     QFontDatabase,
     QFontMetrics,
-    QIcon,
     QPainter,
     QPen,
 )
@@ -27,13 +26,14 @@ from little_tinker_rig.core.catalog import families
 from little_tinker_rig.core.catalog_history import History, reference
 from little_tinker_rig.core.expressions import eligible, input_roots
 from little_tinker_rig.core.parameters import creation_blocks
-from little_tinker_rig.core.presentation import role_color, snippet_role
+from little_tinker_rig.core.presentation import snippet_role
 from little_tinker_rig.core.snippets import instantiate
 from little_tinker_rig.i18n import N_, tr
 
 from .annotations import block_icon, snippet_title
 from .colors import saturated
 from .drag import Drag
+from .theme import DARK, block_color, colors, svg_icon
 
 IDENTITY = Qt.ItemDataRole.UserRole
 PREVIEW = int(IDENTITY) + 1
@@ -83,9 +83,11 @@ def favorite_rect(rect):
 class CardDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.apply_theme()
+
+    def apply_theme(self):
         self.icons = {
-            key: QIcon(str(Path(__file__).with_name("icons") / f"{key}.svg"))
-            for key in ("favorites", "favorite-active")
+            key: svg_icon(key) for key in ("favorites", "favorite-active")
         }
 
     def paint(self, painter, option, index):
@@ -102,14 +104,20 @@ class CardDelegate(QStyledItemDelegate):
         rect = option.rect.adjusted(3, 3, -4, -3)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         selected = bool(option.state & QStyle.StateFlag.State_Selected)
-        color = QColor(index.data(COLOR))
+        color = block_color(index.data(COLOR))
         hovered = bool(option.state & QStyle.StateFlag.State_MouseOver)
-        painter.setBrush(saturated(color, 0.8 if selected else 0.45 if hovered else 0))
-        painter.setPen(QPen(QColor("#c5d1da"), 1))
+        amount = 0.8 if selected else 0.45 if hovered else 0
+        dark = colors() is DARK
+        painter.setBrush(
+            color.lighter(100 + int(amount * 45))
+            if dark
+            else saturated(color, amount)
+        )
+        painter.setPen(QPen(QColor(colors()["border"]), 1))
         painter.drawRoundedRect(rect, 6, 6)
         self.icons[icon].paint(painter, favorite_rect(option.rect))
         painter.setClipRect(rect)
-        painter.setPen(QColor("#203040"))
+        painter.setPen(QColor(colors()["text"]))
         description = index.data(ICON) + "  " + index.data(DESCRIPTION)
         font = option.font
         font.setBold(True)
@@ -289,7 +297,7 @@ class Library(QTreeWidget):
                         + entry["scope"],
                     )
                     item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsDragEnabled)
-                    item.setForeground(0, QColor("#6b7785"))
+                    item.setForeground(0, QColor(colors()["muted"]))
                     self.rows[key] = item
         self.blockSignals(False)
         self.filter(self.search)
@@ -317,7 +325,7 @@ class Library(QTreeWidget):
             (ICON, block_icon(snippet)),
             (LEVEL, snippet.level),
             (PREVIEW, preview),
-            (COLOR, role_color(snippet_role(snippet))),
+            (COLOR, snippet_role(snippet)),
             (DESCRIPTION, snippet_title(family.primary)),
             (DEFINITION, snippet.definition),
             (VARIANT, tr(snippet.variant) if snippet.variant else ""),

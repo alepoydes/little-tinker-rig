@@ -50,6 +50,27 @@ def parameter(window, name, text, *, view=None):
     return field
 
 
+def test_live_theme_switch_keeps_invalid_draft_and_other_windows(windows):
+    first = windows(MOTOR)
+    second = windows("value = 3\n")
+    original = first.session.document.state
+    field = parameter(first, "speed", "700 +")
+    editor = first.source.parameter_editor
+
+    first.theme_actions["dark"].trigger()
+    assert first.visual_theme == second.visual_theme == "dark"
+    assert first.session.document.state is original
+    assert first.source.parameter_editor is editor
+    assert field.text() == "700 +"
+    assert first.main_menu_bar.actions()
+    assert first.settings.value("visualTheme") == "dark"
+
+    second.theme_actions["light"].trigger()
+    assert first.visual_theme == second.visual_theme == "light"
+    assert field.text() == "700 +"
+    QTest.keyClick(field, Qt.Key.Key_Escape)
+
+
 def test_scratch_history_follows_fragments_across_moves_and_removal(windows):
     from little_tinker_rig.core.edit import Target
     from little_tinker_rig.core.transfer import Transfer

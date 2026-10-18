@@ -44,7 +44,6 @@ from little_tinker_rig.core.presentation import (
     Region,
     regions,
     role,
-    role_color,
     snippet_role,
 )
 from little_tinker_rig.core.snippets import LEVELS
@@ -56,6 +55,7 @@ from .colors import saturated
 from .drag import BlockMime, cancel_drag, drag_block
 from .parameters import ParameterEditor, unit_text
 from .structure import StructureBar, block_menu
+from .theme import block_color, colors
 
 
 @lru_cache(maxsize=8)
@@ -118,9 +118,7 @@ class SourceView(QTextEdit):
         font = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
         font.setPointSize(11)
         self.setFont(font)
-        self.setStyleSheet(
-            "QTextEdit { background: #fafbfc; color: #203040; border: 0; padding: 8px; }"
-        )
+        self.apply_theme()
         self.setTabStopDistance(self.fontMetrics().horizontalAdvance(" ") * 4)
         self.presentation = ()
         self.notes = {}
@@ -129,7 +127,8 @@ class SourceView(QTextEdit):
         self.press_position = None
         self.hover = None
         self.hover_parameter = None
-        self.intensity = 0.65
+        saved_intensity = QApplication.instance().property("ltrBlockIntensity")
+        self.intensity = 0.65 if saved_intensity is None else saved_intensity
         self.fade_lines = set()
         self.fade_in = False
         self.fade = QVariantAnimation(self)
@@ -168,6 +167,16 @@ class SourceView(QTextEdit):
         self.pulse.setLoopCount(-1)
         self.pulse.valueChanged.connect(lambda value: self.viewport().update())
         self.refresh_source()
+
+    def apply_theme(self):
+        c = colors()
+        self.setStyleSheet(
+            f"QTextEdit {{ background: {c['canvas']}; color: {c['text']}; "
+            "border: 0; padding: 8px; }"
+        )
+        if getattr(self, "parameter_editor", None):
+            self.parameter_editor.apply_theme()
+        self.viewport().update()
 
     def refresh_source(self):
         context = getattr(self.session, "context", None)
@@ -569,7 +578,12 @@ class SourceView(QTextEdit):
         first_line = self.source_line_at(QPoint(0, 0))
         last_line = self.source_line_at(QPoint(0, self.viewport().height()))
         painter = QPainter(self.viewport())
-        painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_Multiply)
+        dark = QApplication.instance().property("ltrVisualTheme") == "dark"
+        painter.setCompositionMode(
+            QPainter.CompositionMode.CompositionMode_Screen
+            if dark
+            else QPainter.CompositionMode.CompositionMode_Multiply
+        )
         painter.setPen(Qt.PenStyle.NoPen)
         covered = QRegion()
         # Each pixel takes the most specific region's color. Multiplying every
@@ -637,7 +651,8 @@ class SourceView(QTextEdit):
                 ),
                 default=0,
             )
-            color = saturated(role_color(region.role), amount)
+            color = block_color(region.role)
+            color = color.lighter(100 + int(amount * 45)) if dark else saturated(color, amount)
             color.setAlphaF(self.intensity)
             painter.setBrush(color)
             for rect in self.region_rects(region, first_line, last_line):
@@ -657,7 +672,13 @@ class SourceView(QTextEdit):
                 continue
             seen.add(region.span)
             path = self.outline_path(region, first_line, last_line)
-            pen = QPen(saturated(role_color(region.role), 0.45 + amount * 0.4), 1)
+            pen_color = block_color(region.role)
+            pen = QPen(
+                pen_color.lighter(155 + int(amount * 40))
+                if dark
+                else saturated(pen_color, 0.45 + amount * 0.4),
+                1,
+            )
             pen.setCosmetic(True)
             painter.setPen(pen)
             # Opaque shared edges occupy the same pixel without accumulating alpha.
@@ -667,7 +688,7 @@ class SourceView(QTextEdit):
                 for part in self.region_rects(region, first_line, last_line):
                     bounds = bounds.united(part)
                 if not bounds.isEmpty():
-                    painter.setPen(QPen(QColor("#72859a"), 2))
+                    painter.setPen(QPen(QColor(colors()["muted"]), 2))
                     x = bounds.left() + 1
                     painter.drawLine(
                         QPointF(x, bounds.top()), QPointF(x, bounds.bottom() - 1)
@@ -691,7 +712,9 @@ class SourceView(QTextEdit):
                 if rect is None or not rect.intersects(QRectF(event.rect())):
                     continue
                 painter.setFont(note_font)
-                painter.setPen(QColor("#ab2027" if note.error else "#49596d"))
+                painter.setPen(
+                    QColor(colors()["danger"] if note.error else colors()["text"])
+                )
                 left = rect.left()
                 symbol_font = self.font()
                 symbol_font.setPixelSize(max(12, int(rect.height() - 2)))
@@ -723,7 +746,7 @@ class SourceView(QTextEdit):
                 if note.error:
                     painter.save()
                     painter.setBrush(Qt.BrushStyle.NoBrush)
-                    painter.setPen(QPen(QColor("#c02d35"), 2))
+                    painter.setPen(QPen(QColor(colors()["danger"]), 2))
                     owner = next(
                         (r for r in visible_regions if r.span == note.span), None
                     )
@@ -749,8 +772,8 @@ class SourceView(QTextEdit):
                 continue
             rect = self.mode_rect(block)
             if rect and rect.intersects(QRectF(event.rect())):
-                painter.setPen(QColor("#41576d"))
-                painter.setBrush(QColor("#fafbfc"))
+                painter.setPen(QColor(colors()["muted"]))
+                painter.setBrush(QColor(colors()["panel"]))
                 painter.drawRoundedRect(rect.adjusted(1, 1, -1, -1), 3, 3)
                 painter.drawText(
                     rect,
@@ -778,16 +801,22 @@ class SourceView(QTextEdit):
             issue = bool(self.parameter_issues.get(slot.span))
             painter.setPen(
                 QPen(
-                    QColor("#b65b18" if issue else "#246c9a" if related else "#9ca7b2"),
+                    QColor(
+                        colors()["danger"] if issue else colors()["accent"]
+                        if related else colors()["border"]
+                    ),
                     2 if related or issue else 1,
                 )
             )
             painter.setBrush(
-                QColor("#fff0cf" if issue else "#cbe6fa" if related else "#f8fafb")
+                QColor(
+                    colors()["danger_soft"] if issue else colors()["selected"]
+                    if related else colors()["panel"]
+                )
             )
             painter.drawRoundedRect(rect.adjusted(-1, 1, -1, -1), 3, 3)
             arrow = 13 if self.parameter_choices[slot.span] else 4
-            painter.setPen(QColor("#243442"))
+            painter.setPen(QColor(colors()["text"]))
             painter.drawText(
                 rect.adjusted(
                     2,
@@ -803,7 +832,7 @@ class SourceView(QTextEdit):
             )
             unit = unit_text(slot.parameter.annotation)
             if unit:
-                painter.setPen(QColor("#68788a"))
+                painter.setPen(QColor(colors()["muted"]))
                 painter.drawText(
                     rect.adjusted(2, 0, -arrow - 2, 0),
                     Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
@@ -811,7 +840,7 @@ class SourceView(QTextEdit):
                 )
             if self.parameter_choices[slot.span]:
                 x, y = rect.right() - 8, rect.center().y()
-                painter.setBrush(QColor("#63717f"))
+                painter.setBrush(QColor(colors()["muted"]))
                 painter.setPen(Qt.PenStyle.NoPen)
                 painter.drawPolygon(
                     QPolygonF(
@@ -860,7 +889,7 @@ class SourceView(QTextEdit):
                 )
         if self.fade_lines:
             opacity = float(self.fade.currentValue() or 0)
-            color = QColor("#fafbfc")
+            color = QColor(colors()["canvas"])
             color.setAlphaF(1 - opacity if self.fade_in else opacity)
             for line in self.fade_lines:
                 rect = self._rect(line, 0)
@@ -921,11 +950,11 @@ class SourceView(QTextEdit):
         if full_height > height:
             painter = QPainter(pixmap)
             painter.setFont(self.font())
-            painter.setPen(QColor("#243442"))
+            painter.setPen(QColor(colors()["text"]))
             corner = QRectF(
                 pixmap.deviceIndependentSize().width() - 34, height - 24, 32, 22
             )
-            painter.fillRect(corner, QColor("#fafbfc"))
+            painter.fillRect(corner, QColor(colors()["panel"]))
             painter.drawText(corner, Qt.AlignmentFlag.AlignCenter, "…")
             painter.end()
         self.verticalScrollBar().setValue(previous)

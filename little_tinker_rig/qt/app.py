@@ -34,6 +34,7 @@ from PySide6.QtWidgets import (
     QToolButton,
     QVBoxLayout,
     QWidget,
+    QWidgetAction,
 )
 
 from little_tinker_rig.core.authoring import (
@@ -74,6 +75,13 @@ from .localization import localize, translate_standard_dialogs
 from .navigation import ChoiceButtons, ModeList
 from .recovery import Recovery
 from .runtime import RuntimePanel
+from .theme import (
+    apply_application_theme,
+    contrast_icon,
+    studio_stylesheet,
+    svg_icon,
+    theme_name,
+)
 from .window import TitleBar, resize_edges
 
 
@@ -109,6 +117,8 @@ class Studio(QMainWindow):
             | Qt.WindowType.WindowCloseButtonHint
         )
         self.settings = application_settings()
+        self.visual_theme = theme_name(self.settings.value("visualTheme", "light"))
+        apply_application_theme(self.visual_theme)
         self.setMouseTracking(True)
         self.scratch_visible = False
         self.input_search = None
@@ -120,20 +130,7 @@ class Studio(QMainWindow):
         self.hub_info = HubInfo()
         self.hub_is_busy = False
         self.unread = 0
-        self.setStyleSheet("""
-            QMainWindow { background: #f3f6fa; }
-            QToolBar { border: 0; spacing: 5px; padding: 2px; background: #f3f6fa; }
-            QToolButton { padding: 5px 8px; border-radius: 6px; }
-            QToolButton:hover { background: #dfe8f2; }
-            QToolButton:checked { background: transparent; border-bottom: 2px solid #303944; border-radius: 0; }
-            QTabBar::tab { background: transparent; padding: 7px 13px; border: 0; }
-            QTabBar::tab:selected { border-bottom: 2px solid #303944; }
-            QDockWidget { font-weight: bold; }
-            QLineEdit { padding: 6px; border: 1px solid #c5d0dc; border-radius: 5px; }
-            QTreeWidget, QListWidget { background: #f8fafc; border: 0; }
-            QPushButton { padding: 6px 10px; }
-            QStatusBar { background: #e8eef5; }
-        """)
+        self.setStyleSheet(studio_stylesheet(self.visual_theme))
         self.documents = QTabWidget()
         self.documents.setDocumentMode(True)
         self.documents.setTabsClosable(True)
@@ -182,7 +179,7 @@ class Studio(QMainWindow):
             ("expand-all", N_("Expand all groups"), True),
         ):
             button = QToolButton()
-            button.setIcon(QIcon(str(Path(__file__).with_name("icons") / f"{key}.svg")))
+            button.setIcon(svg_icon(key))
             button.setIconSize(QSize(20, 20))
             button.setToolTip(title)
             button.setAccessibleName(title)
@@ -192,9 +189,7 @@ class Studio(QMainWindow):
             row.addWidget(button)
             self.group_buttons[key] = button
         self.clear_usage = QToolButton()
-        self.clear_usage.setIcon(
-            QIcon(str(Path(__file__).with_name("icons") / "clear-history.svg"))
-        )
+        self.clear_usage.setIcon(svg_icon("clear-history"))
         self.clear_usage.setProperty("translationSources", {})
         self.clear_usage.clicked.connect(self.library.clear_history)
         row.addWidget(self.clear_usage)
@@ -272,15 +267,9 @@ class Studio(QMainWindow):
         self.block_editor.configure(
             self.session.snippets, self.session.collection_paths
         )
-        menu = self.menuBar()
-        header = QWidget()
-        header_layout = QVBoxLayout(header)
-        header_layout.setContentsMargins(0, 0, 0, 0)
-        header_layout.setSpacing(0)
-        self.title_bar = TitleBar(self)
-        header_layout.addWidget(self.title_bar)
-        header_layout.addWidget(menu)
-        self.setMenuWidget(header)
+        self.main_menu_bar = self.menuBar()
+        self.title_bar = TitleBar(self, self.main_menu_bar)
+        self.setMenuWidget(self.title_bar)
         self.active_document = self.document_page
         self.documents.currentChanged.connect(self.document_changed)
         self.documents.tabCloseRequested.connect(self.close_document)
@@ -306,8 +295,10 @@ class Studio(QMainWindow):
                 self.close_document(self.documents.indexOf(placeholder))
 
     def _icon(self, theme, fallback):
-        return QIcon.fromTheme(
-            theme, self.style().standardIcon(getattr(QStyle.StandardPixmap, fallback))
+        return contrast_icon(
+            QIcon.fromTheme(
+                theme, self.style().standardIcon(getattr(QStyle.StandardPixmap, fallback))
+            )
         )
 
     def _action(
@@ -326,6 +317,7 @@ class Studio(QMainWindow):
             action.setShortcut(QKeySequence(shortcut))
         if icon:
             action.setIcon(self._icon(*icon))
+            action.setProperty("visualIconSource", icon)
         action.setToolTip(label)
         action.triggered.connect(
             lambda checked=False: self.perform(
@@ -586,6 +578,35 @@ class Studio(QMainWindow):
             self.editor_actions.append(action)
         self.editor_actions[int(self.code_active)].setChecked(True)
         view.addSeparator()
+        appearance = view.addMenu(N_("Appearance"))
+        theme_group = QActionGroup(self)
+        self.theme_actions = {}
+        for value, label in (("light", N_("Light")), ("dark", N_("Dark"))):
+            action = appearance.addAction(label)
+            action.setCheckable(True)
+            action.setChecked(value == self.visual_theme)
+            action.triggered.connect(
+                lambda checked=False, selected=value: self.change_visual_theme(selected)
+            )
+            theme_group.addAction(action)
+            self.theme_actions[value] = action
+        appearance.addSeparator()
+        intensity_row = QWidget()
+        intensity_layout = QHBoxLayout(intensity_row)
+        intensity_layout.setContentsMargins(8, 2, 8, 2)
+        intensity_layout.addWidget(QLabel(N_("Block color")))
+        self.intensity = QSlider(Qt.Orientation.Horizontal)
+        self.intensity.setAccessibleName(N_("Block color"))
+        self.intensity.setRange(0, 100)
+        self.intensity.setValue(int(self.settings.value("blockIntensity", 65)))
+        self.intensity.valueChanged.connect(self.set_intensity)
+        self.intensity.valueChanged.connect(
+            lambda value: self.settings.setValue("blockIntensity", value)
+        )
+        intensity_layout.addWidget(self.intensity)
+        intensity_action = QWidgetAction(appearance)
+        intensity_action.setDefaultWidget(intensity_row)
+        appearance.addAction(intensity_action)
         languages = view.addMenu(N_("Language"))
         self.language_actions = {}
         group = QActionGroup(self)
@@ -680,13 +701,7 @@ class Studio(QMainWindow):
         scratch_button.setText(N_("Scratch"))
         scratch_button.clicked.connect(lambda: self.toggle_dock(self.scratch_dock))
         self.statusBar().addPermanentWidget(scratch_button)
-        self.statusBar().addPermanentWidget(QLabel(N_("Block color")))
-        intensity = QSlider(Qt.Orientation.Horizontal)
-        intensity.setRange(0, 100)
-        intensity.setValue(65)
-        intensity.setFixedWidth(90)
-        intensity.valueChanged.connect(self.set_intensity)
-        self.statusBar().addPermanentWidget(intensity)
+        self.set_intensity(self.intensity.value())
 
     @property
     def document_page(self):
@@ -819,6 +834,44 @@ class Studio(QMainWindow):
             # Qt can retain closed windows here until deferred deletion runs.
             if isinstance(window, Studio) and (window is self or window.isVisible()):
                 window.retranslate()
+
+    def change_visual_theme(self, name):
+        name = theme_name(name)
+        self.settings.setValue("visualTheme", name)
+        apply_application_theme(name)
+        for window in QApplication.topLevelWidgets():
+            if isinstance(window, Studio) and (window is self or window.isVisible()):
+                window.visual_theme = name
+                window.setStyleSheet(studio_stylesheet(name))
+                window.title_bar.apply_theme(name)
+                for action in window.findChildren(QAction):
+                    if source := action.property("visualIconSource"):
+                        action.setIcon(window._icon(*source))
+                window.hub_button.setIcon(
+                    window._icon("network-connect", "SP_ComputerIcon")
+                )
+                window.lessons.progress_button.setIcon(
+                    window._icon("view-list", "SP_FileDialogListView")
+                )
+                window.level_filter.apply_theme()
+                window.view_filter.apply_theme()
+                window.modes.apply_theme()
+                for key, button in window.group_buttons.items():
+                    button.setIcon(svg_icon(key))
+                window.clear_usage.setIcon(svg_icon("clear-history"))
+                window.library.itemDelegate().apply_theme()
+                window.block_editor.apply_theme()
+                window.help_page.apply_theme()
+                window.lessons.apply_theme()
+                window.device_panel.apply_theme()
+                window.theme_actions[name].setChecked(True)
+                for index in range(window.documents.count()):
+                    page = window.documents.widget(index)
+                    page.source.apply_theme()
+                    page.code.apply_theme()
+                    page.scratch.apply_theme()
+                window.library.viewport().update()
+                window.update()
 
     def retranslate(self):
         translate_standard_dialogs()
@@ -1640,8 +1693,12 @@ class Studio(QMainWindow):
             page.finder.find()
 
     def set_intensity(self, value):
-        self.source.intensity = value / 100
-        self.source.viewport().update()
+        QApplication.instance().setProperty("ltrBlockIntensity", value / 100)
+        for index in range(self.documents.count()):
+            page = self.documents.widget(index)
+            for view in (page.source, *(cell.source for cell in page.scratch.cells)):
+                view.intensity = value / 100
+                view.viewport().update()
 
     def navigate(self, step):
         editor = self.editing_session.editor

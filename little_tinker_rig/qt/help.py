@@ -40,6 +40,7 @@ from little_tinker_rig.documentation import DEVELOPER_PAGES, heading_anchors
 from little_tinker_rig.i18n import DEFAULT_LANGUAGE, LANGUAGES, N_, language, tr
 
 from .library import LEVEL_TITLES, group_title, snippet_title
+from .theme import colors, recolor_document_links
 
 GUIDE_ORDER = (
     "index.md",
@@ -122,6 +123,7 @@ class HelpBrowser(QTextBrowser):
         self.fit_images()
 
     def style_document(self):
+        c = colors()
         document = self.document()
         document.setDefaultFont(QFont("sans-serif", 12))
         document.setDocumentMargin(32)
@@ -138,7 +140,7 @@ class HelpBrowser(QTextBrowser):
             format.setTopMargin(24 if heading else 0)
             format.setBottomMargin(12 if heading else 0 if code else 12)
             if code:
-                format.setBackground(QColor("#edf2f7"))
+                format.setBackground(QColor(c["raised"]))
                 format.setLeftMargin(14)
                 format.setRightMargin(14)
                 cursor.select(QTextCursor.SelectionType.BlockUnderCursor)
@@ -147,7 +149,7 @@ class HelpBrowser(QTextBrowser):
                     QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
                 )
                 text_format.setFontPointSize(10.5)
-                text_format.setForeground(QColor("#24394e"))
+                text_format.setForeground(QColor(c["text"]))
                 cursor.mergeCharFormat(text_format)
             elif heading:
                 cursor.select(QTextCursor.SelectionType.BlockUnderCursor)
@@ -155,7 +157,7 @@ class HelpBrowser(QTextBrowser):
                 text_format.setFontPointSize(
                     25 if heading == 1 else 18 if heading == 2 else 14
                 )
-                text_format.setForeground(QColor("#193650"))
+                text_format.setForeground(QColor(c["text"]))
                 text_format.setFontWeight(QFont.Weight.DemiBold)
                 cursor.mergeCharFormat(text_format)
             cursor.clearSelection()
@@ -169,13 +171,14 @@ class HelpBrowser(QTextBrowser):
                 format.setCellSpacing(0)
                 format.setBorder(1)
                 format.setBorderStyle(QTextFrameFormat.BorderStyle.BorderStyle_Solid)
-                format.setBorderBrush(QColor("#d8e2ec"))
+                format.setBorderBrush(QColor(c["border"]))
                 frame.setFormat(format)
                 for column in range(frame.columns()):
                     cell = frame.cellAt(0, column)
                     format = cell.format()
-                    format.setBackground(QColor("#eaf1f8"))
+                    format.setBackground(QColor(c["raised"]))
                     cell.setFormat(format)
+        recolor_document_links(document)
         self.fit_images()
 
     def fit_images(self):
@@ -237,15 +240,9 @@ class HelpPage(QWidget):
         self.tree = QTreeWidget()
         self.tree.setHeaderHidden(True)
         self.tree.setMinimumWidth(230)
-        self.tree.setStyleSheet(
-            "QTreeWidget { border: 0; background: #f3f6fa; font-size: 14px; } QTreeWidget::item { padding: 7px 5px; } QTreeWidget::item:selected { background: #dce8f2; color: #18364d; }"
-        )
         self.browser = HelpBrowser()
         self.browser.setOpenLinks(False)
         self.browser.anchorClicked.connect(self.follow_link)
-        self.browser.setStyleSheet(
-            "QTextBrowser { border: 1px solid #e0e7ef; background: white; color: #263b4d; selection-background-color: #d2e5f5; }"
-        )
         self.find_matches = []
         self.find_index = -1
         self.find_field = QLineEdit()
@@ -337,7 +334,29 @@ class HelpPage(QWidget):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(splitter)
+        self.apply_theme()
         self.retranslate()
+
+    def apply_theme(self):
+        c = colors()
+        self.tree.setStyleSheet(
+            f"QTreeWidget {{ border: 0; background: {c['raised']}; "
+            f"color: {c['text']}; font-size: 14px; }}"
+            "QTreeWidget::item { padding: 7px 5px; }"
+            f"QTreeWidget::item:selected {{ background: {c['selected']}; "
+            f"color: {c['text']}; }}"
+        )
+        self.browser.setStyleSheet(
+            f"QTextBrowser {{ border: 1px solid {c['border']}; "
+            f"background: {c['panel']}; color: {c['text']}; "
+            f"selection-background-color: {c['selected']}; }}"
+        )
+        self.browser.document().setDefaultStyleSheet(
+            f"a {{ color: {c['link']}; }}"
+        )
+        scroll = self.browser.verticalScrollBar().value()
+        self.browser.style_document()
+        self.browser.verticalScrollBar().setValue(scroll)
 
     def set_lesson(self, lesson):
         if lesson is self.lesson:

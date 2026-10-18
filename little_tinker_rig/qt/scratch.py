@@ -28,6 +28,7 @@ from .drag import BlockMime, drag_block
 from .editor import SourceView
 from .find import FindBar
 from .localization import localize
+from .theme import colors
 
 
 class Grip(QLabel):
@@ -36,7 +37,9 @@ class Grip(QLabel):
         self.cell = cell
         self.setCursor(Qt.CursorShape.OpenHandCursor)
         self.setToolTip(N_("Drag the whole fragment into the program or another cell"))
-        self.setStyleSheet("font-size: 20px; color: #65788a; padding: 2px 8px")
+        self.setStyleSheet(
+            f"font-size: 20px; color: {colors()['muted']}; padding: 2px 8px"
+        )
         self.press = None
 
     def mousePressEvent(self, event):
@@ -63,9 +66,6 @@ class ScratchCell(QFrame):
         self.pane, self.index, self.text = pane, index, text
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.setObjectName("scratchCell")
-        self.setStyleSheet(
-            "#scratchCell { background: #fafbfc; border: 1px solid #ccd5df; border-radius: 7px; }"
-        )
         layout = QVBoxLayout(self)
         layout.setContentsMargins(2, 2, 2, 2)
         row = QHBoxLayout()
@@ -103,9 +103,6 @@ class ScratchCell(QFrame):
         self.stack.addWidget(self.source)
         self.stack.addWidget(self.code)
         self.origin_marker = QLabel()
-        self.origin_marker.setStyleSheet(
-            "background: #ffe0a1; color: #804900; border: 2px solid #ae6810; padding: 5px"
-        )
         self.stack.addWidget(self.origin_marker)
         self.whole_drag = False
         self.finder = FindBar(lambda: self.code if self.code_active else self.source)
@@ -115,12 +112,29 @@ class ScratchCell(QFrame):
         layout.addWidget(self.stack)
         self.error = QLabel()
         self.error.setWordWrap(True)
-        self.error.setStyleSheet("color: #a03d39; padding: 4px")
+        self.apply_theme()
         self.error.hide()
         layout.addWidget(self.error)
         self.code_active = True
         self.change_mode(False)
         localize(self)
+
+    def apply_theme(self):
+        c = colors()
+        self.setStyleSheet(
+            f"#scratchCell {{ background: {c['panel']}; "
+            f"border: 1px solid {c['border']}; border-radius: 7px; }}"
+        )
+        self.origin_marker.setStyleSheet(
+            "background: #ffe0a1; color: #804900; "
+            "border: 2px solid #ae6810; padding: 5px"
+        )
+        self.error.setStyleSheet(f"color: {c['danger']}; padding: 4px")
+        self.findChild(Grip).setStyleSheet(
+            f"font-size: 20px; color: {c['muted']}; padding: 2px 8px"
+        )
+        self.code.apply_theme()
+        self.source.apply_theme()
 
     def commit_code(self):
         if self.code_active or self.text != self.source.session.document.state.source:
@@ -253,17 +267,26 @@ class ScratchPane(QScrollArea):
             )
         )
         self.empty.setWordWrap(True)
-        self.empty.setStyleSheet("color: #6a7989; padding: 12px; line-height: 150%")
         self.column.addWidget(self.empty)
         self.column.addStretch()
         self.setWidget(self.content)
         self.drop_position = None
         self.drop_padding = None
         self.indicator = QLabel(self.content)
-        self.indicator.setStyleSheet(
-            "background: #76cba3; color: #123e2b; padding: 7px; border: 2px solid #207348"
-        )
         self.indicator.hide()
+        self.apply_theme()
+
+    def apply_theme(self):
+        c = colors()
+        self.empty.setStyleSheet(
+            f"color: {c['muted']}; padding: 12px; line-height: 150%"
+        )
+        self.indicator.setStyleSheet(
+            "background: #76cba3; color: #123e2b; "
+            "padding: 7px; border: 2px solid #207348"
+        )
+        for cell in self.cells:
+            cell.apply_theme()
 
     def refresh(self, session):
         if self.session is not session:

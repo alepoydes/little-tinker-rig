@@ -38,6 +38,8 @@ from little_tinker_rig.core.lessons import (
 from little_tinker_rig.core.project import atomic_write
 from little_tinker_rig.i18n import N_, language, tr
 
+from .theme import colors, recolor_document_links
+
 
 class TaskMarkdown(QTextBrowser):
     """A Markdown link surface that grows with its content inside the task scroll area."""
@@ -51,10 +53,23 @@ class TaskMarkdown(QTextBrowser):
         self.setOpenLinks(False)
         self.setOpenExternalLinks(False)
         self.document().setDocumentMargin(0)
-        self.setStyleSheet("QTextBrowser { background: transparent; border: 0; }")
+        self.apply_theme()
         self.document().documentLayout().documentSizeChanged.connect(
             lambda *_: QTimer.singleShot(0, self, self.fit_height)
         )
+
+    def apply_theme(self):
+        c = colors()
+        self.setStyleSheet(
+            f"QTextBrowser {{ background: transparent; color: {c['text']}; "
+            "border: 0; }"
+        )
+        self.document().setDefaultStyleSheet(f"a {{ color: {c['link']}; }}")
+        recolor_document_links(self.document())
+
+    def setMarkdown(self, markdown):
+        super().setMarkdown(markdown)
+        recolor_document_links(self.document())
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -83,12 +98,6 @@ class Lessons(QObject):
         self.panel = QWidget()
         self.panel.setObjectName("lessonTaskPanel")
         self.panel.setAccessibleName(N_("Task panel"))
-        self.panel.setStyleSheet(
-            "#lessonTaskPanel { background: #f8fafc; }"
-            "#lessonTaskCard { background: white; border: 1px solid #d8e2ec; "
-            "border-radius: 8px; }"
-            '#lessonTaskCard[selected="true"] { border: 2px solid #6a9bc9; }'
-        )
         layout = QVBoxLayout(self.panel)
         layout.setContentsMargins(10, 8, 10, 8)
         header = QHBoxLayout()
@@ -163,11 +172,6 @@ class Lessons(QObject):
         self.progress_button.setText(N_("Lesson"))
         self.progress_button.setToolTip(N_("Open task panel"))
         self.progress_button.setAccessibleName(N_("Open task panel"))
-        self.progress_button.setStyleSheet(
-            "#lessonProgressChip { background: #dbeafe; color: #203040; "
-            "border: 1px solid #94abc5; border-radius: 7px; padding: 5px 8px; }"
-            "#lessonProgressChip:hover { background: #bfdbfe; }"
-        )
         self.progress_button.clicked.connect(lambda: self.set_panel_expanded(True))
         self.progress_action = window.main_toolbar.insertWidget(
             window.hub_button_action, self.progress_button
@@ -182,10 +186,7 @@ class Lessons(QObject):
         self.dock.setMaximumWidth(460)
         self.overlay = QFrame(window.workspace)
         self.overlay.setObjectName("lessonTaskOverlay")
-        self.overlay.setStyleSheet(
-            "#lessonTaskOverlay { background: #f8fafc; border: 1px solid #94abc5; "
-            "border-radius: 8px; }"
-        )
+        self.apply_theme()
         overlay_layout = QVBoxLayout(self.overlay)
         overlay_layout.setContentsMargins(0, 0, 0, 0)
         self.overlay.hide()
@@ -227,6 +228,35 @@ class Lessons(QObject):
         window._action(
             window.file_menu, N_("Open robot instructions…"), None, self.open_robot
         )
+
+    def apply_theme(self):
+        c = colors()
+        self.panel.setStyleSheet(
+            f"#lessonTaskPanel {{ background: {c['window']}; color: {c['text']}; }}"
+            f"#lessonTaskCard {{ background: {c['panel']}; color: {c['text']}; "
+            f"border: 1px solid {c['border']}; border-radius: 9px; }}"
+            f'#lessonTaskCard[selected="true"] {{ border: 2px solid {c["accent"]}; }}'
+        )
+        self.progress_button.setStyleSheet(
+            f"#lessonProgressChip {{ background: {c['selected']}; color: {c['text']}; "
+            f"border: 1px solid {c['border']}; border-radius: 7px; padding: 5px 8px; }}"
+            f"#lessonProgressChip:hover {{ background: {c['hover']}; }}"
+        )
+        self.overlay.setStyleSheet(
+            f"#lessonTaskOverlay {{ background: {c['window']}; "
+            f"border: 1px solid {c['border']}; border-radius: 8px; }}"
+        )
+        self.intro.apply_theme()
+        for widgets in self.cards.values():
+            title = widgets["title"]
+            title.setText(
+                f'<a href="task:select" style="color:{c["link"]};">'
+                f"{escape(title.accessibleName())}</a>"
+            )
+            widgets["body"].apply_theme()
+            widgets["status"].setStyleSheet(
+                f"color: {c['muted']}; font-size: 11px;"
+            )
 
     def populate(self):
         self.menu.clear()
@@ -566,7 +596,8 @@ class Lessons(QObject):
         )
         header.addWidget(check)
         name = QLabel(
-            f'<a href="task:select" style="color:#193650;">{escape(title)}</a>'
+            f'<a href="task:select" style="color:{colors()["link"]};">'
+            f"{escape(title)}</a>"
         )
         name.setWordWrap(True)
         name.setAccessibleName(title)
@@ -599,7 +630,7 @@ class Lessons(QObject):
         body.setVisible(identity == self.current.stage["id"])
         status = QLabel()
         status.setWordWrap(True)
-        status.setStyleSheet("color: #4b6276; font-size: 11px;")
+        status.setStyleSheet(f"color: {colors()['muted']}; font-size: 11px;")
         frame.addWidget(status)
         status.setVisible(identity == self.current.stage["id"])
         self.cards[identity] = {

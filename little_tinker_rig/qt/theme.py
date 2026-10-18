@@ -1,0 +1,218 @@
+"""Application-owned Qt colors, independent of Python block semantics."""
+
+from pathlib import Path
+
+from PySide6.QtCore import QByteArray, QSize
+from PySide6.QtGui import QColor, QIcon, QPainter, QPalette, QPixmap, QTextCursor
+from PySide6.QtSvg import QSvgRenderer
+from PySide6.QtWidgets import QApplication
+
+LIGHT = {
+    "window": "#f3f6fb",
+    "canvas": "#fbfcff",
+    "panel": "#ffffff",
+    "raised": "#eaf1fa",
+    "title": "#edf3fb",
+    "rail": "#102947",
+    "rail_hover": "#1e4975",
+    "text": "#20334b",
+    "muted": "#62768c",
+    "border": "#cbd8e6",
+    "accent": "#1268d9",
+    "accent_text": "#ffffff",
+    "hover": "#dfeaf8",
+    "selected": "#dbeafe",
+    "focus": "#176bd9",
+    "danger": "#b02a3b",
+    "danger_soft": "#ffe1e5",
+    "success": "#148357",
+    "link": "#075dbe",
+    "code_keyword": "#87439e",
+    "code_number": "#a14f17",
+    "code_string": "#277a47",
+    "code_comment": "#687b90",
+    "block_action": "#d8e9f6",
+    "block_loop": "#f5e7c8",
+    "block_control": "#e8ddf2",
+    "block_value": "#e4efdc",
+    "block_state": "#f3dfcf",
+    "block_definition": "#dcdff5",
+    "block_snippet": "#cfe9e5",
+    "block_placeholder": "#e5e7eb",
+    "block_warning": "#f9d6c8",
+}
+
+DARK = {
+    "window": "#101b2c",
+    "canvas": "#111c2e",
+    "panel": "#17263c",
+    "raised": "#20344e",
+    "title": "#0d192a",
+    "rail": "#09172a",
+    "rail_hover": "#224b75",
+    "text": "#e5efff",
+    "muted": "#a6bad2",
+    "border": "#36506b",
+    "accent": "#4d9fff",
+    "accent_text": "#081a2d",
+    "hover": "#2a4361",
+    "selected": "#25496f",
+    "focus": "#76b5ff",
+    "danger": "#ff8292",
+    "danger_soft": "#5a2636",
+    "success": "#63d8a4",
+    "link": "#8bc6ff",
+    "code_keyword": "#cf9af8",
+    "code_number": "#ffb57e",
+    "code_string": "#8bdba0",
+    "code_comment": "#9eb2ca",
+    "block_action": "#244369",
+    "block_loop": "#57401f",
+    "block_control": "#493966",
+    "block_value": "#304b3a",
+    "block_state": "#574136",
+    "block_definition": "#343f6d",
+    "block_snippet": "#1b4d4b",
+    "block_placeholder": "#334258",
+    "block_warning": "#64383d",
+}
+
+
+def colors(name=None):
+    if name is None:
+        app = QApplication.instance()
+        name = app.property("ltrVisualTheme") if app else "light"
+    return DARK if name == "dark" else LIGHT
+
+
+def theme_name(name):
+    return name if name in ("light", "dark") else "light"
+
+
+def block_color(role):
+    """Keep semantic block roles and explicit authored colors independent."""
+    palette = colors()
+    return QColor(palette.get(f"block_{role}", role))
+
+
+def svg_icon(name, *, rail=False):
+    """Tint only the neutral SVG stroke; retain meaningful accent fills."""
+    path = Path(__file__).with_name("icons") / f"{name}.svg"
+    source = path.read_bytes()
+    stroke = "#ffffff" if rail else colors()["text"]
+    source = source.replace(b"#45576b", stroke.encode("ascii"))
+    renderer = QSvgRenderer(QByteArray(source))
+    icon = QIcon()
+    for scale in (1, 2, 3):
+        pixmap = QPixmap(24 * scale, 24 * scale)
+        pixmap.setDevicePixelRatio(scale)
+        pixmap.fill(QColor(0, 0, 0, 0))
+        painter = QPainter(pixmap)
+        renderer.render(painter)
+        painter.end()
+        icon.addPixmap(pixmap)
+    return icon
+
+
+def contrast_icon(icon):
+    """Make monochrome desktop-theme actions legible on the dark toolbar."""
+    if colors() is LIGHT:
+        return icon
+    result = QIcon()
+    for scale in (1, 2, 3):
+        pixmap = icon.pixmap(QSize(24 * scale, 24 * scale))
+        if pixmap.isNull():
+            continue
+        pixmap.setDevicePixelRatio(scale)
+        painter = QPainter(pixmap)
+        painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceIn)
+        painter.fillRect(pixmap.rect(), QColor(colors()["text"]))
+        painter.end()
+        result.addPixmap(pixmap)
+    return result if not result.isNull() else icon
+
+
+def recolor_document_links(document):
+    """Qt Markdown gives anchors a fixed blue that is unreadable on dark pages."""
+    color = QColor(colors()["link"])
+    block = document.begin()
+    while block.isValid():
+        fragment = block.begin()
+        while not fragment.atEnd():
+            item = fragment.fragment()
+            if item.isValid() and item.charFormat().anchorHref():
+                cursor = QTextCursor(document)
+                cursor.setPosition(item.position())
+                cursor.setPosition(
+                    item.position() + item.length(),
+                    QTextCursor.MoveMode.KeepAnchor,
+                )
+                fmt = item.charFormat()
+                fmt.setForeground(color)
+                cursor.mergeCharFormat(fmt)
+            fragment += 1
+        block = block.next()
+
+
+def apply_application_theme(name):
+    """Update shared Qt widget defaults without replacing document widgets."""
+    app = QApplication.instance()
+    name = theme_name(name)
+    app.setProperty("ltrVisualTheme", name)
+    app.setStyle("Fusion")
+    c = colors(name)
+    palette = QPalette()
+    for role, key in (
+        (QPalette.ColorRole.Window, "window"),
+        (QPalette.ColorRole.WindowText, "text"),
+        (QPalette.ColorRole.Base, "canvas"),
+        (QPalette.ColorRole.AlternateBase, "raised"),
+        (QPalette.ColorRole.Text, "text"),
+        (QPalette.ColorRole.Button, "panel"),
+        (QPalette.ColorRole.ButtonText, "text"),
+        (QPalette.ColorRole.Highlight, "accent"),
+        (QPalette.ColorRole.HighlightedText, "accent_text"),
+        (QPalette.ColorRole.Link, "link"),
+        (QPalette.ColorRole.ToolTipBase, "panel"),
+        (QPalette.ColorRole.ToolTipText, "text"),
+        (QPalette.ColorRole.PlaceholderText, "muted"),
+    ):
+        palette.setColor(role, QColor(c[key]))
+    app.setPalette(palette)
+
+
+def studio_stylesheet(name):
+    c = colors(name)
+    return f"""
+        QMainWindow {{ background: {c['window']}; color: {c['text']}; }}
+        QToolBar {{ border: 0; spacing: 5px; padding: 2px 4px;
+                    background: {c['window']}; }}
+        QToolButton {{ padding: 5px 8px; border-radius: 6px; color: {c['text']}; }}
+        QToolButton:hover {{ background: {c['hover']}; }}
+        QToolButton:checked {{ background: {c['selected']};
+                               border-bottom: 2px solid {c['accent']}; }}
+        QToolButton:disabled {{ color: {c['muted']}; }}
+        QTabBar::tab {{ background: transparent; color: {c['muted']};
+                        padding: 7px 13px; border: 0; }}
+        QTabBar::tab:selected {{ color: {c['text']};
+                                 border-bottom: 2px solid {c['accent']}; }}
+        QDockWidget {{ font-weight: bold; color: {c['text']}; }}
+        QLineEdit {{ padding: 6px; color: {c['text']};
+                     background: {c['panel']}; border: 1px solid {c['border']};
+                     border-radius: 5px; }}
+        QLineEdit:focus {{ border-color: {c['focus']}; }}
+        QTreeWidget, QListWidget {{ background: {c['panel']};
+                                    color: {c['text']}; border: 0; }}
+        QPushButton {{ padding: 6px 10px; color: {c['text']};
+                       background: {c['raised']}; border: 1px solid {c['border']};
+                       border-radius: 6px; }}
+        QPushButton:hover {{ background: {c['hover']}; }}
+        QMenuBar {{ background: transparent; color: {c['text']}; }}
+        QMenuBar::item {{ padding: 6px 9px; }}
+        QMenuBar::item:selected {{ background: {c['hover']}; border-radius: 5px; }}
+        QMenu {{ background: {c['panel']}; color: {c['text']};
+                 border: 1px solid {c['border']}; }}
+        QMenu::item:selected {{ background: {c['selected']}; }}
+        QStatusBar {{ background: {c['title']}; color: {c['muted']}; }}
+        QSplitter::handle {{ background: {c['border']}; }}
+    """

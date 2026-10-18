@@ -19,10 +19,12 @@ from little_tinker_rig.i18n import tr
 
 from .completion import PythonAssist
 from .editor import qt_offset, source_offset
+from .theme import colors
 
 
 class PythonHighlight(QSyntaxHighlighter):
     def highlightBlock(self, text):
+        palette = colors()
         def color(start, end, value):
             self.setFormat(
                 qt_offset(text, start),
@@ -33,23 +35,23 @@ class PythonHighlight(QSyntaxHighlighter):
         for match in re.finditer(r"\b[A-Za-z_]\w*\b|\b\d+(?:\.\d+)?\b", text):
             word = match.group()
             if keyword.iskeyword(word):
-                color(*match.span(), "#8647a0")
+                color(*match.span(), palette["code_keyword"])
             elif word[0].isdigit():
-                color(*match.span(), "#a55319")
+                color(*match.span(), palette["code_number"])
         self.setCurrentBlockState(0)
         index = 0
         previous = self.previousBlockState()
         if previous in (1, 2):
             quote = "'''" if previous == 1 else '"""'
             end = text.find(quote)
-            color(0, len(text) if end < 0 else end + 3, "#377c46")
+            color(0, len(text) if end < 0 else end + 3, palette["code_string"])
             if end < 0:
                 self.setCurrentBlockState(previous)
                 return
             index = end + 3
         while index < len(text):
             if text[index] == "#":
-                color(index, len(text), "#778493")
+                color(index, len(text), palette["code_comment"])
                 break
             if text[index] not in "\"'":
                 index += 1
@@ -64,7 +66,7 @@ class PythonHighlight(QSyntaxHighlighter):
             if index >= len(text) and triple:
                 self.setCurrentBlockState(1 if quote == "'" else 2)
             index = min(len(text), index + length)
-            color(start, index, "#377c46")
+            color(start, index, palette["code_string"])
 
 
 class LineNumbers(QWidget):
@@ -78,8 +80,9 @@ class LineNumbers(QWidget):
     def paintEvent(self, event):
         editor = self.editor
         painter = QPainter(self)
-        painter.fillRect(event.rect(), QColor("#f0f3f7"))
-        painter.setPen(QColor("#748294"))
+        palette = colors()
+        painter.fillRect(event.rect(), QColor(palette["raised"]))
+        painter.setPen(QColor(palette["muted"]))
         block = editor.firstVisibleBlock()
         top = (
             editor.blockBoundingGeometry(block).translated(editor.contentOffset()).top()
@@ -112,9 +115,7 @@ class CodeEdit(QPlainTextEdit):
         self.setFont(font)
         self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
         self.setTabStopDistance(4 * self.fontMetrics().horizontalAdvance(" "))
-        self.setStyleSheet(
-            "QPlainTextEdit { background: #fafbfc; color: #203040; border: 0; padding: 8px; }"
-        )
+        self.apply_theme()
         self.highlighter = PythonHighlight(self.document())
         self.gutter = LineNumbers(self)
         self.blockCountChanged.connect(self.update_gutter)
@@ -123,6 +124,17 @@ class CodeEdit(QPlainTextEdit):
         self.textChanged.connect(self.highlight_line)
         self.assist = PythonAssist(self)
         self.update_gutter()
+
+    def apply_theme(self):
+        palette = colors()
+        self.setStyleSheet(
+            f"QPlainTextEdit {{ background: {palette['canvas']}; "
+            f"color: {palette['text']}; border: 0; padding: 8px; }}"
+        )
+        if hasattr(self, "highlighter"):
+            self.highlighter.rehighlight()
+            self.highlight_line()
+            self.gutter.update()
 
     def gutter_width(self):
         return 18 + self.fontMetrics().horizontalAdvance("9") * len(
@@ -145,7 +157,7 @@ class CodeEdit(QPlainTextEdit):
         from PySide6.QtWidgets import QTextEdit
 
         selection = QTextEdit.ExtraSelection()
-        selection.format.setBackground(QColor("#edf2f8"))
+        selection.format.setBackground(QColor(colors()["hover"]))
         selection.format.setProperty(QTextCharFormat.Property.FullWidthSelection, True)
         selection.cursor = self.textCursor()
         selection.cursor.clearSelection()
@@ -155,7 +167,7 @@ class CodeEdit(QPlainTextEdit):
             block = self.document().findBlockByNumber(problem.line - 1)
             if block.isValid():
                 error = QTextEdit.ExtraSelection()
-                error.format.setBackground(QColor("#ffd8dc"))
+                error.format.setBackground(QColor(colors()["danger_soft"]))
                 error.format.setProperty(
                     QTextCharFormat.Property.FullWidthSelection, True
                 )
