@@ -6,6 +6,36 @@ from little_tinker_rig.pybricks.connection import Connection
 from little_tinker_rig.pybricks.control import ControlState
 
 
+@pytest.mark.parametrize(
+    "payload",
+    [
+        b"{'ports': []}",
+        b"{'ports': {'A': []}}",
+        b"{'ports': {'A': {'type': 'motor', 'angle': 'broken'}}}",
+        b"{'ports': {'A': {'type': 'motor'}}, 'battery_mv': 'low'}",
+        b'{"ports": {"A": {"type": "motor", "angle": NaN}}}',
+    ],
+)
+def test_bad_monitor_telemetry_stays_in_console_without_poisoning_hub_info(payload):
+    output = []
+    connection = Connection(output.append)
+    connection._monitor_requested = True
+    wire = b"\x1eLITTLE_TINKER_RIG " + payload + b"\n"
+    connection._telemetry.feed(wire)
+    assert b"".join(output) == wire
+    assert not connection.info.monitoring
+    assert connection.info.ports == {}
+
+
+def test_program_output_that_looks_like_telemetry_is_not_lost():
+    output = []
+    connection = Connection(output.append)
+    wire = b"\x1eLITTLE_TINKER_RIG {'ports': {}}\n"
+    connection._telemetry.feed(wire)
+    assert b"".join(output) == wire
+    assert not connection.info.monitoring
+
+
 @pytest.mark.asyncio
 async def test_disconnected_operations_fail_explicitly():
     connection = Connection()

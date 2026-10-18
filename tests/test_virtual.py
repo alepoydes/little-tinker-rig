@@ -150,6 +150,18 @@ def test_telemetry_and_unicode_console_survive_every_packet_boundary(encode):
         assert packets == [payload]
 
 
+@pytest.mark.parametrize("payload", [b"null", b"[]", b'"message"'])
+def test_non_object_telemetry_is_preserved_as_console_output(payload):
+    wire = b"\x1eLITTLE_TINKER_RIG " + payload + b"\n"
+    output, packets = [], []
+    stream = TelemetryStream(output.append, packets.append)
+    for byte in wire:
+        stream.feed(bytes([byte]))
+    stream.finish()
+    assert b"".join(output) == wire
+    assert packets == []
+
+
 def test_controller_triggers_round_trip_and_legacy_frame():
     state = ControlState(left_y=0.75, left_trigger=0.25, right_trigger=1)
     assert ControlState.decode(state.encode()) == state

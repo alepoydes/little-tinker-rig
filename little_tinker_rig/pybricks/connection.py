@@ -2,6 +2,7 @@
 
 import asyncio
 import codecs
+import math
 import sys
 from dataclasses import replace
 from pathlib import Path
@@ -32,15 +33,53 @@ class Connection:
         self.changed(self.info)
 
     def _received(self, data):
-        if self._monitor_requested:
-            self._update(
-                monitoring=True,
-                **{
-                    key: data[key]
-                    for key in ("ports", "battery_mv", "name", "kind", "model")
-                    if key in data
-                },
+        if not self._monitor_requested:
+            return False
+
+        def number(value):
+            try:
+                return type(value) in (int, float) and math.isfinite(value)
+            except OverflowError:
+                return False
+
+        ports = data.get("ports")
+        if not isinstance(ports, dict) or any(
+            type(port) is not str
+            or len(port) != 1
+            or port not in "ABCDEF"
+            or not isinstance(device, dict)
+            or not isinstance(device.get("type", "empty"), str)
+            or any(
+                not number(device[field])
+                for field in (
+                    "angle",
+                    "speed",
+                    "reflection",
+                    "distance_percent",
+                    "distance",
+                    "force",
+                )
+                if field in device
             )
+            for port, device in ports.items()
+        ):
+            return False
+        if "battery_mv" in data and not number(data["battery_mv"]):
+            return False
+        if any(
+            key in data and not isinstance(data[key], str)
+            for key in ("name", "kind", "model")
+        ):
+            return False
+        self._update(
+            monitoring=True,
+            **{
+                key: data[key]
+                for key in ("ports", "battery_mv", "name", "kind", "model")
+                if key in data
+            },
+        )
+        return True
 
     async def connect(self, name: str | None = None, transport: str = "ble") -> None:
         await self.disconnect()

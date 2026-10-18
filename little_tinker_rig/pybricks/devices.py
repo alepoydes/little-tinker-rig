@@ -149,8 +149,14 @@ class TelemetryStream:
                         except (ValueError, SyntaxError, UnicodeError):
                             self.output(PREFIX + line + b"\n")
                             continue
-                    if isinstance(payload, dict):
-                        self.received(payload)
+                    # A receiver may reject a report; keep its original bytes
+                    # visible in the console instead of silently dropping them.
+                    if (
+                        isinstance(payload, dict)
+                        and self.received(payload) is not False
+                    ):
+                        continue
+                    self.output(PREFIX + line + b"\n")
                     continue
                 index = len(self.buffer)
             if index < 0:
