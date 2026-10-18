@@ -15,7 +15,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, DataTable, Input, Log, ProgressBar, Static
 from textual.widgets.text_area import Selection
 
-from little_tinker_rig.core.source_file import SourceFile
+from little_tinker_rig.core.source_file import SourceFile, utf8_source
 from little_tinker_rig.i18n import LANGUAGES, N_, language, set_language, tr
 from little_tinker_rig.pybricks.devices import DEVICE_KINDS, HubInfo, describe_device
 from little_tinker_rig.pybricks.simulation import PROFILES
@@ -76,6 +76,7 @@ class Studio(App):
         self.hub_busy = False
         self.robot = None
         self.problem = None
+        self.execution_path = None
         self.unread = 0
         self.closing = False
 
@@ -194,6 +195,7 @@ class Studio(App):
 
     def load_file(self, file):
         self.file = file
+        self.execution_path = None
         self.editor.path = file.path
         self.editor.load_text(file.source)
         self.editor.focus()
@@ -410,7 +412,8 @@ class Studio(App):
             self.update_status()
 
     def on_print(self, event):
-        self.output(event.text)
+        if self.is_mounted(self.status):
+            self.output(event.text)
 
     def failed(self, message):
         self.show_console()
@@ -418,7 +421,7 @@ class Studio(App):
         self.notify(message, severity="error", markup=False)
 
     def on_hub_event(self, event):
-        if self.closing:
+        if self.closing or not self.is_mounted(self.status):
             return
         if event.kind == "output":
             self.output(event.value)
@@ -526,15 +529,20 @@ class Studio(App):
         if not self.info.connected:
             self.failed(tr("Connect a hub first"))
             return
-        if not self.action_check() or not await self.save_file():
+        if not self.action_check():
             return
+        path = self.file.path or (Path.cwd() / "untitled.py")
+        sources = {path: self.editor.text}
         self.show_console()
+        previous = self.execution_path
+        self.execution_path = path
         try:
             if run:
-                self.robot.run_file(self.file.path)
+                self.robot.run_file(path, sources)
             else:
-                self.robot.upload_file(self.file.path)
+                self.robot.upload_file(path, sources)
         except (ValueError, SyntaxError, OSError, UnicodeError) as error:
+            self.execution_path = previous
             self.failed(str(error))
 
     def action_run(self):
@@ -593,8 +601,8 @@ class Studio(App):
         if not problem or not problem.path:
             return
         try:
-            if problem.path == self.file.path:
-                source = self.editor.text
+            if problem.path in (self.file.path, self.execution_path):
+                source = utf8_source(self.editor.text)
             else:
                 file = SourceFile(problem.path)
                 source = file.source
@@ -605,7 +613,7 @@ class Studio(App):
                     )
                 )
                 return
-            if problem.path != self.file.path:
+            if problem.path not in (self.file.path, self.execution_path):
                 if not await self.may_leave():
                     return
                 self.load_file(file)

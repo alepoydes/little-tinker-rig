@@ -51,17 +51,19 @@ program state.
 
 | Key | Action |
 | --- | --- |
-| F4 | Save and upload, without starting |
-| F5 | Save, upload and run |
+| F4 | Upload the current editor text, without starting |
+| F5 | Upload and run the current editor text |
 | F6 | Stop the program or monitor |
 | F8 | Show or hide the console |
 | F9 | Open or close the port monitor |
 
 **Run uploaded program** and **Disconnect hub** are available through F10.
-Upload requires valid Python and a successful save. Output and transport progress
-appear in the console; the progress bar tracks percentages reported by the
-transport. Errors offer **Go to error**. Navigation refuses to point into changed
-source because the traceback belongs to the version that actually ran.
+Upload requires valid Python. F4 and F5 use a snapshot of the current editor
+text, even for an untitled program; they do not save or overwrite your file.
+Imported local Python modules are included from disk. Output and transport
+progress appear in the console; the progress bar tracks percentages reported by
+the transport. Errors offer **Go to error**. Navigation refuses to point into
+changed source because the traceback belongs to the version that actually ran.
 
 For a physical hub, the console input sends a line on Enter while a user program
 is running. This is program input, not a Python REPL. The local virtual hub does

@@ -175,6 +175,52 @@ async def test_tui_virtual_upload_run_error_location_and_explicit_monitor(tmp_pa
     assert not app.robot.thread.is_alive()
 
 
+async def test_tui_runs_unsaved_editor_snapshot_without_overwriting_file(tmp_path):
+    from little_tinker_rig.tui.app import Studio
+
+    path = tmp_path / "robot.py"
+    path.write_text('print("saved")\n', encoding="utf-8")
+    app = Studio(path)
+    async with app.run_test(size=(120, 40)) as pilot:
+        await asyncio.wrap_future(app.robot.connect_hub(transport="virtual"))
+        await until(lambda: app.info.connected)
+        app.editor.load_text('print("draft")\nprint(1 / 0)\n')
+        path.write_text('print("external")\n', encoding="utf-8")
+        await pilot.press("f5")
+        await until(lambda: app.robot.stored_program is not None and not app.hub_busy)
+        await until(lambda: any("draft" in line for line in app.output_log.lines))
+        assert app.robot.stored_program.sources[path] == 'print("draft")\nprint(1 / 0)\n'
+        assert path.read_text(encoding="utf-8") == 'print("external")\n'
+        assert app.file.dirty(app.editor.text)
+        await until(lambda: app.problem is not None)
+        app.action_error()
+        await until(lambda: app.editor.cursor_location[0] == 1)
+
+
+async def test_tui_runs_untitled_snapshot_and_navigates_its_error(
+    tmp_path, monkeypatch
+):
+    from little_tinker_rig.tui.app import Studio
+
+    monkeypatch.chdir(tmp_path)
+    app = Studio()
+    async with app.run_test(size=(120, 40)) as pilot:
+        await asyncio.wrap_future(app.robot.connect_hub(transport="virtual"))
+        await until(lambda: app.info.connected)
+        app.editor.load_text('print("untitled")\nprint(1 / 0)\n')
+        await pilot.press("f4")
+        await until(lambda: app.robot.stored_program is not None and not app.hub_busy)
+        assert app.file.path is None
+        assert not (tmp_path / "untitled.py").exists()
+        await pilot.press("f5")
+        await until(lambda: app.problem is not None)
+        assert app.file.path is None
+        assert not (tmp_path / "untitled.py").exists()
+        assert app.problem.path == tmp_path / "untitled.py"
+        app.action_error()
+        await until(lambda: app.editor.cursor_location[0] == 1)
+
+
 async def test_tui_completion_replaces_token_and_progress_is_visible(tmp_path):
     from textual import events
     from textual.widgets import OptionList
