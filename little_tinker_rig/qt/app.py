@@ -2485,6 +2485,8 @@ class Studio(QMainWindow):
         self.lessons.release_unused(all_projects=True)
         self.settings.sync()
         event.accept()
+        # Closed top-level windows otherwise retain their application event filters.
+        self.deleteLater()
 
     def ensure_user_collection(self):
         root = user_collection()

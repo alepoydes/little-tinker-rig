@@ -16,6 +16,22 @@ def close_window(window):
         window.close()
 
 
+def test_closed_studio_windows_release_qt_objects(tmp_path, qt_app):
+    from PySide6.QtCore import QCoreApplication, QEvent
+
+    from little_tinker_rig.qt.app import Studio
+
+    path = tmp_path / "main.py"
+    path.write_text("print(1)\n", encoding="utf-8")
+    closed = set()
+    for _ in range(3):
+        window = Studio(path)
+        assert window.close()
+        closed.add(id(window))
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    assert not closed.intersection(id(widget) for widget in qt_app.topLevelWidgets())
+
+
 def test_recent_files_persist_deduplicate_and_preserve_open_drafts(tmp_path, qt_app):
     from PySide6.QtCore import QSettings
 

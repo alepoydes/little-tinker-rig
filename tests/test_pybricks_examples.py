@@ -353,6 +353,8 @@ def test_pattern_and_named_icon_keep_distinct_fields_and_shared_feedback():
 def test_imported_programs_open_with_their_blocks_available_in_the_panel(
     tmp_path, qt_app
 ):
+    from PySide6.QtCore import QCoreApplication, QEvent
+
     from little_tinker_rig.qt.app import Studio
     from little_tinker_rig.qt.library import FAMILY
 
@@ -371,7 +373,8 @@ def test_imported_programs_open_with_their_blocks_available_in_the_panel(
             assert {m.snippet.catalog_id for m in window.session.matches} <= identities
             assert window.session.document.state.source == loaded
         finally:
-            window.close()
+            assert window.close()
+            QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
 
 
 @pytest.mark.parametrize("path", PROGRAMS, ids=lambda p: p.stem)
