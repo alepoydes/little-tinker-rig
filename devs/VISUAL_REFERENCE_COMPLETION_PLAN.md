@@ -12,6 +12,8 @@ header badges. Plain imports no longer appear as colored control blocks. The
 selected workspace and catalog filters have stronger blue states, and Run/Stop
 icons keep contrast against their filled buttons. Stage 3 still needs source
 gutter, long-line handling, Scratch parity, and a full pointer/keyboard audit.
+The structural view now shares Python keyword, number, string, and comment
+highlighting with the ordinary text editor; theme switches rehighlight it.
 Stage 2 now gives top-level catalog categories semantic icon badges and
 stronger type hierarchy; nested construction groups use a smaller color marker
 while retaining tree expansion and keyboard navigation. The search field now

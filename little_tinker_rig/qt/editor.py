@@ -118,6 +118,10 @@ class SourceView(QTextEdit):
         font = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
         font.setPointSize(11)
         self.setFont(font)
+        # CodeEdit imports source-coordinate helpers from this module.
+        from .code import PythonHighlight
+
+        self.highlighter = PythonHighlight(self.document())
         self.apply_theme()
         self.setTabStopDistance(self.fontMetrics().horizontalAdvance(" ") * 4)
         self.presentation = ()
@@ -179,6 +183,8 @@ class SourceView(QTextEdit):
             self.parameter_editor.apply_theme()
         if hasattr(self, "structure_bar"):
             self.structure_bar.apply_theme()
+        if hasattr(self, "highlighter"):
+            self.highlighter.rehighlight()
         self.viewport().update()
 
     def refresh_source(self):
