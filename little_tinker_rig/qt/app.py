@@ -661,6 +661,10 @@ class Studio(QMainWindow):
             ("media-playback-stop", "SP_MediaStop"),
             commit_parameters=False,
         )
+        self.run_button = toolbar.widgetForAction(self.run_action)
+        self.stop_button = toolbar.widgetForAction(self.stop_action)
+        self.run_button.setObjectName("programRun")
+        self.stop_button.setObjectName("programStop")
         self._action(robot, N_("Connect…"), "F7", self.connect_hub)
         self._action(
             robot, N_("Disconnect"), None, self.disconnect_hub, commit_parameters=False
@@ -677,10 +681,20 @@ class Studio(QMainWindow):
         spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         toolbar.addWidget(spacer)
         self.hub_button = QToolButton()
+        self.hub_button.setObjectName("hubConnection")
         self.hub_button.setIcon(self._icon("network-connect", "SP_ComputerIcon"))
         self.hub_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         self.hub_button.clicked.connect(self.connect_hub)
         self.hub_button_action = toolbar.addWidget(self.hub_button)
+        self.theme_toggle = QToolButton()
+        self.theme_toggle.setObjectName("appearanceToggle")
+        self.theme_toggle.clicked.connect(
+            lambda: self.change_visual_theme(
+                "dark" if self.visual_theme == "light" else "light"
+            )
+        )
+        toolbar.addWidget(self.theme_toggle)
+        self._refresh_theme_toggle()
         self.console_button = QToolButton()
         self.console_button.setIcon(
             self._icon("utilities-terminal", "SP_FileDialogListView")
@@ -704,6 +718,29 @@ class Studio(QMainWindow):
         scratch_button.clicked.connect(lambda: self.toggle_dock(self.scratch_dock))
         self.statusBar().addPermanentWidget(scratch_button)
         self.set_intensity(self.intensity.value())
+        self._update_toolbar_density()
+
+    def _refresh_theme_toggle(self):
+        target = "dark" if self.visual_theme == "light" else "light"
+        self.theme_toggle.setIcon(svg_icon("theme-moon" if target == "dark" else "theme-sun"))
+        name = tr("Dark") if target == "dark" else tr("Light")
+        description = tr("Appearance") + " · " + name
+        self.theme_toggle.setToolTip(description)
+        self.theme_toggle.setAccessibleName(description)
+
+    def _update_toolbar_density(self):
+        style = (
+            Qt.ToolButtonStyle.ToolButtonTextBesideIcon
+            if self.width() >= 1180
+            else Qt.ToolButtonStyle.ToolButtonIconOnly
+        )
+        self.run_button.setToolButtonStyle(style)
+        self.stop_button.setToolButtonStyle(style)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if hasattr(self, "run_button"):
+            self._update_toolbar_density()
 
     @property
     def document_page(self):
@@ -858,6 +895,7 @@ class Studio(QMainWindow):
                 window.hub_button.setIcon(
                     window._icon("network-connect", "SP_ComputerIcon")
                 )
+                window._refresh_theme_toggle()
                 window.console_button.setIcon(
                     window._icon("utilities-terminal", "SP_FileDialogListView")
                 )
@@ -902,6 +940,7 @@ class Studio(QMainWindow):
             )
             action.setToolTip(action.text() + (f" ({shortcut})" if shortcut else ""))
         self.title_bar.update_state()
+        self._refresh_theme_toggle()
         for index in range(self.documents.count()):
             self.documents.widget(index).update_mode()
             self.documents.widget(index).finder.retranslate()
@@ -1955,6 +1994,11 @@ class Studio(QMainWindow):
         if hasattr(self, "lessons"):
             self.lessons.update_check()
         action = info.connection_action
+        state = "busy" if action else "connected" if info.connected else "disconnected"
+        if self.hub_button.property("connectionState") != state:
+            self.hub_button.setProperty("connectionState", state)
+            self.hub_button.style().unpolish(self.hub_button)
+            self.hub_button.style().polish(self.hub_button)
         self.hub_button.setEnabled(action != "disconnecting")
         self.hub_button.setText(
             tr("Disconnecting…")

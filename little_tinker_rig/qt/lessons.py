@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
+    QProgressBar,
     QProgressDialog,
     QScrollArea,
     QSizePolicy,
@@ -111,7 +112,7 @@ class Lessons(QObject):
         header = QHBoxLayout()
         self.title = QLabel()
         self.title.setWordWrap(True)
-        self.title.setStyleSheet("font-weight: 600; font-size: 14px;")
+        self.title.setStyleSheet("font-weight: 700; font-size: 18px;")
         header.addWidget(self.title, 1)
         collapse = self.collapse_button = QToolButton()
         collapse.setIcon(window._icon("go-next", "SP_ArrowForward"))
@@ -122,7 +123,14 @@ class Lessons(QObject):
         layout.addLayout(header)
         self.summary = QLabel()
         self.summary.setAccessibleName(N_("Lesson progress"))
+        self.summary.setStyleSheet("font-size: 12px; font-weight: 600;")
         layout.addWidget(self.summary)
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setObjectName("lessonTaskProgress")
+        self.progress_bar.setAccessibleName(N_("Lesson progress"))
+        self.progress_bar.setTextVisible(False)
+        self.progress_bar.setFixedHeight(8)
+        layout.addWidget(self.progress_bar)
         self.task_area = QScrollArea()
         self.task_area.setObjectName("lessonTaskScroll")
         self.task_area.setWidgetResizable(True)
@@ -247,13 +255,21 @@ class Lessons(QObject):
             f"#lessonTaskPanel {{ background: {c['window']}; color: {c['text']}; }}"
             f"#lessonTaskCard {{ background: {c['panel']}; color: {c['text']}; "
             f"border: 1px solid {c['border']}; border-radius: 9px; }}"
-            f'#lessonTaskCard[selected="true"] {{ border: 2px solid {c["accent"]}; }}'
+            f'#lessonTaskCard[completed="true"] {{ border-color: {c["success"]}; }}'
+            f'#lessonTaskCard[selected="true"] {{ border: 2px solid {c["accent"]}; '
+            f'background: {c["selected"]}; }}'
             f"#lessonTaskNumber {{ background: {c['raised']}; color: {c['text']}; "
-            f"border: 1px solid {c['border']}; border-radius: 10px; "
-            "font-weight: 700; min-width: 20px; max-width: 20px; "
-            "min-height: 20px; max-height: 20px; }"
-            f'#lessonTaskNumber[selected="true"] {{ background: {c["selected"]}; '
-            f'border-color: {c["accent"]}; }}'
+            f"border: 1px solid {c['border']}; border-radius: 12px; "
+            "font-weight: 700; min-width: 24px; max-width: 24px; "
+            "min-height: 24px; max-height: 24px; }"
+            f'#lessonTaskNumber[completed="true"] {{ background: {c["success_fill"]}; '
+            'color: white; border-color: transparent; }'
+            f'#lessonTaskNumber[selected="true"] {{ background: {c["accent"]}; '
+            f'color: {c["accent_text"]}; border-color: transparent; }}'
+            f"QProgressBar#lessonTaskProgress {{ background: {c['raised']}; "
+            "border: 0; border-radius: 4px; }"
+            f"QProgressBar#lessonTaskProgress::chunk {{ background: {c['accent']}; "
+            "border-radius: 4px; }"
         )
         self.progress_button.setStyleSheet(
             f"#lessonProgressChip {{ background: {c['selected']}; color: {c['text']}; "
@@ -268,7 +284,8 @@ class Lessons(QObject):
         for widgets in self.cards.values():
             title = widgets["title"]
             title.setText(
-                f'<a href="task:select" style="color:{c["link"]};">'
+                f'<a href="task:select" style="color:{c["text"]}; '
+                'text-decoration:none; font-weight:600;">'
                 f"{escape(title.accessibleName())}</a>"
             )
             widgets["body"].apply_theme()
@@ -599,6 +616,7 @@ class Lessons(QObject):
         card.setObjectName("lessonTaskCard")
         card.setAccessibleName(title)
         card.setProperty("selected", identity == self.current.stage["id"])
+        card.setProperty("completed", identity in self.current.progress["completed"])
         frame = QVBoxLayout(card)
         frame.setContentsMargins(10, 8, 10, 8)
         frame.setSpacing(5)
@@ -616,12 +634,15 @@ class Lessons(QObject):
         number = QLabel(str(index + 1))
         number.setObjectName("lessonTaskNumber")
         number.setProperty("selected", identity == self.current.stage["id"])
+        number.setProperty("completed", identity in self.current.progress["completed"])
         number.setAlignment(Qt.AlignmentFlag.AlignCenter)
         header.addWidget(number)
         name = QLabel(
-            f'<a href="task:select" style="color:{colors()["link"]};">'
+            f'<a href="task:select" style="color:{colors()["text"]}; '
+            'text-decoration:none; font-weight:600;">'
             f"{escape(title)}</a>"
         )
+        name.setCursor(Qt.CursorShape.PointingHandCursor)
         name.setWordWrap(True)
         name.setAccessibleName(title)
         name.setTextInteractionFlags(
@@ -659,6 +680,7 @@ class Lessons(QObject):
         self.cards[identity] = {
             "frame": card,
             "check": check,
+            "number": number,
             "title": name,
             "body": body,
             "status": status,
@@ -746,6 +768,8 @@ class Lessons(QObject):
             available=available,
         )
         self.summary.setText(label)
+        self.progress_bar.setRange(0, total)
+        self.progress_bar.setValue(completed)
         self.progress_button.setToolTip(
             localized(project.lesson.data["title"], language()) + " · " + label
         )
@@ -1107,8 +1131,13 @@ class Lessons(QObject):
             checkbox.blockSignals(False)
             checkbox.setEnabled(checked or can_check)
             widgets["frame"].setProperty("selected", identity == project.stage["id"])
+            widgets["frame"].setProperty("completed", checked)
             widgets["frame"].style().unpolish(widgets["frame"])
             widgets["frame"].style().polish(widgets["frame"])
+            number = widgets["number"]
+            number.setProperty("completed", checked)
+            number.style().unpolish(number)
+            number.style().polish(number)
             if checked:
                 text = (
                     tr("Connection was verified when this task was completed.")

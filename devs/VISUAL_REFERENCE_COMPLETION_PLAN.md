@@ -1,7 +1,9 @@
 # Reference design completion plan
 
-Status: planned. This follows the first-pass [visual redesign](VISUAL_REDESIGN_PLAN.md)
-and uses the selected local mockups in `report/design_concepts` as visual
+Status: in progress. Stage 0 stabilized the in-progress header and task-panel
+pass on 2026-10-18; stages 1–6 remain open. This follows the first-pass
+[visual redesign](VISUAL_REDESIGN_PLAN.md) and uses the selected local mockups
+in `report/design_concepts` as visual
 references. Those images and comparison captures remain ignored by Git. The
 existing [UX interaction contract](UX_DESIGN.md) and [project rules](../AGENTS.md)
 remain in force.

@@ -89,8 +89,10 @@ always shows minimize, maximize/restore, and close. Double-click it to toggle
 maximization; drag it or a window edge to move or resize. F11 toggles full screen.
 The compact LittleTinker Rig header keeps File, Edit, View, and Hub menus visible,
 including in full screen. Use **View → Appearance → Light / Dark** to switch the
-interface immediately. The choice is saved; Light is the default. The **Block color**
-slider in the same menu adjusts block shading across open documents and Scratch.
+interface immediately, or click the sun/moon button beside the hub control to
+switch between the two themes. The choice is saved; Light is the default. The
+**Block color** slider in the same menu adjusts block shading across open
+documents and Scratch.
 After a normal close, the next launch restores the window position, size and
 maximized or full-screen state. A minimized window reopens visibly. Qt adjusts
 off-screen positions when the monitor configuration changes.

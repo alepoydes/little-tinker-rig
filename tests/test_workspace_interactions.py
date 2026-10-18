@@ -90,6 +90,27 @@ def test_live_theme_switch_updates_open_python_dialog(windows):
         dialog.reject()
 
 
+def test_header_theme_and_language_keep_brand_readable_and_actions_visible(windows):
+    from little_tinker_rig.qt.theme import DARK
+
+    window = windows()
+    window.change_visual_theme("dark")
+    window.change_language("ru")
+    assert DARK["text"] in window.title_bar.brand.text()
+    assert window.theme_toggle.accessibleName() == window.theme_toggle.toolTip()
+    assert not window.theme_toggle.icon().isNull()
+    window.resize(930, 620)
+    QApplication.processEvents()
+    assert window.run_button.toolButtonStyle() == Qt.ToolButtonStyle.ToolButtonIconOnly
+    assert window.stop_button.isVisible()
+    window.resize(1380, 880)
+    QApplication.processEvents()
+    assert (
+        window.run_button.toolButtonStyle()
+        == Qt.ToolButtonStyle.ToolButtonTextBesideIcon
+    )
+
+
 def test_scratch_history_follows_fragments_across_moves_and_removal(windows):
     from little_tinker_rig.core.edit import Target
     from little_tinker_rig.core.transfer import Transfer

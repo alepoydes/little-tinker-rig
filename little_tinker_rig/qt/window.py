@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
 
 from little_tinker_rig.i18n import N_, tr
 
-from .theme import colors, contrast_icon
+from .theme import colors, contrast_icon, svg_icon
 
 
 class ElidedTitle(QLabel):
@@ -32,14 +32,20 @@ class TitleBar(QWidget):
     def __init__(self, window, menu):
         super().__init__(window)
         self.owner = window
-        self.setFixedHeight(34)
+        self.setFixedHeight(42)
         row = QHBoxLayout(self)
         row.setContentsMargins(12, 0, 0, 0)
-        row.setSpacing(0)
+        row.setSpacing(3)
+        self.mark = QLabel(self)
+        self.mark.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.mark.setPixmap(svg_icon("brand").pixmap(25, 25))
+        row.addWidget(self.mark)
         self.brand = QLabel(self)
         self.brand.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         self.brand.setTextFormat(Qt.TextFormat.RichText)
-        self.brand.setStyleSheet("font-size: 16px; font-weight: 700; padding-right: 12px")
+        self.brand.setAccessibleName("LittleTinker Rig")
+        self.brand.setProperty("translationSources", {})
+        self.brand.setStyleSheet("font-size: 18px; font-weight: 700; padding-right: 10px")
         row.addWidget(self.brand)
         self.menu = menu
         menu.setNativeMenuBar(False)
@@ -75,7 +81,7 @@ class TitleBar(QWidget):
             button.setIcon(contrast_icon(self.style().standardIcon(icon)))
             button.setToolTip(caption)
             button.setAccessibleName(caption)
-            button.setFixedHeight(34)
+            button.setFixedHeight(42)
             button.clicked.connect(callback)
             row.addWidget(button)
             setattr(self, name, button)

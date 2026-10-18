@@ -25,7 +25,10 @@ LIGHT = {
     "focus": "#176bd9",
     "danger": "#b02a3b",
     "danger_soft": "#ffe1e5",
+    "stop": "#d83e50",
+    "stop_hover": "#b02a3b",
     "success": "#148357",
+    "success_fill": "#148357",
     "link": "#075dbe",
     "code_keyword": "#87439e",
     "code_number": "#a14f17",
@@ -60,7 +63,10 @@ DARK = {
     "focus": "#76b5ff",
     "danger": "#ff8292",
     "danger_soft": "#5a2636",
+    "stop": "#c84157",
+    "stop_hover": "#a8324a",
     "success": "#63d8a4",
+    "success_fill": "#157452",
     "link": "#8bc6ff",
     "code_keyword": "#cf9af8",
     "code_number": "#ffb57e",
@@ -185,17 +191,43 @@ def studio_stylesheet(name):
     c = colors(name)
     return f"""
         QMainWindow {{ background: {c['window']}; color: {c['text']}; }}
-        QToolBar {{ border: 0; spacing: 5px; padding: 2px 4px;
+        QToolBar {{ border: 0; spacing: 6px; padding: 4px 7px;
                     background: {c['window']}; }}
         QToolButton {{ padding: 5px 8px; border-radius: 6px; color: {c['text']}; }}
         QToolButton:hover {{ background: {c['hover']}; }}
         QToolButton:checked {{ background: {c['selected']};
                                border-bottom: 2px solid {c['accent']}; }}
         QToolButton:disabled {{ color: {c['muted']}; }}
-        QTabBar::tab {{ background: transparent; color: {c['muted']};
-                        padding: 7px 13px; border: 0; }}
-        QTabBar::tab:selected {{ color: {c['text']};
-                                 border-bottom: 2px solid {c['accent']}; }}
+        QToolButton#programRun, QToolButton#programStop {{
+            border: 1px solid transparent; border-radius: 7px;
+            padding: 5px 11px; min-height: 27px; font-weight: 700;
+        }}
+        QToolButton#programRun {{ background: {c['accent']};
+                                  color: {c['accent_text']}; }}
+        QToolButton#programRun:hover {{ background: {c['focus']}; }}
+        QToolButton#programStop {{ background: {c['stop']}; color: white; }}
+        QToolButton#programStop:hover {{ background: {c['stop_hover']}; }}
+        QToolButton#programRun:disabled, QToolButton#programStop:disabled {{
+            background: {c['raised']}; color: {c['muted']};
+            border-color: {c['border']};
+        }}
+        QToolButton#hubConnection {{ background: {c['panel']};
+            border: 1px solid {c['border']}; border-radius: 7px;
+            padding: 5px 9px; min-height: 27px; }}
+        QToolButton#hubConnection:hover {{ background: {c['hover']}; }}
+        QToolButton#hubConnection[connectionState="connected"] {{
+            border-color: {c['success']}; }}
+        QToolButton#hubConnection[connectionState="busy"] {{
+            border-color: {c['accent']}; }}
+        QToolButton#appearanceToggle {{ border: 1px solid {c['border']};
+            background: {c['panel']}; border-radius: 7px; min-height: 27px; }}
+        QToolButton#appearanceToggle:hover {{ background: {c['hover']}; }}
+        QTabBar::tab {{ background: {c['raised']}; color: {c['muted']};
+            padding: 7px 13px; border: 1px solid {c['border']};
+            border-bottom: 0; border-top-left-radius: 6px;
+            border-top-right-radius: 6px; margin-right: 3px; }}
+        QTabBar::tab:selected {{ background: {c['panel']}; color: {c['text']};
+            border-bottom: 2px solid {c['accent']}; }}
         QDockWidget {{ font-weight: bold; color: {c['text']}; }}
         QLineEdit {{ padding: 6px; color: {c['text']};
                      background: {c['panel']}; border: 1px solid {c['border']};

@@ -329,6 +329,9 @@ def test_task_checkbox_points_and_evidence_are_idempotent(tmp_path, qt_app):
         assert lesson.current.score == (3, 5)
         assert "1/2" in lesson.progress_button.text()
         assert "3/5" in lesson.summary.text()
+        assert lesson.progress_bar.maximum() == 2
+        assert lesson.progress_bar.value() == 1
+        assert lesson.cards["stop"]["number"].property("completed") is True
     finally:
         window.recovery.close()
         window.deleteLater()
