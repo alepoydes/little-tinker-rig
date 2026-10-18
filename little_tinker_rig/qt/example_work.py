@@ -2,7 +2,6 @@
 
 from datetime import datetime
 from pathlib import Path
-from time import time_ns
 
 from PySide6.QtWidgets import QApplication
 
@@ -68,9 +67,8 @@ class ExampleWorkspaces:
         if not work.entry.is_file():
             raise FileNotFoundError(work.entry)
         manager = window.example_workspaces
+        work.touch()
         manager.works[work.identity] = work
-        work.data["opened"] = time_ns()
-        work.save()
         page = window.open_document(work.entry)
         if hasattr(window, "pages"):
             window.set_mode(0)

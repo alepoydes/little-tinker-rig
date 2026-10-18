@@ -1,9 +1,11 @@
 import ast
 import json
+from pathlib import Path
 
 import pytest
 
 from little_tinker_rig.core.example_work import ExampleWork, attempts_directory
+from little_tinker_rig.core.project import ExternalChangeError
 from little_tinker_rig.pybricks.program import Program
 
 
@@ -25,6 +27,47 @@ def test_snapshots_use_unsaved_modules_and_keep_original_paths(tmp_path):
     with pytest.raises(SyntaxError):
         Program(entry, {**sources, helper: "unfinished("})
     program.cleanup()
+
+
+def test_failed_attempt_relocation_keeps_in_memory_file_ownership(tmp_path):
+    examples = tmp_path / "bundled"
+    examples.mkdir()
+    source = examples / "main.py"
+    source.write_text("print(1)\n", encoding="utf-8")
+    work = ExampleWork.create(source, examples)
+    original = json.loads(json.dumps(work.data))
+    external = dict(original, opened=original["opened"] + 1)
+    work.manifest.write_text(json.dumps(external), encoding="utf-8")
+
+    with pytest.raises(ExternalChangeError):
+        work.relocated({work.entry: tmp_path / "saved.py"})
+    assert work.data == original
+    assert work.entry == Path(original["entry"])
+    assert json.loads(work.manifest.read_text(encoding="utf-8")) == external
+
+
+def test_failed_attempt_timestamp_write_does_not_change_opened_order(tmp_path, qt_app):
+    from little_tinker_rig.qt.app import Studio
+
+    examples = tmp_path / "bundled"
+    examples.mkdir()
+    source = examples / "main.py"
+    source.write_text("print(1)\n", encoding="utf-8")
+    work = ExampleWork.create(source, examples)
+    opened = work.data["opened"]
+    work.manifest.write_text(
+        json.dumps(dict(work.data, opened=opened + 1)), encoding="utf-8"
+    )
+    window = Studio(tmp_path / "plain.py")
+    try:
+        with pytest.raises(ExternalChangeError):
+            window.example_workspaces.open(work=work)
+        assert work.data["opened"] == opened
+        assert work.identity not in window.example_workspaces.works
+        assert window.documents.count() == 1
+    finally:
+        window.recovery.close()
+        window.deleteLater()
 
 
 def test_corrupt_attempt_does_not_hide_other_examples(tmp_path, qt_app, monkeypatch):

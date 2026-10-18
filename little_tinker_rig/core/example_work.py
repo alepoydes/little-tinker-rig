@@ -97,12 +97,23 @@ class ExampleWork:
         atomic_write(self.manifest, text)
         self.baseline = text
 
+    def update(self, **changes):
+        previous = self.data
+        self.data = dict(previous, **changes)
+        try:
+            self.save()
+        except BaseException:
+            self.data = previous
+            raise
+
+    def touch(self):
+        self.update(opened=time_ns())
+
     def source(self, examples):
         return resource(examples, self.data["example"])
 
     def relocated(self, paths):
-        self.data["entry"] = str(paths.get(self.entry, self.entry))
-        self.data["files"] = [
-            str(paths.get(Path(p), Path(p))) for p in self.data["files"]
-        ]
-        self.save()
+        self.update(
+            entry=str(paths.get(self.entry, self.entry)),
+            files=[str(paths.get(Path(p), Path(p))) for p in self.data["files"]],
+        )
