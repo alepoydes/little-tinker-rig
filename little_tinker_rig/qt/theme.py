@@ -200,6 +200,9 @@ def studio_stylesheet(name):
         QToolButton:checked {{ background: {c['selected']};
                                border-bottom: 2px solid {c['accent']}; }}
         QToolButton:disabled {{ color: {c['muted']}; }}
+        ChoiceButtons QToolButton, QToolButton#catalogUtility {{
+            padding: 5px 4px;
+        }}
         QToolButton#programRun, QToolButton#programStop {{
             border: 1px solid transparent; border-radius: 7px;
             padding: 5px 11px; min-height: 27px; font-weight: 700;

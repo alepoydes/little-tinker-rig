@@ -21,6 +21,11 @@ available from the sidebar; a lesson project adds a full-height task panel on th
 right, without changing the workspace modes. At narrow widths it opens over the
 workspace. Its collapse icon leaves a progress control beside hub connection;
 Scratch shares the right dock area on wide windows.
+The catalog narrows on compact windows to leave more room for the program. Drag
+the divider between catalog and program to choose your own width; that choice
+stays in place while resizing this window. When the lesson and editor would be
+too cramped side by side, tasks open over the workspace instead of taking a
+permanent right column.
 **Block Editor** (**Ctrl+Alt+3**) edits template definitions with a preview above
 the source, or beside it when vertical space is limited; see
 [its guide](block-editor.md).

@@ -188,7 +188,7 @@ class Library(QTreeWidget):
         self.setIndentation(12)
         self.setVerticalScrollMode(QTreeWidget.ScrollMode.ScrollPerPixel)
         self.setItemDelegate(CardDelegate(self))
-        self.setMinimumWidth(270)
+        self.setMinimumWidth(250)
         self.level = "all"
         self.view = "catalog"
         self.scope = ""

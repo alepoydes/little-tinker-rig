@@ -1,7 +1,9 @@
 # Reference design completion plan
 
 Status: in progress. Stage 0 stabilized the in-progress header and task-panel
-pass on 2026-10-18; stages 1–6 remain open. This follows the first-pass
+pass on 2026-10-18. Stage 1 has responsive catalog sizing and a wider lesson
+overlay threshold; the other shell refinements and stages 2–6 remain open.
+This follows the first-pass
 [visual redesign](VISUAL_REDESIGN_PLAN.md) and uses the selected local mockups
 in `report/design_concepts` as visual
 references. Those images and comparison captures remain ignored by Git. The
@@ -17,12 +19,13 @@ in the real Qt application, with every existing control and editing behavior
 accounted for. The mockups are a guide to hierarchy, color, spacing, and states;
 they are not a pixel specification or a reason to remove working features.
 
-Offscreen captures of a populated First drive project at 1380 × 880 and
+Initial offscreen captures of a populated First drive project at 1380 × 880 and
 930 × 620 show the main gap. The first pass introduced theme support and a
 shared header/menu row, but the toolbar, tabs, catalog cards, editor blocks,
-and tasks are still flatter and denser than the reference. At compact width,
-the fixed 320 px catalog and open lesson leave too little room for source; long
-lines are clipped. The catalog and editor do not yet share the same clear card
+and tasks are still flatter and denser than the reference. The original fixed
+320 px catalog left too little room for source at compact width; responsive
+sizing now uses 270 px by default, but long lines can still be clipped. The
+catalog and editor do not yet share the same clear card
 hierarchy. Task progress and selected/completed states need stronger visual
 structure. Screenshots of an empty document would conceal these problems, so
 the populated project is the primary fixture.

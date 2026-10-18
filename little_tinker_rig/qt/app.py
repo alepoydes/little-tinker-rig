@@ -167,6 +167,7 @@ class Studio(QMainWindow):
         )
         library = QWidget()
         layout = QVBoxLayout(library)
+        layout.setContentsMargins(5, 8, 5, 8)
         self.library.setAccessibleName(N_("Library · drag a block into the program"))
         layout.addWidget(self.search)
         layout.addWidget(self.level_filter)
@@ -179,6 +180,7 @@ class Studio(QMainWindow):
             ("expand-all", N_("Expand all groups"), True),
         ):
             button = QToolButton()
+            button.setObjectName("catalogUtility")
             button.setIcon(svg_icon(key))
             button.setIconSize(QSize(20, 20))
             button.setToolTip(title)
@@ -189,6 +191,7 @@ class Studio(QMainWindow):
             row.addWidget(button)
             self.group_buttons[key] = button
         self.clear_usage = QToolButton()
+        self.clear_usage.setObjectName("catalogUtility")
         self.clear_usage.setIcon(svg_icon("clear-history"))
         self.clear_usage.setProperty("translationSources", {})
         self.clear_usage.clicked.connect(self.library.clear_history)
@@ -227,6 +230,9 @@ class Studio(QMainWindow):
         self.program_page.setStretchFactor(0, 0)
         self.program_page.setStretchFactor(1, 1)
         self.program_page.setChildrenCollapsible(False)
+        self._catalog_width_manual = False
+        self._catalog_resize_pending = False
+        self.program_page.splitterMoved.connect(self._catalog_splitter_moved)
         self.controls = ControlsPage()
         self.controls.monitor_requested.connect(self.start_monitor)
         self.controls.drive_requested.connect(
@@ -286,6 +292,7 @@ class Studio(QMainWindow):
         QTimer.singleShot(0, self.recovery.offer)
         if geometry := self.settings.value("windowGeometry", b""):
             self.restoreGeometry(geometry)
+        self._schedule_catalog_width()
         if lesson_path:
             self.perform(lambda: self.lessons.open(lesson_path))
         elif example_path:
@@ -737,10 +744,32 @@ class Studio(QMainWindow):
         self.run_button.setToolButtonStyle(style)
         self.stop_button.setToolButtonStyle(style)
 
+    def _catalog_splitter_moved(self, *_):
+        self._catalog_width_manual = True
+
+    def _schedule_catalog_width(self):
+        if self._catalog_width_manual or self._catalog_resize_pending:
+            return
+        self._catalog_resize_pending = True
+        QTimer.singleShot(0, self._fit_catalog_width)
+
+    def _fit_catalog_width(self):
+        self._catalog_resize_pending = False
+        if self._catalog_width_manual or not self.library_pane.isVisible():
+            return
+        available = self.program_page.width()
+        if available <= 0:
+            return
+        target = 270 if self.width() < 1100 else 320
+        if abs(self.library_pane.width() - target) > 1:
+            self.program_page.setSizes([target, max(1, available - target)])
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if hasattr(self, "run_button"):
             self._update_toolbar_density()
+        if hasattr(self, "program_page"):
+            self._schedule_catalog_width()
 
     @property
     def document_page(self):
@@ -1358,7 +1387,10 @@ class Studio(QMainWindow):
                 self.clear_input_search()
         page = self.editing_page
         if page is not None:
+            was_visible = self.library_pane.isVisible()
             self.library_pane.setVisible(not page.code_active)
+            if not was_visible and self.library_pane.isVisible():
+                self._schedule_catalog_width()
         session = self.editing_session
         match = session.selected_match()
         selection = (

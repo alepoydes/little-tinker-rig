@@ -93,6 +93,9 @@ class TaskMarkdown(QTextBrowser):
                         layout.activate()
 
 
+LESSON_DOCK_MIN_WIDTH = 1320
+
+
 class Lessons(QObject):
     def __init__(self, window):
         super().__init__(window)
@@ -103,7 +106,7 @@ class Lessons(QObject):
         self._updating_panel = False
         self._dock_active = False
         self._transient_hidden = False
-        self._narrow = window.width() < 1180
+        self._narrow = window.width() < LESSON_DOCK_MIN_WIDTH
         self.panel = QWidget()
         self.panel.setObjectName("lessonTaskPanel")
         self.panel.setAccessibleName(N_("Task panel"))
@@ -822,7 +825,7 @@ class Lessons(QObject):
         expanded = bool(
             self.current and self.current.progress.get("panel_expanded", True)
         )
-        narrow = self.window.width() < 1180
+        narrow = self.window.width() < LESSON_DOCK_MIN_WIDTH
         self._updating_panel = True
         try:
             self.dock.hide()
@@ -853,7 +856,7 @@ class Lessons(QObject):
     def eventFilter(self, watched, event):
         kind = event.type()
         if watched is self.window and kind == QEvent.Type.Resize:
-            narrow = self.window.width() < 1180
+            narrow = self.window.width() < LESSON_DOCK_MIN_WIDTH
             if narrow != self._narrow:
                 self._narrow = narrow
                 self._transient_hidden = narrow
@@ -913,7 +916,7 @@ class Lessons(QObject):
         self.show_stage()
 
     def _collapse_for_destination(self):
-        if self.window.width() < 1180:
+        if self.window.width() < LESSON_DOCK_MIN_WIDTH:
             self._transient_hidden = True
             self.update_panel_visibility()
 

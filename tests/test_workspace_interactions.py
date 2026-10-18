@@ -111,6 +111,32 @@ def test_header_theme_and_language_keep_brand_readable_and_actions_visible(windo
     )
 
 
+def test_compact_catalog_releases_editor_width_without_overriding_manual_split(windows):
+    window = windows()
+    QApplication.processEvents()
+    assert abs(window.library_pane.width() - 320) <= 1
+
+    window.resize(930, 620)
+    QApplication.processEvents()
+    assert abs(window.library_pane.width() - 270) <= 1
+    assert window.documents.width() >= 590
+
+    window.change_editor(1)
+    QApplication.processEvents()
+    assert not window.library_pane.isVisible()
+    window.change_editor(0)
+    QApplication.processEvents()
+    assert abs(window.library_pane.width() - 270) <= 1
+
+    window.program_page.moveSplitter(340, 1)
+    QApplication.processEvents()
+    assert window._catalog_width_manual
+    assert abs(window.library_pane.width() - 340) <= 1
+    window.resize(1380, 880)
+    QApplication.processEvents()
+    assert abs(window.library_pane.width() - 340) <= 1
+
+
 def test_scratch_history_follows_fragments_across_moves_and_removal(windows):
     from little_tinker_rig.core.edit import Target
     from little_tinker_rig.core.transfer import Transfer
