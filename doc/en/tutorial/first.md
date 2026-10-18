@@ -3,11 +3,15 @@
 A program is a sequence of actions. LittleTinker Rig keeps those actions in an ordinary
 Python file and shows their structure as colored blocks.
 
-Open the editor using the shortcut or launcher from [installation](../INSTALL.md),
-then choose **File → Examples → first.py**. No terminal options are needed when
-opening it again.
+Open the editor using the shortcut or launcher from [installation](../INSTALL.md).
+The **Home** page opens first. Choose **First Python program** for a guided
+three-task activity, or **New program** to build from an empty file. **Open a
+file…** continues an ordinary program. The Home icon returns to this page
+without closing your work. Reopening a lesson or example resumes its latest
+attempt; merely browsing Home creates no copy. No terminal options are needed
+when opening the editor again.
 
-The narrow icon sidebar on the left switches workspaces, including **Program**,
+The narrow icon sidebar on the left switches workspaces, including **Home**, **Program**,
 **Control**, **Block Editor** and **Help**. Hover over an icon to see its name.
 The library shows a block's description and Python preview. Files open in tabs
 across the top. The two small icons at the top right of the document switch
@@ -28,7 +32,7 @@ example and copies its local modules to your chosen folder.
 
 ## From an empty document
 
-Choose **File → New** for an empty document.
+Choose **New program** on Home or **File → New** for an empty document.
 On first launch, the library starts at Beginner level; later it remembers your
 choice. Select the level button **1** (Beginner) and the **Catalog** view button
 using their tooltips. Open the **Program** category.

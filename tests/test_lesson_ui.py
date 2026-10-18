@@ -913,7 +913,8 @@ def test_lesson_navigation_opens_instructions_and_preserves_explicit_moves(
         assert window.pages.currentIndex() == 2
         assert window.help_page.current == "lesson/instructions"
         assert lesson.panel.isVisible()
-        assert window.pages.count() == 5
+        assert window.pages.count() == 6
+        assert window.pages.widget(5) is window.home_page
         window.set_mode(2)
         assert lesson.panel.isVisible()
         window.set_mode(3)

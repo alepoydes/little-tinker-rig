@@ -47,6 +47,8 @@ class Recovery(QObject):
         window = self.window
         if not window.documents.count():
             return True
+        if window.documents.count() == 1 and window._unused_startup_placeholder():
+            return True
         try:
             autosave_error = None
             try:
@@ -153,6 +155,8 @@ class Recovery(QObject):
                             pages[min(data["active"], len(pages) - 1)]
                         )
                     self.window.document_changed()
+                    if pages and self.window.pages.currentIndex() == 5:
+                        self.window.set_mode(0)
                     if self.flush():
                         path.unlink()
                 elif answer == QMessageBox.StandardButton.No:

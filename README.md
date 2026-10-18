@@ -96,7 +96,9 @@ Keep all wanted extras in future `uv sync` commands; sync can remove omitted one
 See [installation](doc/en/INSTALL.md) for Windows setup, connection requirements
 and troubleshooting.
 
-1. Open **File → Examples → first.py**, or start an empty document.
+1. On **Home**, open **First Python program** for a short guided activity without
+   a physical robot. **New program** opens an empty document; **Open a file…**
+   opens existing work. The Home icon returns to this page without closing tabs.
 2. Add blocks from the library and edit their parameters. Switch to **Python** to
    edit the same program as text.
 3. Choose **Connect hub → Virtual hub** to try a program without hardware, then

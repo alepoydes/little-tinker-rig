@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="104" viewBox="0 0 320 104" role="img" aria-label="Run a program and inspect Console output">
+  <rect width="320" height="104" rx="13" fill="#eaf3ff"/>
+  <circle cx="49" cy="52" r="30" fill="#1268d9"/>
+  <path d="m42 35 23 17-23 17z" fill="#ffffff"/>
+  <path d="M88 52h37m-11-11 11 11-11 11" fill="none" stroke="#1268d9" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="139" y="18" width="163" height="68" rx="10" fill="#173553"/>
+  <path d="M156 37h74m-74 14h101m-101 14h90" stroke="#9be5ff" stroke-width="5" stroke-linecap="round"/>
+</svg>

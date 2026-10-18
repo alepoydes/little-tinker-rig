@@ -53,10 +53,14 @@ launch from the project folder with:
 ./.venv/bin/little-tinker-rig-qt
 ```
 
-On first launch, open **File → Examples → first.py**, choose **Connect hub →
-Virtual hub → Robot Inventor / SPIKE Prime → Connect**, and press **F5 / Run**.
-Open **Console** to see the greeting three times. No file path is needed when
-starting the editor; use **File → Examples** or **File → Open** inside it.
+On first launch, **Home** shows **First Python program**, an illustrated
+three-task lesson. Open that card, change its message and loop count, then choose
+**Connect hub → Virtual hub → Robot Inventor / SPIKE Prime → Connect** and press
+**F5 / Run**. Open **Console** to inspect the output. A physical robot is not
+needed. **New program** starts an empty file; **Open a file…** opens existing
+work. The Home icon returns to this page without closing your work. Opening a
+lesson card again continues your last attempt. No file path is needed to start
+the editor.
 
 English is the initial interface language. Choose **View → Language → Русский**
 for Russian; the setting and offline help are saved with your preferences.

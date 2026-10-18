@@ -5,7 +5,10 @@ file remains readable and executable outside the editor. English and Russian
 interfaces share the same editing operations; **View → Language** also selects
 the language of this guide.
 
-Start with [installation](INSTALL.md) and [first steps](tutorial/first.md).
+Start with [installation](INSTALL.md). Launching without a file opens **Home**:
+continue recent work, create a program, or try the illustrated **First Python
+program** lesson without a physical robot. The Home icon brings you back without
+closing your files. The [first steps guide](tutorial/first.md) explains the editor.
 For a practical project, build and run the [delivery robot](robotics.md#delivery-robot)
 on a virtual Inventor / SPIKE Prime hub.
 

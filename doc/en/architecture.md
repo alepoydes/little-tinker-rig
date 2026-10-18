@@ -50,6 +50,15 @@ The window owns document tabs, global workspaces, help, console and one
 hub connection. Changing tabs or language preserves document widgets and history.
 Window actions resolve the active document when invoked.
 
+Home is a window workspace, not a program document. A launch without a target
+keeps one pristine internal DocumentPage for editor-bound services; it is excluded
+from recovery and reused by New or removed when the first real file, example or
+lesson opens. Explicit targets and recovered documents open in their workspaces.
+Home reads recent file paths and the existing example/lesson attempt manifests;
+its cards delegate to those managers, so browsing never creates an attempt and
+reopening resumes one. The lesson task panel is hidden while Home is visible,
+without changing its saved expanded state.
+
 Parameter slots are derived from snippet bindings and ordinary expression positions.
 Changing one is a validated source transaction. Display-only parameter padding does
 not alter the source; Qt UTF-16 positions are translated at the boundary. Move and

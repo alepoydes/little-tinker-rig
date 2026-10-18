@@ -6492,6 +6492,131 @@ msgstr "Можно подготовить прошивку"
 msgid "Choose a hub and version, then prepare a download or open a local file."
 msgstr "Выберите модель хаба и версию, затем подготовьте загрузку или откройте локальный файл."
 
+#: little_tinker_rig/qt/app.py
+msgid "Home"
+msgstr "Начало"
+
+#: little_tinker_rig/qt/home.py
+msgid "Make something today"
+msgstr "Создай что-нибудь сегодня"
+
+#: little_tinker_rig/qt/home.py
+msgid "Continue your work or pick a small project. Your programs stay yours."
+msgstr "Продолжи свою работу или выбери небольшой проект. Твои программы сохраняются."
+
+#: little_tinker_rig/qt/home.py
+msgid "Open a file…"
+msgstr "Открыть файл…"
+
+#: little_tinker_rig/qt/home.py
+msgid "Continue working"
+msgstr "Продолжить работу"
+
+#: little_tinker_rig/qt/home.py
+msgid "Choose a project"
+msgstr "Выбрать проект"
+
+#: little_tinker_rig/qt/home.py
+msgid "Start with Python, then try a robot. Open a card to create or resume your own copy."
+msgstr "Начни с Python, затем попробуй робота. Открой карточку, чтобы создать или продолжить свою копию."
+
+#: little_tinker_rig/qt/home.py
+msgid "Filter projects by equipment"
+msgstr "Фильтр проектов по оборудованию"
+
+#: little_tinker_rig/qt/home.py
+msgid "All equipment"
+msgstr "Любое оборудование"
+
+#: little_tinker_rig/qt/home.py
+msgid "No robot needed"
+msgstr "Робот не нужен"
+
+#: little_tinker_rig/qt/home.py
+msgid "SPIKE Prime 45678"
+msgstr "SPIKE Prime 45678"
+
+#: little_tinker_rig/qt/home.py
+msgid "Robot Inventor 51515"
+msgstr "Robot Inventor 51515"
+
+#: little_tinker_rig/qt/home.py
+msgid "First Python program"
+msgstr "Первая программа на Python"
+
+#: little_tinker_rig/qt/home.py
+msgid "Change a message, repeat it, and see the result in Console."
+msgstr "Измени сообщение, повтори его и посмотри результат в консоли."
+
+#: little_tinker_rig/qt/home.py
+msgid "No robot needed · about 10 minutes"
+msgstr "Робот не нужен · около 10 минут"
+
+#: little_tinker_rig/qt/home.py
+msgid "First robot drive"
+msgstr "Первая поездка робота"
+
+#: little_tinker_rig/qt/home.py
+msgid "Build a rolling base and make it travel a measured distance."
+msgstr "Собери колёсную базу и заставь её проехать заданное расстояние."
+
+#: little_tinker_rig/qt/home.py
+msgid "SPIKE Prime 45678 · motors A and B"
+msgstr "SPIKE Prime 45678 · моторы A и B"
+
+#: little_tinker_rig/qt/home.py
+msgid "Exploration Rover"
+msgstr "Исследовательский вездеход"
+
+#: little_tinker_rig/qt/home.py
+msgid "Explore a ready-made rover program and change its behaviour."
+msgstr "Изучи готовую программу вездехода и измени его поведение."
+
+#: little_tinker_rig/qt/home.py
+msgid "Robot Inventor 51515 · Exploration Rover model"
+msgstr "Robot Inventor 51515 · модель Exploration Rover"
+
+#: little_tinker_rig/qt/home.py
+msgid "Open project"
+msgstr "Открыть проект"
+
+#: little_tinker_rig/qt/home.py
+msgid "Start project"
+msgstr "Начать проект"
+
+#: little_tinker_rig/qt/home.py
+msgid "All lessons…"
+msgstr "Все уроки…"
+
+#: little_tinker_rig/qt/home.py
+msgid "All examples…"
+msgstr "Все примеры…"
+
+#: little_tinker_rig/qt/home.py
+msgid "Untitled program"
+msgstr "Программа без имени"
+
+#: little_tinker_rig/qt/home.py
+msgid "Open in this window"
+msgstr "Открыта в этом окне"
+
+#: little_tinker_rig/qt/home.py
+#, python-brace-format
+msgid "Lesson · {earned}/{total} points"
+msgstr "Урок · {earned}/{total} очков"
+
+#: little_tinker_rig/qt/home.py
+msgid "Continue"
+msgstr "Продолжить"
+
+#: little_tinker_rig/qt/home.py
+msgid "Python program"
+msgstr "Программа Python"
+
+#: little_tinker_rig/qt/home.py
+msgid "Example attempt"
+msgstr "Попытка примера"
+
 #~ msgid "Add favorite blocks with the star button or the context menu."
 #~ msgstr "Добавляйте избранные блоки кнопкой со звездой или через контекстное меню."
 

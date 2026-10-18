@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="104" viewBox="0 0 320 104" role="img" aria-label="Edit a quoted message">
+  <rect width="320" height="104" rx="13" fill="#eaf3ff"/>
+  <rect x="17" y="22" width="206" height="60" rx="11" fill="#b9efd0" stroke="#4f9d74" stroke-width="2"/>
+  <text x="30" y="48" fill="#204837" font-size="16" font-family="monospace" font-weight="700">message =</text>
+  <text x="30" y="69" fill="#204837" font-size="18" font-family="monospace">"…"</text>
+  <path d="m253 66 39-39 8 8-39 39-12 4z" fill="#ffbc52" stroke="#8f5a21" stroke-width="2" stroke-linejoin="round"/>
+  <path d="m287 32 8 8" stroke="#8f5a21" stroke-width="2"/>
+</svg>

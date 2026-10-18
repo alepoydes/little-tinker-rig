@@ -9,7 +9,14 @@ Files have independent tabs, drafts and undo histories. The hub connection and
 console belong to the window. Run and Upload capture the active document and its
 imported local Python modules, using current text from any open module tabs. A
 recovery checkpoint is written first. Ordinary files are not overwritten by Run.
-Starting without a filename and **File → New** create unnamed documents. Run and
+Starting without a filename opens **Home**. Its rail icon or **View → Home**
+(**Ctrl+Alt+0**) returns to it. **New program** there and **File → New**
+create unnamed documents; returning Home keeps open documents and lesson progress.
+Continue working includes an open unnamed program, ordinary files, example
+attempts and lesson attempts without
+duplicating their program modules. The equipment filter changes the displayed
+starter projects and remembers the choice. **All lessons…** and **All examples…**
+open the complete bundled catalogs. Run and
 Upload need no filename; explicit Save asks for one. Cancelling Save leaves the
 document open. Saving while closing uses the same rule. Example attempts autosave
 separately, as described below.

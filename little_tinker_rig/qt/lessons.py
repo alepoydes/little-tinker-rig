@@ -791,7 +791,9 @@ class Lessons(QObject):
             return
         visible = self.overlay.isVisible() if self._narrow else self._dock_active
         self.guidance.setChecked(bool(self.current and visible))
-        show_chip = bool(self.current and not visible)
+        show_chip = bool(
+            self.current and not visible and self.window.pages.currentIndex() != 5
+        )
         self.progress_action.setVisible(show_chip)
         self.progress_button.setVisible(show_chip)
 
@@ -831,7 +833,11 @@ class Lessons(QObject):
             self.dock.hide()
             self.overlay.hide()
             self._move_panel(narrow)
-            visible = expanded and not self._transient_hidden
+            visible = (
+                expanded
+                and not self._transient_hidden
+                and self.window.pages.currentIndex() != 5
+            )
             if narrow:
                 self._position_overlay()
                 self.overlay.setVisible(visible)

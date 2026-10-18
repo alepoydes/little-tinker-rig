@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="104" viewBox="0 0 320 104" role="img" aria-label="Change a loop from three to five repetitions">
+  <rect width="320" height="104" rx="13" fill="#eaf3ff"/>
+  <rect x="16" y="23" width="78" height="58" rx="11" fill="#ffda9f" stroke="#d49b44" stroke-width="2"/>
+  <text x="40" y="61" fill="#543b15" font-size="28" font-family="sans-serif" font-weight="700">3</text>
+  <path d="M102 52h50m-13-13 13 13-13 13" fill="none" stroke="#1268d9" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="168" y="23" width="78" height="58" rx="11" fill="#ffda9f" stroke="#d49b44" stroke-width="2"/>
+  <text x="192" y="61" fill="#543b15" font-size="28" font-family="sans-serif" font-weight="700">5</text>
+  <g fill="#1268d9"><circle cx="261" cy="32" r="5"/><circle cx="277" cy="32" r="5"/><circle cx="293" cy="32" r="5"/><circle cx="269" cy="50" r="5"/><circle cx="285" cy="50" r="5"/></g>
+</svg>

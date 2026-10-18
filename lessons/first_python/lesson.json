@@ -1,0 +1,48 @@
+{
+  "format": 1,
+  "id": "first-python-program",
+  "title": {"en": "First Python program", "ru": "Первая программа на Python"},
+  "group": {"en": "Start here", "ru": "Начни здесь"},
+  "instructions": {"en": "en.md", "ru": "ru.md"},
+  "examples": {"code/main.py": "first.py"},
+  "programs": {"main.py": "code/main.py"},
+  "main": "main.py",
+  "stages": [
+    {
+      "id": "message",
+      "title": {"en": "Make the message yours", "ru": "Придумай своё сообщение"},
+      "goal": {"en": "Change the quoted message in the program.", "ru": "Измени сообщение в кавычках в программе."},
+      "description": {"en": "en.md#message", "ru": "ru.md#message"},
+      "panel": {"en": "en/panel/message.md", "ru": "ru/panel/message.md"},
+      "mode": "program",
+      "blocks": ["python/basics/display"],
+      "program": "main.py",
+      "points": 1
+    },
+    {
+      "id": "repeat",
+      "title": {"en": "Choose how many times", "ru": "Выбери число повторов"},
+      "goal": {"en": "Change the loop count and predict the output.", "ru": "Измени число повторов в цикле и предскажи результат."},
+      "description": {"en": "en.md#repeat", "ru": "ru.md#repeat"},
+      "panel": {"en": "en/panel/repeat.md", "ru": "ru/panel/repeat.md"},
+      "mode": "program",
+      "blocks": ["python/basics/repeat"],
+      "program": "main.py",
+      "points": 1
+    },
+    {
+      "id": "run",
+      "title": {"en": "Run and inspect", "ru": "Запусти и проверь"},
+      "goal": {"en": "Run with a virtual hub and check the Console.", "ru": "Запусти программу с виртуальным хабом и проверь консоль."},
+      "description": {"en": "en.md#run", "ru": "ru.md#run"},
+      "panel": {"en": "en/panel/run.md", "ru": "ru/panel/run.md"},
+      "mode": "program",
+      "blocks": [],
+      "program": "main.py",
+      "points": 1,
+      "links": [
+        {"kind": "connect", "label": {"en": "Connect virtual hub", "ru": "Подключить виртуальный хаб"}}
+      ]
+    }
+  ]
+}

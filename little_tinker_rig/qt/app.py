@@ -5,6 +5,7 @@ import ast
 import re
 import sys
 from pathlib import Path
+from time import time_ns
 
 from PySide6.QtCore import QEvent, QSettings, QSize, QStandardPaths, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QTextCursor
@@ -69,6 +70,7 @@ from .device import ConnectDialog, DevicePanel
 from .dialogs import EditDialog
 from .document import DocumentPage
 from .help import HelpPage
+from .home import HomePage
 from .lessons import Lessons
 from .library import IDENTITY, LEVEL_TITLES, VIEW_TITLES, Library, snippet_title
 from .localization import localize, translate_standard_dialogs
@@ -98,6 +100,7 @@ def application_settings():
 class Studio(QMainWindow):
     def __init__(self, path: Path | None = None, collections=()):
         super().__init__()
+        startup_home = path is None
         lesson_path = (
             path if path and path.suffix in {".ltr", ".pylesson", ".pyblocks"} else None
         )
@@ -140,6 +143,7 @@ class Studio(QMainWindow):
 
         self.example_workspaces = ExampleWorkspaces(self)
         self.open_document(path or self.new_document_path(), unnamed=path is None)
+        self.startup_placeholder = self.document_page if path is None else None
         self.library = Library(self.session.available_snippets, self.settings)
         self.library.set_scope(self.document_page.catalog_scope)
         self.library.definition_requested.connect(self.open_definition)
@@ -268,7 +272,21 @@ class Studio(QMainWindow):
         workspace_layout = self.workspace_layout = QHBoxLayout(workspace)
         workspace_layout.setContentsMargins(0, 0, 0, 0)
         workspace_layout.setSpacing(4)
-        workspace_layout.addWidget(self.modes)
+        rail = QWidget()
+        rail.setObjectName("workspaceRail")
+        rail_layout = QVBoxLayout(rail)
+        rail_layout.setContentsMargins(0, 0, 0, 0)
+        rail_layout.setSpacing(0)
+        self.home_button = QToolButton()
+        self.home_button.setObjectName("homeNavigation")
+        self.home_button.setCheckable(True)
+        self.home_button.setFixedSize(48, 48)
+        self.home_button.setIcon(svg_icon("home", rail=True))
+        self.home_button.setIconSize(QSize(24, 24))
+        self.home_button.clicked.connect(lambda: self.set_mode(5))
+        rail_layout.addWidget(self.home_button)
+        rail_layout.addWidget(self.modes, 1)
+        workspace_layout.addWidget(rail)
         self.workspace_body = QVBoxLayout()
         self.workspace_body.setContentsMargins(0, 0, 0, 0)
         self.workspace_body.addWidget(self.pages, 1)
@@ -277,6 +295,8 @@ class Studio(QMainWindow):
         self._docks()
         self._menus()
         self.lessons = Lessons(self)
+        self.home_page = HomePage(self)
+        self.pages.addWidget(self.home_page)
         self._scratch_dock_auto = True
         self._scratch_relocating = False
         self._scratch_layout_pending = False
@@ -308,6 +328,8 @@ class Studio(QMainWindow):
             self.restoreGeometry(geometry)
         self._schedule_catalog_width()
         self._schedule_scratch_layout()
+        if startup_home and not lesson_path and not example_path:
+            self.set_mode(5)
         if lesson_path:
             self.perform(lambda: self.lessons.open(lesson_path))
         elif example_path:
@@ -476,7 +498,7 @@ class Studio(QMainWindow):
         self.recent_menu.aboutToShow.connect(self.refresh_recent_files)
         self.examples_menu = file.addMenu(N_("Examples"))
         self.examples_menu.aboutToShow.connect(self.refresh_examples)
-        self._action(
+        self.save_action = self._action(
             file,
             N_("Save"),
             "Ctrl+S",
@@ -484,11 +506,13 @@ class Studio(QMainWindow):
             toolbar,
             ("document-save", "SP_DialogSaveButton"),
         )
-        self._action(file, N_("Save as…"), "Ctrl+Shift+S", self.save_as)
+        self.save_as_action = self._action(
+            file, N_("Save as…"), "Ctrl+Shift+S", self.save_as
+        )
         self.reload_action = self._action(
             file, N_("Reload from disk…"), None, self.reload_document
         )
-        self._action(
+        self.close_document_action = self._action(
             file,
             N_("Close document"),
             "Ctrl+W",
@@ -667,6 +691,7 @@ class Studio(QMainWindow):
             "F11",
             lambda: self.showNormal() if self.isFullScreen() else self.showFullScreen(),
         )
+        self._action(view, N_("Home"), "Ctrl+Alt+0", lambda: self.set_mode(5))
         self._action(view, N_("Help"), "F1", self.show_help)
         self._action(view, N_("Block Editor"), "Ctrl+Alt+3", lambda: self.set_mode(3))
         self._action(view, N_("Name diagnostics"), None, self.show_diagnostics)
@@ -1061,6 +1086,8 @@ class Studio(QMainWindow):
                 window.view_filter.apply_theme()
                 window.search_action.setIcon(svg_icon("search"))
                 window.modes.apply_theme()
+                window.home_page.apply_theme()
+                window._apply_home_rail_theme()
                 for key, button in window.group_buttons.items():
                     button.setIcon(svg_icon(key))
                 window.clear_usage.setIcon(svg_icon("clear-history"))
@@ -1094,6 +1121,11 @@ class Studio(QMainWindow):
     def retranslate(self):
         translate_standard_dialogs()
         localize(self)
+        home_name = tr("Home")
+        self.home_button.setToolTip(home_name)
+        self.home_button.setAccessibleName(home_name)
+        self.home_page.retranslate()
+        self._apply_home_rail_theme()
         self.level_filter.retranslate()
         self.view_filter.retranslate()
         for action in self.findChild(QToolBar, "programTools").actions():
@@ -1186,7 +1218,30 @@ class Studio(QMainWindow):
         self.documents.setCurrentIndex(index)
         localize(page)
         self.remember_file(path)
+        if hasattr(self, "recovery") and page is not self.startup_placeholder:
+            self._discard_startup_placeholder()
         return page
+
+    def _unused_startup_placeholder(self):
+        page = self.startup_placeholder
+        return bool(
+            page
+            and self.documents.indexOf(page) >= 0
+            and page.unnamed
+            and not page.dirty
+            and not page.text
+            and not page.session.document.state.scratch
+        )
+
+    def _discard_startup_placeholder(self):
+        if not self._unused_startup_placeholder():
+            return
+        page = self.startup_placeholder
+        self.startup_placeholder = None
+        self.documents.removeTab(self.documents.indexOf(page))
+        self.scratch_stack.removeWidget(page.scratch)
+        page.scratch.deleteLater()
+        page.deleteLater()
 
     def remember_file(self, path):
         if hasattr(self, "lessons") and any(
@@ -1195,10 +1250,14 @@ class Studio(QMainWindow):
             return
         if path.is_file():
             recent = self.settings.value("recentFiles", [])
-            recent = [recent] if isinstance(recent, str) else recent
-            self.settings.setValue(
-                "recentFiles", [str(path), *(p for p in recent if p != str(path))][:10]
-            )
+            recent = [recent] if isinstance(recent, str) else recent or []
+            recent = [str(path), *(p for p in recent if p != str(path))][:10]
+            self.settings.setValue("recentFiles", recent)
+            activity = self.settings.value("recentActivity", {})
+            activity = activity if isinstance(activity, dict) else {}
+            activity = {key: value for key, value in activity.items() if key in recent}
+            activity[str(path)] = time_ns()
+            self.settings.setValue("recentActivity", activity)
 
     def refresh_examples(self):
         def populate(menu, directory):
@@ -1259,9 +1318,13 @@ class Studio(QMainWindow):
             )
             action.setProperty("translationSources", {})
         self.recent_menu.addSeparator()
-        self.recent_menu.addAction(
-            tr("Clear recent files"), lambda: self.settings.remove("recentFiles")
-        )
+        self.recent_menu.addAction(tr("Clear recent files"), self.clear_recent_files)
+
+    def clear_recent_files(self):
+        self.settings.remove("recentFiles")
+        self.settings.remove("recentActivity")
+        if self.pages.currentIndex() == 5:
+            self.home_page.refresh()
 
     def open_recent(self, path):
         if not Path(path).is_file():
@@ -1396,23 +1459,34 @@ class Studio(QMainWindow):
         self.refresh_status()
 
     def set_mode(self, index):
-        if index < 0 or self.modes.item(index).isHidden():
+        if index < 0 or index >= self.pages.count():
             return
+        if index != 5 and self.modes.item(index).isHidden():
+            return
+        was_home = self.pages.currentIndex() == 5
         if not self.finish_parameters():
+            self.home_button.setChecked(was_home)
             self.modes.blockSignals(True)
-            self.modes.setCurrentRow(self.pages.currentIndex())
+            self.modes.setCurrentRow(
+                -1 if self.pages.currentIndex() == 5 else self.pages.currentIndex()
+            )
             self.modes.blockSignals(False)
             return
         self.pages.setCurrentIndex(index)
-        if self.document_page.lesson_project:
+        self.home_button.setChecked(index == 5)
+        if index == 5:
+            self.home_page.refresh()
+        if index != 5 and self.document_page.lesson_project:
             self.document_page.lesson_project.progress["mode"] = WORKSPACES[index]
             if hasattr(self, "recovery"):
                 self.recovery.schedule()
         self.modes.blockSignals(True)
-        self.modes.setCurrentRow(index)
+        self.modes.setCurrentRow(-1 if index == 5 else index)
         self.modes.blockSignals(False)
         if hasattr(self, "lessons"):
             self.lessons.update_card()
+            if index == 5 or was_home:
+                self.lessons.update_panel_visibility()
         self.scratch_dock.setVisible(index == 0 and self.scratch_visible)
         self.scratch_dock.toggleViewAction().setEnabled(index == 0)
         self.scratch_button.setEnabled(index == 0)
@@ -1427,6 +1501,16 @@ class Studio(QMainWindow):
             )
         self.update_hub(self.hub_info)
         self.refresh_status()
+
+    def _apply_home_rail_theme(self):
+        c = colors()
+        self.workspace.findChild(QWidget, "workspaceRail").setStyleSheet(
+            f"#workspaceRail {{ background: {c['rail']}; }}"
+            f"#homeNavigation {{ background: {c['rail']}; border: 0; border-left: 3px solid transparent; }}"
+            f"#homeNavigation:hover {{ background: {c['rail_hover']}; }}"
+            f"#homeNavigation:checked {{ background: {c['rail_selected']}; border-left-color: {c['accent']}; }}"
+        )
+        self.home_button.setIcon(svg_icon("home", rail=True))
 
     def refresh_views(self):
         if not hasattr(self, "scratch_stack") or self.document_page is None:
@@ -1533,19 +1617,21 @@ class Studio(QMainWindow):
         selection = (
             snippet_title(match.snippet)
             if match and match.snippet.help
-            else "Python"
-            if page and page.code_active
-            else tr("Select a block")
+            else "Python" if page and page.code_active else tr("Select a block")
         )
         self.statusBar().showMessage(
-            tr("Python · changes not checked")
-            if page
-            and page.code_active
-            and page.code.toPlainText() != session.document.state.source
-            else tr(
-                "{p0} · warnings: {p1}",
-                p0=selection,
-                p1=len(session.analysis.diagnostics()),
+            ""
+            if self.pages.currentIndex() == 5
+            else (
+                tr("Python · changes not checked")
+                if page
+                and page.code_active
+                and page.code.toPlainText() != session.document.state.source
+                else tr(
+                    "{p0} · warnings: {p1}",
+                    p0=selection,
+                    p1=len(session.analysis.diagnostics()),
+                )
             )
         )
         project = self.document_page.lesson_project
@@ -1557,7 +1643,11 @@ class Studio(QMainWindow):
                 + " · "
                 + name
             )
-        self.setWindowTitle(f"{'● ' if dirty else ''}{name} — LittleTinker Rig")
+        self.setWindowTitle(
+            f"{'● ' if dirty else ''}{tr('Home')} — LittleTinker Rig"
+            if self.pages.currentIndex() == 5
+            else f"{'● ' if dirty else ''}{name} — LittleTinker Rig"
+        )
         text_editor = self.text_editor()
         self.undo_action.setEnabled(
             (
@@ -1583,6 +1673,12 @@ class Studio(QMainWindow):
         if page:
             self.editor_actions[int(page.code_active)].setChecked(True)
         self.find_action.setEnabled(self.pages.currentIndex() in (0, 2, 3))
+        for action in (
+            self.save_action,
+            self.save_as_action,
+            self.close_document_action,
+        ):
+            action.setEnabled(self.pages.currentIndex() != 5)
         self.format_action.setEnabled(
             text_editor is not None and not text_editor.isReadOnly()
         )
@@ -2080,6 +2176,10 @@ class Studio(QMainWindow):
             index += 1
 
     def new_file(self):
+        if self._unused_startup_placeholder():
+            self.startup_placeholder = None
+            self.set_mode(0)
+            return
         self.open_document(
             self.new_document_path(
                 None
@@ -2183,10 +2283,14 @@ class Studio(QMainWindow):
             self.hub_input.setEnabled(False)
         self.hub_progress.setVisible(busy)
         self.run_action.setEnabled(
-            self.hub_info.connected and not busy and self.pages.currentIndex() != 3
+            self.hub_info.connected
+            and not busy
+            and self.pages.currentIndex() not in (3, 5)
         )
         self.upload_action.setEnabled(
-            self.hub_info.connected and not busy and self.pages.currentIndex() != 3
+            self.hub_info.connected
+            and not busy
+            and self.pages.currentIndex() not in (3, 5)
         )
         self.stored_action.setEnabled(self.hub_info.connected and not busy)
         self.firmware_action.setEnabled(not busy)
@@ -2235,10 +2339,14 @@ class Studio(QMainWindow):
             )
         )
         self.run_action.setEnabled(
-            info.connected and not self.hub_is_busy and self.pages.currentIndex() != 3
+            info.connected
+            and not self.hub_is_busy
+            and self.pages.currentIndex() not in (3, 5)
         )
         self.upload_action.setEnabled(
-            info.connected and not self.hub_is_busy and self.pages.currentIndex() != 3
+            info.connected
+            and not self.hub_is_busy
+            and self.pages.currentIndex() not in (3, 5)
         )
         self.stored_action.setEnabled(info.connected and not self.hub_is_busy)
         self.stop_action.setEnabled(info.connected and not action)
