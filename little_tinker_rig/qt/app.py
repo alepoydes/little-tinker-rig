@@ -207,7 +207,9 @@ class Studio(QMainWindow):
         self.library_status.setProperty("translationSources", {})
         self.library.status_changed.connect(self.library_status.setText)
         self.library.status_changed.connect(
-            lambda text: self.library_status.setVisible(bool(text))
+            lambda text: self.library_status.setVisible(
+                bool(text) and not self.library.empty_message
+            )
         )
         layout.addWidget(self.library_status)
         self.whole_blocks = QPushButton(N_("← Back to whole blocks"))

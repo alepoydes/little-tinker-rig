@@ -331,6 +331,7 @@ class Library(QTreeWidget):
         self.search_states = {}
         self.rows = {}
         self.headings = {}
+        self.empty_message = ""
         self.snapshot = []
         self.favorite_press = None
         self._card_layout_pending = False
@@ -346,6 +347,41 @@ class Library(QTreeWidget):
         ):
             self._card_layout_pending = True
             QTimer.singleShot(0, self, self._relayout_cards)
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        if not self.empty_message:
+            return
+        painter = QPainter(self.viewport())
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        bounds = self.viewport().rect()
+        text_width = max(1, bounds.width() - 32)
+        font = self.font()
+        font.setPointSize(max(9, font.pointSize()))
+        painter.setFont(font)
+        flags = Qt.AlignmentFlag.AlignHCenter | Qt.TextFlag.TextWordWrap
+        text_height = QFontMetrics(font).boundingRect(
+            QRect(0, 0, text_width, max(1, bounds.height())),
+            flags,
+            self.empty_message,
+        ).height()
+        group_height = 54 + text_height
+        top = max(12, (bounds.height() - group_height) // 3)
+        badge = QRect(bounds.center().x() - 22, top, 44, 44)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QColor(colors()["accent"]))
+        painter.drawEllipse(badge)
+        icon = self.view if self.view in VIEW_TITLES else "catalog"
+        svg_icon(icon, rail=True).paint(
+            painter, QRect(badge.left() + 10, badge.top() + 10, 24, 24)
+        )
+        painter.setPen(QColor(colors()["text"]))
+        painter.drawText(
+            QRect(16, badge.bottom() + 10, text_width, text_height + 4),
+            flags,
+            self.empty_message,
+        )
+        painter.end()
 
     def _relayout_cards(self):
         self._card_layout_pending = False
@@ -748,6 +784,9 @@ class Library(QTreeWidget):
                 "{count} matching families hidden by level, task or selected input.",
                 count=hidden,
             )
+        self.empty_message = status if not visible else ""
+        self.setAccessibleDescription(self.empty_message)
+        self.viewport().update()
         self.status_changed.emit(status)
         self.variants_changed.emit()
 
