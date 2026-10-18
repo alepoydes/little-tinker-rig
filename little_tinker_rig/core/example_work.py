@@ -32,8 +32,13 @@ class ExampleWork:
             or not isinstance(self.data.get("files"), list)
             or not all(isinstance(p, str) for p in self.data["files"])
             or self.data.get("entry") not in self.data["files"]
+            or not all(Path(p).is_absolute() for p in self.data["files"])
         ):
             raise ValueError("Invalid example work")
+        try:
+            resource(self.root, self.data["example"])
+        except ValueError as error:
+            raise ValueError("Invalid example work") from error
 
     @classmethod
     def create(cls, source, examples):

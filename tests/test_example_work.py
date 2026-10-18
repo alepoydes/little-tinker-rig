@@ -50,6 +50,59 @@ def test_snapshot_prefers_package_over_unreachable_same_named_module(tmp_path):
         program.cleanup()
 
 
+def test_snapshot_does_not_descend_into_a_plain_module(tmp_path):
+    entry = tmp_path / "main.py"
+    entry.write_text("from helper import value\nprint(value)\n", encoding="utf-8")
+    helper = tmp_path / "helper.py"
+    helper.write_text("value = 42\n", encoding="utf-8")
+    misleading = tmp_path / "helper"
+    misleading.mkdir()
+    (misleading / "value.py").write_text("unfinished(\n", encoding="utf-8")
+
+    program = Program(entry)
+    try:
+        assert set(program.sources) == {entry, helper}
+        assert not (program.entry.parent / "helper/value.py").exists()
+    finally:
+        program.cleanup()
+
+
+def test_snapshot_includes_regular_and_relative_package_imports(tmp_path):
+    entry = tmp_path / "main.py"
+    entry.write_text("from package.runner import value\n", encoding="utf-8")
+    package = tmp_path / "package"
+    package.mkdir()
+    initializer = package / "__init__.py"
+    initializer.write_text("", encoding="utf-8")
+    runner = package / "runner.py"
+    runner.write_text("from . import helper\nvalue = helper.value\n", encoding="utf-8")
+    helper = package / "helper.py"
+    helper.write_text("value = 42\n", encoding="utf-8")
+
+    program = Program(entry)
+    try:
+        assert set(program.sources) == {entry, initializer, runner, helper}
+    finally:
+        program.cleanup()
+
+
+def test_snapshot_follows_unsaved_module_in_a_new_namespace(tmp_path):
+    entry = tmp_path / "main.py"
+    module = tmp_path / "virtual" / "sub.py"
+    program = Program(
+        entry,
+        {
+            entry: "from virtual.sub import value\nprint(value)\n",
+            module: "value = 42\n",
+        },
+    )
+    try:
+        assert set(program.sources) == {entry, module}
+        assert (program.entry.parent / "virtual/sub.py").read_text() == "value = 42\n"
+    finally:
+        program.cleanup()
+
+
 def test_snapshot_does_not_execute_entry_directory_initializer(tmp_path):
     entry = tmp_path / "main.py"
     entry.write_text("from helper import value\n", encoding="utf-8")
@@ -100,6 +153,38 @@ def test_failed_attempt_relocation_keeps_in_memory_file_ownership(tmp_path):
     assert work.data == original
     assert work.entry == Path(original["entry"])
     assert json.loads(work.manifest.read_text(encoding="utf-8")) == external
+
+
+@pytest.mark.parametrize(
+    "example,entry",
+    [
+        ("../outside.py", None),
+        ("", None),
+        ("main.py", "relative.py"),
+    ],
+)
+def test_invalid_attempt_paths_are_ignored(tmp_path, monkeypatch, example, entry):
+    attempts = tmp_path / "attempts"
+    root = attempts / "bad"
+    root.mkdir(parents=True)
+    file = entry or str(root / "main.py")
+    (root / "work.json").write_text(
+        json.dumps(
+            {
+                "format": 1,
+                "example": example,
+                "opened": 1,
+                "created": 1,
+                "entry": file,
+                "files": [file],
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "little_tinker_rig.core.example_work.attempts_directory", lambda: attempts
+    )
+    assert ExampleWork.all() == []
 
 
 def test_failed_attempt_timestamp_write_does_not_change_opened_order(tmp_path, qt_app):
@@ -332,6 +417,47 @@ def test_example_autosave_preserves_external_edits_and_save_as_module_conflicts(
             window.save_as()
         assert not destination.exists() and collision.read_text() == "value = 99\n"
         assert page.session.project.path == copied
+    finally:
+        window.confirm_close = lambda *_: True
+        window.close()
+
+
+def test_autosave_continues_after_one_example_conflicts(tmp_path, qt_app, monkeypatch):
+    from little_tinker_rig.qt.app import Studio
+
+    examples = tmp_path / "bundled"
+    examples.mkdir()
+    first_source = examples / "first.py"
+    second_source = examples / "second.py"
+    first_source.write_text("print(1)\n", encoding="utf-8")
+    second_source.write_text("print(2)\n", encoding="utf-8")
+    monkeypatch.setattr("little_tinker_rig.qt.app.examples_directory", lambda: examples)
+
+    window = Studio(first_source)
+    try:
+        first = window.document_page
+        first.session.editor.commit("print('unsaved first')\n")
+        first_file = first.session.project.path
+        first_file.write_text("print('external change')\n", encoding="utf-8")
+
+        second = window.open_document(second_source)
+        second.session.editor.commit("print('saved second')\n")
+        lesson_saves = []
+        monkeypatch.setattr(
+            window.lessons, "autosave", lambda: lesson_saves.append(True)
+        )
+
+        assert not window.recovery.flush()
+        assert first_file.read_text(encoding="utf-8") == "print('external change')\n"
+        assert ast.dump(
+            ast.parse(second.session.project.path.read_text(encoding="utf-8"))
+        ) == ast.dump(ast.parse("print('saved second')\n"))
+        assert lesson_saves == [True]
+        checkpoint = json.loads(window.recovery.path.read_text(encoding="utf-8"))
+        assert len(checkpoint["documents"]) == 2
+        assert ast.dump(ast.parse(checkpoint["documents"][0]["source"])) == ast.dump(
+            ast.parse("print('unsaved first')\n")
+        )
     finally:
         window.confirm_close = lambda *_: True
         window.close()

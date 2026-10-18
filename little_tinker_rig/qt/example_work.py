@@ -79,18 +79,25 @@ class ExampleWorkspaces:
 
     def autosave(self):
         changed = False
+        first_error = None
         for page in self.pages():
             if work := page.example_work:
-                project = page.session.project
-                if page.dirty or project.example_attempt != work.identity:
-                    project.example_attempt = work.identity
-                    project.save()
-                    page.sync_text()
-                    changed = True
-                work.remember(project.path)
-                work.save()
+                try:
+                    project = page.session.project
+                    if page.dirty or project.example_attempt != work.identity:
+                        project.example_attempt = work.identity
+                        project.save()
+                        page.sync_text()
+                        changed = True
+                    work.remember(project.path)
+                    work.save()
+                except (OSError, ValueError) as error:
+                    if first_error is None:
+                        first_error = error
         if changed:
             self.window.refresh_status()
+        if first_error is not None:
+            raise first_error
 
     def menu(self, menu, examples):
         current = self.window.document_page.example_work

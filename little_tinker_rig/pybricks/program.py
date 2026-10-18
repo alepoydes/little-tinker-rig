@@ -57,21 +57,29 @@ class Program:
                             ".".join(filter(None, (node.module, alias.name)))
                             for alias in node.names
                         ]
-                    for name in names:
-                        module = base.joinpath(*name.split("."))
-                        package = module / "__init__.py"
-                        plain = module.with_suffix(".py")
-                        # Python loads a regular package before a same-named
-                        # module file in the same directory.
-                        if package.resolve() in overrides or package.is_file():
-                            pending.append(package)
-                        elif plain.resolve() in overrides or plain.is_file():
-                            pending.append(plain)
+                    if names:
                         pending.extend(
                             parent / "__init__.py"
-                            for parent in module.parents
+                            for parent in (base, *base.parents)
                             if parent != root and parent.is_relative_to(root)
                         )
+                    for name in names:
+                        module = base
+                        for component in filter(None, name.split(".")):
+                            module = module / component
+                            package = module / "__init__.py"
+                            plain = module.with_suffix(".py")
+                            # A regular package wins over a same-named module;
+                            # a module cannot contain further imported modules.
+                            if package.resolve() in overrides or package.is_file():
+                                pending.append(package)
+                            elif plain.resolve() in overrides or plain.is_file():
+                                pending.append(plain)
+                                break
+                            elif not module.is_dir() and not any(
+                                path.is_relative_to(module) for path in overrides
+                            ):
+                                break
         except BaseException:
             self.cleanup()
             raise

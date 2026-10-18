@@ -52,11 +52,15 @@ class Recovery(QObject):
             return True
         try:
             autosave_error = None
-            try:
-                window.example_workspaces.autosave()
-                window.lessons.autosave()
-            except (OSError, ValueError) as error:
-                autosave_error = error
+            for autosave in (
+                window.example_workspaces.autosave,
+                window.lessons.autosave,
+            ):
+                try:
+                    autosave()
+                except (OSError, ValueError) as error:
+                    if autosave_error is None:
+                        autosave_error = error
             data = {
                 "format": 1,
                 "active": window.documents.currentIndex(),
