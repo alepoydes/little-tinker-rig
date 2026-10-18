@@ -400,6 +400,7 @@ class Analysis(Scopes):
         self.expression_types = {}
         self.contracts = []
         self.imports = {}
+        self.ambient_names = frozenset()
         for node in ast.walk(syntax.tree):
             if isinstance(node, (ast.Assign, ast.AnnAssign)):
                 targets = (
@@ -674,9 +675,10 @@ class Analysis(Scopes):
         return tuple(sorted(names))
 
     def diagnostics(self) -> tuple[Diagnostic, ...]:
-        if getattr(self, "_diagnostic_language", None) != language():
+        key = language(), self.ambient_names
+        if getattr(self, "_diagnostic_key", None) != key:
             self._diagnostic_cache = self._diagnostics()
-            self._diagnostic_language = language()
+            self._diagnostic_key = key
         return self._diagnostic_cache
 
     def _diagnostics(self) -> tuple[Diagnostic, ...]:
@@ -732,11 +734,14 @@ class Analysis(Scopes):
                     <= self.syntax.spans[node].start
                 )
             else:
-                found = name in vars(builtins) or name in {
-                    "__name__",
-                    "__file__",
-                    "__package__",
-                }
+                found = (
+                    name in vars(builtins)
+                    or name in {"__name__", "__file__", "__package__"}
+                    or (
+                        isinstance(node.ctx, ast.Load)
+                        and name in self.ambient_names
+                    )
+                )
                 scope = origin
                 while scope and not found:
                     found = "*" in scope.bindings

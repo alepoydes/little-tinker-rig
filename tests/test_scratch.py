@@ -47,6 +47,21 @@ def test_transfer_is_atomic_context_checked_and_undoable(tmp_path):
         transfer.to_scratch(0)
 
 
+def test_scratch_diagnostics_follow_initialized_host_names(tmp_path):
+    path = tmp_path / "main.py"
+    path.write_text("drive = object()\n", encoding="utf-8")
+    host = Session(path)
+    fragment = Session.fragment("drive.turn(90)\n", host.snippets)
+    fragment.context = host
+    assert not fragment.analysis.diagnostics()
+    host.editor.commit("del drive\n")
+    assert "drive" in fragment.analysis.diagnostics()[0].message
+    host.editor.commit("drive = object()\n")
+    assert not fragment.analysis.diagnostics()
+    fragment.editor.commit("drive.turn(90)\ndrive = object()\n")
+    assert "drive" in fragment.analysis.diagnostics()[0].message
+
+
 def test_fragment_library_imports_partial_transfer_and_reorder(tmp_path):
     session = Session(tmp_path / "main.py")
     fragment = Session.fragment("", session.snippets)
@@ -337,6 +352,29 @@ def test_scratch_uses_bottom_dock_at_compact_width(tmp_path, qt_app):
         assert window.dockWidgetArea(window.scratch_dock) == (
             Qt.DockWidgetArea.BottomDockWidgetArea
         )
+    finally:
+        close_window(window)
+
+
+def test_scratch_warning_tracks_program_declaration(tmp_path, qt_app):
+    from little_tinker_rig.qt.app import Studio
+
+    path = tmp_path / "main.py"
+    path.write_text("drive = object()\n", encoding="utf-8")
+    window = Studio(path)
+    window.show()
+    qt_app.processEvents()
+    try:
+        window.session.set_scratch(None, "drive.turn(90)\n")
+        window.refresh_views()
+        view = window.scratch.cells[0].source
+        assert not any(view.parameter_issues.values())
+        window.session.editor.commit("print(1)\n")
+        window.refresh_views()
+        assert any(view.parameter_issues.values())
+        window.session.editor.commit("drive = object()\n")
+        window.refresh_views()
+        assert not any(view.parameter_issues.values())
     finally:
         close_window(window)
 

@@ -16,6 +16,9 @@ parity, and a full pointer/keyboard audit remain. At compact widths Scratch
 now docks below the program so both structural editors keep enough horizontal
 room for Python; at wider widths it returns to the right. Manual dock moves
 stop automatic placement, and unfinished parameter input survives relocation.
+Scratch diagnostics now recognize names initialized in the open program and
+refresh when those declarations change, removing false missing-name emphasis
+without excusing reads before a fragment's own later assignment.
 The structural view now shares Python keyword, number, string, and comment
 highlighting with the ordinary text editor; theme switches rehighlight it.
 Stage 2 now gives top-level catalog categories semantic icon badges and

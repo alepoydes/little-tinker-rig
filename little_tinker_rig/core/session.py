@@ -156,6 +156,14 @@ class Session:
     @property
     def analysis(self) -> Analysis:
         self._refresh()
+        context = getattr(self, "context", None)
+        if self.document.fragment:
+            # Scratch may use live program values; insertion checks ordering later.
+            self._analysis.ambient_names = (
+                frozenset(context.analysis.root.initialized)
+                if context is not None
+                else frozenset()
+            )
         return self._analysis
 
     def _refresh(self):
