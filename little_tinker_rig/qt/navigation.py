@@ -26,8 +26,12 @@ def tool_button(title, icon):
     button.setText(title)
     button.setToolTip(title)
     button.setAccessibleName(title)
-    button.setProperty("standardIcon", icon)
-    button.setIcon(contrast_icon(button.style().standardIcon(icon)))
+    if isinstance(icon, str):
+        button.setProperty("visualIconName", icon)
+        button.setIcon(svg_icon(icon))
+    else:
+        button.setProperty("standardIcon", icon)
+        button.setIcon(contrast_icon(button.style().standardIcon(icon)))
     button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
     return button
 

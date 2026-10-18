@@ -6,7 +6,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QStyle,
     QWidget,
 )
 
@@ -40,13 +39,13 @@ class FindBar(QWidget):
         for label, icon, callback in (
             (
                 N_("Previous match"),
-                QStyle.StandardPixmap.SP_ArrowUp,
+                "arrow-up",
                 lambda: self.find(True),
             ),
-            (N_("Next match"), QStyle.StandardPixmap.SP_ArrowDown, self.find),
+            (N_("Next match"), "arrow-down", self.find),
             (
                 N_("Close search"),
-                QStyle.StandardPixmap.SP_DialogCloseButton,
+                "close",
                 self.dismiss,
             ),
         ):

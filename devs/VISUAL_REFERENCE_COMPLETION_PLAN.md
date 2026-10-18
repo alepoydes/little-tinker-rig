@@ -22,6 +22,9 @@ Control now places its controller and actions near the top instead of centering
 them in empty height, and its monitor-start action has a visible labeled button.
 With the device panel open at 930 × 620, the motor-assignment table remains
 scrollable but needs a compact layout in a later Stage 5 pass.
+Block Editor and in-editor search now use the same theme-aware SVG icon path as
+the shell. This removes the opaque square artifacts from standard desktop
+icons in Dark while preserving the existing actions and tooltips.
 This follows the first-pass
 [visual redesign](VISUAL_REDESIGN_PLAN.md) and uses the selected local mockups
 in `report/design_concepts` as visual

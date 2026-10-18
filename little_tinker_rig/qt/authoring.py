@@ -7,7 +7,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer, QUrl, Signal
-from PySide6.QtGui import QColor, QDesktopServices, QIcon, QTextCharFormat, QTextCursor
+from PySide6.QtGui import QColor, QDesktopServices, QTextCharFormat, QTextCursor
 from PySide6.QtWidgets import (
     QComboBox,
     QFormLayout,
@@ -19,7 +19,6 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QSplitter,
     QStackedWidget,
-    QStyle,
     QTextEdit,
     QToolButton,
     QTreeWidget,
@@ -53,7 +52,7 @@ from .editor import SourceView, qt_offset
 from .library import LEVEL_TITLES, Library, group_title, snippet_title
 from .localization import localize
 from .navigation import tool_button
-from .theme import colors
+from .theme import colors, svg_icon
 
 
 class DefinitionCode(CodeEdit):
@@ -263,15 +262,15 @@ class BlockEditor(QWidget):
         self.version_button.clicked.connect(lambda: self.attempt(self.start_version))
         layout.addWidget(self.version_button)
         self.copy_button = tool_button(
-            N_("Copy to my collection"), QStyle.StandardPixmap.SP_FileLinkIcon
+            N_("Copy to my collection"), "duplicate"
         )
         self.copy_button.clicked.connect(lambda: self.attempt(self.copy_block))
         self.save_button = tool_button(
-            N_("Save and apply"), QStyle.StandardPixmap.SP_DialogSaveButton
+            N_("Save and apply"), "document-save"
         )
         self.save_button.clicked.connect(lambda: self.attempt(self.save))
         self.reopen_button = tool_button(
-            N_("Reopen saved"), QStyle.StandardPixmap.SP_BrowserReload
+            N_("Reopen saved"), "edit-redo"
         )
         self.reopen_button.setToolTip(
             N_("Discard this module draft and reload its saved definition")
@@ -293,9 +292,7 @@ class BlockEditor(QWidget):
             lambda value: self.attempt(lambda: self.change_metadata("color", value))
         )
         self.catalog_button = QToolButton()
-        self.catalog_button.setIcon(
-            QIcon(str(Path(__file__).with_name("icons") / "catalog.svg"))
-        )
+        self.catalog_button.setIcon(svg_icon("catalog"))
         self.catalog_button.setToolTip(N_("Catalog properties…"))
         self.catalog_button.setAccessibleName(N_("Catalog properties…"))
         self.catalog_button.clicked.connect(lambda: self.attempt(self.edit_catalog))
@@ -332,12 +329,12 @@ class BlockEditor(QWidget):
         self.preview_more.setProperty("translationSources", {})
         self.preview_more.setFixedHeight(self.fontMetrics().height())
         self.expand = tool_button(
-            N_("Expand preview"), QStyle.StandardPixmap.SP_TitleBarMaxButton
+            N_("Expand preview"), "expand-all"
         )
         self.expand.setCheckable(True)
         self.expand.toggled.connect(self.resize_preview)
         self.tests = tool_button(
-            N_("Test values"), QStyle.StandardPixmap.SP_FileDialogDetailedView
+            N_("Test values"), "test-values"
         )
         self.tests.setCheckable(True)
         self.test_panel = QScrollArea()
@@ -346,7 +343,7 @@ class BlockEditor(QWidget):
         self.test_panel.hide()
         self.tests.toggled.connect(self.test_panel.setVisible)
         self.reset_tests = tool_button(
-            N_("Reset test values"), QStyle.StandardPixmap.SP_BrowserReload
+            N_("Reset test values"), "edit-redo"
         )
         self.reset_tests.clicked.connect(self.reset_values)
         self.test_fields = {}
@@ -401,6 +398,7 @@ class BlockEditor(QWidget):
         self.update_status()
 
     def apply_theme(self):
+        self.catalog_button.setIcon(svg_icon("catalog"))
         self.preview.apply_theme()
         self.card.itemDelegate().apply_theme()
         self.card.viewport().update()

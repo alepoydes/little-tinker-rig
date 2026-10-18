@@ -936,6 +936,8 @@ class Studio(QMainWindow):
                         button.setIcon(
                             contrast_icon(button.style().standardIcon(standard))
                         )
+                    if visual := button.property("visualIconName"):
+                        button.setIcon(svg_icon(visual))
                 window.hub_button.setIcon(
                     window._icon("network-connect", "SP_ComputerIcon")
                 )
