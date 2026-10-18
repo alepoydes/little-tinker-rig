@@ -58,15 +58,27 @@ def test_saved_assembly_step_waits_for_model_count(model, qt_app, saved, expecte
     state = {"step": saved}
     page = AssemblyPage(description, state)
     try:
+        from little_tinker_rig.i18n import language, set_language
+
+        original_language = language()
         assert page.step == state["step"] == saved
         assert not page.back.isEnabled() and not page.next_step.isEnabled()
         page.loaded(None, "Parts unavailable")
-        page.retranslate()
+        assert page.error.text()
+        assert "Parts unavailable" not in page.error.text()
+        try:
+            set_language("ru")
+            page.retranslate()
+            assert "Не удалось загрузить модель робота" in page.error.text()
+        finally:
+            set_language(original_language)
+            page.retranslate()
         assert page.step == state["step"] == saved
         with LDraw(model) as reader:
             page.loaded(reader.scene(), "")
         assert page.step == state["step"] == expected
         assert page.slider.value() == expected
+        assert not page.error.text() or "3D" in page.error.text()
     finally:
         page.deleteLater()
 

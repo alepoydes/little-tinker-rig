@@ -27,6 +27,9 @@ the shell. This removes the opaque square artifacts from standard desktop
 icons in Dark while preserving the existing actions and tooltips.
 The device panel now omits empty metadata instead of showing a dangling
 separator above the hub state.
+Assembly load failures now show a localized recovery message instead of a raw
+network exception, retranslate when the language changes, and clear after a
+successful retry. Offscreen captures cannot establish live 3D rendering.
 This follows the first-pass
 [visual redesign](VISUAL_REDESIGN_PLAN.md) and uses the selected local mockups
 in `report/design_concepts` as visual

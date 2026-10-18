@@ -42,11 +42,6 @@ msgstr " · {p0:.2f} В"
 msgid "3D is unavailable on this display. Step descriptions and parts are still available."
 msgstr "На этом экране 3D недоступно. Описание шагов и список деталей доступны."
 
-#: little_tinker_rig/qt/assembly.py:308
-#, python-brace-format
-msgid "3D unavailable: {detail}"
-msgstr "3D недоступно: {detail}"
-
 #: little_tinker_rig/pybricks/firmware.py:512
 msgid ""
 "A blinking blue light means the hub is ready to connect. No manual restart is needed."
@@ -1434,6 +1429,10 @@ msgstr "Исправьте выделенный параметр перед пр
 #: little_tinker_rig/qt/authoring.py:1077
 msgid "Correct this module's draft or choose another group before adding a block."
 msgstr "Исправьте черновик модуля или выберите другую группу перед добавлением блока."
+
+#: little_tinker_rig/qt/assembly.py:269
+msgid "Could not load the robot model. Retry loading parts; step descriptions remain available."
+msgstr "Не удалось загрузить модель робота. Повторите загрузку деталей; описания шагов по-прежнему доступны."
 
 #: little_tinker_rig/pybricks/serial_access.py:13
 #, python-brace-format

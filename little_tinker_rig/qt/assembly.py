@@ -68,6 +68,7 @@ class AssemblyPage(QWidget):
         self.view_container = None
         self.job = None
         self.attempted = False
+        self.error_kind = None
         self.step = max(0, self.state.get("step", 0))
         layout = QVBoxLayout(self)
         self.caption = QLabel(tr("Loading robot model…"))
@@ -223,6 +224,7 @@ class AssemblyPage(QWidget):
             return scene
 
         self.attempted = True
+        self.error_kind = None
         self.error.clear()
         self.error.hide()
         self.download_status.setText(tr("Loading robot model…"))
@@ -266,12 +268,17 @@ class AssemblyPage(QWidget):
             self.retry.show()
             self.local.setVisible(isinstance(self.robot.get("library"), dict))
             self.caption.setText(tr("Robot instructions"))
-            self.show_error(error)
+            self.error_kind = "load"
+            self.update_error_text()
+            self.error.show()
             self.notes.setMarkdown(
                 localized(self.robot.get("description", ""), language())
             )
             return
         self.scene = scene
+        self.error_kind = None
+        self.error.clear()
+        self.error.hide()
         if self.view:
             self.view.cleanup()
             self.view_host.layout().removeWidget(self.view_container)
@@ -294,19 +301,31 @@ class AssemblyPage(QWidget):
             except (ImportError, ValueError) as error:
                 self.show_error(str(error))
         else:
-            self.error.setText(
-                tr(
-                    "3D is unavailable on this display. Step descriptions and parts are still available."
-                )
-            )
+            self.error_kind = "display"
+            self.update_error_text()
             self.error.show()
         self.set_step(min(self.step, scene.step_count - 1))
         if not self.state.get("camera"):
             self.reset_camera()
 
-    def show_error(self, error):
-        self.error.setText(tr("3D unavailable: {detail}", detail=error))
+    def show_error(self, _error):
+        self.error_kind = "display"
+        self.update_error_text()
         self.error.show()
+
+    def update_error_text(self):
+        if self.error_kind == "load":
+            self.error.setText(
+                tr(
+                    "Could not load the robot model. Retry loading parts; step descriptions remain available."
+                )
+            )
+        elif self.error_kind == "display":
+            self.error.setText(
+                tr(
+                    "3D is unavailable on this display. Step descriptions and parts are still available."
+                )
+            )
 
     def set_step(self, step):
         # Annotations may cover only a few steps. Only the loaded model knows
@@ -529,6 +548,7 @@ class AssemblyPage(QWidget):
             self.view.update()
 
     def retranslate(self):
+        self.update_error_text()
         self.set_step(self.step)
 
 
