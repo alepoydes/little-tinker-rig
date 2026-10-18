@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="320" viewBox="0 0 720 320">
+  <rect width="720" height="320" rx="22" fill="#eef5ff"/>
+  <path d="M360 23v34m-12-12 12-15 12 15" fill="none" stroke="#1268d9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M360 60v224" fill="none" stroke="#a9bfda" stroke-width="2" stroke-dasharray="6 8"/>
+  <rect x="241" y="66" width="238" height="188" rx="31" fill="#172b47" stroke="#496784" stroke-width="4"/>
+  <rect x="266" y="87" width="188" height="94" rx="17" fill="#2e4b6c"/>
+  <rect x="287" y="103" width="146" height="59" rx="10" fill="#91b9dc"/>
+  <circle cx="360" cy="132" r="13" fill="#e5f4ff"/>
+  <rect x="252" y="194" width="44" height="24" rx="7" fill="#4a759e"/>
+  <rect x="424" y="194" width="44" height="24" rx="7" fill="#4a759e"/>
+  <path d="M241 117h-48m286 0h48" stroke="#243f5f" stroke-width="24" stroke-linecap="round"/>
+  <rect x="138" y="78" width="58" height="92" rx="20" fill="#202d3e" stroke="#55718c" stroke-width="4"/>
+  <rect x="524" y="78" width="58" height="92" rx="20" fill="#202d3e" stroke="#55718c" stroke-width="4"/>
+  <path d="M147 99h40m-40 21h40m-40 21h40m346-42h40m-40 21h40m-40 21h40" stroke="#7897b5" stroke-width="4"/>
+  <path d="M195 187c22 0 22 21 48 21m282-21c-22 0-22 21-48 21" fill="none" stroke="#f0ad45" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="360" cy="269" r="25" fill="#c9d8e7" stroke="#657b93" stroke-width="5"/>
+  <path d="M166 183v35m389-35v35M166 218h389" stroke="#6789af" stroke-width="2"/>
+  <path d="m166 218 11-6v12zm389 0-11-6v12z" fill="#6789af"/>
+  <rect x="316" y="207" width="88" height="25" rx="12" fill="#eef5ff"/>
+  <text x="360" y="225" font-family="sans-serif" font-size="17" font-weight="700" text-anchor="middle" fill="#1a3655">136 mm</text>
+  <rect x="202" y="166" width="33" height="28" rx="8" fill="#ffd58d"/>
+  <text x="218" y="187" font-family="sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#563613">A</text>
+  <rect x="485" y="166" width="33" height="28" rx="8" fill="#ffd58d"/>
+  <text x="501" y="187" font-family="sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#563613">B</text>
+</svg>

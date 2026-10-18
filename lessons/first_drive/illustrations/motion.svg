@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="300" viewBox="0 0 720 300">
+  <rect width="720" height="300" rx="22" fill="#eef5ff"/>
+  <path d="M360 63v174" fill="none" stroke="#b7cbe0" stroke-width="3" stroke-dasharray="8 10"/>
+  <path d="M210 224V77m-12 17 12-18 12 18" fill="none" stroke="#1268d9" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="133" y="139" width="73" height="30" rx="15" fill="#cfe2fa"/>
+  <text x="169" y="161" font-family="sans-serif" font-size="19" font-weight="700" text-anchor="middle" fill="#164477">200 mm</text>
+  <path d="M510 76v146m-12-18 12 18 12-18" fill="none" stroke="#ad5b39" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="514" y="139" width="95" height="30" rx="15" fill="#f8ded0"/>
+  <text x="561" y="161" font-family="sans-serif" font-size="19" font-weight="700" text-anchor="middle" fill="#7c3a22">−200 mm</text>
+  <rect x="295" y="111" width="130" height="96" rx="22" fill="#193657"/>
+  <rect x="267" y="120" width="28" height="70" rx="10" fill="#273648"/>
+  <rect x="425" y="120" width="28" height="70" rx="10" fill="#273648"/>
+  <circle cx="360" cy="199" r="13" fill="#b7c9db"/>
+  <path d="M323 103h74m-13-11 13 11-13 11" fill="none" stroke="#e6ac3a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M315 53c33-24 88-19 114 17m-17-3 17 3-4-17" fill="none" stroke="#8b62c4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="360" y="25" font-family="sans-serif" font-size="19" font-weight="700" text-anchor="middle" fill="#6c449c">90°</text>
+</svg>

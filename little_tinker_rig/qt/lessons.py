@@ -38,7 +38,8 @@ from little_tinker_rig.core.lessons import (
 from little_tinker_rig.core.project import atomic_write
 from little_tinker_rig.i18n import N_, language, tr
 
-from .theme import colors, recolor_document_links
+from .markdown import fit_images
+from .theme import colors, recolor_document_links, svg_icon
 
 
 class TaskMarkdown(QTextBrowser):
@@ -79,6 +80,7 @@ class TaskMarkdown(QTextBrowser):
         width = max(1, self.viewport().width())
         if self.document().textWidth() != width:
             self.document().setTextWidth(width)
+        fit_images(self)
         height = max(24, ceil(self.document().size().height()) + 4)
         if self.height() != height:
             self.setFixedHeight(height)
@@ -165,7 +167,7 @@ class Lessons(QObject):
 
         self.progress_button = QToolButton()
         self.progress_button.setObjectName("lessonProgressChip")
-        self.progress_button.setIcon(window._icon("view-list", "SP_FileDialogListView"))
+        self.progress_button.setIcon(svg_icon("lesson"))
         self.progress_button.setToolButtonStyle(
             Qt.ToolButtonStyle.ToolButtonTextBesideIcon
         )
@@ -231,11 +233,18 @@ class Lessons(QObject):
 
     def apply_theme(self):
         c = colors()
+        self.progress_button.setIcon(svg_icon("lesson"))
         self.panel.setStyleSheet(
             f"#lessonTaskPanel {{ background: {c['window']}; color: {c['text']}; }}"
             f"#lessonTaskCard {{ background: {c['panel']}; color: {c['text']}; "
             f"border: 1px solid {c['border']}; border-radius: 9px; }}"
             f'#lessonTaskCard[selected="true"] {{ border: 2px solid {c["accent"]}; }}'
+            f"#lessonTaskNumber {{ background: {c['raised']}; color: {c['text']}; "
+            f"border: 1px solid {c['border']}; border-radius: 10px; "
+            "font-weight: 700; min-width: 20px; max-width: 20px; "
+            "min-height: 20px; max-height: 20px; }"
+            f'#lessonTaskNumber[selected="true"] {{ background: {c["selected"]}; '
+            f'border-color: {c["accent"]}; }}'
         )
         self.progress_button.setStyleSheet(
             f"#lessonProgressChip {{ background: {c['selected']}; color: {c['text']}; "
@@ -595,6 +604,11 @@ class Lessons(QObject):
             lambda checked, key=identity: self.set_completion(key, checked)
         )
         header.addWidget(check)
+        number = QLabel(str(index + 1))
+        number.setObjectName("lessonTaskNumber")
+        number.setProperty("selected", identity == self.current.stage["id"])
+        number.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        header.addWidget(number)
         name = QLabel(
             f'<a href="task:select" style="color:{colors()["link"]};">'
             f"{escape(title)}</a>"

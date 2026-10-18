@@ -850,9 +850,6 @@ class Studio(QMainWindow):
                 window.hub_button.setIcon(
                     window._icon("network-connect", "SP_ComputerIcon")
                 )
-                window.lessons.progress_button.setIcon(
-                    window._icon("view-list", "SP_FileDialogListView")
-                )
                 window.level_filter.apply_theme()
                 window.view_filter.apply_theme()
                 window.modes.apply_theme()

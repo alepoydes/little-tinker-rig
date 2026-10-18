@@ -12,6 +12,10 @@ After step 7, put the robot on a flat surface. Check that both wheels and the ba
 
 This is an original compact training base. Its connection geometry has been checked digitally; an adult should check that the real build is firm before its first drive.
 
+![Top view of the two-wheel base: A is the left motor, B is the right motor, the support ball is behind the wheels, and the wheel-center spacing is 136 mm.](illustrations/rolling-base.svg)
+
+*Top view after step 7. The arrow points forward; A and B show the motor connections. The assembly workspace shows the actual parts and construction order.*
+
 <a name="connect"></a>
 
 ## Connect and check
@@ -27,6 +31,10 @@ Motor detection proves the ports are occupied by motors; it cannot distinguish l
 ## Your first journey
 
 [Open the program](program:main.py) and place **Set up drive base** in it. Keep motor ports **A / B**, set wheel diameter to **56 mm**, and axle track to **136 mm** (between wheel centers).
+
+![A two-wheel robot with a forward arrow marked 200 mm, a reverse arrow marked minus 200 mm, and a 90-degree turn.](illustrations/motion.svg)
+
+*Positive distance drives forward; a negative distance drives backward. The turn happens after the straight drive when you place it second in the program.*
 
 Add **Drive straight** and set the distance to **200 mm**. **For this task** highlights the two suggested blocks; the full catalog remains available. Open the next hint if you get stuck. **Open starter program** creates a separate file with setup code once, then reopens that same file without replacing your work.
 
@@ -59,6 +67,10 @@ Mark complete after checking the mounting, cable and measurement.
 Keep the robot setup. Remove the earlier journeys and turns (or move them to Scratch). Add **Connect sensor** (variant **Ultrasonic sensor**), with name **distance** and port **D**.
 
 Add **Stop near object**. Use the drive base **drive**, sensor **distance**, threshold **100 mm**, and speed **100 mm/s**.
+
+![Top view of the ultrasonic sensor on the front beam, connected to D and measuring 100 mm to a large upright obstacle.](illustrations/obstacle.svg)
+
+*The 100 mm threshold is measured from the sensor toward the obstacle. Use a large upright surface for the first test.*
 
 Put a large upright object in front of the robot. Run the program and keep **Stop** within reach. Check whether it stops about 100 mm from the sensor. Try a different threshold and predict the result.
 

@@ -15,7 +15,6 @@ from PySide6.QtGui import (
     QTextBlockFormat,
     QTextCharFormat,
     QTextCursor,
-    QTextDocument,
     QTextFrameFormat,
     QTextTable,
 )
@@ -40,6 +39,7 @@ from little_tinker_rig.documentation import DEVELOPER_PAGES, heading_anchors
 from little_tinker_rig.i18n import DEFAULT_LANGUAGE, LANGUAGES, N_, language, tr
 
 from .library import LEVEL_TITLES, group_title, snippet_title
+from .markdown import fit_images
 from .theme import colors, recolor_document_links
 
 GUIDE_ORDER = (
@@ -182,37 +182,7 @@ class HelpBrowser(QTextBrowser):
         self.fit_images()
 
     def fit_images(self):
-        document = self.document()
-        block = document.begin()
-        images = []
-        while block.isValid():
-            fragment = block.begin()
-            while not fragment.atEnd():
-                text = fragment.fragment()
-                if text.charFormat().isImageFormat():
-                    images.append((text.position(), text.charFormat().toImageFormat()))
-                fragment += 1
-            block = block.next()
-        for position, format in images:
-            source = document.resource(
-                QTextDocument.ResourceType.ImageResource, QUrl(format.name())
-            )
-            if source is None or source.width() <= 0:
-                continue
-            width = min(
-                source.width(),
-                max(1, self.viewport().width() - 2 * document.documentMargin() - 4),
-            )
-            if format.width() == width:
-                continue
-            format.setWidth(width)
-            format.setHeight(width * source.height() / source.width())
-            cursor = QTextCursor(document)
-            cursor.setPosition(position)
-            cursor.movePosition(
-                QTextCursor.MoveOperation.NextCharacter, QTextCursor.MoveMode.KeepAnchor
-            )
-            cursor.setCharFormat(format)
+        fit_images(self)
 
 
 class HelpPage(QWidget):

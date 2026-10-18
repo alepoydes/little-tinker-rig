@@ -6,7 +6,7 @@ below; [the current user guide](../doc/en/lessons.md) describes the running beha
 
 ## Current interaction (2026-10-18)
 
-The selected task expands; other rows keep their checkbox, title and points
+The selected task expands; other rows keep their step number, checkbox, title and points
 visible. Clicking a title selects the task and opens its section in the same
 continuous Help document. Clicking a checkbox changes completion only. Help has
 an inline task list and in-document Find. A new attempt starts at the top; a
@@ -15,6 +15,25 @@ as a transient overlay and destination links hide it without changing the saved
 expanded preference. Bundled guided lessons and Pybricks exploration projects
 have separate menu groups. Project goals now identify the program and concrete
 activity for each stage or variant.
+
+## Illustration authoring
+
+First drive uses three local SVG schematics shared by its English and Russian
+materials: the two-wheel base and ports, forward/reverse motion, and the sensor's
+distance to an obstacle. These explain measurements alongside the part-by-part
+Assembly model. The only visible symbols inside the SVGs are port letters and
+numeric values with units; captions and descriptive image text live in localized
+Markdown. The full instruction and each task panel refer to the same assets with
+paths relative to their own Markdown file. `HelpBrowser` and `TaskMarkdown` fit
+images to their visible text columns, and lesson/project packaging includes the
+assets automatically.
+
+For another lesson, use an image only when it clarifies a build, connection,
+motion, or measurement. Verify physical claims against the model or real build,
+provide descriptive alternative text and a caption in every supported language,
+and keep the image local for offline projects. Preserve readable contrast in both
+appearance themes. Exploration projects with linked third-party build manuals
+should continue to link those manuals; no unrelated decoration is needed.
 
 ## Outcome
 

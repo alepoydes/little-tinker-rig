@@ -7,7 +7,11 @@ Python editing and the workspace controls stay the same. Opening or reopening a
 new lesson shows its complete instructions in **Help** from the top. Resuming an
 attempt opens the selected task's section in that same document.
 
-The right-side **Task panel** shows every task with a checkbox, title, and points.
+The right-side **Task panel** shows every task with its step number, checkbox,
+title, and points. First drive includes diagrams of the rolling base, travel
+directions, and obstacle distance in both the task cards and full instructions.
+Use **Assembly** for the actual part-by-part model; the diagrams explain the
+connections and measurements.
 The selected task expands to show its goal, completion guidance, links and hints;
 other tasks stay compact. It appears only while a lesson project is active.
 Clicking a task title selects it, updates suggested blocks, and opens its section

@@ -473,6 +473,64 @@ def test_bundled_lesson_sections_share_one_help_document(tmp_path, qt_app):
         window.deleteLater()
 
 
+def test_first_drive_illustrations_render_in_both_languages_and_export(tmp_path, qt_app):
+    from io import BytesIO
+    from pathlib import Path
+    from zipfile import ZipFile
+
+    from PySide6.QtCore import QUrl
+    from PySide6.QtGui import QTextDocument
+
+    from little_tinker_rig.core.lessons import pack
+    from little_tinker_rig.qt.app import Studio
+
+    source = Path(__file__).resolve().parents[1] / "lessons" / "first_drive"
+    window = Studio(tmp_path / "plain.py")
+    window.resize(1380, 880)
+    window.show()
+    try:
+        window.lessons.open(source, new=True)
+        for _ in range(4):
+            qt_app.processEvents()
+
+        def images(browser):
+            result = []
+            block = browser.document().begin()
+            while block.isValid():
+                fragment = block.begin()
+                while not fragment.atEnd():
+                    item = fragment.fragment()
+                    if item.charFormat().isImageFormat():
+                        fmt = item.charFormat().toImageFormat()
+                        image = browser.document().resource(
+                            QTextDocument.ResourceType.ImageResource, QUrl(fmt.name())
+                        )
+                        assert image is not None and image.width() > 0
+                        assert 0 < fmt.width() <= browser.viewport().width()
+                        result.append(fmt.name())
+                    fragment += 1
+                block = block.next()
+            return result
+
+        assert len(images(window.help_page.browser)) == 3
+        assert len(images(window.lessons.cards["build"]["body"])) == 1
+        window.change_visual_theme("dark")
+        window.change_language("ru")
+        for _ in range(4):
+            qt_app.processEvents()
+        assert len(images(window.help_page.browser)) == 3
+        assert len(images(window.lessons.cards["build"]["body"])) == 1
+        assert "Вид колёсной базы" in (source / "ru.md").read_text(encoding="utf-8")
+        with ZipFile(BytesIO(pack(source))) as archive:
+            assert all(
+                f"illustrations/{name}.svg" in archive.namelist()
+                for name in ("rolling-base", "motion", "obstacle")
+            )
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
 def test_task_title_navigates_checkbox_stays_put_and_help_finds_text(tmp_path, qt_app):
     from pathlib import Path
 

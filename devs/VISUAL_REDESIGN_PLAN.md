@@ -2,8 +2,10 @@
 
 Status: in progress. The shared Light/Dark palette, unified menu/header row,
 left-aligned toolbar, dark workspace rail, and initial editor/catalog/lesson/Help
-theme integration have landed. Remaining component polish, illustrations, and
-cross-platform acceptance still follow the delivery sequence below. The
+theme integration have landed. First drive now has localized captions and
+alternative text for its build, motion, and obstacle diagrams in Help and the task
+panel. Remaining component polish and cross-platform acceptance still follow the
+delivery sequence below. The
 implementation follows the selected mockups and the toolbar alignment correction.
 
 The goal is a coherent robotics workshop interface: a distinct navigation rail,

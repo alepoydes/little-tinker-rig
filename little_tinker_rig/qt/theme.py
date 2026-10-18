@@ -207,6 +207,12 @@ def studio_stylesheet(name):
                        background: {c['raised']}; border: 1px solid {c['border']};
                        border-radius: 6px; }}
         QPushButton:hover {{ background: {c['hover']}; }}
+        QCheckBox::indicator {{ width: 15px; height: 15px;
+                               background: {c['panel']}; border: 1px solid {c['border']};
+                               border-radius: 4px; }}
+        QCheckBox::indicator:checked {{ background: {c['accent']};
+                                       border-color: {c['accent']}; }}
+        QCheckBox::indicator:hover {{ border-color: {c['focus']}; }}
         QMenuBar {{ background: transparent; color: {c['text']}; }}
         QMenuBar::item {{ padding: 6px 9px; }}
         QMenuBar::item:selected {{ background: {c['hover']}; border-radius: 5px; }}
