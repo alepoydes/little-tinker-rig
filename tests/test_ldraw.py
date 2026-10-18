@@ -152,6 +152,121 @@ def test_mpd_ignores_preamble_and_embedded_data_blocks(tmp_path):
     assert 99 not in scene.colors
 
 
+def test_external_mpd_references_keep_their_submodels_separate(tmp_path):
+    from little_tinker_rig.core.ldraw_cache import load_scene
+
+    path = tmp_path / "robot.mpd"
+    path.write_text(
+        "0 FILE main.ldr\n"
+        "1 16 0 0 0 1 0 0 0 1 0 0 0 1 wall.dat\n"
+        "1 16 40 0 0 1 0 0 0 1 0 0 0 1 house-a.mpd\n"
+        "1 16 80 0 0 1 0 0 0 1 0 0 0 1 house-b.mpd\n"
+        "0 FILE wall.dat\n"
+        "3 16 0 0 0 10 0 0 0 10 0\n",
+        encoding="utf-8",
+    )
+
+    def house(length):
+        return (
+            "0 FILE main.ldr\n"
+            "1 16 0 0 0 1 0 0 0 1 0 0 0 1 wall.dat\n"
+            "0 FILE wall.dat\n"
+            f"3 16 0 0 0 {length} 0 0 0 {length} 0\n"
+        )
+
+    (tmp_path / "house-a.mpd").write_text(house(20), encoding="utf-8")
+    second = tmp_path / "house-b.mpd"
+    second.write_text(house(30), encoding="utf-8")
+    with LDraw(path) as reader:
+        scene = reader.scene()
+    assert [scene.meshes[item.part].bounds[1, 0] for item in scene.instances] == [
+        10,
+        20,
+        30,
+    ]
+    assert load_scene(path, tmp_path).bounds()[1, 0] == 110
+    second.write_text(house(35), encoding="utf-8")
+    assert load_scene(path, tmp_path).bounds()[1, 0] == 115
+
+
+def test_external_mpd_uses_its_own_folder_before_library_not_parent_submodels(
+    tmp_path,
+):
+    path = tmp_path / "robot.mpd"
+    path.write_text(
+        "0 FILE main.ldr\n"
+        "1 16 0 0 0 1 0 0 0 1 0 0 0 1 wall.dat\n"
+        "1 16 40 0 0 1 0 0 0 1 0 0 0 1 houses/house.mpd\n"
+        "0 FILE wall.dat\n"
+        "3 16 0 0 0 10 0 0 0 10 0\n"
+        "0 FILE detail.dat\n"
+        "3 16 0 0 0 5 0 0 0 5 0\n",
+        encoding="utf-8",
+    )
+    houses = tmp_path / "houses"
+    houses.mkdir()
+    (houses / "house.mpd").write_text(
+        "0 FILE main.ldr\n"
+        "1 16 0 0 0 1 0 0 0 1 0 0 0 1 wall.dat\n"
+        "1 16 40 0 0 1 0 0 0 1 0 0 0 1 detail.dat\n",
+        encoding="utf-8",
+    )
+    (houses / "detail.dat").write_text("3 16 0 0 0 30 0 0 0 30 0\n", encoding="utf-8")
+    library = tmp_path / "library"
+    (library / "parts").mkdir(parents=True)
+    (library / "parts/wall.dat").write_text(
+        "3 16 0 0 0 25 0 0 0 25 0\n", encoding="utf-8"
+    )
+    with LDraw(path, library) as reader:
+        scene = reader.scene()
+    assert [scene.meshes[item.part].bounds[1, 0] for item in scene.instances] == [
+        10,
+        25,
+        30,
+    ]
+    from little_tinker_rig.core.ldraw_cache import load_scene
+
+    cached = load_scene(path, library)
+    assert [cached.meshes[item.part].bounds[1, 0] for item in cached.instances] == [
+        10,
+        25,
+        30,
+    ]
+    (houses / "wall.dat").write_text("3 16 0 0 0 35 0 0 0 35 0\n", encoding="utf-8")
+    updated = load_scene(path, library)
+    assert [updated.meshes[item.part].bounds[1, 0] for item in updated.instances] == [
+        10,
+        35,
+        30,
+    ]
+
+
+def test_external_mpd_keeps_inline_geometry_and_detects_nested_cycles(tmp_path):
+    path = tmp_path / "robot.ldr"
+    path.write_text("1 16 0 0 0 1 0 0 0 1 0 0 0 1 house.mpd\n", encoding="utf-8")
+    (tmp_path / "house.mpd").write_text(
+        "0 FILE main.ldr\n" "3 16 0 0 0 20 0 0 0 20 0\n",
+        encoding="utf-8",
+    )
+    with LDraw(path) as reader:
+        scene = reader.scene()
+    assert len(scene.instances) == 1
+    assert len(scene.meshes[scene.instances[0].part].triangles) == 1
+
+    (tmp_path / "house.mpd").write_text(
+        "0 FILE main.ldr\n" "1 16 0 0 0 1 0 0 0 1 0 0 0 1 a.dat\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "a.dat").write_text(
+        "1 16 0 0 0 1 0 0 0 1 0 0 0 1 b.dat\n", encoding="utf-8"
+    )
+    (tmp_path / "b.dat").write_text(
+        "1 16 0 0 0 1 0 0 0 1 0 0 0 1 a.dat\n", encoding="utf-8"
+    )
+    with LDraw(path) as reader, pytest.raises(ValueError, match="Circular"):
+        reader.scene()
+
+
 def test_flexible_components_keep_geometry_without_exposing_generated_segments(
     tmp_path,
 ):

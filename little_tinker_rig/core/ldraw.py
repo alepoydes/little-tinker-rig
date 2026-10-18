@@ -8,7 +8,7 @@ or physical simulation is performed.
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from functools import cached_property
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import numpy as np
 
@@ -117,6 +117,13 @@ class LDraw(AbstractContextManager):
         self.root = path.parent
         self.dependencies = {}
         self.files = {}
+        # External MPDs own private logical names; unresolved references keep
+        # that container and its physical directory until a source is found.
+        self.scopes = {}
+        self.containers = {}
+        self.base_dirs = {}
+        self.lookups = {}
+        self.generated = set()
         self.parts = set()
         self.meshes = {}
         self.colors = {}
@@ -145,16 +152,31 @@ class LDraw(AbstractContextManager):
             self.local.close()
         self.library.close()
 
-    def add_file(self, name, text):
+    def add_file(self, name, text, *, external=False, base=None, parent_container=None):
+        base = base or PurePosixPath(".")
         current = name.lower()
         first = None
         records = []
+        scope = {}
         lines = text.splitlines()
+        has_files = has_data = False
+        for line in lines:
+            marker = line.split(maxsplit=2)[:2]
+            has_files |= marker == ["0", "FILE"]
+            has_data |= marker == ["0", "!DATA"]
+            if has_files and has_data:
+                break
+        container = name if external and has_files else parent_container
+
+        def store_current():
+            self.files[current] = records
+            self.scopes[current] = scope
+            if container is not None:
+                self.containers[current] = container
+                self.base_dirs[current] = base
+
         # MPD content before the first FILE or !DATA marker is outside any file.
-        active = not any(
-            line.split(maxsplit=2)[:2] in (["0", "FILE"], ["0", "!DATA"])
-            for line in lines
-        )
+        active = not (has_files or has_data)
         embedded = False
         for line in lines:
             tokens = line.split()
@@ -162,20 +184,22 @@ class LDraw(AbstractContextManager):
                 continue
             if tokens[:2] == ["0", "FILE"]:
                 if active and (records or embedded):
-                    self.files[current] = records
-                current = " ".join(tokens[2:]).replace("\\", "/").lower()
-                resource(self.root, current)
+                    store_current()
+                logical = " ".join(tokens[2:]).replace("\\", "/").lower()
+                resource(self.root, logical)
+                current = f"{name}::{logical}" if external else logical
+                scope[logical] = current
                 first = first or current
                 records = []
                 active = embedded = True
             elif tokens[:2] == ["0", "NOFILE"]:
                 if active:
-                    self.files[current] = records
+                    store_current()
                 records = []
                 active = False
             elif tokens[:2] == ["0", "!DATA"]:
                 if active and (records or embedded):
-                    self.files[current] = records
+                    store_current()
                 records = []
                 active = False
             else:
@@ -217,20 +241,55 @@ class LDraw(AbstractContextManager):
                         edge_color,
                     )
         if active and (records or embedded or first is None):
-            self.files[current] = records
+            store_current()
+        if external and first is not None:
+            self.files[name] = self.files[first]
+            self.scopes[name] = scope
+            self.containers[name] = name
+            self.base_dirs[name] = base
+            if first in self.parts:
+                self.parts.add(name)
         return first or name.lower()
+
+    def child_name(self, parent, child):
+        if child in self.generated:
+            return child
+        if child in self.scopes.get(parent, {}):
+            return self.scopes[parent][child]
+        container = self.containers.get(parent)
+        if container is None:
+            return child
+        base = self.base_dirs[parent]
+        name = f"{container}::ref::{base.as_posix()}::{child}"
+        self.lookups[name] = (base, child, container)
+        return name
 
     def records(self, name):
         if name not in self.files:
-            data = self.local.read(name)
+            base, reference, container = self.lookups.get(
+                name, (PurePosixPath("."), name, None)
+            )
+            local_name = (base / reference).as_posix()
+            data = self.local.read(local_name)
+            source_base = PurePosixPath(local_name).parent
+            if data is None and local_name != reference:
+                data = self.local.read(reference)
+                source_base = PurePosixPath(reference).parent
             if data is None:
                 for prefix in ("parts/", "p/", ""):
-                    data = self.library.read(prefix + name)
+                    data = self.library.read(prefix + reference)
                     if data is not None:
                         break
+                source_base = PurePosixPath(".")
             if data is None:
-                raise ValueError(f"Missing LDraw part: {name}")
-            self.add_file(name, data.decode("utf-8-sig"))
+                raise ValueError(f"Missing LDraw part: {reference}")
+            self.add_file(
+                name,
+                data.decode("utf-8-sig"),
+                external=True,
+                base=source_base,
+                parent_container=container,
+            )
         return self.files[name]
 
     def mesh(self, name):
@@ -246,6 +305,7 @@ class LDraw(AbstractContextManager):
                 kind = tokens[0]
                 if kind == "1":
                     color, matrix, child = reference(tokens)
+                    child = self.child_name(name, child)
                     mesh = self.mesh(child)
                     triangles.extend(mesh.triangles @ matrix[:3, :3].T + matrix[:3, 3])
                     colors.extend(np.where(mesh.colors == 16, color, mesh.colors))
@@ -277,7 +337,11 @@ class LDraw(AbstractContextManager):
                         lines.append(points if kind == "5" else points[[0, 1, 0, 0]])
                         line_colors.append(color)
             mesh = Mesh(
-                " ".join(records[0][1:]) if records and records[0][0] == "0" else name,
+                (
+                    " ".join(records[0][1:])
+                    if records and records[0][0] == "0"
+                    else name.rsplit("::", 1)[-1]
+                ),
                 np.array(triangles, dtype=np.float32).reshape(-1, 3, 3),
                 np.array(colors, dtype=np.int64),
                 np.array(lines, dtype=np.float32).reshape(-1, 4, 3),
@@ -316,6 +380,7 @@ class LDraw(AbstractContextManager):
                     number += 1
                     part = f"{name}/geometry-{number}.dat"
                     self.files[part] = primitives
+                    self.generated.add(part)
                     primitives = []
                     yield "1 16 0 0 0 1 0 0 0 1 0 0 0 1".split() + [part]
                 yield tokens
@@ -342,6 +407,7 @@ class LDraw(AbstractContextManager):
                 elif tokens[0] == "1":
                     number += 1
                     color, matrix, child = reference(tokens)
+                    child = self.child_name(name, child)
                     color = inherited if color == 16 else color
                     key = "/".join((*groups, identity or str(number)))
                     identity = None
