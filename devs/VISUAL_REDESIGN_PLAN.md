@@ -1,11 +1,10 @@
 # Visual redesign implementation plan
 
-Status: implemented on 2026-10-18. The Light/Dark palette, unified menu/header
-row, left-aligned toolbar, workspace rail, editor and catalog presentation,
-illustrated First drive lesson, and remaining app-owned surfaces follow the
-selected mockups and toolbar alignment correction. See the dated
-[acceptance record](VISUAL_REDESIGN_ACCEPTANCE.md) for checked behavior and
-desktop/platform verification that remains pending.
+Status: initial implementation delivered on 2026-10-18. The
+[acceptance record](VISUAL_REDESIGN_ACCEPTANCE.md) covers that first pass; it
+does not establish visual parity with the selected mockups. The remaining work
+and its acceptance criteria are maintained in the
+[reference design completion plan](VISUAL_REFERENCE_COMPLETION_PLAN.md).
 
 The goal is a coherent robotics workshop interface: a distinct navigation rail,
 readable rounded Python blocks, compact controls, and an illustrated lesson

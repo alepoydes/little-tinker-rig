@@ -1,9 +1,11 @@
 # Visual redesign acceptance record
 
-Date: 2026-10-18. This record describes the delivered Qt interface and the
-verification that was possible in the development environment. Design exploration
-images and screen captures are local, ignored files under `report/design_concepts`;
-they are not required for a checkout or installed package.
+Date: 2026-10-18. This record describes the first redesign pass and the
+verification that was possible in the development environment. It is not an
+acceptance of visual fidelity to the selected mockups. The remaining work is
+tracked in the [reference design completion plan](VISUAL_REFERENCE_COMPLETION_PLAN.md).
+Design exploration images and screen captures are local, ignored files under
+`report/design_concepts`; they are not required for a checkout or installed package.
 
 ## Delivered interface
 
