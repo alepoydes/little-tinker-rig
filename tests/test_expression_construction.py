@@ -349,6 +349,25 @@ def test_unfinished_inputs_persist_and_prevent_running_without_confusing_none(tm
     program.cleanup()
 
 
+def test_variadic_type_annotations_do_not_look_like_empty_block_inputs(tmp_path):
+    path = tmp_path / "typed.py"
+    path.write_text(
+        "def keep(values: tuple[int, ...]) -> tuple[int, ...]:\n"
+        "    return values\n"
+        "saved: tuple[int, ...] = keep((1, 2))\n",
+        encoding="utf-8",
+    )
+    owner = Session(path)
+    assert not any("Fill this input" in d.message for d in owner.analysis.diagnostics())
+    Program(path).cleanup()
+
+    path.write_text("def keep() -> ...:\n    return 1\n", encoding="utf-8")
+    owner = Session(path)
+    assert any("Fill this input" in d.message for d in owner.analysis.diagnostics())
+    with pytest.raises(ValueError, match="Fill this input"):
+        Program(path)
+
+
 def test_qt_composition_search_keyboard_and_collection_controls(qt_app):
     from PySide6.QtCore import Qt
     from PySide6.QtTest import QTest

@@ -29,6 +29,41 @@ def test_snapshots_use_unsaved_modules_and_keep_original_paths(tmp_path):
     program.cleanup()
 
 
+def test_snapshot_prefers_package_over_unreachable_same_named_module(tmp_path):
+    entry = tmp_path / "main.py"
+    entry.write_text("from helper import value\nprint(value)\n", encoding="utf-8")
+    unused = tmp_path / "helper.py"
+    unused.write_text("unfinished(\n", encoding="utf-8")
+    package = tmp_path / "helper"
+    package.mkdir()
+    initializer = package / "__init__.py"
+    initializer.write_text("value = 42\n", encoding="utf-8")
+
+    program = Program(entry)
+    try:
+        assert set(program.sources) == {entry, initializer}
+        assert (
+            program.entry.parent / "helper/__init__.py"
+        ).read_text() == "value = 42\n"
+        assert not (program.entry.parent / "helper.py").exists()
+    finally:
+        program.cleanup()
+
+
+def test_snapshot_does_not_execute_entry_directory_initializer(tmp_path):
+    entry = tmp_path / "main.py"
+    entry.write_text("from helper import value\n", encoding="utf-8")
+    helper = tmp_path / "helper.py"
+    helper.write_text("value = 42\n", encoding="utf-8")
+    (tmp_path / "__init__.py").write_text("unfinished(\n", encoding="utf-8")
+
+    program = Program(entry)
+    try:
+        assert set(program.sources) == {entry, helper}
+    finally:
+        program.cleanup()
+
+
 def test_failed_attempt_relocation_keeps_in_memory_file_ownership(tmp_path):
     examples = tmp_path / "bundled"
     examples.mkdir()

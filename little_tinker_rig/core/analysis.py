@@ -8,6 +8,7 @@ from functools import cached_property
 
 from little_tinker_rig.i18n import language, tr
 
+from .placeholders import unfinished_inputs
 from .syntax import Span, Syntax
 from .types import (
     NUMERIC,
@@ -737,10 +738,7 @@ class Analysis(Scopes):
                 found = (
                     name in vars(builtins)
                     or name in {"__name__", "__file__", "__package__"}
-                    or (
-                        isinstance(node.ctx, ast.Load)
-                        and name in self.ambient_names
-                    )
+                    or (isinstance(node.ctx, ast.Load) and name in self.ambient_names)
                 )
                 scope = origin
                 while scope and not found:
@@ -768,8 +766,9 @@ class Analysis(Scopes):
                         tr("Name {name!r} is not defined before this use", name=name),
                     )
                 )
+        unfinished = set(unfinished_inputs(self.syntax.tree))
         for node in ast.walk(self.syntax.tree):
-            if isinstance(node, ast.Constant) and node.value is Ellipsis:
+            if node in unfinished:
                 result.append(
                     Diagnostic(
                         self.syntax.spans[node],

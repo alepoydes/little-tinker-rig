@@ -6,6 +6,7 @@ import tokenize
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from little_tinker_rig.core.placeholders import unfinished_inputs
 from little_tinker_rig.core.source_file import utf8_source
 
 
@@ -34,14 +35,13 @@ class Program:
                 encoding, _ = tokenize.detect_encoding(io.BytesIO(raw).readline)
                 source = raw.decode(encoding)
                 tree = ast.parse(source)
-                for node in ast.walk(tree):
-                    if isinstance(node, ast.Constant) and node.value is Ellipsis:
-                        from little_tinker_rig.i18n import tr
+                for node in unfinished_inputs(tree):
+                    from little_tinker_rig.i18n import tr
 
-                        raise ValueError(
-                            f"{file.name}:{node.lineno}: "
-                            + tr("Fill this input before running the program")
-                        )
+                    raise ValueError(
+                        f"{file.name}:{node.lineno}: "
+                        + tr("Fill this input before running the program")
+                    )
                 target = Path(self.directory.name) / file.relative_to(root)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(raw)
@@ -61,13 +61,18 @@ class Program:
                         ]
                     for name in names:
                         module = base.joinpath(*name.split("."))
-                        pending.extend(
-                            (module.with_suffix(".py"), module / "__init__.py")
-                        )
+                        package = module / "__init__.py"
+                        plain = module.with_suffix(".py")
+                        # Python loads a regular package before a same-named
+                        # module file in the same directory.
+                        if package.resolve() in overrides or package.is_file():
+                            pending.append(package)
+                        elif plain.resolve() in overrides or plain.is_file():
+                            pending.append(plain)
                         pending.extend(
                             parent / "__init__.py"
                             for parent in module.parents
-                            if parent.is_relative_to(root)
+                            if parent != root and parent.is_relative_to(root)
                         )
         except BaseException:
             self.cleanup()
