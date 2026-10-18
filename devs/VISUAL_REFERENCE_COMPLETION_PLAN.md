@@ -44,7 +44,10 @@ The device panel now omits empty metadata instead of showing a dangling
 separator above the hub state.
 Assembly load failures now show a localized recovery message instead of a raw
 network exception, retranslate when the language changes, and clear after a
-successful retry. Offscreen captures cannot establish live 3D rendering.
+successful retry. The model viewport now has a themed loading/error placeholder
+instead of empty space, with a scalable brand illustration; 3D-only controls
+and hints stay hidden until a view exists. Offscreen captures cannot establish
+live 3D rendering.
 This follows the first-pass
 [visual redesign](VISUAL_REDESIGN_PLAN.md) and uses the selected local mockups
 in `report/design_concepts` as visual

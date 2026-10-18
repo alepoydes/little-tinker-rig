@@ -66,10 +66,14 @@ def test_saved_assembly_step_waits_for_model_count(model, qt_app, saved, expecte
         page.loaded(None, "Parts unavailable")
         assert page.error.text()
         assert "Parts unavailable" not in page.error.text()
+        assert page.placeholder_text.text() == page.error.text()
+        assert page.placeholder_icon.pixmap().deviceIndependentSize().width() == 72
+        assert page.reset_button.isHidden()
         try:
             set_language("ru")
             page.retranslate()
             assert "Не удалось загрузить модель робота" in page.error.text()
+            assert page.placeholder_text.text() == page.error.text()
         finally:
             set_language(original_language)
             page.retranslate()

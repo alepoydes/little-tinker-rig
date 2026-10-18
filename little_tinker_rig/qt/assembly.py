@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QThreadPool, Signal
+from PySide6.QtCore import QSize, Qt, QThreadPool, Signal
 from PySide6.QtGui import QColor, QIcon, QPixmap, QShortcut
 from PySide6.QtWidgets import (
     QApplication,
@@ -28,6 +28,7 @@ from little_tinker_rig.i18n import N_, language, tr
 from .help import HelpBrowser
 from .localization import localize
 from .resources import ResourceJob
+from .theme import colors, svg_pixmap
 
 
 class PartsList(QListWidget):
@@ -76,6 +77,20 @@ class AssemblyPage(QWidget):
         split = QSplitter()
         self.view_host = QWidget()
         self.view_host.setLayout(QVBoxLayout())
+        self.placeholder = QWidget()
+        self.placeholder.setObjectName("assemblyPlaceholder")
+        placeholder_layout = QVBoxLayout(self.placeholder)
+        placeholder_layout.setContentsMargins(24, 24, 24, 24)
+        placeholder_layout.addStretch()
+        self.placeholder_icon = QLabel()
+        self.placeholder_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        placeholder_layout.addWidget(self.placeholder_icon)
+        self.placeholder_text = QLabel(tr("Loading robot model…"))
+        self.placeholder_text.setWordWrap(True)
+        self.placeholder_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        placeholder_layout.addWidget(self.placeholder_text)
+        placeholder_layout.addStretch()
+        self.view_host.layout().addWidget(self.placeholder)
         split.addWidget(self.view_host)
         side = QWidget()
         sidebar = QVBoxLayout(side)
@@ -152,9 +167,10 @@ class AssemblyPage(QWidget):
         self.next_step = QPushButton(N_("Next step"))
         self.next_step.clicked.connect(lambda: self.set_step(self.step + 1))
         row.addWidget(self.next_step)
-        reset = QPushButton(N_("Recommended view"))
-        reset.clicked.connect(self.reset_camera)
-        row.addWidget(reset)
+        self.reset_button = QPushButton(N_("Recommended view"))
+        self.reset_button.clicked.connect(self.reset_camera)
+        self.reset_button.hide()
+        row.addWidget(self.reset_button)
         layout.addLayout(row)
         self.download_status = QLabel()
         self.download_status.hide()
@@ -178,7 +194,19 @@ class AssemblyPage(QWidget):
             controls.addWidget(button)
         layout.addLayout(controls)
         localize(self)
+        self.apply_theme()
         self.set_step(self.step)
+
+    def apply_theme(self):
+        c = colors()
+        self.placeholder.setStyleSheet(
+            f"#assemblyPlaceholder {{ background: {c['panel']}; "
+            f"border: 1px solid {c['border']}; border-radius: 12px; }}"
+        )
+        self.placeholder_icon.setPixmap(svg_pixmap("brand", QSize(72, 72)))
+        self.placeholder_text.setStyleSheet(
+            f"color: {c['text']}; font-size: 15px; font-weight: 700;"
+        )
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -227,8 +255,10 @@ class AssemblyPage(QWidget):
         self.error_kind = None
         self.error.clear()
         self.error.hide()
+        self.placeholder_text.setText(tr("Loading robot model…"))
+        self.placeholder.setVisible(self.view_container is None)
         self.download_status.setText(tr("Loading robot model…"))
-        self.download_status.show()
+        self.download_status.setVisible(self.view_container is not None)
         self.progress.setRange(0, 0)
         self.progress.show()
         self.retry.hide()
@@ -250,6 +280,7 @@ class AssemblyPage(QWidget):
                 total=f"{total / 1024**2:.1f}" if total else "?",
             )
         )
+        self.download_status.show()
 
     def loaded(self, scene, error):
         self.job = None
@@ -270,7 +301,10 @@ class AssemblyPage(QWidget):
             self.caption.setText(tr("Robot instructions"))
             self.error_kind = "load"
             self.update_error_text()
-            self.error.show()
+            self.error.setVisible(self.view_container is not None)
+            self.placeholder_text.setText(self.error.text())
+            self.placeholder.setVisible(self.view_container is None)
+            self.reset_button.setVisible(self.view is not None)
             self.notes.setMarkdown(
                 localized(self.robot.get("description", ""), language())
             )
@@ -298,12 +332,15 @@ class AssemblyPage(QWidget):
                 self.view_container.setMinimumSize(240, 200)
                 self.view_container.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
                 self.view_host.layout().addWidget(self.view_container)
+                self.placeholder.hide()
             except (ImportError, ValueError) as error:
                 self.show_error(str(error))
         else:
             self.error_kind = "display"
             self.update_error_text()
-            self.error.show()
+            self.error.hide()
+            self.placeholder_text.setText(self.error.text())
+        self.reset_button.setVisible(self.view is not None)
         self.set_step(min(self.step, scene.step_count - 1))
         if not self.state.get("camera"):
             self.reset_camera()
@@ -311,7 +348,11 @@ class AssemblyPage(QWidget):
     def show_error(self, _error):
         self.error_kind = "display"
         self.update_error_text()
-        self.error.show()
+        self.error.setVisible(self.view_container is not None)
+        if not self.view_container:
+            self.placeholder_text.setText(self.error.text())
+            self.placeholder.show()
+        self.reset_button.setVisible(self.view is not None)
 
     def update_error_text(self):
         if self.error_kind == "load":
@@ -459,6 +500,8 @@ class AssemblyPage(QWidget):
                 tr(
                     "Drag to rotate · Shift+drag to pan · Scroll to zoom · Ctrl+click to center"
                 )
+                if self.view
+                else ""
             )
         if self.view:
             self.view.marker = None
@@ -549,6 +592,9 @@ class AssemblyPage(QWidget):
 
     def retranslate(self):
         self.update_error_text()
+        self.placeholder_text.setText(
+            self.error.text() if self.error_kind else tr("Loading robot model…")
+        )
         self.set_step(self.step)
 
 

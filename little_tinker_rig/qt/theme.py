@@ -126,6 +126,23 @@ def svg_icon(name, *, rail=False, tint=None):
     return icon
 
 
+def svg_pixmap(name, size, *, tint=None):
+    """Render a larger SVG at a fixed logical size on high-DPI displays."""
+    path = Path(__file__).with_name("icons") / f"{name}.svg"
+    source = path.read_bytes()
+    if tint:
+        source = source.replace(b"#45576b", tint.encode("ascii"))
+    renderer = QSvgRenderer(QByteArray(source))
+    scale = 3
+    pixmap = QPixmap(size.width() * scale, size.height() * scale)
+    pixmap.fill(QColor(0, 0, 0, 0))
+    painter = QPainter(pixmap)
+    renderer.render(painter)
+    painter.end()
+    pixmap.setDevicePixelRatio(scale)
+    return pixmap
+
+
 def contrast_icon(icon):
     """Make monochrome desktop-theme actions legible on the dark toolbar."""
     if colors() is LIGHT:

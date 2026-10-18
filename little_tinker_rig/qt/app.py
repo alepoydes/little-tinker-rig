@@ -1052,8 +1052,10 @@ class Studio(QMainWindow):
                     window.lessons.assembly_host.lesson_page,
                     window.lessons.assembly_host.free_page,
                 ):
-                    if assembly_page and assembly_page.view:
-                        assembly_page.view.requestUpdate()
+                    if assembly_page:
+                        assembly_page.apply_theme()
+                        if assembly_page.view:
+                            assembly_page.view.requestUpdate()
                 window.theme_actions[name].setChecked(True)
                 for index in range(window.documents.count()):
                     page = window.documents.widget(index)
