@@ -250,9 +250,7 @@ class Lessons(QObject):
 
     def apply_theme(self):
         c = colors()
-        self.collapse_button.setIcon(
-            self.window._icon("go-next", "SP_ArrowForward")
-        )
+        self.collapse_button.setIcon(self.window._icon("go-next", "SP_ArrowForward"))
         self.progress_button.setIcon(svg_icon("lesson"))
         self.panel.setStyleSheet(
             f"#lessonTaskPanel {{ background: {c['window']}; color: {c['text']}; }}"
@@ -266,7 +264,7 @@ class Lessons(QObject):
             "font-weight: 700; min-width: 24px; max-width: 24px; "
             "min-height: 24px; max-height: 24px; }"
             f'#lessonTaskNumber[completed="true"] {{ background: {c["success_fill"]}; '
-            'color: white; border-color: transparent; }'
+            "color: white; border-color: transparent; }"
             f'#lessonTaskNumber[selected="true"] {{ background: {c["accent"]}; '
             f'color: {c["accent_text"]}; border-color: transparent; }}'
             f"QProgressBar#lessonTaskProgress {{ background: {c['raised']}; "
@@ -292,9 +290,7 @@ class Lessons(QObject):
                 f"{escape(title.accessibleName())}</a>"
             )
             widgets["body"].apply_theme()
-            widgets["status"].setStyleSheet(
-                f"color: {c['muted']}; font-size: 11px;"
-            )
+            widgets["status"].setStyleSheet(f"color: {c['muted']}; font-size: 11px;")
 
     def populate(self):
         self.menu.clear()
@@ -498,9 +494,7 @@ class Lessons(QObject):
                 saved = [p for p in StudentProject.attempts() if p.path == path]
                 if saved:
                     digest = hashlib.sha256(path.read_bytes()).hexdigest()
-                    project = next(
-                        (p for p in saved if p.disk_hash == digest), None
-                    )
+                    project = next((p for p in saved if p.disk_hash == digest), None)
         if project is not None:
             pages = self.window.documents
             page = next(
@@ -1324,10 +1318,17 @@ class Lessons(QObject):
                 project.discard_working_copy()
 
     def autosave(self):
+        first_error = None
         for project in tuple(self.projects.values()):
             if project.retain:
-                self.store_documents(project)
-                project.checkpoint()
+                try:
+                    self.store_documents(project)
+                    project.checkpoint()
+                except (OSError, ValueError) as error:
+                    if first_error is None:
+                        first_error = error
+        if first_error is not None:
+            raise first_error
 
     def save(self, project, *, choose=False):
         path = project.path
@@ -1356,11 +1357,16 @@ class Lessons(QObject):
 
     def store_documents(self, project):
         workspace = {"documents": {}, "active": "main.py"}
+        first_error = None
         for index in range(self.window.documents.count()):
             page = self.window.documents.widget(index)
             if getattr(page, "lesson_project", None) is project:
                 project.pending |= page.dirty
-                page.save()
+                try:
+                    page.save()
+                except (OSError, ValueError) as error:
+                    if first_error is None:
+                        first_error = error
                 name = page.session.project.path.relative_to(
                     project.root / "programs"
                 ).as_posix()
@@ -1371,6 +1377,8 @@ class Lessons(QObject):
                 if page is self.window.document_page:
                     workspace["active"] = name
         write_json(project.root / "workspace.json", workspace)
+        if first_error is not None:
+            raise first_error
 
     def export(self):
         if self.current is None or self.export_job:

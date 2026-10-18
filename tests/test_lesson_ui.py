@@ -99,6 +99,41 @@ def test_lesson_tab_layout_cannot_replace_program_checkpoint(tmp_path, qt_app):
         window.deleteLater()
 
 
+def test_lesson_autosave_continues_after_a_program_conflict(tmp_path, qt_app):
+    from little_tinker_rig.qt.app import Studio
+
+    lesson = make_lesson(tmp_path)
+    first = StudentProject.create(lesson)
+    second = StudentProject.create(lesson)
+    helper = first.main.parent / "helper.py"
+    helper.write_text("value = 1\n", encoding="utf-8")
+
+    window = Studio(tmp_path / "plain.py")
+    try:
+        first_page = window.lessons.open(lesson, attempt=first)
+        helper_page = window.open_document(helper)
+        assert helper_page.lesson_project is first
+        second_page = window.lessons.open(lesson, attempt=second)
+
+        first_page.session.editor.commit("answer = 11\n")
+        first.main.write_text("answer = 99\n", encoding="utf-8")
+        helper_page.session.editor.commit("value = 22\n")
+        second_page.session.editor.commit("answer = 33\n")
+
+        assert not window.recovery.flush()
+        assert first.main.read_text(encoding="utf-8") == "answer = 99\n"
+        assert helper.read_text(encoding="utf-8") == "value = 22\n"
+        assert second.main.read_text(encoding="utf-8") == "answer = 33\n"
+        checkpoint = json.loads(window.recovery.path.read_text(encoding="utf-8"))
+        assert any(
+            item["path"] == str(first.main) and item["source"] == "answer = 11\n"
+            for item in checkpoint["documents"]
+        )
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
 def test_invalid_later_lesson_tab_does_not_partly_restore_layout(tmp_path, qt_app):
     from little_tinker_rig.qt.app import Studio
 
