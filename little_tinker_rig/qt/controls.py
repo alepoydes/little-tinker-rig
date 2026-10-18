@@ -376,8 +376,6 @@ class ControlsPage(QWidget):
         self.controller.setMaximumHeight(350)
         body.addWidget(self.controller, 1)
         body.addStretch()
-        layout.addLayout(body)
-        layout.addWidget(self.state_label)
         self.assignment_hint = QLabel(
             N_(
                 "Assign motors to axes or triggers. Scale sets the speed or the angle relative to the center."
@@ -386,11 +384,27 @@ class ControlsPage(QWidget):
         self.assignment_hint.setWordWrap(True)
         layout.addWidget(self.assignment_hint)
         layout.addWidget(self.table)
+        layout.addLayout(body)
+        layout.addWidget(self.state_label)
         layout.addStretch()
         self.timer = QTimer(self)
         self.timer.setInterval(50)
         self.timer.timeout.connect(self.sample)
         self.controller.compact(True)
+        self._compact_columns = None
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        compact = self.width() < 700
+        if compact == self._compact_columns:
+            return
+        self._compact_columns = compact
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        if compact:
+            for column, width in ((0, 64), (3, 80), (4, 80), (5, 70)):
+                header.setSectionResizeMode(column, QHeaderView.ResizeMode.Fixed)
+                self.table.setColumnWidth(column, width)
 
     def apply_theme(self):
         self.start.setIcon(

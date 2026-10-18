@@ -155,6 +155,39 @@ def test_compact_catalog_releases_editor_width_without_overriding_manual_split(w
     assert abs(window.library_pane.width() - 340) <= 1
 
 
+def test_compact_control_keeps_motor_assignments_above_controller(windows):
+    from little_tinker_rig.pybricks.devices import HubInfo
+
+    window = windows()
+    window.resize(930, 620)
+    window.set_mode(1)
+    window.device_dock.show()
+    window.update_hub(
+        HubInfo(
+            connected=True,
+            monitoring=True,
+            ports={"A": {"type": "motor"}, "B": {"type": "motor"}},
+        )
+    )
+    QApplication.processEvents()
+    table = window.controls.table
+    assert table.isVisible()
+    table_top = table.mapToGlobal(table.rect().topLeft()).y()
+    controller = window.controls.controller
+    controller_top = controller.mapToGlobal(controller.rect().topLeft()).y()
+    assert table_top < controller_top
+    assert table.columnWidth(1) > table.columnWidth(3)
+    assert table.columnWidth(2) > table.columnWidth(4)
+    assert table.horizontalScrollBar().maximum() == 0
+    outer = window.controls.parentWidget().parentWidget()
+    assert outer.horizontalScrollBar().maximum() == 0
+
+    window.resize(1380, 880)
+    QApplication.processEvents()
+    widths = [table.columnWidth(column) for column in range(6)]
+    assert max(widths) - min(widths) <= 2
+
+
 def test_scratch_history_follows_fragments_across_moves_and_removal(windows):
     from little_tinker_rig.core.edit import Target
     from little_tinker_rig.core.transfer import Transfer
