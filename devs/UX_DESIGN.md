@@ -1,5 +1,9 @@
 # LittleTinker Rig interaction design
 
+The [visual redesign implementation plan](VISUAL_REDESIGN_PLAN.md) defines the
+planned light/dark appearance, unified header, and component migration. It is
+future work; the interaction contracts below continue to describe the application.
+
 The [lesson task panel plan](LESSON_TASK_PANEL_PLAN.md) records the delivered
 project-scoped lesson design. Earlier catalog delivery notes below describe their
 October 2026 baseline; the task panel and open recommendations supersede their
