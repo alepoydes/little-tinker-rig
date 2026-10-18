@@ -69,6 +69,7 @@ def test_saved_assembly_step_waits_for_model_count(model, qt_app, saved, expecte
         assert page.placeholder_text.text() == page.error.text()
         assert page.placeholder_icon.pixmap().deviceIndependentSize().width() == 72
         assert page.reset_button.isHidden()
+        assert page.parts_caption.isHidden() and page.parts.isHidden()
         try:
             set_language("ru")
             page.retranslate()
@@ -82,6 +83,7 @@ def test_saved_assembly_step_waits_for_model_count(model, qt_app, saved, expecte
             page.loaded(reader.scene(), "")
         assert page.step == state["step"] == expected
         assert page.slider.value() == expected
+        assert not page.parts_caption.isHidden() and not page.parts.isHidden()
         assert not page.error.text() or "3D" in page.error.text()
     finally:
         page.deleteLater()

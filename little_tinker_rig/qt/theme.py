@@ -333,11 +333,14 @@ def studio_stylesheet(name):
         QDialog QPushButton#firmwareInstall:disabled {{
             background: {c['raised']}; color: {c['muted']};
             border-color: {c['border']}; }}
-        QPushButton#manualStart, QPushButton#blockEditorNew {{ background: {c['accent']};
+        QPushButton#assemblyLocal {{ background: {c['selected']};
+            color: {c['accent']}; border-color: {c['accent']}; font-weight: 700; }}
+        QPushButton#assemblyLocal:hover {{ background: {c['hover']}; }}
+        QPushButton#manualStart, QPushButton#blockEditorNew, QPushButton#assemblyRetry {{ background: {c['accent']};
             color: {c['accent_text']}; border-color: {c['accent']};
             font-weight: 700; padding: 8px 12px; }}
-        QPushButton#manualStart:hover, QPushButton#blockEditorNew:hover {{ background: {c['focus']}; }}
-        QPushButton#manualStart:disabled, QPushButton#blockEditorNew:disabled {{ background: {c['raised']};
+        QPushButton#manualStart:hover, QPushButton#blockEditorNew:hover, QPushButton#assemblyRetry:hover {{ background: {c['focus']}; }}
+        QPushButton#manualStart:disabled, QPushButton#blockEditorNew:disabled, QPushButton#assemblyRetry:disabled {{ background: {c['raised']};
             color: {c['muted']}; border-color: {c['border']}; }}
         QCheckBox::indicator:unchecked {{ width: 15px; height: 15px;
                                          background: {c['panel']};

@@ -65,6 +65,10 @@ successful retry. The model viewport now has a themed loading/error placeholder
 instead of empty space, with a scalable brand illustration; 3D-only controls
 and hints stay hidden until a view exists. Offscreen captures cannot establish
 live 3D rendering.
+When model loading fails before a scene exists, the Assembly sidebar gives the
+step description its full height instead of reserving an empty Parts list.
+Retry now uses the primary accent, while opening a local parts ZIP remains a
+clearly marked alternate action.
 The 12 desktop introductory scenarios pass with an unsandboxed local
 `asyncio` socketpair; the restricted sandbox rejects that socket write with
 `EPERM`, causing a virtual-hub timeout unrelated to the UI. The same capture
