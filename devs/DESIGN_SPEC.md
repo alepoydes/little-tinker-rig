@@ -329,7 +329,8 @@ outline, while error borders and drag markers retain visual priority.
 
 ### 9.2 Hover and selection
 
-Permanent coloring should remain pale enough that the source still looks like readable Python.
+Permanent semantic colors should be vivid enough to distinguish block types
+while preserving readable Python text and editable field contrast in both themes.
 
 When the pointer or cursor is over a region:
 
@@ -339,7 +340,8 @@ When the pointer or cursor is over a region:
 
 ### 9.3 Presentation intensity
 
-A useful long-term UI idea is a presentation continuum between:
+A saved **Block color** slider in the appearance menu controls the presentation
+continuum between:
 
 ```text
 plain text  <-------------------------->  strongly block-like
@@ -347,7 +349,8 @@ plain text  <-------------------------->  strongly block-like
 
 This is a presentation choice over the same source and AST, not a conversion between languages.
 
-The exact control for this continuum is not yet specified.
+The slider changes only the structural editor's fill intensity. Catalog cards
+keep their semantic colors so discovery remains consistent.
 
 ---
 

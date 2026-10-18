@@ -147,7 +147,12 @@ class CardDelegate(QStyledItemDelegate):
             if dark
             else saturated(color, amount)
         )
-        painter.setPen(QPen(QColor(colors()["border"]), 1))
+        border = (
+            color.lighter(175 if selected else 145)
+            if dark
+            else saturated(color, 0.7 if selected else 0.5)
+        )
+        painter.setPen(QPen(border, 1))
         painter.drawRoundedRect(rect, 6, 6)
         self.icons[icon].paint(painter, favorite_rect(option.rect))
         painter.setClipRect(rect)

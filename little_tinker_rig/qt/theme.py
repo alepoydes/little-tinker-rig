@@ -15,6 +15,7 @@ LIGHT = {
     "title": "#edf3fb",
     "rail": "#102947",
     "rail_hover": "#1e4975",
+    "rail_selected": "#1268d9",
     "text": "#20334b",
     "muted": "#62768c",
     "border": "#cbd8e6",
@@ -22,6 +23,7 @@ LIGHT = {
     "accent_text": "#ffffff",
     "hover": "#dfeaf8",
     "selected": "#dbeafe",
+    "choice_selected": "#99c9ff",
     "focus": "#176bd9",
     "danger": "#b02a3b",
     "danger_soft": "#ffe1e5",
@@ -34,15 +36,15 @@ LIGHT = {
     "code_number": "#a14f17",
     "code_string": "#277a47",
     "code_comment": "#687b90",
-    "block_action": "#d8e9f6",
-    "block_loop": "#f5e7c8",
-    "block_control": "#e8ddf2",
-    "block_value": "#e4efdc",
-    "block_state": "#f3dfcf",
-    "block_definition": "#dcdff5",
-    "block_snippet": "#cfe9e5",
-    "block_placeholder": "#e5e7eb",
-    "block_warning": "#f9d6c8",
+    "block_action": "#b8d8ff",
+    "block_loop": "#ffda9f",
+    "block_control": "#d6c2f5",
+    "block_value": "#b9efd0",
+    "block_state": "#f7c9a5",
+    "block_definition": "#c5d1fa",
+    "block_snippet": "#b7e8e2",
+    "block_placeholder": "#d9e2ed",
+    "block_warning": "#ffc0b4",
 }
 
 DARK = {
@@ -53,6 +55,7 @@ DARK = {
     "title": "#0d192a",
     "rail": "#09172a",
     "rail_hover": "#224b75",
+    "rail_selected": "#176bd9",
     "text": "#e5efff",
     "muted": "#a6bad2",
     "border": "#36506b",
@@ -60,6 +63,7 @@ DARK = {
     "accent_text": "#081a2d",
     "hover": "#2a4361",
     "selected": "#25496f",
+    "choice_selected": "#24558a",
     "focus": "#76b5ff",
     "danger": "#ff8292",
     "danger_soft": "#5a2636",
@@ -72,15 +76,15 @@ DARK = {
     "code_number": "#ffb57e",
     "code_string": "#8bdba0",
     "code_comment": "#9eb2ca",
-    "block_action": "#244369",
-    "block_loop": "#57401f",
-    "block_control": "#493966",
-    "block_value": "#304b3a",
-    "block_state": "#574136",
-    "block_definition": "#343f6d",
-    "block_snippet": "#1b4d4b",
-    "block_placeholder": "#334258",
-    "block_warning": "#64383d",
+    "block_action": "#24588d",
+    "block_loop": "#77501d",
+    "block_control": "#584487",
+    "block_value": "#256d50",
+    "block_state": "#70412e",
+    "block_definition": "#4d5daa",
+    "block_snippet": "#1b6663",
+    "block_placeholder": "#425776",
+    "block_warning": "#8c404a",
 }
 
 
@@ -101,11 +105,11 @@ def block_color(role):
     return QColor(palette.get(f"block_{role}", role))
 
 
-def svg_icon(name, *, rail=False):
+def svg_icon(name, *, rail=False, tint=None):
     """Tint only the neutral SVG stroke; retain meaningful accent fills."""
     path = Path(__file__).with_name("icons") / f"{name}.svg"
     source = path.read_bytes()
-    stroke = "#ffffff" if rail else colors()["text"]
+    stroke = tint or ("#ffffff" if rail else colors()["text"])
     source = source.replace(b"#45576b", stroke.encode("ascii"))
     renderer = QSvgRenderer(QByteArray(source))
     icon = QIcon()
@@ -199,6 +203,9 @@ def studio_stylesheet(name):
         QToolButton:hover {{ background: {c['hover']}; }}
         QToolButton:checked {{ background: {c['selected']};
                                border-bottom: 2px solid {c['accent']}; }}
+        ChoiceButtons QToolButton:checked {{
+            background: {c['choice_selected']};
+        }}
         QToolButton:disabled {{ color: {c['muted']}; }}
         ChoiceButtons QToolButton, QToolButton#catalogUtility {{
             padding: 5px 4px;

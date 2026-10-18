@@ -77,6 +77,7 @@ from .recovery import Recovery
 from .runtime import RuntimePanel
 from .theme import (
     apply_application_theme,
+    colors,
     contrast_icon,
     studio_stylesheet,
     svg_icon,
@@ -607,7 +608,7 @@ class Studio(QMainWindow):
         self.intensity = QSlider(Qt.Orientation.Horizontal)
         self.intensity.setAccessibleName(N_("Block color"))
         self.intensity.setRange(0, 100)
-        self.intensity.setValue(int(self.settings.value("blockIntensity", 65)))
+        self.intensity.setValue(int(self.settings.value("blockIntensity", 78)))
         self.intensity.valueChanged.connect(self.set_intensity)
         self.intensity.valueChanged.connect(
             lambda value: self.settings.setValue("blockIntensity", value)
@@ -672,6 +673,10 @@ class Studio(QMainWindow):
         self.stop_button = toolbar.widgetForAction(self.stop_action)
         self.run_button.setObjectName("programRun")
         self.stop_button.setObjectName("programStop")
+        self.run_action.setIcon(
+            svg_icon("media-playback-start", tint=colors()["accent_text"])
+        )
+        self.stop_action.setIcon(svg_icon("media-playback-stop", tint="#ffffff"))
         self._action(robot, N_("Connect…"), "F7", self.connect_hub)
         self._action(
             robot, N_("Disconnect"), None, self.disconnect_hub, commit_parameters=False
@@ -915,6 +920,12 @@ class Studio(QMainWindow):
                 for action in window.findChildren(QAction):
                     if source := action.property("visualIconSource"):
                         action.setIcon(window._icon(*source))
+                window.run_action.setIcon(
+                    svg_icon("media-playback-start", tint=colors()["accent_text"])
+                )
+                window.stop_action.setIcon(
+                    svg_icon("media-playback-stop", tint="#ffffff")
+                )
                 for button in window.findChildren(QToolButton):
                     standard = button.property("standardIcon")
                     if standard is not None:

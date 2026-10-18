@@ -5,6 +5,13 @@ pass on 2026-10-18. Stage 1 has responsive catalog sizing and a wider lesson
 overlay threshold; the other shell refinements and most of stages 2–6 remain open.
 Stage 2 now wraps long catalog titles at compact widths and recalculates card
 height when the catalog changes width; its broader discovery styling remains.
+The semantic block palette now uses the stronger blue, amber, green, and orange
+families from the selected reference. Catalog cards and program blocks share
+those colors, with clearer borders, separated program cards, and readable
+header badges. Plain imports no longer appear as colored control blocks. The
+selected workspace and catalog filters have stronger blue states, and Run/Stop
+icons keep contrast against their filled buttons. Stage 3 still needs source
+gutter, long-line handling, Scratch parity, and a full pointer/keyboard audit.
 This follows the first-pass
 [visual redesign](VISUAL_REDESIGN_PLAN.md) and uses the selected local mockups
 in `report/design_concepts` as visual

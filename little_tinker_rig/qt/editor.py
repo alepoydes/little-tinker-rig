@@ -121,6 +121,7 @@ class SourceView(QTextEdit):
         self.apply_theme()
         self.setTabStopDistance(self.fontMetrics().horizontalAdvance(" ") * 4)
         self.presentation = ()
+        self.plain_spans = set()
         self.notes = {}
         self.runtime_problem = None
         self.folded = set()
@@ -128,7 +129,7 @@ class SourceView(QTextEdit):
         self.hover = None
         self.hover_parameter = None
         saved_intensity = QApplication.instance().property("ltrBlockIntensity")
-        self.intensity = 0.65 if saved_intensity is None else saved_intensity
+        self.intensity = 0.78 if saved_intensity is None else saved_intensity
         self.fade_lines = set()
         self.fade_in = False
         self.fade = QVariantAnimation(self)
@@ -223,6 +224,11 @@ class SourceView(QTextEdit):
             self.presentation = regions(
                 self.session.document.syntax, self.session.visible_matches
             )
+            self.plain_spans = {
+                self.session.document.syntax.spans[node]
+                for node in ast.walk(self.session.document.syntax.tree)
+                if isinstance(node, (ast.Import, ast.ImportFrom))
+            }
             if self.display.helpers:
                 self.presentation = tuple(
                     r
@@ -292,6 +298,11 @@ class SourceView(QTextEdit):
                 )
                 cursor.setBlockFormat(block_format)
                 first_notes = 0
+                top_level = {
+                    region.span
+                    for region in self.presentation
+                    if region.depth == 0 and region.extend_line
+                }
                 for line, notes in self.notes.items():
                     displayed = self.display.by_span.get(notes[0].span)
                     block = (
@@ -305,6 +316,7 @@ class SourceView(QTextEdit):
                     note_format = QTextBlockFormat(block_format)
                     note_format.setTopMargin(
                         (self.fontMetrics().height() + 3) * len(notes)
+                        + (8 if any(note.span in top_level for note in notes) else 5)
                     )
                     cursor.setBlockFormat(note_format)
                     if block.blockNumber() == 0:
@@ -313,6 +325,7 @@ class SourceView(QTextEdit):
                 frame_format = frame.frameFormat()
                 frame_format.setTopMargin(
                     4 + (self.fontMetrics().height() + 3) * first_notes
+                    + (8 if first_notes else 0)
                 )
                 frame.setFrameFormat(frame_format)
                 for slot in self.parameter_slots:
@@ -594,7 +607,9 @@ class SourceView(QTextEdit):
         visible_regions = tuple(
             r
             for r in self.presentation
-            if r.line <= last_line and r.end_line >= first_line
+            if r.line <= last_line
+            and r.end_line >= first_line
+            and r.span not in self.plain_spans
         )
         syntax = self.session.document.syntax
         match = self.session.selected_match()
@@ -660,7 +675,7 @@ class SourceView(QTextEdit):
             painter.setBrush(color)
             rects = tuple(self.region_rects(region, first_line, last_line))
             rounded = None
-            if region.depth == 0 and region.extend_line and rects:
+            if region.extend_line and rects:
                 bounds = rects[0]
                 for part in rects[1:]:
                     bounds = bounds.united(part)
@@ -730,7 +745,7 @@ class SourceView(QTextEdit):
                 band = (
                     band.lighter(150) if dark else saturated(band, 0.3)
                 )
-                band.setAlphaF(0.35 if dark else 0.42)
+                band.setAlphaF(0.48 if dark else 0.56)
                 painter.setPen(Qt.PenStyle.NoPen)
                 painter.setBrush(band)
                 painter.drawRoundedRect(rect.adjusted(1, 1, -3, -1), 6, 6)
@@ -740,17 +755,29 @@ class SourceView(QTextEdit):
                 )
                 left = rect.left()
                 symbol_font = self.font()
-                symbol_font.setPixelSize(max(12, int(rect.height() - 2)))
+                symbol_font.setPixelSize(12)
                 painter.setFont(symbol_font)
-                width = max(
-                    21, QFontMetrics(symbol_font).horizontalAdvance(note.icon) + 4
+                width = 25
+                badge = QRectF(left + 3, rect.top() + 2, 18, rect.height() - 4)
+                badge_color = block_color(note.role)
+                badge_color = (
+                    badge_color.lighter(135)
+                    if dark
+                    else saturated(badge_color, 0.9).darker(135)
                 )
+                painter.setBrush(badge_color)
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.drawEllipse(badge)
+                painter.setPen(QColor("#ffffff"))
                 painter.drawText(
-                    QRectF(left, rect.top(), width, rect.height()),
-                    Qt.AlignmentFlag.AlignVCenter,
+                    badge,
+                    Qt.AlignmentFlag.AlignCenter,
                     note.icon,
                 )
                 painter.setFont(note_font)
+                painter.setPen(
+                    QColor(colors()["danger"] if note.error else colors()["text"])
+                )
                 text_rect = QRectF(
                     left + width,
                     rect.top(),

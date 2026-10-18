@@ -145,7 +145,7 @@ class ModeList(QListWidget):
             "ModeList::item { padding: 0; border-left: 3px solid transparent; "
             "border-right: 3px solid transparent; }"
             f"ModeList::item:hover {{ background: {c['rail_hover']}; }}"
-            f"ModeList::item:selected {{ background: {c['rail_hover']}; "
+            f"ModeList::item:selected {{ background: {c['rail_selected']}; "
             f"border-left-color: {c['accent']}; }}"
         )
         for index in range(self.count()):
