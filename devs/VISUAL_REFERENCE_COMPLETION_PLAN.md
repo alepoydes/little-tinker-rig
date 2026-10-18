@@ -2,7 +2,7 @@
 
 Status: in progress (2026-10-18). The shell, palette, catalog hierarchy,
 program cards, compact Scratch layout, and several auxiliary surfaces have
-verified visual passes. Long-line behavior, complete lesson and dialog review,
+verified visual passes. Long-line composition, complete lesson and dialog review,
 and final desktop acceptance remain open. The catalog wraps long titles at
 compact widths and recalculates card height when its width changes.
 The semantic block palette now uses the stronger blue, amber, green, and orange
@@ -11,9 +11,10 @@ those colors, with clearer borders, separated program cards, and readable
 header badges. Plain imports no longer appear as colored control blocks. The
 selected workspace and catalog filters have stronger blue states, and Run/Stop
 icons keep contrast against their filled buttons. Stage 3 now includes a fixed
-source-line gutter outside the text viewport; long-line handling, Scratch
-parity, and a full pointer/keyboard audit remain. At compact widths Scratch
-now docks below the program so both structural editors keep enough horizontal
+source-line gutter outside the text viewport; more compact long-line
+composition, Scratch parity, and a full pointer/keyboard audit remain. At
+compact widths Scratch now docks below the program so both structural editors
+keep enough horizontal
 room for Python; at wider widths it returns to the right. Manual dock moves
 stop automatic placement, and unfinished parameter input survives relocation.
 Scratch diagnostics now recognize names initialized in the open program and
@@ -21,6 +22,9 @@ refresh when those declarations change, removing false missing-name emphasis
 without excusing reads before a fragment's own later assignment.
 The structural view now shares Python keyword, number, string, and comment
 highlighting with the ordinary text editor; theme switches rehighlight it.
+When a structural line overflows, visible left/right controls beside the view
+switcher expose the rest of the code by pointer or keyboard without adding a
+row or changing source. Invalid inline input stays open during navigation.
 Stage 2 now gives top-level catalog categories semantic icon badges and
 stronger type hierarchy; nested construction groups use a smaller color marker
 while retaining tree expansion and keyboard navigation. The search field now
@@ -69,16 +73,13 @@ in the real Qt application, with every existing control and editing behavior
 accounted for. The mockups are a guide to hierarchy, color, spacing, and states;
 they are not a pixel specification or a reason to remove working features.
 
-Initial offscreen captures of a populated First drive project at 1380 × 880 and
-930 × 620 show the main gap. The first pass introduced theme support and a
-shared header/menu row, but the toolbar, tabs, catalog cards, editor blocks,
-and tasks are still flatter and denser than the reference. The original fixed
-320 px catalog left too little room for source at compact width; responsive
-sizing now uses 270 px by default, but long lines can still be clipped. The
-catalog and editor do not yet share the same clear card
-hierarchy. Task progress and selected/completed states need stronger visual
-structure. Screenshots of an empty document would conceal these problems, so
-the populated project is the primary fixture.
+Current offscreen captures of a populated First drive project at 1380 × 880
+and 930 × 620 show a clearer palette and card hierarchy than the first pass.
+The catalog uses 270 px by default at compact width, and Scratch moves below
+the program there. Python lines stay unwrapped to preserve structural hit
+geometry; the new arrows make their hidden portions reachable. Dense lesson
+states and some generic dialogs still need refinement. The populated project
+remains the primary fixture because an empty document conceals these gaps.
 
 The title/menu question has a concrete answer: the current frameless Qt window
 already embeds a real `QMenuBar` beside the brand in a custom title row. The

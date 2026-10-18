@@ -67,6 +67,26 @@ class DocumentPage(QWidget):
         self.find_bar = self.finder.query
         row = QHBoxLayout()
         row.addWidget(self.message, 1)
+        self.scroll_left = QToolButton()
+        self.scroll_right = QToolButton()
+        for button, direction, label, symbol in (
+            (self.scroll_left, -1, N_("Scroll program left"), "←"),
+            (self.scroll_right, 1, N_("Scroll program right"), "→"),
+        ):
+            button.setObjectName(
+                "sourceScrollLeft" if direction < 0 else "sourceScrollRight"
+            )
+            button.setText(symbol)
+            button.setToolTip(label)
+            button.setAccessibleName(label)
+            button.setFixedWidth(30)
+            button.clicked.connect(
+                lambda checked=False, step=direction: self.scroll_source(step)
+            )
+            row.addWidget(button)
+        scrollbar = self.source.horizontalScrollBar()
+        scrollbar.rangeChanged.connect(self.update_scroll_controls)
+        scrollbar.valueChanged.connect(self.update_scroll_controls)
         self.mode_actions = []
         group = QActionGroup(self)
         for index, (label, theme, fallback) in enumerate(
@@ -105,6 +125,21 @@ class DocumentPage(QWidget):
             self.code.sync_text(self.session.project.draft)
             self.editor_stack.setCurrentIndex(1)
         self.update_mode()
+
+    def scroll_source(self, direction):
+        if not self.source.finish_parameter():
+            return
+        scrollbar = self.source.horizontalScrollBar()
+        distance = max(160, self.source.viewport().width() * 2 // 3)
+        scrollbar.setValue(scrollbar.value() + direction * distance)
+
+    def update_scroll_controls(self, *_):
+        scrollbar = self.source.horizontalScrollBar()
+        visible = not self.code_active and scrollbar.maximum() > scrollbar.minimum()
+        self.scroll_left.setVisible(visible)
+        self.scroll_right.setVisible(visible)
+        self.scroll_left.setEnabled(visible and scrollbar.value() > scrollbar.minimum())
+        self.scroll_right.setEnabled(visible and scrollbar.value() < scrollbar.maximum())
 
     @property
     def dirty(self):
@@ -234,6 +269,7 @@ class DocumentPage(QWidget):
 
     def update_mode(self):
         self.mode_actions[int(self.code_active)].setChecked(True)
+        self.update_scroll_controls()
         self.message.setText(
             tr(
                 "Python · Ctrl+Space — complete · Ctrl+Shift+Space — hint · Ctrl+Alt+L — format"

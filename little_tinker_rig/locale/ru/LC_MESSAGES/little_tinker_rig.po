@@ -5010,6 +5010,14 @@ msgstr "Масштаб"
 msgid "Scratch"
 msgstr "Черновики"
 
+#: little_tinker_rig/qt/document.py:73
+msgid "Scroll program left"
+msgstr "Прокрутить программу влево"
+
+#: little_tinker_rig/qt/document.py:74
+msgid "Scroll program right"
+msgstr "Прокрутить программу вправо"
+
 #: little_tinker_rig/snippets/pybricks/hub_display.py:63
 #: little_tinker_rig/snippets/pybricks/hub_display.py:78
 msgid "Scroll text"

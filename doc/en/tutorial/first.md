@@ -12,6 +12,9 @@ The narrow icon sidebar on the left switches workspaces, including **Program**,
 The library shows a block's description and Python preview. Files open in tabs
 across the top. The two small icons at the top right of the document switch
 between **Blocks** and **Python**; the same commands are in the View menu.
+When a block line is wider than the editor, **← / →** appear beside these
+icons. Use them to reach parameters farther along the line without changing
+the program.
 **Scratch** starts hidden; open it with the bottom button and drag blocks there
 to set them aside.
 **Console** opens from the bottom bar.

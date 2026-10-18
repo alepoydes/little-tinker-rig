@@ -227,6 +227,19 @@ def studio_stylesheet(name):
         ChoiceButtons QToolButton, QToolButton#catalogUtility {{
             padding: 5px 4px;
         }}
+        QToolButton#sourceScrollLeft, QToolButton#sourceScrollRight {{
+            border: 1px solid {c['border']}; border-radius: 6px;
+            padding: 2px; font-size: 17px; font-weight: 700;
+        }}
+        QToolButton#sourceScrollLeft {{ background: {c['raised']}; }}
+        QToolButton#sourceScrollLeft:hover {{ background: {c['hover']}; }}
+        QToolButton#sourceScrollRight {{ background: {c['accent']};
+            color: {c['accent_text']}; border-color: {c['accent']}; }}
+        QToolButton#sourceScrollRight:hover {{ background: {c['focus']}; }}
+        QToolButton#sourceScrollLeft:disabled, QToolButton#sourceScrollRight:disabled {{
+            background: {c['raised']}; color: {c['muted']};
+            border-color: {c['border']};
+        }}
         QToolButton#programRun, QToolButton#programStop {{
             border: 1px solid transparent; border-radius: 7px;
             padding: 5px 11px; min-height: 27px; font-weight: 700;

@@ -461,6 +461,48 @@ def test_compact_scratch_relayout_preserves_invalid_parameter(windows):
     QTest.keyClick(field, Qt.Key.Key_Escape)
 
 
+def test_long_block_line_has_visible_horizontal_navigation(windows):
+    window = windows('print("' + "x" * 180 + '")\n')
+    window.resize(930, 620)
+    for _ in range(4):
+        QApplication.processEvents()
+    page = window.document_page
+    scrollbar = page.source.horizontalScrollBar()
+    assert scrollbar.maximum() > 0
+    assert page.scroll_right.isVisible() and page.scroll_right.isEnabled()
+    assert page.scroll_left.isVisible() and not page.scroll_left.isEnabled()
+    before = page.session.document.state
+    QTest.mouseClick(page.scroll_right, Qt.MouseButton.LeftButton)
+    assert scrollbar.value() > 0
+    assert page.scroll_left.isEnabled()
+    QTest.mouseClick(page.scroll_left, Qt.MouseButton.LeftButton)
+    assert scrollbar.value() == 0
+    page.scroll_right.setFocus()
+    QTest.keyClick(page.scroll_right, Qt.Key.Key_Space)
+    assert scrollbar.value() > 0
+    assert page.session.document.state is before
+    page.change_mode(1)
+    assert page.scroll_left.isHidden() and page.scroll_right.isHidden()
+    page.change_mode(0)
+    assert page.scroll_right.isVisible()
+    window.change_language("ru")
+    assert page.scroll_right.toolTip() == "Прокрутить программу вправо"
+
+
+def test_horizontal_navigation_keeps_invalid_parameter_visible(windows):
+    window = windows(MOTOR + "# " + "x" * 180 + "\n")
+    window.resize(930, 620)
+    for _ in range(4):
+        QApplication.processEvents()
+    field = parameter(window, "speed", "1 +")
+    scrollbar = window.source.horizontalScrollBar()
+    before = scrollbar.value()
+    QTest.mouseClick(window.document_page.scroll_right, Qt.MouseButton.LeftButton)
+    assert scrollbar.value() == before
+    assert field.isVisible() and field.text() == "1 +"
+    QTest.keyClick(field, Qt.Key.Key_Escape)
+
+
 def test_scratch_commands_keep_their_owner_and_help_cannot_undo(windows):
     window = windows()
     window.session.set_scratch(None, "scratch_value=2\n")
