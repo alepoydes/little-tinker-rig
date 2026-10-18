@@ -343,9 +343,9 @@ def test_note_hover_shares_colors_and_origin_marker_keeps_indentation(qt_app):
         after = view.viewport().grab().toImage().scaled(view.viewport().size())
         assert before.pixelColor(point) != after.pixelColor(point)
         code = view._rect(3, 0)
-        assert after.pixelColor(point) == after.pixelColor(
-            point.x(), round(code.top()) + 2
-        )
+        body = QPoint(point.x(), round(code.top()) + 2)
+        assert before.pixelColor(body) != after.pixelColor(body)
+        assert after.pixelColor(point) != after.pixelColor(body)
         # A note is owned by its block even when the pointer is over its text.
         QTest.mouseClick(view.viewport(), Qt.MouseButton.LeftButton, pos=point)
         node = view.session.editor.selection

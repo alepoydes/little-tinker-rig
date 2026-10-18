@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
 
 from little_tinker_rig.i18n import N_, tr
 
-from .theme import colors, svg_icon
+from .theme import colors, contrast_icon, svg_icon
 
 
 def tool_button(title, icon):
@@ -26,7 +26,8 @@ def tool_button(title, icon):
     button.setText(title)
     button.setToolTip(title)
     button.setAccessibleName(title)
-    button.setIcon(button.style().standardIcon(icon))
+    button.setProperty("standardIcon", icon)
+    button.setIcon(contrast_icon(button.style().standardIcon(icon)))
     button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
     return button
 

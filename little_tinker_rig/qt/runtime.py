@@ -15,6 +15,7 @@ from little_tinker_rig.i18n import tr
 
 from .annotations import runtime_span
 from .code import CodeEdit
+from .theme import colors
 
 
 class RuntimePanel(QWidget):
@@ -27,12 +28,15 @@ class RuntimePanel(QWidget):
         self.message = QLabel()
         self.message.setTextFormat(Qt.TextFormat.PlainText)
         self.message.setWordWrap(True)
-        self.message.setStyleSheet("color: #ab2027")
+        self.apply_theme()
         row.addWidget(self.message, 1)
         self.locate = QPushButton()
         self.locate.clicked.connect(lambda: window.perform(self.show_block))
         row.addWidget(self.locate)
         self.hide()
+
+    def apply_theme(self):
+        self.message.setStyleSheet(f"color: {colors()['danger']}")
 
     def clear(self, program=None):
         self.problem = None

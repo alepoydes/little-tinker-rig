@@ -84,6 +84,12 @@ class TaskMarkdown(QTextBrowser):
         height = max(24, ceil(self.document().size().height()) + 4)
         if self.height() != height:
             self.setFixedHeight(height)
+            if parent := self.parentWidget():
+                parent.updateGeometry()
+                if host := parent.parentWidget():
+                    if layout := host.layout():
+                        layout.invalidate()
+                        layout.activate()
 
 
 class Lessons(QObject):
@@ -107,7 +113,7 @@ class Lessons(QObject):
         self.title.setWordWrap(True)
         self.title.setStyleSheet("font-weight: 600; font-size: 14px;")
         header.addWidget(self.title, 1)
-        collapse = QToolButton()
+        collapse = self.collapse_button = QToolButton()
         collapse.setIcon(window._icon("go-next", "SP_ArrowForward"))
         collapse.setToolTip(N_("Collapse task panel"))
         collapse.setAccessibleName(N_("Collapse task panel"))
@@ -233,6 +239,9 @@ class Lessons(QObject):
 
     def apply_theme(self):
         c = colors()
+        self.collapse_button.setIcon(
+            self.window._icon("go-next", "SP_ArrowForward")
+        )
         self.progress_button.setIcon(svg_icon("lesson"))
         self.panel.setStyleSheet(
             f"#lessonTaskPanel {{ background: {c['window']}; color: {c['text']}; }}"

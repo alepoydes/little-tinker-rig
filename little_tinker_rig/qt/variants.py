@@ -28,6 +28,7 @@ from little_tinker_rig.i18n import tr
 
 from .library import snippet_title
 from .parameters import unit_text
+from .theme import colors
 
 
 def changed_default(value, default):
@@ -110,7 +111,7 @@ class VariantDialog(QDialog):
         self.preview_toggle.toggled.connect(self.show_preview)
         self.error = QLabel()
         self.error.setWordWrap(True)
-        self.error.setStyleSheet("color: #a03333")
+        self.apply_theme()
         layout.addWidget(self.error)
         self.buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -121,6 +122,9 @@ class VariantDialog(QDialog):
         self.variant.currentIndexChanged.connect(self.change_variant)
         self.change_variant()
         self.resize(590, self.minimumSizeHint().height())
+
+    def apply_theme(self):
+        self.error.setStyleSheet(f"color: {colors()['danger']}")
 
     def change_variant(self, *_):
         self.timer.stop()

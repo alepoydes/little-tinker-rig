@@ -295,6 +295,8 @@ class Studio(QMainWindow):
                 self.close_document(self.documents.indexOf(placeholder))
 
     def _icon(self, theme, fallback):
+        if (Path(__file__).with_name("icons") / f"{theme}.svg").is_file():
+            return svg_icon(theme)
         return contrast_icon(
             QIcon.fromTheme(
                 theme, self.style().standardIcon(getattr(QStyle.StandardPixmap, fallback))
@@ -847,8 +849,17 @@ class Studio(QMainWindow):
                 for action in window.findChildren(QAction):
                     if source := action.property("visualIconSource"):
                         action.setIcon(window._icon(*source))
+                for button in window.findChildren(QToolButton):
+                    standard = button.property("standardIcon")
+                    if standard is not None:
+                        button.setIcon(
+                            contrast_icon(button.style().standardIcon(standard))
+                        )
                 window.hub_button.setIcon(
                     window._icon("network-connect", "SP_ComputerIcon")
+                )
+                window.console_button.setIcon(
+                    window._icon("utilities-terminal", "SP_FileDialogListView")
                 )
                 window.level_filter.apply_theme()
                 window.view_filter.apply_theme()
@@ -861,6 +872,13 @@ class Studio(QMainWindow):
                 window.help_page.apply_theme()
                 window.lessons.apply_theme()
                 window.device_panel.apply_theme()
+                window.runtime_panel.apply_theme()
+                for assembly_page in (
+                    window.lessons.assembly_host.lesson_page,
+                    window.lessons.assembly_host.free_page,
+                ):
+                    if assembly_page and assembly_page.view:
+                        assembly_page.view.requestUpdate()
                 window.theme_actions[name].setChecked(True)
                 for index in range(window.documents.count()):
                     page = window.documents.widget(index)
@@ -869,6 +887,9 @@ class Studio(QMainWindow):
                     page.scratch.apply_theme()
                 window.library.viewport().update()
                 window.update()
+        for dialog in QApplication.topLevelWidgets():
+            if isinstance(dialog, QDialog) and hasattr(dialog, "apply_theme"):
+                dialog.apply_theme()
 
     def retranslate(self):
         translate_standard_dialogs()

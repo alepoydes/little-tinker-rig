@@ -64,6 +64,7 @@ class ScratchCell(QFrame):
     def __init__(self, pane, index, text):
         super().__init__()
         self.pane, self.index, self.text = pane, index, text
+        self.code_active = True
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.setObjectName("scratchCell")
         layout = QVBoxLayout(self)
@@ -87,7 +88,6 @@ class ScratchCell(QFrame):
         self.code.history = pane.history
         self.code.setAcceptDrops(False)
         self.code.setPlainText(text)
-        self.code.textChanged.connect(self.text_changed)
         self.source = SourceView(Session.fragment("", pane.session.snippets))
         self.source.scratch_owner = pane.session
         self.source.scratch_index = index
@@ -115,9 +115,9 @@ class ScratchCell(QFrame):
         self.apply_theme()
         self.error.hide()
         layout.addWidget(self.error)
-        self.code_active = True
         self.change_mode(False)
         localize(self)
+        self.code.textChanged.connect(self.text_changed)
 
     def apply_theme(self):
         c = colors()

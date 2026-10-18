@@ -4,7 +4,6 @@ from unittest.mock import patch
 import pytest
 
 from little_tinker_rig.core import edit
-from little_tinker_rig.core.presentation import PALETTE
 from little_tinker_rig.core.syntax import Syntax
 
 
@@ -223,8 +222,6 @@ def test_cancelled_close_does_not_replace_saved_geometry(tmp_path, qt_app):
 
 
 def test_notes_have_owned_colors_rows_and_drop_boundary(tmp_path, qt_app):
-    from PySide6.QtGui import QColor
-
     from little_tinker_rig.qt.app import Studio
 
     path = tmp_path / "robot.py"
@@ -250,22 +247,15 @@ def test_notes_have_owned_colors_rows_and_drop_boundary(tmp_path, qt_app):
         window.session.editor.selection = syntax.tree
         view.hover = None
         image = view.viewport().grab().toImage().scaled(view.viewport().size())
-        for rect, role in ((parent, "control"), (child, "value")):
-            color = QColor(PALETTE[role])
-            base = QColor("#fafbfc")
-            expected = QColor(
-                *(
-                    round(a * b / 255)
-                    for a, b in zip(color.getRgb()[:3], base.getRgb()[:3], strict=True)
-                )
-            )
-            assert (
-                image.pixelColor(int(rect.left()) + 2, int(rect.top()) + 2) == expected
-            )
-            assert (
-                image.pixelColor(int(rect.right()) - 70, int(rect.top()) + 2)
-                == expected
-            )
+        colors = []
+        for rect in (parent, child):
+            y = int(rect.center().y())
+            left = image.pixelColor(int(rect.right()) - 140, y)
+            right = image.pixelColor(int(rect.right()) - 70, y)
+            assert left == right
+            assert left != view.palette().base().color()
+            colors.append(left)
+        assert colors[0] != colors[1]
         motor = condition.body[0]
         region = next(r for r in view.presentation if r.span == syntax.spans[motor])
         assert region.line == syntax.position(original.index("# Slow approach"))[0]

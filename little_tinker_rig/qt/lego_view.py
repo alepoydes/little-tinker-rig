@@ -11,6 +11,8 @@ from PySide6.QtOpenGL import QOpenGLWindow
 from little_tinker_rig.core.ldraw import box_corners, rgba
 from little_tinker_rig.core.lessons import camera_values
 
+from .theme import colors
+
 VERTEX = """
 #version 330
 uniform mat4 camera;
@@ -313,6 +315,7 @@ class Renderer:
         picking=False,
         group=None,
         size=None,
+        background=None,
     ):
         selected = frozenset(selected)
         if selected != self.selection:
@@ -328,7 +331,9 @@ class Renderer:
         size = size or target.size
         ctx.viewport = (0, 0, *size)
         ctx.enable_only(moderngl.DEPTH_TEST)
-        target.clear(*((0.0, 0.0, 0.0, 0.0) if picking else (0.95, 0.96, 0.98, 1.0)))
+        target.clear(
+            *((0.0, 0.0, 0.0, 0.0) if picking else background or (0.95, 0.96, 0.98, 1.0))
+        )
         matrix = camera.matrix(*size).T.astype("f4").tobytes()
         for program in (self.faces, self.edges):
             program["camera"].write(matrix)
@@ -474,6 +479,7 @@ class LegoView(QOpenGLWindow):
                     future=self.future,
                     group=self.group,
                     size=self.pixel_size(),
+                    background=QColor(colors()["canvas"]).getRgbF(),
                 )
                 if self.marker:
                     point, label = self.marker

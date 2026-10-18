@@ -10,6 +10,8 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import QApplication, QLabel
 
+from .theme import colors
+
 _active = None
 
 
@@ -49,7 +51,10 @@ class Drag(QObject):
         self.preview.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         self.preview.setPixmap(pixmap)
         self.preview.resize(pixmap.deviceIndependentSize().toSize())
-        self.preview.setStyleSheet("border: 1px solid #567b90; background: #fafbfc")
+        c = colors()
+        self.preview.setStyleSheet(
+            f"border: 1px solid {c['border']}; background: {c['canvas']}"
+        )
         self.hotspot = hotspot or QPoint(16, 12)
         self.preview.show()
         self.preview.raise_()

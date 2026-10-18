@@ -437,7 +437,8 @@ def test_nested_note_keeps_parent_color_bands_and_comment_prefix(qt_app):
         for band in (loop, condition):
             x = round(band.left()) + 2
             assert image.pixelColor(x, y) == image.pixelColor(x, code_y)
-        assert image.pixelColor(round(rect.right()) - 50, y) == image.pixelColor(
+        # The title band is distinct while its parent indentation remains visible.
+        assert image.pixelColor(round(rect.right()) - 50, y) != image.pixelColor(
             round(rect.right()) - 50, code_y
         )
         # The comment starts with a visible hash before the enlarged symbol.

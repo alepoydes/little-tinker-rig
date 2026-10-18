@@ -102,7 +102,7 @@ def test_qt_python_draft_save_format_undo_and_native_cut(tmp_path, qt_app):
 def test_qt_hidden_console_help_links_and_library_colors(tmp_path, qt_app):
     from PySide6.QtCore import QUrl
 
-    from little_tinker_rig.core.presentation import PALETTE, snippet_role
+    from little_tinker_rig.core.presentation import snippet_role
     from little_tinker_rig.qt.app import Studio
     from little_tinker_rig.qt.library import COLOR, IDENTITY, PREVIEW
 
@@ -126,7 +126,7 @@ def test_qt_hidden_console_help_links_and_library_colors(tmp_path, qt_app):
     snippets = {s.identity: s for s in window.session.snippets if not s.historical}
     for card in window.library.rows.values():
         snippet = snippets[card.data(0, IDENTITY)]
-        assert card.data(0, COLOR) == PALETTE[snippet_role(snippet)]
+        assert card.data(0, COLOR) == snippet_role(snippet)
         assert ast.parse(card.data(0, PREVIEW))
     window.close()
 

@@ -71,6 +71,25 @@ def test_live_theme_switch_keeps_invalid_draft_and_other_windows(windows):
     QTest.keyClick(field, Qt.Key.Key_Escape)
 
 
+def test_live_theme_switch_updates_open_python_dialog(windows):
+    from little_tinker_rig.qt.dialogs import EditDialog
+    from little_tinker_rig.qt.theme import DARK, LIGHT
+
+    window = windows()
+    dialog = EditDialog(window, "Draft", lambda value: value, text="x = 1\n")
+    dialog.show()
+    try:
+        window.change_visual_theme("dark")
+        assert DARK["danger"] in dialog.error.styleSheet()
+        assert DARK["canvas"] in dialog.text.styleSheet()
+        assert dialog.text.toPlainText() == "x = 1\n"
+        window.change_visual_theme("light")
+        assert LIGHT["danger"] in dialog.error.styleSheet()
+        assert LIGHT["canvas"] in dialog.text.styleSheet()
+    finally:
+        dialog.reject()
+
+
 def test_scratch_history_follows_fragments_across_moves_and_removal(windows):
     from little_tinker_rig.core.edit import Target
     from little_tinker_rig.core.transfer import Transfer

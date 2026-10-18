@@ -19,6 +19,8 @@ from little_tinker_rig.core.block_metadata import CATEGORIES, change_property
 from little_tinker_rig.core.snippets import load_module
 from little_tinker_rig.i18n import tr
 
+from .theme import colors
+
 
 class CatalogProperties(QDialog):
     def __init__(self, source, snippet, snippets, parent=None):
@@ -110,7 +112,7 @@ class CatalogProperties(QDialog):
         layout.addWidget(scroll, 1)
         self.error = QLabel()
         self.error.setWordWrap(True)
-        self.error.setStyleSheet("color: #a03333")
+        self.apply_theme()
         layout.addWidget(self.error)
         self.buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -118,6 +120,9 @@ class CatalogProperties(QDialog):
         self.buttons.accepted.connect(self.apply)
         self.buttons.rejected.connect(self.reject)
         layout.addWidget(self.buttons)
+
+    def apply_theme(self):
+        self.error.setStyleSheet(f"color: {colors()['danger']}")
 
     def apply(self):
         values = {

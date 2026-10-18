@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QDialog, QDialogButtonBox, QLabel, QVBoxLayout
 
 from .code import CodeEdit
 from .localization import localize
+from .theme import colors
 
 
 class EditDialog(QDialog):
@@ -18,7 +19,7 @@ class EditDialog(QDialog):
         layout.addWidget(self.text)
         self.error = QLabel()
         self.error.setWordWrap(True)
-        self.error.setStyleSheet("color: #a03333")
+        self.apply_theme()
         layout.addWidget(self.error)
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -27,6 +28,10 @@ class EditDialog(QDialog):
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
         localize(self)
+
+    def apply_theme(self):
+        self.error.setStyleSheet(f"color: {colors()['danger']}")
+        self.text.apply_theme()
 
     def apply(self):
         try:

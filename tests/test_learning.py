@@ -53,9 +53,9 @@ def test_focus_is_conspicuous_without_recoloring_descendants(qt_app):
             point = QPoint(round(note.right()) - 40, round(note.top()) + 2)
             inactive, active = before.pixelColor(point), after.pixelColor(point)
             assert active.hslSaturationF() > inactive.hslSaturationF()
-            assert 0.05 < inactive.lightnessF() - active.lightnessF() < 0.15
+            assert 0.025 < inactive.lightnessF() - active.lightnessF() < 0.15
             assert active.hslHueF() == pytest.approx(inactive.hslHueF(), abs=0.03)
-            assert active == after.pixelColor(
+            assert active != after.pixelColor(
                 point.x(), round(view._rect(line, 0).top()) + 2
             )
             colors.append(active.name())

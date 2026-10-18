@@ -531,6 +531,37 @@ def test_first_drive_illustrations_render_in_both_languages_and_export(tmp_path,
         window.deleteLater()
 
 
+def test_task_status_stays_below_illustrated_card_after_workspace_resize(tmp_path, qt_app):
+    from pathlib import Path
+
+    from little_tinker_rig.qt.app import Studio
+
+    source = Path(__file__).resolve().parents[1] / "lessons" / "first_drive"
+    window = Studio(tmp_path / "plain.py")
+    window.resize(1380, 880)
+    window.show()
+    try:
+        window.lessons.open(source, new=True)
+        window.change_visual_theme("dark")
+        window.change_language("ru")
+        window.set_mode(2)
+        for _ in range(4):
+            qt_app.processEvents()
+        window.set_mode(0)
+        window.resize(930, 620)
+        for _ in range(4):
+            qt_app.processEvents()
+        window.resize(1380, 880)
+        window.set_mode(4)
+        for _ in range(4):
+            qt_app.processEvents()
+        card = window.lessons.cards["build"]
+        assert card["status"].geometry().top() > card["body"].geometry().bottom()
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
 def test_task_title_navigates_checkbox_stays_put_and_help_finds_text(tmp_path, qt_app):
     from pathlib import Path
 

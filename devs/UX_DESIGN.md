@@ -351,7 +351,13 @@ current palette. The [catalog reduction and personal navigation proposal](BLOCK_
 records the rationale for family cards and the implemented personal views. The Python view remains
 available at every level. Selection and hover strengthen the role color in both
 library cards and source; nested blocks retain their own semantic colors. Dark
-source blocks use a Screen composite so light code text stays readable.
+source blocks use a Screen composite so light code text stays readable. Display
+notes have a rounded role-colored title band; top-level block surfaces have
+rounded outer corners without changing the source hit geometry. The manual
+controller keeps its dark hardware surface in both themes, while the 3D viewer
+changes only its background and keeps physical part colors. Application-owned
+dialogs follow the selected palette; native file choosers follow the operating
+system appearance.
 
 The toolbar keeps file, history and hub actions. Structural commands remain in
 menus and shortcuts. Upload sends without execution; Run uploads and executes;

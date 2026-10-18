@@ -176,6 +176,8 @@ class SourceView(QTextEdit):
         )
         if getattr(self, "parameter_editor", None):
             self.parameter_editor.apply_theme()
+        if hasattr(self, "structure_bar"):
+            self.structure_bar.apply_theme()
         self.viewport().update()
 
     def refresh_source(self):
@@ -578,6 +580,7 @@ class SourceView(QTextEdit):
         first_line = self.source_line_at(QPoint(0, 0))
         last_line = self.source_line_at(QPoint(0, self.viewport().height()))
         painter = QPainter(self.viewport())
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         dark = QApplication.instance().property("ltrVisualTheme") == "dark"
         painter.setCompositionMode(
             QPainter.CompositionMode.CompositionMode_Screen
@@ -655,10 +658,22 @@ class SourceView(QTextEdit):
             color = color.lighter(100 + int(amount * 45)) if dark else saturated(color, amount)
             color.setAlphaF(self.intensity)
             painter.setBrush(color)
-            for rect in self.region_rects(region, first_line, last_line):
+            rects = tuple(self.region_rects(region, first_line, last_line))
+            rounded = None
+            if region.depth == 0 and region.extend_line and rects:
+                bounds = rects[0]
+                for part in rects[1:]:
+                    bounds = bounds.united(part)
+                rounded = QPainterPath()
+                rounded.addRoundedRect(bounds, 6, 6)
+            for rect in rects:
                 if rect.intersects(QRectF(event.rect())):
                     area = QRegion(rect.toRect())
                     painter.setClipRegion(area - covered)
+                    if rounded is not None:
+                        painter.setClipPath(
+                            rounded, Qt.ClipOperation.IntersectClip
+                        )
                     painter.drawRect(rect)
                     covered |= area
             if region.outlined:
@@ -711,6 +726,14 @@ class SourceView(QTextEdit):
                 rect = self.note_rect(line, index)
                 if rect is None or not rect.intersects(QRectF(event.rect())):
                     continue
+                band = block_color(note.role)
+                band = (
+                    band.lighter(150) if dark else saturated(band, 0.3)
+                )
+                band.setAlphaF(0.35 if dark else 0.42)
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.setBrush(band)
+                painter.drawRoundedRect(rect.adjusted(1, 1, -3, -1), 6, 6)
                 painter.setFont(note_font)
                 painter.setPen(
                     QColor(colors()["danger"] if note.error else colors()["text"])

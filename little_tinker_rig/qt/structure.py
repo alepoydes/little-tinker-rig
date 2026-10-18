@@ -34,6 +34,8 @@ from little_tinker_rig.core.transfer import Transfer
 from little_tinker_rig.core.types import known_type
 from little_tinker_rig.i18n import tr
 
+from .theme import colors
+
 
 class StructureBar(QWidget):
     def __init__(self, view):
@@ -79,10 +81,15 @@ class StructureBar(QWidget):
                 button.setPopupMode(QToolButton.ToolButtonPopupMode.MenuButtonPopup)
             layout.addWidget(button)
             self.buttons[action] = button
-        self.setStyleSheet(
-            "StructureBar { background: #f8fafc; border: 1px solid #617187; }"
-        )
+        self.apply_theme()
         self.hide()
+
+    def apply_theme(self):
+        c = colors()
+        self.setStyleSheet(
+            f"StructureBar {{ background: {c['panel']}; "
+            f"border: 1px solid {c['border']}; }}"
+        )
 
     def activate(self, point):
         syntax = self.view.session.document.syntax
