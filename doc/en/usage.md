@@ -74,7 +74,9 @@ API descriptions do not verify support on a connected hub. Ruff
 formats valid committed edits. **Ctrl+S** also saves unfinished Python. All programs
 are saved as UTF-8 without a BOM. Legacy files are read using their original
 encoding; saving updates the encoding declaration in the editor too. Ctrl+Z can
-undo that change. Unfinished files reopen in Python view; Run, Upload and switching to Blocks
+undo that change. A UTF-8 file with a mistyped encoding declaration still opens
+for correction; saving replaces the declaration with UTF-8. Unfinished files
+reopen in Python view; Run, Upload and switching to Blocks
 require valid syntax. A failed structural edit still leaves the block document
 unchanged.
 
@@ -222,7 +224,8 @@ and Devices and communication. Open a branch or search by an action, description
 or Python API name. Search includes English names in every interface language.
 Direct title matches appear before incidental matches within each category.
 Search previews the best matching variant; you can still choose another variant.
-Clearing search restores the previous selection and open branches. A message
+Clearing search restores the previous selection and open branches. If you switch
+levels during a search, its open branches stay open after clearing the search. A message
 explains matches hidden by the level, current task view, or explicit input search.
 
 A card represents a family of related operations. Right-click it and choose a
@@ -298,7 +301,8 @@ longer matches the original construction template.
 Search the library by name, category or description. The level filter combines
 with search: **Beginner**, **Intermediate**, **Advanced**, **Expert**, or **All**.
 Each level includes the preceding levels. Switching levels keeps open and closed
-groups as they are; search temporarily opens matching groups. All is only a
+groups as they are; search opens matching groups. Changing level while searching
+keeps those groups open afterward. All is only a
 filter choice. A fresh installation starts with Beginner; the selected
 level is remembered. See the [learning paths](learning.md). Cards use the same semantic
 color as inserted blocks. Hover shows the full preview. F1 opens the selected

@@ -692,6 +692,19 @@ class Library(QTreeWidget):
             self._first_level_filter and level == "beginner" and not search
         )
         if level is not None:
+            # A level change adopts the groups opened by the active search.
+            if (
+                level != self.level
+                and previous_search
+                and search
+                and self.view in self.search_states
+            ):
+                _, selected, scroll = self.search_states[self.view]
+                self.search_states[self.view] = (
+                    {key: item.isExpanded() for key, item in self.headings.items()},
+                    selected,
+                    scroll,
+                )
             self.level = level
             self._first_level_filter = False
         if search and (not previous_search or self.view not in self.search_states):

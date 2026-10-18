@@ -364,6 +364,22 @@ def test_save_as_normalizes_source_encoding(
         discard_window(window)
 
 
+def test_gui_opens_and_saves_utf8_with_bad_encoding_cookie(tmp_path, qt_app):
+    from little_tinker_rig.qt.app import Studio
+
+    path = tmp_path / "main.py"
+    source = '# coding: unknown-codec\nmessage = "Привет"\n'
+    path.write_bytes(source.encode())
+    window = Studio(path)
+    try:
+        assert window.document_page.text == source
+        assert window.save()
+        assert window.document_page.text == source.replace("unknown-codec", "utf-8")
+        assert path.read_text(encoding="utf-8") == window.document_page.text
+    finally:
+        discard_window(window)
+
+
 @pytest.mark.parametrize("draft", [False, True])
 def test_python_save_syncs_utf8_cookie_with_text_and_undo(tmp_path, qt_app, draft):
     from little_tinker_rig.core.source_file import SourceFile

@@ -6,9 +6,19 @@ import os
 import re
 import tempfile
 import tokenize
+from codecs import BOM_UTF8
 from pathlib import Path
 
 from little_tinker_rig.i18n import tr
+
+
+def decode_source(raw: bytes) -> tuple[str, str]:
+    """Read a Python file even when a valid UTF-8 draft has a bad cookie."""
+    try:
+        encoding, _ = tokenize.detect_encoding(io.BytesIO(raw).readline)
+    except SyntaxError:
+        encoding = "utf-8-sig" if raw.startswith(BOM_UTF8) else "utf-8"
+    return raw.decode(encoding), encoding
 
 
 def utf8_source(source: str) -> str:
@@ -55,12 +65,9 @@ class SourceFile:
     def __init__(self, path=None):
         self.path = Path(path).expanduser().resolve() if path is not None else None
         raw = self.path.read_bytes() if self.path and self.path.exists() else None
-        self.encoding = (
-            tokenize.detect_encoding(io.BytesIO(raw).readline)[0]
-            if raw is not None
-            else "utf-8"
+        self.source, self.encoding = (
+            decode_source(raw) if raw is not None else ("", "utf-8")
         )
-        self.source = raw.decode(self.encoding) if raw is not None else ""
         self.digest = hashlib.sha256(raw).digest() if raw is not None else None
 
     def dirty(self, text):

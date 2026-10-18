@@ -5,6 +5,7 @@ import pytest
 from little_tinker_rig.cli.main import main
 from little_tinker_rig.core.project import Project
 from little_tinker_rig.core.session import Session
+from little_tinker_rig.core.source_file import SourceFile
 
 
 @pytest.mark.parametrize("suffix", [".ltr.json", ".pyblocks.json"])
@@ -48,6 +49,29 @@ def test_legacy_source_and_edited_cookie_save_as_utf8(
     if edited != expected:
         project.document.undo()
         assert project.state.source == edited and project.dirty
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        '# coding: unknown-codec\nname = "Привет"\n'.encode(),
+        '\ufeff# coding: latin-1\nname = "Привет"\n'.encode("utf-8"),
+    ],
+)
+def test_invalid_encoding_cookie_remains_editable_and_saves_as_utf8(tmp_path, raw):
+    expected = '# coding: utf-8\nname = "Привет"\n'
+    for name in ("project", "source-file"):
+        path = tmp_path / f"{name}.py"
+        path.write_bytes(raw)
+        if name == "project":
+            owner = Project(path)
+            assert owner.state.source == raw.decode("utf-8-sig")
+            owner.save()
+        else:
+            owner = SourceFile(path)
+            assert owner.source == raw.decode("utf-8-sig")
+            owner.save(owner.source)
+        assert path.read_bytes() == expected.encode("utf-8")
 
 
 def test_session_selection_survives_save_normalization_and_subsequent_edits(tmp_path):

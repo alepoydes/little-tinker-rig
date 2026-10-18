@@ -1,10 +1,8 @@
 """Plain Python files with optional, independent workspace metadata."""
 
 import hashlib
-import io
 import json
 import os
-import tokenize
 from collections import Counter
 from pathlib import Path
 
@@ -12,7 +10,7 @@ from little_tinker_rig.i18n import tr
 
 from .document import Document, State
 from .source_file import atomic_write as atomic_write
-from .source_file import utf8_source
+from .source_file import decode_source, utf8_source
 
 
 class ExternalChangeError(ValueError):
@@ -37,8 +35,7 @@ class Project:
         self._disk_hash = None
         if self.path.exists():
             data = self.path.read_bytes()
-            self.encoding, _ = tokenize.detect_encoding(io.BytesIO(data).readline)
-            source = data.decode(self.encoding)
+            source, self.encoding = decode_source(data)
             self._disk_hash = hashlib.sha256(data).hexdigest()
         self.collections: list[Path] = []
         self.pins: dict[str, str] = {}

@@ -53,7 +53,7 @@ def test_old_level_setting_migrates_and_groups_limit_visual_load(tmp_path, qt_ap
         window.search.setText("speaker")
         window.level_filter.select("advanced")
         window.search.clear()
-        assert all(group.isExpanded() for group in groups)
+        assert all(group.isExpanded() for group in window.library.headings.values())
     finally:
         window.close()
 
