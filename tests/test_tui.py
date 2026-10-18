@@ -164,6 +164,7 @@ async def test_tui_virtual_upload_run_error_location_and_explicit_monitor(tmp_pa
         await until(lambda: app.info.connected)
         await pilot.press("f4")
         await until(lambda: app.robot.stored_program is not None and not app.hub_busy)
+        assert app.robot.info.connected
         assert not app.info.running and not app.query_one("#ports").display
         app.action_run_stored()
         await until(lambda: app.problem is not None)

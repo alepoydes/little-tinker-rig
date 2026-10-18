@@ -163,22 +163,27 @@ class HubWorker:
             operation=True,
         )
 
+    def _queue_program(self, path, sources, *, run):
+        if not self.connection or not self.info.connected:
+            self._failed(tr("Connect a hub first"))
+            return None
+        if self.operation and not self.operation.done():
+            self._failed(tr("Wait for the hub operation to finish"))
+            return None
+        program = Program(path, sources)
+        future = self.submit(self._transfer(program, run=run), operation=True)
+        if future is None:
+            program.cleanup()
+        return future
+
     def run_file(self, path, sources=None):
-        if self.connection:
-            return self.submit(
-                self._transfer(Program(path, sources), run=True), operation=True
-            )
-        self._failed(tr("Connect a hub first"))
+        return self._queue_program(path, sources, run=True)
 
     def upload_file(self, path, sources=None):
-        if self.connection:
-            return self.submit(
-                self._transfer(Program(path, sources), run=False), operation=True
-            )
-        self._failed(tr("Connect a hub first"))
+        return self._queue_program(path, sources, run=False)
 
     def run_stored(self):
-        if self.connection:
+        if self.connection and self.info.connected:
 
             async def run():
                 await self.connection.stop()
@@ -190,7 +195,7 @@ class HubWorker:
         self._failed(tr("Connect a hub first"))
 
     def start_monitor(self):
-        if self.connection:
+        if self.connection and self.info.connected:
 
             async def monitor():
                 await self.connection.stop()
@@ -226,7 +231,7 @@ class HubWorker:
 
     def stop_program(self):
         async def stop():
-            if self.connection:
+            if self.connection and self.info.connected:
                 await self.connection.stop()
 
         return self.submit(stop(), operation=True, interrupt=True)
@@ -239,7 +244,12 @@ class HubWorker:
 
     def _control(self, method, value):
         with self.control_lock:
-            if not self.connection or self.operation and not self.operation.done():
+            if (
+                not self.connection
+                or not self.info.connected
+                or self.operation
+                and not self.operation.done()
+            ):
                 return
             # Keep one latest sample, including the final neutral frame when
             # disarming stops the UI timer. Never accumulate obsolete movement.
@@ -263,7 +273,7 @@ class HubWorker:
             raise
 
     def configure(self, port, kind, value=None):
-        if isinstance(self.connection, VirtualConnection):
+        if self.info.connected and isinstance(self.connection, VirtualConnection):
             self.submit(self.connection.configure(port, kind, value))
 
     def write_input(self, data):
@@ -272,16 +282,19 @@ class HubWorker:
                 return self.submit(self.connection.write_input(data))
 
     async def _disconnect(self):
+        connection = self.connection
         try:
-            if self.connection:
+            if connection:
                 async with asyncio.timeout(5):
-                    await self.connection.disconnect()
+                    await connection.disconnect()
         except TimeoutError:
             self._output(
                 tr("Hub did not acknowledge disconnection; local connection closed.")
                 + "\n"
             )
         finally:
+            self.connection = None
+            self.tracebacks = self.stored_program = None
             self._remember(
                 replace(self.info, connected=False, running=False, monitoring=False)
             )
