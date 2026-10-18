@@ -49,6 +49,10 @@ def write_json(path, data):
     atomic_write(path, json.dumps(data, ensure_ascii=False, indent=2) + "\n")
 
 
+def _archive_hash(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest() if path.exists() else None
+
+
 def camera_values(state):
     try:
         values = (*state["center"], state["extent"], state["yaw"], state["pitch"])
@@ -148,6 +152,9 @@ def extract(data: bytes, destination: Path):
                     raise ValueError(
                         tr("Archive entries conflict: {name}", name=member.filename)
                     )
+            # Verify every CRC before replacing even one existing student file.
+            if archive.testzip() is not None:
+                raise BadZipFile("Archive member failed its CRC check")
             for member, path in zip(members, paths, strict=True):
                 if member.is_dir():
                     path.mkdir(parents=True, exist_ok=True)
@@ -155,7 +162,7 @@ def extract(data: bytes, destination: Path):
                     path.parent.mkdir(parents=True, exist_ok=True)
                     path.write_bytes(archive.read(member))
     except BadZipFile as error:
-        raise ValueError("Not a valid LittleTinker Rig archive") from error
+        raise ValueError(tr("Not a valid LittleTinker Rig archive")) from error
 
 
 def pack(directory: Path, additions=None) -> bytes:
@@ -793,25 +800,30 @@ class StudentProject:
         project.pending = data.get("pending", False)
         return project
 
-    def save(self, path: Path | None = None):
+    def save(self, path: Path | None = None, *, overwrite=False):
         destination = path or self.path
         if destination is None:
             raise ValueError("Choose a student project file first")
         destination = destination.resolve()
         if destination.is_relative_to(self.root):
             raise ValueError("Save the archive outside its working directory")
-        if destination == self.path:
-            current = (
-                hashlib.sha256(destination.read_bytes()).hexdigest()
-                if destination.exists()
-                else None
-            )
-            if current != self.disk_hash:
-                raise ValueError(
-                    "Project changed outside LittleTinker Rig; reopen it or save to another path"
+        current = _archive_hash(destination)
+        if destination == self.path and current != self.disk_hash:
+            raise ValueError(
+                tr(
+                    "File changed outside LittleTinker Rig; reopen it or save to another path"
                 )
+            )
+        if destination != self.path and current is not None and not overwrite:
+            raise FileExistsError(tr("The file already exists. Replace it?"))
         self.checkpoint()
         data = self.portable_snapshot()
+        if _archive_hash(destination) != current:
+            raise ValueError(
+                tr(
+                    "File changed outside LittleTinker Rig; reopen it or save to another path"
+                )
+            )
         atomic_write(destination, data)
         self.path = destination
         self.disk_hash = hashlib.sha256(data).hexdigest()
@@ -828,13 +840,24 @@ class StudentProject:
         ):
             shutil.rmtree(self.root, ignore_errors=True)
 
-    def export(self, destination, *, snapshot=None, progress=None, cancelled=None):
+    def export(
+        self,
+        destination,
+        *,
+        snapshot=None,
+        progress=None,
+        cancelled=None,
+        overwrite=False,
+    ):
         """Write an offline copy without changing this project's save baseline."""
         from .ldraw_parts import check_cancelled, resolve_library, subset
 
         destination = Path(destination).resolve()
         if destination == self.path or destination.is_relative_to(self.root):
             raise ValueError("Export to a separate project file")
+        current = _archive_hash(destination)
+        if current is not None and not overwrite:
+            raise FileExistsError(tr("The file already exists. Replace it?"))
         if snapshot is None:
             self.checkpoint()
             snapshot = self.portable_snapshot()
@@ -874,6 +897,12 @@ class StudentProject:
                     )
             data = pack(root, additions)
             check_cancelled(cancelled)
+            if _archive_hash(destination) != current:
+                raise ValueError(
+                    tr(
+                        "File changed outside LittleTinker Rig; reopen it or save to another path"
+                    )
+                )
             atomic_write(destination, data)
 
 

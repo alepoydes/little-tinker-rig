@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
+    QMessageBox,
     QProgressBar,
     QProgressDialog,
     QScrollArea,
@@ -1330,8 +1331,25 @@ class Lessons(QObject):
         if first_error is not None:
             raise first_error
 
+    def archive_destination(self, name, title):
+        selected = Path(name).resolve()
+        destination = selected.with_suffix(".ltr")
+        overwrite = destination.exists()
+        if overwrite and destination != selected:
+            answer = QMessageBox.question(
+                self.window,
+                title,
+                tr("The file already exists. Replace it?"),
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel,
+                QMessageBox.StandardButton.Cancel,
+            )
+            if answer != QMessageBox.StandardButton.Yes:
+                return None
+        return destination, overwrite
+
     def save(self, project, *, choose=False):
         path = project.path
+        overwrite = False
         if choose or path is None:
             name, _ = QFileDialog.getSaveFileName(
                 self.window,
@@ -1341,16 +1359,17 @@ class Lessons(QObject):
             )
             if not name:
                 return False
-            path = Path(name)
-            if path.suffix != ".ltr":
-                path = path.with_suffix(".ltr")
+            selected = self.archive_destination(name, tr("Save lesson project"))
+            if selected is None:
+                return False
+            path, overwrite = selected
         if any(
             other is not project and other.path == path.resolve()
             for other in self.projects.values()
         ):
             raise ValueError(tr("This project is already open. Choose another file."))
         self.store_documents(project)
-        project.save(path)
+        project.save(path, overwrite=overwrite)
         self.window.remember_file(path)
         self.window.recovery.flush()
         return True
@@ -1399,7 +1418,12 @@ class Lessons(QObject):
         )
         if not name:
             return
-        destination = Path(name).with_suffix(".ltr").resolve()
+        selected = self.archive_destination(
+            name, tr("Export lesson project with resources")
+        )
+        if selected is None:
+            return
+        destination, overwrite = selected
         if any(
             p.path == destination or destination.is_relative_to(p.root)
             for p in self.projects.values()
@@ -1410,7 +1434,9 @@ class Lessons(QObject):
         snapshot = project.portable_snapshot()
         self.window.recovery.flush()
         self.export_job = ResourceJob(
-            lambda **kwargs: project.export(destination, snapshot=snapshot, **kwargs)
+            lambda **kwargs: project.export(
+                destination, snapshot=snapshot, overwrite=overwrite, **kwargs
+            )
         )
         dialog = QProgressDialog(
             tr("Preparing offline resources…"), tr("Cancel"), 0, 0, self.window

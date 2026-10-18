@@ -134,6 +134,38 @@ def test_lesson_autosave_continues_after_a_program_conflict(tmp_path, qt_app):
         window.deleteLater()
 
 
+def test_lesson_save_confirms_the_normalized_archive_destination(
+    tmp_path, qt_app, monkeypatch
+):
+    from PySide6.QtWidgets import QFileDialog, QMessageBox
+
+    from little_tinker_rig.qt.app import Studio
+
+    source = make_lesson(tmp_path)
+    destination = tmp_path / "student.ltr"
+    destination.write_bytes(b"Existing project")
+    monkeypatch.setattr(
+        QFileDialog,
+        "getSaveFileName",
+        lambda *args: (str(tmp_path / "student.txt"), ""),
+    )
+    answers = iter((QMessageBox.StandardButton.Cancel, QMessageBox.StandardButton.Yes))
+    monkeypatch.setattr(QMessageBox, "question", lambda *args: next(answers))
+
+    window = Studio(tmp_path / "plain.py")
+    try:
+        project = window.lessons.open(source).lesson_project
+        assert not window.lessons.save(project, choose=True)
+        assert destination.read_bytes() == b"Existing project"
+        assert project.path is None
+
+        assert window.lessons.save(project, choose=True)
+        assert StudentProject.open(destination).data["id"] == project.data["id"]
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
 def test_invalid_later_lesson_tab_does_not_partly_restore_layout(tmp_path, qt_app):
     from little_tinker_rig.qt.app import Studio
 

@@ -3705,6 +3705,10 @@ msgstr ""
 msgid "No unknown names found.\n"
 msgstr "Неизвестных имён не найдено.\n"
 
+#: little_tinker_rig/core/lessons.py:165
+msgid "Not a valid LittleTinker Rig archive"
+msgstr "Некорректный архив LittleTinker Rig"
+
 #: little_tinker_rig/qt/find.py:108
 msgid "Not found"
 msgstr "Не найдено"

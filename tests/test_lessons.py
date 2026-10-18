@@ -1,6 +1,6 @@
 import io
 import json
-from zipfile import ZipFile
+from zipfile import ZIP_STORED, ZipFile
 
 import pytest
 
@@ -213,6 +213,31 @@ def test_saved_template_attempt_retains_archive_and_dirty_baseline(lesson, tmp_p
     assert "archive" not in StudentProject.open(copy).data
 
 
+def test_save_as_and_export_require_explicit_overwrite(lesson, tmp_path):
+    first = StudentProject.create(lesson)
+    second = StudentProject.create(lesson)
+    destination = tmp_path / "existing.ltr"
+    first.save(destination)
+    original = destination.read_bytes()
+
+    with pytest.raises(FileExistsError):
+        second.save(destination)
+    assert destination.read_bytes() == original
+    assert second.path is None
+
+    with pytest.raises(FileExistsError):
+        second.export(destination)
+    assert destination.read_bytes() == original
+
+    second.save(destination, overwrite=True)
+    assert StudentProject.open(destination).data["id"] == second.data["id"]
+
+    exported = tmp_path / "offline.ltr"
+    exported.write_bytes(b"Previous export")
+    second.export(exported, overwrite=True)
+    assert StudentProject.open(exported).data["id"] == second.data["id"]
+
+
 @pytest.mark.parametrize(
     "name", ["../escaped", "/absolute", "a/../../escaped", "C:/file", "a\\b"]
 )
@@ -251,6 +276,25 @@ def test_archive_rejects_existing_file_parent_without_partial_extraction(tmp_pat
         extract(data.getvalue(), destination)
     assert blocker.read_text(encoding="utf-8") == "keep"
     assert not (destination / "good.txt").exists()
+
+
+def test_corrupt_archive_member_cannot_overwrite_existing_files(tmp_path):
+    destination = tmp_path / "output"
+    destination.mkdir()
+    existing = destination / "notes.txt"
+    existing.write_text("Original notes", encoding="utf-8")
+    data = io.BytesIO()
+    with ZipFile(data, "w", ZIP_STORED) as archive:
+        archive.writestr("notes.txt", "Replacement notes")
+        archive.writestr("last.txt", "Unique payload for CRC corruption")
+    corrupted = bytearray(data.getvalue())
+    offset = corrupted.index(b"Unique payload for CRC corruption")
+    corrupted[offset] ^= 1
+
+    with pytest.raises(ValueError, match="valid LittleTinker Rig archive"):
+        extract(bytes(corrupted), destination)
+    assert existing.read_text(encoding="utf-8") == "Original notes"
+    assert not (destination / "last.txt").exists()
 
 
 def test_pack_only_ignores_cache_directories_inside_project(tmp_path):
