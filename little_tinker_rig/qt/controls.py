@@ -357,7 +357,7 @@ class ControlsPage(QWidget):
                 self.table.setCellWidget(row, column, widget)
             self.rows[port] = (source, mode, scale, center, reverse)
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(18, 16, 18, 16)
+        layout.setContentsMargins(10, 16, 10, 16)
         layout.setSpacing(12)
         title = QLabel(N_("Manual control"))
         title.setStyleSheet("font-size: 23px; font-weight: bold")

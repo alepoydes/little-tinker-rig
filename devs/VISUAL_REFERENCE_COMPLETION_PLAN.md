@@ -21,7 +21,9 @@ has a theme-aware search icon and built-in clear action without adding height.
 Control now places its controller and actions near the top instead of centering
 them in empty height, and its monitor-start action has a visible labeled button.
 With the device panel open at 930 × 620, the motor-assignment table remains
-scrollable but needs a compact layout in a later Stage 5 pass.
+vertically scrollable but the whole Control page no longer gains a horizontal
+scrollbar from Russian action labels. The narrow motor fields still need a
+compact layout in a later Stage 5 pass.
 Block Editor and in-editor search now use the same theme-aware SVG icon path as
 the shell. This removes the opaque square artifacts from standard desktop
 icons in Dark while preserving the existing actions and tooltips.
