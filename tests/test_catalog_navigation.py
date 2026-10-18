@@ -161,6 +161,41 @@ def test_group_titles_toggle_once_for_top_level_and_nested_branches(qt_app):
         library.close()
 
 
+def test_level_buttons_preserve_open_and_closed_catalog_groups(tmp_path, qt_app):
+    from PySide6.QtTest import QSignalSpy
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "main.py")
+    window.show()
+    try:
+        library = window.library
+        assert window.level_filter.value == "beginner"
+        assert library.headings["movement"].isExpanded()
+        library.expand_groups(False)
+        movement = library.headings["movement"]
+        nested = next(
+            item
+            for key, item in library.headings.items()
+            if key.startswith("movement/") and item.parent() is movement
+        )
+        movement.setExpanded(True)
+        nested.setExpanded(True)
+        closed = library.headings["program"]
+        expanded_events = QSignalSpy(library.itemExpanded)
+        collapsed_events = QSignalSpy(library.itemCollapsed)
+
+        for level in ("intermediate", "advanced", "expert", "all", "beginner"):
+            window.level_filter.select(level)
+            assert movement.isExpanded()
+            assert nested.isExpanded()
+            assert not closed.isExpanded()
+        assert expanded_events.count() == collapsed_events.count() == 0
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
 def test_long_catalog_title_gains_a_second_line_in_compact_russian_view(
     tmp_path, qt_app
 ):

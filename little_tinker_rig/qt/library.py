@@ -319,6 +319,7 @@ class Library(QTreeWidget):
         self.setItemDelegate(CardDelegate(self))
         self.setMinimumWidth(250)
         self.level = "all"
+        self._first_level_filter = True
         self.view = "catalog"
         self.scope = ""
         self.search = ""
@@ -687,9 +688,12 @@ class Library(QTreeWidget):
 
     def filter(self, search, level=None):
         previous_search = self.search
-        changed_level = level is not None and level != self.level
+        initial_beginner = (
+            self._first_level_filter and level == "beginner" and not search
+        )
         if level is not None:
             self.level = level
+            self._first_level_filter = False
         if search and (not previous_search or self.view not in self.search_states):
             current = self.currentItem()
             self.search_states[self.view] = (
@@ -756,8 +760,8 @@ class Library(QTreeWidget):
                 group.setExpanded(True)
             elif previous_search:
                 group.setExpanded(expanded.get(key, False))
-            elif changed_level:
-                group.setExpanded(self.level == "beginner")
+            elif initial_beginner:
+                group.setExpanded(True)
         # Reorder only search results; personal views retain their own order.
         if (search or previous_search) and self.headings:
             for group in self.headings.values():

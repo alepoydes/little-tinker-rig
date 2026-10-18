@@ -288,9 +288,9 @@ longer matches the original construction template.
 
 Search the library by name, category or description. The level filter combines
 with search: **Beginner**, **Intermediate**, **Advanced**, **Expert**, or **All**.
-Each level includes the preceding levels. Groups start collapsed above Beginner
-and search opens matching groups. All is
-only a filter choice. A fresh installation starts with Beginner; the selected
+Each level includes the preceding levels. Switching levels keeps open and closed
+groups as they are; search temporarily opens matching groups. All is only a
+filter choice. A fresh installation starts with Beginner; the selected
 level is remembered. See the [learning paths](learning.md). Cards use the same semantic
 color as inserted blocks. Hover shows the full preview. F1 opens the selected
 block's section on its group page or the guide. Help includes offline Markdown and snippet

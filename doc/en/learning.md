@@ -7,10 +7,11 @@ choice is saved. Existing `Standard` settings and collection metadata migrate to
 
 Beginner contains 19 family cards, including both SPIKE and BOOST sensor setup
 variants. Use the separate level and view buttons described in the
-[library guide](usage.md#finding-and-reusing-blocks). At other levels, groups start collapsed so children
-can explore one topic at a time. Searching opens matching groups; clearing the
-search restores their previous expansion. Each help group describes its blocks
-together, with their introduction levels and complete Python source.
+[library guide](usage.md#finding-and-reusing-blocks). Changing levels keeps the
+groups you have opened or closed, so you can explore one topic at a time.
+Searching opens matching groups; clearing the search restores their previous
+expansion. Each help group describes its blocks together, with their introduction
+levels and complete Python source.
 
 ![The beginner library and a complete robot activity](images/learning.png)
 
