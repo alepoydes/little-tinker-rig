@@ -1,4 +1,5 @@
 import ast
+import json
 
 import pytest
 
@@ -43,6 +44,11 @@ def test_corrupt_attempt_does_not_hide_other_examples(tmp_path, qt_app, monkeypa
     undecodable = attempts_directory() / "undecodable"
     undecodable.mkdir()
     (undecodable / "work.json").write_bytes(b"\xff")
+    impossible_date = attempts_directory() / "impossible_date"
+    impossible_date.mkdir()
+    (impossible_date / "work.json").write_text(
+        json.dumps({**valid.data, "opened": 10**100}), encoding="utf-8"
+    )
     monkeypatch.setattr("little_tinker_rig.qt.app.examples_directory", lambda: examples)
 
     window = Studio()

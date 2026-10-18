@@ -52,7 +52,8 @@ def test_focus_is_conspicuous_without_recoloring_descendants(qt_app):
             note = view.note_rect(line, 0)
             point = QPoint(round(note.right()) - 40, round(note.top()) + 2)
             inactive, active = before.pixelColor(point), after.pixelColor(point)
-            assert active.hslSaturationF() > inactive.hslSaturationF()
+            # Note bands may already have maximum HSL saturation.
+            assert active.hslSaturationF() >= inactive.hslSaturationF()
             assert 0.025 < inactive.lightnessF() - active.lightnessF() < 0.15
             assert active.hslHueF() == pytest.approx(inactive.hslHueF(), abs=0.03)
             assert active != after.pixelColor(
