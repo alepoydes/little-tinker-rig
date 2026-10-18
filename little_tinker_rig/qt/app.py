@@ -360,8 +360,9 @@ class Studio(QMainWindow):
         self.console.setMaximumBlockCount(5000)
         console_page = QWidget()
         layout = QVBoxLayout(console_page)
-        row = QHBoxLayout()
-        row.addWidget(QLabel(N_("Program output and messages")))
+        self.console_actions = QWidget()
+        row = QHBoxLayout(self.console_actions)
+        row.setContentsMargins(0, 0, 0, 0)
         row.addStretch()
         self.last_error = ""
         self.copy_error = QPushButton(N_("Copy error"))
@@ -375,11 +376,16 @@ class Studio(QMainWindow):
         self.connection_help.hide()
         row.addWidget(self.connection_help)
         clear = QPushButton(N_("Clear"))
+        clear.setObjectName("consoleClear")
         clear.clicked.connect(self.console.clear)
         clear.clicked.connect(self.copy_error.hide)
         clear.clicked.connect(self.connection_help.hide)
         row.addWidget(clear)
-        layout.addLayout(row)
+        layout.addWidget(self.console_actions)
+        self.console_actions.hide()
+        self.console.textChanged.connect(
+            lambda: self.console_actions.setVisible(bool(self.console.toPlainText()))
+        )
         self.runtime_panel = RuntimePanel(self)
         layout.addWidget(self.runtime_panel)
         layout.addWidget(self.console)
@@ -392,6 +398,14 @@ class Studio(QMainWindow):
         self.console_dock = self.dock(
             N_("Console"), console_page, Qt.DockWidgetArea.BottomDockWidgetArea
         )
+        self.console_dock.installEventFilter(self)
+        self._console_initial_size_set = False
+        self._console_size_pending = False
+        self._console_auto_target = None
+        self._console_auto_height = None
+        self._console_user_sized = False
+        self._console_user_height = None
+        self._console_sizing = False
         self.console_dock.visibilityChanged.connect(self.console_visibility)
         self.console_dock.hide()
         self.active_cell = None
@@ -868,6 +882,15 @@ class Studio(QMainWindow):
             self._schedule_catalog_width()
         if hasattr(self, "_scratch_dock_auto"):
             self._schedule_scratch_layout()
+        target = 145 if self.height() < 700 else 220
+        if (
+            getattr(self, "_console_auto_target", None) is not None
+            and target != self._console_auto_target
+            and not self._console_user_sized
+        ):
+            self._console_initial_size_set = False
+            if self.console_dock.isVisible():
+                self._queue_console_size()
 
     @property
     def document_page(self):
@@ -1633,6 +1656,36 @@ class Studio(QMainWindow):
         if visible and hasattr(self, "console_button"):
             self.unread = 0
             self.console_button.setText(tr("Console"))
+        if visible and not self._console_sizing:
+            self._queue_console_size()
+
+    def _queue_console_size(self):
+        if not self._console_size_pending:
+            self._console_size_pending = True
+            QTimer.singleShot(50, self, self._size_console_once)
+
+    def _size_console_once(self):
+        self._console_size_pending = False
+        if not self.console_dock.isVisible():
+            return
+        target = (
+            self._console_user_height
+            if self._console_user_sized
+            else 145 if self.height() < 700 else 220
+        )
+        self._console_sizing = True
+        try:
+            self.resizeDocks(
+                [self.console_dock],
+                [target],
+                Qt.Orientation.Vertical,
+            )
+        finally:
+            self._console_sizing = False
+        if not self._console_user_sized:
+            self._console_auto_target = target
+            self._console_auto_height = self.console_dock.height()
+        self._console_initial_size_set = True
 
     def error(self, message):
         self.last_error = message
@@ -2131,11 +2184,10 @@ class Studio(QMainWindow):
         if info.error and info.error != self.hub_info.error:
             self.error(info.error)
         self.hub_info = info
+        input_available = info.connected and info.transport in ("ble", "usb")
+        self.hub_input.setVisible(input_available)
         self.hub_input.setEnabled(
-            info.connected
-            and info.transport in ("ble", "usb")
-            and not info.monitoring
-            and not self.hub_is_busy
+            input_available and not info.monitoring and not self.hub_is_busy
         )
         if hasattr(self, "lessons"):
             self.lessons.update_check()
@@ -2248,6 +2300,17 @@ class Studio(QMainWindow):
         self.set_mode(1)
 
     def eventFilter(self, watched, event):
+        if (
+            watched is getattr(self, "console_dock", None)
+            and event.type() == QEvent.Type.Resize
+            and self.console_dock.isVisible()
+            and self._console_initial_size_set
+            and not self._console_sizing
+            and QApplication.mouseButtons() & Qt.MouseButton.LeftButton
+            and abs(event.size().height() - self._console_auto_height) > 20
+        ):
+            self._console_user_sized = True
+            self._console_user_height = event.size().height()
         # Window shortcuts are disabled by modal dialogs. Stop still belongs to
         # the Studio that owns the dialog, even with several windows open.
         if event.type() in (QEvent.Type.ShortcutOverride, QEvent.Type.KeyPress):

@@ -74,8 +74,9 @@ retain their building links. PDFs, photos and videos open in your browser and
 require internet or a separately saved copy. For keyboard
 projects, open **Console**, focus **Hub input** and enable **Send keys immediately**.
 Only that field sends keys; Escape returns to line input. In line mode, Enter
-sends the text and a carriage return. Input needs a physical Bluetooth/USB hub
-with its port monitor stopped. It is not a terminal or REPL emulator.
+sends the text and a carriage return. The input row appears after a physical
+Bluetooth/USB hub connects and stays disabled while its port monitor runs. It
+is not a terminal or REPL emulator.
 
 Imported lesson text comes from the [MIT-licensed Projects repository](https://github.com/pybricks/pybricks-projects/blob/master/LICENSE).
 The 42100 activity uses existing LittleTinker Rig MIT programs and original guidance.

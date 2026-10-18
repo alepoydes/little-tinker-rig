@@ -51,6 +51,11 @@ columns. Neither width gains a horizontal scrollbar.
 Block Editor and in-editor search now use the same theme-aware SVG icon path as
 the shell. This removes the opaque square artifacts from standard desktop
 icons in Dark while preserving the existing actions and tooltips.
+Console opens at a smaller, responsive height, giving the source a usable
+viewport at 930 × 620. Its empty state omits the redundant actions row and
+unavailable hub input; output reveals Clear, and a USB/Bluetooth connection
+reveals input. Reopening after a window resize uses the matching default,
+while a manually resized Console retains the chosen height.
 The Block Editor's New block action now uses the primary accent and a matching
 icon in both themes, making the creation path visible beside its secondary
 collection actions.

@@ -6,7 +6,7 @@ import pytest
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QAction, QTextCursor
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QFileDialog
+from PySide6.QtWidgets import QApplication, QFileDialog, QPushButton
 
 from little_tinker_rig.qt.app import Studio
 
@@ -186,6 +186,66 @@ def test_compact_control_keeps_motor_assignments_above_controller(windows):
     QApplication.processEvents()
     widths = [table.columnWidth(column) for column in range(6)]
     assert max(widths) - min(widths) <= 2
+
+
+def test_first_console_open_keeps_compact_program_visible(windows):
+    from little_tinker_rig.pybricks.devices import HubInfo
+
+    window = windows()
+    window.resize(930, 620)
+    QApplication.processEvents()
+    window.console_dock.show()
+    window.console_dock.raise_()
+    QTest.qWait(90)
+    assert window.console_dock.height() <= 190
+    assert window.source.viewport().height() >= 230
+    assert not window.console_actions.isVisible()
+    window.append_output("Ready\n")
+    assert window.console_actions.isVisible()
+    window.console_actions.findChild(QPushButton, "consoleClear").click()
+    assert not window.console_actions.isVisible()
+    assert not window.hub_input.isVisible()
+    window.update_hub(HubInfo(connected=True, transport="usb"))
+    assert window.hub_input.isVisible()
+    window.update_hub(HubInfo())
+    assert not window.hub_input.isVisible()
+
+
+def test_console_uses_compact_height_after_hidden_window_resize(windows):
+    window = windows()
+    window.resize(1380, 880)
+    QApplication.processEvents()
+    window.console_dock.show()
+    QTest.qWait(90)
+    assert window.console_dock.height() <= 240
+    window.console_dock.hide()
+
+    window.resize(930, 620)
+    QApplication.processEvents()
+    window.console_dock.show()
+    window.console_dock.raise_()
+    QTest.qWait(90)
+    assert window.console_dock.height() <= 190
+    assert window.source.viewport().height() >= 230
+
+
+def test_console_preserves_a_user_chosen_height(windows):
+    window = windows()
+    window.resize(1380, 880)
+    QApplication.processEvents()
+    window.console_dock.show()
+    QTest.qWait(90)
+    QTest.mousePress(window.console.viewport(), Qt.MouseButton.LeftButton)
+    window.resizeDocks([window.console_dock], [300], Qt.Orientation.Vertical)
+    QApplication.processEvents()
+    QTest.mouseRelease(window.console.viewport(), Qt.MouseButton.LeftButton)
+    assert window.console_dock.height() >= 280
+    window.console_dock.hide()
+    window.resize(930, 620)
+    QApplication.processEvents()
+    window.console_dock.show()
+    QTest.qWait(90)
+    assert window.console_dock.height() >= 220
 
 
 def test_scratch_history_follows_fragments_across_moves_and_removal(windows):
