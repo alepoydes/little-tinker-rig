@@ -58,6 +58,11 @@ Home reads recent file paths and the existing example/lesson attempt manifests;
 its cards delegate to those managers, so browsing never creates an attempt and
 reopening resumes one. The lesson task panel is hidden while Home is visible,
 without changing its saved expanded state.
+Retained lesson attempts store the saved archive path, hash and save baseline in
+their manifest. Home matches recent archives to attempt identities, including
+archives saved before this metadata was added, and displays numbered attempts
+when a lesson has several.
+Portable lesson archives omit the saved archive path and hash.
 
 Parameter slots are derived from snippet bindings and ordinary expression positions.
 Changing one is a validated source transaction. Display-only parameter padding does

@@ -13,8 +13,10 @@ Starting without a filename opens **Home**. Its rail icon or **View → Home**
 (**Ctrl+Alt+0**) returns to it. **New program** there and **File → New**
 create unnamed documents; returning Home keeps open documents and lesson progress.
 Continue working includes an open unnamed program, ordinary files, example
-attempts and lesson attempts without
-duplicating their program modules. The equipment filter changes the displayed
+attempts and lesson attempts without duplicating their program modules or saved
+lesson archives. When a lesson has several attempts, their numbers distinguish
+them. A saved lesson attempt keeps its archive path and checks for external
+changes when saved again. The equipment filter changes the displayed
 starter projects and remembers the choice. **All lessons…** and **All examples…**
 open the complete bundled catalogs. Run and
 Upload need no filename; explicit Save asks for one. Cancelling Save leaves the
@@ -365,6 +367,8 @@ See [authoring snippets](snippets.md) and [robot control](robotics.md).
 
 **File → Open recent** lists the ten most recently opened or saved files. Opening
 a file already in a tab selects that tab and preserves its unfinished draft.
+If an unchanged lesson archive is linked to a retained attempt, opening the archive
+continues that attempt and its newer autosaved work.
 Missing files remain visible but disabled. **Clear recent files** clears the list.
 
 A block description occupies a separate row in its own semantic color. Nested

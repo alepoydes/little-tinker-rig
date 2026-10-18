@@ -182,6 +182,37 @@ def test_package_and_recovery_keep_original_save_baseline(lesson, tmp_path):
     assert not recovered.dirty
 
 
+def test_saved_template_attempt_retains_archive_and_dirty_baseline(lesson, tmp_path):
+    project = StudentProject.create(lesson)
+    created = project.data["created"]
+    saved = tmp_path / "student.ltr"
+    project.save(saved)
+    project.progress["completed"].append("build")
+    project.pending = True
+    project.checkpoint()
+
+    resumed = StudentProject.latest(lesson)
+    assert resumed.path == saved
+    assert resumed.disk_hash == project.disk_hash
+    assert resumed.data["created"] == created
+    assert resumed.dirty
+    assert resumed.score == (1, 2)
+
+    saved.write_bytes(b"external edit")
+    with pytest.raises(ValueError, match="changed outside"):
+        resumed.save()
+    assert saved.read_bytes() == b"external edit"
+
+    copy = tmp_path / "copy.ltr"
+    resumed.save(copy)
+    reopened = StudentProject.latest(lesson)
+    assert reopened.path == copy
+    assert not reopened.dirty
+    with ZipFile(copy) as archive:
+        assert "archive" not in json.loads(archive.read("project.json"))
+    assert "archive" not in StudentProject.open(copy).data
+
+
 @pytest.mark.parametrize(
     "name", ["../escaped", "/absolute", "a/../../escaped", "C:/file", "a\\b"]
 )

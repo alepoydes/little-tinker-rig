@@ -1,7 +1,9 @@
 """A compact start workspace for continuing work and choosing a first activity."""
 
+import json
 from pathlib import Path
 from time import time_ns
+from zipfile import BadZipFile, ZipFile
 
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import (
@@ -27,6 +29,20 @@ from .theme import colors, svg_pixmap
 
 class HomePage(QScrollArea):
     """Only explicit actions open examples or create learner attempts."""
+
+    @staticmethod
+    def _archive_attempt_id(path):
+        if path.suffix != ".ltr":
+            return None
+        try:
+            with ZipFile(path) as archive:
+                info = archive.getinfo("project.json")
+                if info.file_size > 65536:
+                    return None
+                data = json.loads(archive.read(info))
+                return data.get("id") if isinstance(data, dict) else None
+        except (BadZipFile, KeyError, OSError, RuntimeError, ValueError):
+            return None
 
     def __init__(self, window):
         super().__init__(window)
@@ -216,6 +232,29 @@ class HomePage(QScrollArea):
             self.window.lessons.projects.get(attempt.root, attempt)
             for attempt in StudentProject.attempts()
         ]
+        attempt_ids = {
+            attempt.data["id"]
+            for attempt in attempts
+            if isinstance(attempt.data.get("id"), str)
+        }
+        groups = {}
+        for attempt in attempts:
+            groups.setdefault(attempt.data.get("origin"), []).append(attempt)
+        numbers = {}
+        for group in groups.values():
+            group.sort(
+                key=lambda attempt: (
+                    1 if type(attempt.data.get("created")) is int else 0,
+                    (
+                        attempt.data["created"]
+                        if type(attempt.data.get("created")) is int
+                        else 0
+                    ),
+                    str(attempt.root),
+                )
+            )
+            for number, attempt in enumerate(group, 1):
+                numbers[attempt.root] = number
         activity = self.window.settings.value("recentActivity", {})
         activity = activity if isinstance(activity, dict) else {}
         recent = self.window.settings.value("recentFiles", [])
@@ -224,25 +263,32 @@ class HomePage(QScrollArea):
             if not isinstance(value, str):
                 continue
             path = Path(value)
+            if not path.is_file():
+                continue
+            resolved = path.resolve()
             if (
-                path.is_file()
-                and not any(work.owns(path.resolve()) for work in works)
-                and not any(
-                    path.resolve().is_relative_to(attempt.root) for attempt in attempts
-                )
+                any(work.owns(resolved) for work in works)
+                or any(resolved.is_relative_to(attempt.root) for attempt in attempts)
+                or any(attempt.path == resolved for attempt in attempts)
+                or self._archive_attempt_id(resolved) in attempt_ids
             ):
-                try:
-                    opened = int(activity.get(str(path)) or path.stat().st_mtime_ns)
-                except (OSError, TypeError, ValueError):
-                    continue
-                entries.append(
+                continue
+            try:
+                opened = int(activity.get(str(path)) or path.stat().st_mtime_ns)
+            except (OSError, TypeError, ValueError):
+                continue
+            entries.append(
+                (
+                    opened,
+                    path.name,
                     (
-                        opened,
-                        path.name,
-                        tr("Python program"),
-                        lambda path=path: self.window.open_recent(path),
-                    )
+                        tr("Lesson project")
+                        if path.suffix in (".ltr", ".pyblocks")
+                        else tr("Python program")
+                    ),
+                    lambda path=path: self.window.open_recent(path),
                 )
+            )
         for work in works:
             if work.entry.is_file():
                 try:
@@ -263,11 +309,22 @@ class HomePage(QScrollArea):
         for attempt in attempts:
             title = localized(attempt.lesson.data["title"], language())
             earned, total = attempt.score
+            group = groups[attempt.data.get("origin")]
+            detail = (
+                tr(
+                    "Lesson · attempt {number} · {earned}/{total} points",
+                    number=numbers[attempt.root],
+                    earned=earned,
+                    total=total,
+                )
+                if len(group) > 1
+                else tr("Lesson · {earned}/{total} points", earned=earned, total=total)
+            )
             entries.append(
                 (
                     attempt.data["opened"],
                     title,
-                    tr("Lesson · {earned}/{total} points", earned=earned, total=total),
+                    detail,
                     lambda attempt=attempt: self.window.lessons.open(
                         Path(attempt.data["origin"]), attempt=attempt
                     ),

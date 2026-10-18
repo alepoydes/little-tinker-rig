@@ -6606,8 +6606,17 @@ msgid "Lesson · {earned}/{total} points"
 msgstr "Урок · {earned}/{total} очков"
 
 #: little_tinker_rig/qt/home.py
+#, python-brace-format
+msgid "Lesson · attempt {number} · {earned}/{total} points"
+msgstr "Урок · попытка {number} · {earned}/{total} очков"
+
+#: little_tinker_rig/qt/home.py
 msgid "Continue"
 msgstr "Продолжить"
+
+#: little_tinker_rig/qt/home.py
+msgid "Lesson project"
+msgstr "Проект урока"
 
 #: little_tinker_rig/qt/home.py
 msgid "Python program"

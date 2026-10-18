@@ -1,5 +1,6 @@
 """Project-scoped lesson tasks alongside the ordinary desktop workspaces."""
 
+import hashlib
 from datetime import datetime
 from html import escape
 from math import ceil
@@ -31,7 +32,6 @@ from little_tinker_rig.core.lessons import (
     StudentProject,
     lessons_directory,
     localized,
-    pack,
     read_json,
     resource,
     write_json,
@@ -455,6 +455,13 @@ class Lessons(QObject):
             )
         else:
             project = next((p for p in self.projects.values() if p.path == path), None)
+            if project is None:
+                saved = [p for p in StudentProject.attempts() if p.path == path]
+                if saved:
+                    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+                    project = next(
+                        (p for p in saved if p.disk_hash == digest), None
+                    )
         if project is not None:
             pages = self.window.documents
             page = next(
@@ -1354,7 +1361,7 @@ class Lessons(QObject):
             raise ValueError(tr("Export to a separate project file"))
         self.store_documents(project)
         project.checkpoint()
-        snapshot = pack(project.root)
+        snapshot = project.portable_snapshot()
         self.window.recovery.flush()
         self.export_job = ResourceJob(
             lambda **kwargs: project.export(destination, snapshot=snapshot, **kwargs)

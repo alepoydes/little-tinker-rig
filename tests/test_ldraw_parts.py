@@ -238,6 +238,8 @@ def test_thin_save_and_offline_export_do_not_depend_on_cache(
     output = tmp_path / "offline.ltr"
     project.export(output, snapshot=snapshot)
     assert project.path == thin and project.disk_hash == baseline
+    with ZipFile(output) as exported:
+        assert "archive" not in json.loads(exported.read("project.json"))
     cached.unlink()
     monkeypatch.setattr(
         ldraw_parts,

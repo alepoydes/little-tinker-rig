@@ -1,11 +1,12 @@
 """Start-workspace navigation and persistent learning attempts."""
 
+import json
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QTextDocument
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QLabel, QPushButton
+from PySide6.QtWidgets import QFileDialog, QLabel, QPushButton
 
 from little_tinker_rig.core.lessons import StudentProject
 from little_tinker_rig.examples import examples_directory
@@ -37,6 +38,18 @@ def rendered_images(browser):
             fragment += 1
         block = block.next()
     return pictures
+
+
+def recent_labels(window):
+    return [
+        [
+            label.text()
+            for label in window.home_page.recent_layout.itemAt(index)
+            .widget()
+            .findChildren(QLabel)
+        ]
+        for index in range(window.home_page.recent_layout.count())
+    ]
 
 
 def test_start_page_reuses_empty_document_and_creates_no_recovery(tmp_path, qt_app):
@@ -104,6 +117,121 @@ def test_home_first_project_resumes_one_attempt(tmp_path, qt_app):
         assert window.document_page.lesson_project.root == project.root
         assert window.document_page.lesson_project.score == (1, 3)
         assert len(StudentProject.attempts(Path("lessons/first_python"))) == 1
+    finally:
+        set_language(original)
+        close(window)
+
+
+def test_saved_lesson_is_one_recent_attempt_after_restart(
+    tmp_path, qt_app, monkeypatch
+):
+    archive = tmp_path / "first.ltr"
+    monkeypatch.setattr(
+        QFileDialog,
+        "getSaveFileName",
+        lambda *args, **kwargs: (str(archive), "LittleTinker Rig (*.ltr)"),
+    )
+    first = Studio()
+    second = None
+    try:
+        first.lessons.open(Path("lessons/first_python"))
+        attempt = first.document_page.lesson_project
+        assert first.lessons.save(attempt, choose=True)
+        first.session.editor.commit('print("after the save")\n')
+        assert first.recovery.flush()
+        first.set_mode(5)
+        assert len(recent_labels(first)) == 1
+        assert recent_labels(first)[0][0] == "First Python program"
+        root = attempt.root
+        close(first)
+
+        second = Studio()
+        assert len(recent_labels(second)) == 1
+        resumed = StudentProject.latest(Path("lessons/first_python"))
+        assert resumed.root == root
+        assert resumed.path == archive
+        assert resumed.dirty
+        second.open_recent(archive)
+        assert second.document_page.lesson_project.root == root
+        second.set_mode(5)
+        button = (
+            second.home_page.recent_layout.itemAt(0)
+            .widget()
+            .findChild(QPushButton, "homeCardAction")
+        )
+        QTest.mouseClick(button, Qt.MouseButton.LeftButton)
+        assert second.document_page.lesson_project.root == root
+        assert second.document_page.text == 'print("after the save")\n'
+        assert second.lessons.save(second.document_page.lesson_project)
+        assert StudentProject.open(archive).main.read_text(encoding="utf-8") == (
+            'print("after the save")\n'
+        )
+        assert len(StudentProject.attempts(Path("lessons/first_python"))) == 1
+    finally:
+        if second is not None:
+            close(second)
+        elif not first.recovery.closed:
+            close(first)
+
+
+def test_legacy_saved_lesson_archive_is_not_a_second_recent_item(tmp_path, qt_app):
+    attempt = StudentProject.create(Path("lessons/first_python"))
+    archive = tmp_path / "old.ltr"
+    attempt.save(archive)
+    manifest = attempt.root / "project.json"
+    data = json.loads(manifest.read_text(encoding="utf-8"))
+    del data["archive"]
+    manifest.write_text(json.dumps(data), encoding="utf-8")
+    window = Studio()
+    try:
+        window.remember_file(archive)
+        window.set_mode(5)
+        assert len(recent_labels(window)) == 1
+        assert recent_labels(window)[0][0] == "First Python program"
+    finally:
+        close(window)
+
+
+def test_standalone_lesson_archive_is_labeled_as_a_project(tmp_path, qt_app):
+    attempt = StudentProject.create(Path("lessons/first_python"))
+    archive = tmp_path / "standalone.ltr"
+    attempt.save(archive)
+    attempt.discard_working_copy()
+    window = Studio()
+    try:
+        window.remember_file(archive)
+        window.set_mode(5)
+        assert recent_labels(window) == [["standalone.ltr", "Lesson project"]]
+    finally:
+        close(window)
+
+
+def test_home_numbers_multiple_attempts_in_both_languages(tmp_path, qt_app):
+    original = language()
+    window = Studio()
+    try:
+        first = window.lessons.open(Path("lessons/first_python")).lesson_project
+        second = window.lessons.open(
+            Path("lessons/first_python"), new=True
+        ).lesson_project
+        window.set_mode(5)
+        labels = recent_labels(window)
+        assert len(labels) == 2
+        assert "attempt 2" in labels[0][1]
+        assert "attempt 1" in labels[1][1]
+        set_language("ru")
+        window.retranslate()
+        labels = recent_labels(window)
+        assert "попытка 2" in labels[0][1]
+        assert "попытка 1" in labels[1][1]
+        button = (
+            window.home_page.recent_layout.itemAt(1)
+            .widget()
+            .findChild(QPushButton, "homeCardAction")
+        )
+        QTest.mouseClick(button, Qt.MouseButton.LeftButton)
+        assert window.document_page.lesson_project.root == first.root
+        assert window.document_page.lesson_project.root != second.root
     finally:
         set_language(original)
         close(window)

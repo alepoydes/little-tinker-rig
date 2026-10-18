@@ -458,6 +458,15 @@ class StudentProject:
         self.data = read_json(self.root / "project.json")
         if not isinstance(self.data, dict) or self.data.get("format") != 1:
             raise ValueError("Unsupported student project format")
+        archive = self.data.get("archive") if retain else None
+        if (
+            self.path is None
+            and isinstance(archive, dict)
+            and isinstance(archive.get("path"), str)
+            and isinstance(archive.get("hash"), str)
+        ):
+            self.path = Path(archive["path"]).resolve()
+            self.disk_hash = archive["hash"]
         self.lesson = Lesson.load(self.root / "lesson")
         self.main = resource(self.root, self.data.get("main", ""))
         if not self.main.is_file() or not self.main.is_relative_to(
@@ -529,9 +538,22 @@ class StudentProject:
             camera_values(assembly["camera"])
         self.progress.setdefault("completed", [])
         self.progress.setdefault("hints", {})
-        self.saved_progress = json.dumps(self.progress, sort_keys=True)
-        self.working_progress = self.saved_progress
-        self.pending = False
+        current_progress = json.dumps(self.progress, sort_keys=True)
+        self.saved_progress = (
+            archive["progress"]
+            if self.path is not None
+            and isinstance(archive, dict)
+            and isinstance(archive.get("progress"), str)
+            else current_progress
+        )
+        self.working_progress = current_progress
+        self.pending = (
+            archive["pending"]
+            if self.path is not None
+            and isinstance(archive, dict)
+            and type(archive.get("pending")) is bool
+            else False
+        )
 
     @staticmethod
     def directory():
@@ -549,6 +571,8 @@ class StudentProject:
                 data = read_json(manifest)
                 if isinstance(data, dict) and (
                     data.get("template_attempt") is True
+                    and isinstance(data.get("id"), str)
+                    and isinstance(data.get("origin"), str)
                     and type(data.get("opened")) is int
                     and (origin is None or data.get("origin") == origin)
                 ):
@@ -570,6 +594,19 @@ class StudentProject:
     def remember_opened(self):
         if self.retain:
             self.data["opened"] = time_ns()
+            write_json(self.root / "project.json", self.data)
+
+    def _record_archive(self):
+        if not self.retain or self.path is None:
+            return
+        archive = {
+            "path": str(self.path),
+            "hash": self.disk_hash,
+            "progress": self.saved_progress,
+            "pending": self.pending,
+        }
+        if self.data.get("archive") != archive:
+            self.data["archive"] = archive
             write_json(self.root / "project.json", self.data)
 
     @classmethod
@@ -629,6 +666,7 @@ class StudentProject:
                             else [],
                         },
                     )
+            created = time_ns()
             write_json(
                 root / "project.json",
                 {
@@ -636,7 +674,8 @@ class StudentProject:
                     "id": uuid4().hex,
                     "main": "programs/" + main,
                     "origin": str(lesson_path.resolve()),
-                    "opened": time_ns(),
+                    "created": created,
+                    "opened": created,
                     "template_attempt": True,
                 },
             )
@@ -664,6 +703,7 @@ class StudentProject:
             extract(data, root)
             project = cls(root, path, hashlib.sha256(data).hexdigest())
             project.data["template_attempt"] = False
+            project.data.pop("archive", None)
             write_json(root / "project.json", project.data)
             return project
         except Exception:
@@ -698,6 +738,7 @@ class StudentProject:
         if progress != self.working_progress:
             write_json(self.root / "progress.json", self.progress)
             self.working_progress = progress
+        self._record_archive()
         return {
             "root": str(self.root),
             "path": str(self.path) if self.path else None,
@@ -706,6 +747,13 @@ class StudentProject:
             "pending": self.pending,
             "retain": self.retain,
         }
+
+    def portable_snapshot(self):
+        manifest = {key: value for key, value in self.data.items() if key != "archive"}
+        return pack(
+            self.root,
+            {"project.json": json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"},
+        )
 
     @classmethod
     def restore(cls, data):
@@ -737,12 +785,13 @@ class StudentProject:
                     "Project changed outside LittleTinker Rig; reopen it or save to another path"
                 )
         self.checkpoint()
-        data = pack(self.root)
+        data = self.portable_snapshot()
         atomic_write(destination, data)
         self.path = destination
         self.disk_hash = hashlib.sha256(data).hexdigest()
         self.saved_progress = json.dumps(self.progress, sort_keys=True)
         self.pending = False
+        self._record_archive()
 
     def discard_working_copy(self):
         parent = personal_collection().parent / "projects"
@@ -762,10 +811,14 @@ class StudentProject:
             raise ValueError("Export to a separate project file")
         if snapshot is None:
             self.checkpoint()
-            snapshot = pack(self.root)
+            snapshot = self.portable_snapshot()
         with TemporaryDirectory(prefix="little-tinker-rig-export-") as temporary:
             root = Path(temporary)
             extract(snapshot, root)
+            manifest = read_json(root / "project.json")
+            if "archive" in manifest:
+                manifest.pop("archive")
+                write_json(root / "project.json", manifest)
             lesson = Lesson.load(root / "lesson")
             additions = {}
             if "robot" in lesson.data:
