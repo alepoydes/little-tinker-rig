@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QApplication
 LIGHT = {
     "window": "#f3f6fb",
     "canvas": "#fbfcff",
+    "grid": "#e9f0f8",
     "panel": "#ffffff",
     "raised": "#eaf1fa",
     "title": "#edf3fb",
@@ -50,6 +51,7 @@ LIGHT = {
 DARK = {
     "window": "#101b2c",
     "canvas": "#111c2e",
+    "grid": "#1b2c42",
     "panel": "#17263c",
     "raised": "#20344e",
     "title": "#0d192a",

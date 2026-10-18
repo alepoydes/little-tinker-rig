@@ -6,13 +6,16 @@ from functools import lru_cache
 
 from PySide6.QtCore import QPoint, QPointF, QRectF, Qt, QVariantAnimation, Signal
 from PySide6.QtGui import (
+    QBrush,
     QColor,
     QFont,
     QFontDatabase,
     QFontMetrics,
     QPainter,
     QPainterPath,
+    QPalette,
     QPen,
+    QPixmap,
     QPolygonF,
     QRegion,
     QTextBlockFormat,
@@ -187,10 +190,21 @@ class SourceView(QTextEdit):
 
     def apply_theme(self):
         c = colors()
+        tile = QPixmap(32, 32)
+        tile.fill(QColor(c["canvas"]))
+        painter = QPainter(tile)
+        painter.setPen(QColor(c["grid"]))
+        painter.drawLine(0, 0, 31, 0)
+        painter.drawLine(0, 0, 0, 31)
+        painter.end()
         self.setStyleSheet(
-            f"QTextEdit {{ background: {c['canvas']}; color: {c['text']}; "
+            f"QTextEdit {{ color: {c['text']}; "
             "border: 0; padding: 8px; }"
         )
+        palette = self.viewport().palette()
+        palette.setBrush(QPalette.ColorRole.Base, QBrush(tile))
+        self.viewport().setPalette(palette)
+        self.viewport().setAutoFillBackground(True)
         self.setViewportMargins(40, 0, 0, 0)
         if getattr(self, "parameter_editor", None):
             self.parameter_editor.apply_theme()

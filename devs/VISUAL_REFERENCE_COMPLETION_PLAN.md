@@ -22,6 +22,11 @@ refresh when those declarations change, removing false missing-name emphasis
 without excusing reads before a fragment's own later assignment.
 The structural view now shares Python keyword, number, string, and comment
 highlighting with the ordinary text editor; theme switches rehighlight it.
+Its canvas now uses a subtle 32 px grid in Light and Dark. A theme-switch
+pixel check guards against Qt restoring a white viewport in Dark. Offscreen
+editor timing before/after the grid stayed within normal run variation:
+for a 1,000-line program, open was 1258/1262 ms and program-to-Scratch was
+383/382 ms on the same machine.
 When a structural line overflows, visible left/right controls beside the view
 switcher expose the rest of the code by pointer or keyboard without adding a
 row or changing source. Invalid inline input stays open during navigation.

@@ -90,6 +90,24 @@ def test_live_theme_switch_updates_open_python_dialog(windows):
         dialog.reject()
 
 
+def test_structural_canvas_stays_dark_after_theme_switch(windows):
+    window = windows("print(1)\n")
+    window.change_visual_theme("dark")
+    QApplication.processEvents()
+    viewport = window.source.viewport()
+    dark = viewport.grab().toImage().pixelColor(
+        viewport.width() - 12, viewport.height() - 12
+    )
+    assert dark.lightness() < 80
+
+    window.change_visual_theme("light")
+    QApplication.processEvents()
+    light = viewport.grab().toImage().pixelColor(
+        viewport.width() - 12, viewport.height() - 12
+    )
+    assert light.lightness() > 200
+
+
 def test_header_theme_and_language_keep_brand_readable_and_actions_visible(windows):
     from little_tinker_rig.qt.theme import DARK
 
