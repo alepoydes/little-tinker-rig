@@ -285,6 +285,62 @@ def test_qt_window_controls_scratch_visibility_and_help(tmp_path, qt_app):
         close_window(window)
 
 
+def test_scratch_uses_bottom_dock_at_compact_width(tmp_path, qt_app):
+    from PySide6.QtCore import QMimeData, QPoint, Qt
+
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.drag import BlockMime
+
+    window = Studio(tmp_path / "main.py")
+    window.resize(1380, 880)
+    window.show()
+    qt_app.processEvents()
+    try:
+        window.scratch_dock.show()
+        window.scratch_dock.raise_()
+        qt_app.processEvents()
+        assert window.dockWidgetArea(window.scratch_dock) == (
+            Qt.DockWidgetArea.RightDockWidgetArea
+        )
+        window.resize(930, 620)
+        for _ in range(5):
+            qt_app.processEvents()
+        assert window.dockWidgetArea(window.scratch_dock) == (
+            Qt.DockWidgetArea.BottomDockWidgetArea
+        )
+        assert window.scratch_dock.isVisible()
+        assert window.scratch_dock.height() >= 150
+        assert window.source.viewport().width() >= 500
+        data = QMimeData()
+        data.setData(
+            "application/x-little-tinker-rig-snippet", b"pybricks/motors/create_motor"
+        )
+        send_drop(qt_app, window.scratch.viewport(), data, QPoint(30, 30))
+        assert len(window.scratch.cells) == 1
+        transfer = BlockMime(Transfer.capture(window.session, index=0))
+        send_drop(qt_app, window.source.viewport(), transfer, QPoint(80, 40))
+        assert not window.scratch.cells
+        assert "Motor(Port.A)" in window.session.document.state.source
+        window.resize(1380, 880)
+        for _ in range(5):
+            qt_app.processEvents()
+        assert window.dockWidgetArea(window.scratch_dock) == (
+            Qt.DockWidgetArea.RightDockWidgetArea
+        )
+        assert window.scratch_dock.isVisible()
+        window.removeDockWidget(window.scratch_dock)
+        window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, window.scratch_dock)
+        assert not window._scratch_dock_auto
+        window.resize(1250, 800)
+        for _ in range(5):
+            qt_app.processEvents()
+        assert window.dockWidgetArea(window.scratch_dock) == (
+            Qt.DockWidgetArea.BottomDockWidgetArea
+        )
+    finally:
+        close_window(window)
+
+
 def test_qt_annotations_keep_source_and_scroll_anchor(tmp_path, qt_app):
     from PySide6.QtGui import QTextCursor
 

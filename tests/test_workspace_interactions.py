@@ -440,6 +440,27 @@ def test_scratch_dock_cannot_hide_an_invalid_parameter(windows):
     assert not window.scratch_dock.isVisible()
 
 
+def test_compact_scratch_relayout_preserves_invalid_parameter(windows):
+    window = windows()
+    window.resize(1380, 880)
+    window.session.set_scratch(None, MOTOR)
+    window.refresh_views()
+    window.scratch_dock.show()
+    window.scratch_dock.raise_()
+    QApplication.processEvents()
+    cell = window.scratch.cells[0]
+    field = parameter(window, "speed", "1 +", view=cell.source)
+    window.resize(930, 620)
+    for _ in range(5):
+        QApplication.processEvents()
+    assert window.dockWidgetArea(window.scratch_dock) == (
+        Qt.DockWidgetArea.BottomDockWidgetArea
+    )
+    assert field.isVisible() and field.text() == "1 +"
+    assert cell.source.parameter_editor.line_edit is field
+    QTest.keyClick(field, Qt.Key.Key_Escape)
+
+
 def test_scratch_commands_keep_their_owner_and_help_cannot_undo(windows):
     window = windows()
     window.session.set_scratch(None, "scratch_value=2\n")

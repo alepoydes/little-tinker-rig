@@ -277,6 +277,13 @@ class Studio(QMainWindow):
         self._docks()
         self._menus()
         self.lessons = Lessons(self)
+        self._scratch_dock_auto = True
+        self._scratch_relocating = False
+        self._scratch_layout_pending = False
+        self._scratch_needs_size = False
+        self.scratch_dock.dockLocationChanged.connect(
+            self._scratch_dock_location_changed
+        )
         self.block_editor.configure(
             self.session.snippets, self.session.collection_paths
         )
@@ -300,6 +307,7 @@ class Studio(QMainWindow):
         if geometry := self.settings.value("windowGeometry", b""):
             self.restoreGeometry(geometry)
         self._schedule_catalog_width()
+        self._schedule_scratch_layout()
         if lesson_path:
             self.perform(lambda: self.lessons.open(lesson_path))
         elif example_path:
@@ -775,12 +783,91 @@ class Studio(QMainWindow):
         if abs(self.library_pane.width() - target) > 1:
             self.program_page.setSizes([target, max(1, available - target)])
 
+    def _scratch_dock_location_changed(self, area):
+        if not self._scratch_relocating:
+            self._scratch_dock_auto = False
+            self.pages.setSizePolicy(
+                QSizePolicy.Policy.Expanding,
+                (
+                    QSizePolicy.Policy.Ignored
+                    if area == Qt.DockWidgetArea.BottomDockWidgetArea
+                    else QSizePolicy.Policy.Preferred
+                ),
+            )
+
+    def _schedule_scratch_layout(self):
+        if not self._scratch_dock_auto or self._scratch_layout_pending:
+            return
+        self._scratch_layout_pending = True
+        QTimer.singleShot(0, self, self._fit_scratch_layout)
+
+    def _fit_scratch_layout(self):
+        self._scratch_layout_pending = False
+        if not self._scratch_dock_auto:
+            return
+        narrow = self.width() < 1200
+        target = (
+            Qt.DockWidgetArea.BottomDockWidgetArea
+            if narrow
+            else Qt.DockWidgetArea.RightDockWidgetArea
+        )
+        if self.dockWidgetArea(self.scratch_dock) == target:
+            return
+        active = (
+            self.scratch_dock.isVisible()
+            and not self.scratch_dock.visibleRegion().isEmpty()
+        )
+        hidden = self.scratch_dock.isHidden()
+        self._scratch_relocating = True
+        try:
+            self.removeDockWidget(self.scratch_dock)
+            self.addDockWidget(target, self.scratch_dock)
+            if narrow:
+                self.tabifyDockWidget(self.console_dock, self.scratch_dock)
+            else:
+                self.tabifyDockWidget(self.device_dock, self.scratch_dock)
+            self.pages.setSizePolicy(
+                QSizePolicy.Policy.Expanding,
+                (
+                    QSizePolicy.Policy.Ignored
+                    if narrow
+                    else QSizePolicy.Policy.Preferred
+                ),
+            )
+            self.scratch_dock.setVisible(not hidden)
+            if active:
+                self.scratch_dock.raise_()
+            self._scratch_needs_size = True
+        finally:
+            self._scratch_relocating = False
+        if active:
+            self._schedule_scratch_size()
+
+    def _schedule_scratch_size(self):
+        QTimer.singleShot(0, self, self._size_scratch_once)
+
+    def _size_scratch_once(self):
+        if not self._scratch_needs_size or not self.scratch_dock.isVisible():
+            return
+        bottom = (
+            self.dockWidgetArea(self.scratch_dock)
+            == Qt.DockWidgetArea.BottomDockWidgetArea
+        )
+        self.resizeDocks(
+            [self.scratch_dock],
+            [180 if bottom else 300],
+            Qt.Orientation.Vertical if bottom else Qt.Orientation.Horizontal,
+        )
+        self._scratch_needs_size = False
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if hasattr(self, "run_button"):
             self._update_toolbar_density()
         if hasattr(self, "program_page"):
             self._schedule_catalog_width()
+        if hasattr(self, "_scratch_dock_auto"):
+            self._schedule_scratch_layout()
 
     @property
     def document_page(self):
@@ -1256,6 +1343,10 @@ class Studio(QMainWindow):
             self.lessons.release_unused()
 
     def scratch_visibility(self, visible):
+        if getattr(self, "_scratch_relocating", False):
+            return
+        if visible and getattr(self, "_scratch_needs_size", False):
+            self._schedule_scratch_size()
         if self.pages.currentIndex() == 0:
             if not visible:
                 # Finish after Qt has hidden the dock's children; restoring it

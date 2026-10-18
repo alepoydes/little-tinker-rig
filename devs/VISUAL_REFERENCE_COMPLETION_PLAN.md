@@ -12,7 +12,10 @@ header badges. Plain imports no longer appear as colored control blocks. The
 selected workspace and catalog filters have stronger blue states, and Run/Stop
 icons keep contrast against their filled buttons. Stage 3 now includes a fixed
 source-line gutter outside the text viewport; long-line handling, Scratch
-parity, and a full pointer/keyboard audit remain.
+parity, and a full pointer/keyboard audit remain. At compact widths Scratch
+now docks below the program so both structural editors keep enough horizontal
+room for Python; at wider widths it returns to the right. Manual dock moves
+stop automatic placement, and unfinished parameter input survives relocation.
 The structural view now shares Python keyword, number, string, and comment
 highlighting with the ordinary text editor; theme switches rehighlight it.
 Stage 2 now gives top-level catalog categories semantic icon badges and
