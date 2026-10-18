@@ -1,10 +1,10 @@
 # Reference design completion plan
 
-Status: in progress. Stage 0 stabilized the in-progress header and task-panel
-pass on 2026-10-18. Stage 1 has responsive catalog sizing and a wider lesson
-overlay threshold; the other shell refinements and most of stages 2–6 remain open.
-Stage 2 now wraps long catalog titles at compact widths and recalculates card
-height when the catalog changes width; its broader discovery styling remains.
+Status: in progress (2026-10-18). The shell, palette, catalog hierarchy,
+program cards, compact Scratch layout, and several auxiliary surfaces have
+verified visual passes. Long-line behavior, complete lesson and dialog review,
+and final desktop acceptance remain open. The catalog wraps long titles at
+compact widths and recalculates card height when its width changes.
 The semantic block palette now uses the stronger blue, amber, green, and orange
 families from the selected reference. Catalog cards and program blocks share
 those colors, with clearer borders, separated program cards, and readable
