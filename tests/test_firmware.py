@@ -131,6 +131,22 @@ async def test_flasher_checks_usb_and_ble_models_before_erase(tmp_path, monkeypa
     assert len(erased) == 1
 
 
+def test_firmware_dialog_replaces_idle_panel_with_activity(qt_app):
+    from little_tinker_rig.qt.firmware import FirmwareDialog
+
+    dialog = FirmwareDialog()
+    dialog.show()
+    try:
+        assert dialog.log_stack.currentWidget() is not dialog.log
+        assert not dialog.progress.isVisible()
+        dialog.message.emit("Preparing firmware")
+        assert dialog.log_stack.currentWidget() is dialog.log
+        dialog.log.clear()
+        assert dialog.log_stack.currentWidget() is not dialog.log
+    finally:
+        dialog.close()
+
+
 def test_firmware_dialog_prepares_before_install_and_blocks_close_during_flash(
     tmp_path, qt_app, monkeypatch
 ):

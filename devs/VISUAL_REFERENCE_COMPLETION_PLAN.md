@@ -51,8 +51,10 @@ action. Shared dialog controls and confirmation buttons use the same Light/Dark
 palette in Python editing, catalog properties, and variant forms; USB help
 remains a less prominent link. Connection, Python-edit, variant, and firmware
 dialogs were captured in English and Russian in both themes. The variant form
-fits at compact width; firmware still has a large blank log before any work and
-needs a clearer idle state.
+fits at compact width. Firmware now shows a localized, illustrated idle state
+instead of an empty log; messages replace it automatically, progress appears
+only during work, and the available local-file action stands out when no
+version is loaded.
 Assembly load failures now show a localized recovery message instead of a raw
 network exception, retranslate when the language changes, and clear after a
 successful retry. The model viewport now has a themed loading/error placeholder

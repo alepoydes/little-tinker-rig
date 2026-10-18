@@ -6484,6 +6484,14 @@ msgstr "← Предыдущий этап"
 msgid "＋ Connect hub"
 msgstr "＋ Подключить хаб"
 
+#: little_tinker_rig/qt/firmware.py
+msgid "Ready to prepare firmware"
+msgstr "Можно подготовить прошивку"
+
+#: little_tinker_rig/qt/firmware.py
+msgid "Choose a hub and version, then prepare a download or open a local file."
+msgstr "Выберите модель хаба и версию, затем подготовьте загрузку или откройте локальный файл."
+
 #~ msgid "Add favorite blocks with the star button or the context menu."
 #~ msgstr "Добавляйте избранные блоки кнопкой со звездой или через контекстное меню."
 

@@ -221,6 +221,12 @@ def studio_stylesheet(name):
             font-size: 16px; font-weight: 700; }}
         QLabel#dialogHeaderDescription {{ color: {c['accent_text']};
             font-size: 12px; }}
+        QFrame#firmwareIdle {{ background: {c['selected']};
+            border: 1px solid {c['border']}; border-radius: 9px; }}
+        QLabel#firmwareIdleTitle {{ color: {c['accent']};
+            font-size: 17px; font-weight: 700; border: 0; }}
+        QLabel#firmwareIdleHint {{ color: {c['text']};
+            font-size: 12px; border: 0; }}
         QToolBar {{ border: 0; spacing: 6px; padding: 4px 7px;
                     background: {c['window']}; }}
         QToolButton {{ padding: 5px 8px; border-radius: 6px; color: {c['text']}; }}
@@ -312,6 +318,18 @@ def studio_stylesheet(name):
             padding: 7px 4px; }}
         QDialog QPushButton#dialogHelp:hover {{
             background: {c['hover']}; text-decoration: underline; }}
+        QDialog QPushButton#firmwareLocal {{
+            background: {c['selected']}; color: {c['accent']};
+            border-color: {c['accent']}; font-weight: 700; }}
+        QDialog QPushButton#firmwareLocal:hover {{ background: {c['hover']}; }}
+        QDialog QPushButton#firmwareInstall {{
+            background: {c['stop']}; color: white;
+            border-color: {c['stop']}; font-weight: 700; }}
+        QDialog QPushButton#firmwareInstall:hover {{
+            background: {c['stop_hover']}; }}
+        QDialog QPushButton#firmwareInstall:disabled {{
+            background: {c['raised']}; color: {c['muted']};
+            border-color: {c['border']}; }}
         QPushButton#manualStart, QPushButton#blockEditorNew {{ background: {c['accent']};
             color: {c['accent_text']}; border-color: {c['accent']};
             font-weight: 700; padding: 8px 12px; }}

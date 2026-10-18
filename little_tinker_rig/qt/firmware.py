@@ -6,17 +6,19 @@ import re
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QProcess, QThread, Signal
+from PySide6.QtCore import QProcess, QSize, Qt, QThread, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QDialog,
     QFileDialog,
     QFormLayout,
+    QFrame,
     QHBoxLayout,
     QLabel,
     QProgressBar,
     QPushButton,
+    QStackedWidget,
     QTextEdit,
     QVBoxLayout,
 )
@@ -24,6 +26,8 @@ from PySide6.QtWidgets import (
 from little_tinker_rig.core.paths import firmware_cache
 from little_tinker_rig.i18n import language, tr
 from little_tinker_rig.pybricks import firmware
+
+from .theme import colors, svg_pixmap
 
 
 class PrepareJob(QThread):
@@ -79,7 +83,9 @@ class FirmwareDialog(QDialog):
         row = QHBoxLayout()
         self.refresh_button = QPushButton(tr("Refresh versions"))
         self.download_button = QPushButton(tr("Prepare download"))
+        self.download_button.setObjectName("dialogPrimary")
         self.local_button = QPushButton(tr("Open local firmware…"))
+        self.local_button.setObjectName("firmwareLocal")
         for button in (self.refresh_button, self.download_button, self.local_button):
             row.addWidget(button)
         layout.addLayout(row)
@@ -91,10 +97,39 @@ class FirmwareDialog(QDialog):
         layout.addWidget(self.details)
         self.log = QTextEdit()
         self.log.setReadOnly(True)
+        self.log_stack = QStackedWidget()
+        idle = QFrame()
+        idle.setObjectName("firmwareIdle")
+        idle_layout = QVBoxLayout(idle)
+        idle_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        idle_layout.setSpacing(9)
+        icon = QLabel()
+        icon.setPixmap(svg_pixmap("network-connect", QSize(48, 48), tint=colors()["accent"]))
+        icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        idle_layout.addWidget(icon)
+        idle_title = QLabel(tr("Ready to prepare firmware"))
+        idle_title.setObjectName("firmwareIdleTitle")
+        idle_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        idle_layout.addWidget(idle_title)
+        idle_hint = QLabel(
+            tr("Choose a hub and version, then prepare a download or open a local file.")
+        )
+        idle_hint.setObjectName("firmwareIdleHint")
+        idle_hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        idle_hint.setWordWrap(True)
+        idle_layout.addWidget(idle_hint)
+        self.log_stack.addWidget(idle)
+        self.log_stack.addWidget(self.log)
+        self.log.textChanged.connect(
+            lambda: self.log_stack.setCurrentWidget(
+                self.log if self.log.toPlainText() else idle
+            )
+        )
         self.message.connect(self.log.append)
-        layout.addWidget(self.log, 1)
+        layout.addWidget(self.log_stack, 1)
         self.progress = QProgressBar()
         layout.addWidget(self.progress)
+        self.progress.hide()
         self.consent = QCheckBox(
             tr(
                 "I agree to the firmware license and replacing the current firmware and stored program"
@@ -102,6 +137,7 @@ class FirmwareDialog(QDialog):
         )
         layout.addWidget(self.consent)
         self.install_button = QPushButton(tr("Install firmware"))
+        self.install_button.setObjectName("firmwareInstall")
         self.close_button = QPushButton(tr("Close"))
         row = QHBoxLayout()
         row.addWidget(self.install_button)
@@ -180,12 +216,14 @@ class FirmwareDialog(QDialog):
         self.job.failed.connect(self.failed)
         self.job.finished.connect(self.job_finished)
         self.progress.setRange(0, 0)
+        self.progress.show()
         self.job.start()
         self.update_buttons()
 
     def job_finished(self):
         self.progress.setRange(0, 100)
         self.progress.setValue(0)
+        self.progress.hide()
         job, self.job = self.job, None
         job.deleteLater()
         self.update_buttons()
@@ -258,6 +296,7 @@ class FirmwareDialog(QDialog):
         self.decoder.reset()
         self.log.clear()
         self.progress.setRange(0, 0)
+        self.progress.show()
         self.process.start(
             sys.executable,
             [
