@@ -152,6 +152,59 @@ def test_recovery_restores_tabs_scratch_drafts_and_original_disk_baseline(
             assert not recovery_path.exists()
 
 
+@pytest.mark.parametrize("damage", ["workspace", "source"])
+def test_recovery_keeps_draft_when_disk_project_is_unreadable(
+    tmp_path, qt_app, monkeypatch, damage
+):
+    from PySide6.QtWidgets import QMessageBox
+
+    from little_tinker_rig.qt.app import Studio
+
+    path = tmp_path / "main.py"
+    path.write_text("value = 1\n", encoding="utf-8")
+    old = Studio(path)
+    restored = None
+    try:
+        old.session.editor.commit("value = 1\n", ("saved fragment",))
+        old.save()
+        old.session.editor.commit("value = 2\n", ("unsaved fragment",))
+        assert old.recovery.flush()
+        recovery_path = old.recovery.path
+        old.recovery.timer.stop()
+        old.recovery.lock.unlock()  # Simulate the operating system releasing a crash lock.
+        workspace = old.session.project.workspace_path
+        if damage == "workspace":
+            workspace.write_text("{broken", encoding="utf-8")
+            orphan = path.with_name("main_recovered_1.py.ltr.json")
+            orphan.write_text("{orphan", encoding="utf-8")
+        else:
+            path.write_bytes(b"\xff")
+        original_source = path.read_bytes()
+        original_workspace = workspace.read_bytes()
+
+        restored = Studio()
+        monkeypatch.setattr(
+            QMessageBox,
+            "question",
+            lambda *args: QMessageBox.StandardButton.Yes,
+        )
+        restored.recovery.offer()
+
+        assert not recovery_path.exists()
+        assert restored.document_page.session.project.path != path
+        if damage == "workspace":
+            assert restored.document_page.session.project.path.name == "main_recovered_2.py"
+        assert restored.document_page.text == "value = 2\n"
+        assert restored.session.document.state.scratch == ("unsaved fragment",)
+        restored.save()
+        assert path.read_bytes() == original_source
+        assert workspace.read_bytes() == original_workspace
+    finally:
+        close(old)
+        if restored:
+            close(restored)
+
+
 def test_recovery_refreshes_mutated_pins_and_recreates_missing_checkpoint(
     tmp_path, qt_app
 ):

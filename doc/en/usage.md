@@ -462,9 +462,11 @@ No discards that checkpoint; Cancel keeps it for later. Other live windows are
 excluded. Ordinary documents still offer Save/Discard on closing. Restoring a
 checkpoint does not itself overwrite source files, and later saves retain
 external-change checks. Example attempts autosave through the same file checks;
-if autosave fails, a separate recovery checkpoint still preserves the edited text. If another restored
-version would replace unsaved work in an open tab, it opens as a separate
-`*_recovered_N.py` document. Recovery does not retain undo history.
+if autosave fails, a separate recovery checkpoint still preserves the edited text.
+If another restored version would replace unsaved work in an open tab, or the
+original program or workspace metadata cannot be read, recovery opens a separate
+`*_recovered_N.py` document. Saving that tab leaves the original files untouched.
+Recovery does not retain undo history.
 
 **File → Examples** mirrors the bundled `examples/` directory. On first opening,
 the app creates a persistent working copy with its local Python imports. Changes,

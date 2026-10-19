@@ -104,7 +104,6 @@ class Recovery(QObject):
             or item["scroll"] < 0
         ):
             raise ValueError("Invalid recovery editor state")
-        Project(Path(item["path"]), allow_draft=True)
         lesson = item.get("lesson_project")
         if lesson is not None:
             if (
@@ -126,6 +125,33 @@ class Recovery(QObject):
                 raise ValueError("Invalid recovery lesson")
             if Path(lesson["root"]) not in self.window.lessons.projects:
                 StudentProject.restore(lesson)
+
+    def recovered_copy_path(self, original):
+        opened = {
+            self.window.documents.widget(i).session.project.path
+            for i in range(self.window.documents.count())
+        }
+        index = 1
+        while True:
+            copy = original.with_name(f"{original.stem}_recovered_{index}.py")
+            if (
+                copy not in opened
+                and not copy.exists()
+                and not copy.with_suffix(copy.suffix + ".ltr.json").exists()
+                and not copy.with_suffix(copy.suffix + ".pyblocks.json").exists()
+            ):
+                return copy
+            index += 1
+
+    @staticmethod
+    def copy_checkpoint(item):
+        return dict(
+            item,
+            disk_hash=None,
+            workspace_hash=None,
+            saved_source="",
+            saved_scratch=[],
+        )
 
     def offer(self):
         if self.closed:
@@ -175,7 +201,15 @@ class Recovery(QObject):
                 if answer == QMessageBox.StandardButton.Yes:
                     pages = []
                     for item in data["documents"]:
-                        page = self.window.open_document(Path(item["path"]))
+                        original = Path(item["path"])
+                        try:
+                            Project(original, allow_draft=True)
+                        except (OSError, ValueError, UnicodeError, SyntaxError):
+                            destination = self.recovered_copy_path(original)
+                            item = self.copy_checkpoint(item)
+                        else:
+                            destination = original
+                        page = self.window.open_document(destination)
                         if item.get("lesson_project"):
                             page.lesson_project = self.window.lessons.restore(
                                 item["lesson_project"]
@@ -185,27 +219,10 @@ class Recovery(QObject):
                             or list(page.session.document.state.scratch)
                             != item["scratch"]
                         ):
-                            original = Path(item["path"])
-                            opened = {
-                                self.window.documents.widget(i).session.project.path
-                                for i in range(self.window.documents.count())
-                            }
-                            index = 1
-                            while True:
-                                copy = original.with_name(
-                                    f"{original.stem}_recovered_{index}.py"
-                                )
-                                if copy not in opened and not copy.exists():
-                                    break
-                                index += 1
-                            page = self.window.open_document(copy)
-                            item = dict(
-                                item,
-                                disk_hash=None,
-                                workspace_hash=None,
-                                saved_source="",
-                                saved_scratch=[],
+                            page = self.window.open_document(
+                                self.recovered_copy_path(original)
                             )
+                            item = self.copy_checkpoint(item)
                         page.restore(item)
                         pages.append(page)
                     if pages:
