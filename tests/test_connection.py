@@ -199,6 +199,72 @@ async def test_upload_uses_download_without_running_and_stored_run_sends_no_sour
 
 
 @pytest.mark.asyncio
+async def test_short_program_completion_during_start_is_not_missed():
+    import asyncio
+    from types import SimpleNamespace
+
+    from pybricksdev.ble.pybricks import StatusFlag
+    from reactivex.subject import BehaviorSubject
+
+    class Hub:
+        status_observable = BehaviorSubject(StatusFlag(0))
+        connection_state_observable = BehaviorSubject(SimpleNamespace(name="CONNECTED"))
+
+        async def stop_user_program(self):
+            self.status_observable.on_next(StatusFlag(0))
+
+        async def run(self, path, **options):
+            self.status_observable.on_next(StatusFlag.USER_PROGRAM_RUNNING)
+            self.status_observable.on_next(StatusFlag(0))
+
+    connection = Connection()
+    connection.hub = Hub()
+    await asyncio.wait_for(connection.run(wait=True), 1)
+    assert not connection.info.running
+
+
+@pytest.mark.asyncio
+async def test_idle_report_before_start_does_not_complete_program():
+    import asyncio
+    import contextlib
+    from types import SimpleNamespace
+
+    from pybricksdev.ble.pybricks import StatusFlag
+    from reactivex.subject import BehaviorSubject
+
+    entered = asyncio.Event()
+    release = asyncio.Event()
+
+    class Hub:
+        status_observable = BehaviorSubject(StatusFlag(0))
+        connection_state_observable = BehaviorSubject(SimpleNamespace(name="CONNECTED"))
+
+        async def stop_user_program(self):
+            self.status_observable.on_next(StatusFlag(0))
+
+        async def run(self, path, **options):
+            self.status_observable.on_next(StatusFlag(0))
+            entered.set()
+            await release.wait()
+
+    connection = Connection()
+    connection.hub = hub = Hub()
+    task = asyncio.create_task(connection.run(wait=True))
+    try:
+        await asyncio.wait_for(entered.wait(), 1)
+        assert not task.done()
+        release.set()
+        await asyncio.sleep(0.01)
+        assert not task.done()
+        hub.status_observable.on_next(StatusFlag(0))
+        await asyncio.wait_for(task, 1)
+    finally:
+        task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await task
+
+
+@pytest.mark.asyncio
 async def test_console_input_serializes_writes_and_does_not_enter_monitor():
     import asyncio
 

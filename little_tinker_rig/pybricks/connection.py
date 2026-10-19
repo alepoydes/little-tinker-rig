@@ -170,40 +170,54 @@ class Connection:
         try:
             await hub.stop_user_program()
             self._update(running=True)
-            await hub.run(
-                str(path.resolve()) if path is not None else None,
-                wait=False,
-                print_output=False,
-                line_handler=False,
-            )
+
+            async def start():
+                await hub.run(
+                    str(path.resolve()) if path is not None else None,
+                    wait=False,
+                    print_output=False,
+                    line_handler=False,
+                )
+
             if wait:
-                await self._wait_stopped(hub)
+                await self._wait_stopped(hub, start)
+            else:
+                await start()
         except BaseException:
             self._update(running=False)
             raise
         if wait:
             self._update(running=False)
 
-    async def _wait_stopped(self, hub):
+    async def _wait_stopped(self, hub, start):
         from pybricksdev.ble.pybricks import StatusFlag
         from reactivex import operators as op
 
         finished = asyncio.get_running_loop().create_future()
+        running_seen = False
+        start_returned = False
 
         def status(flags):
-            if not finished.done() and not flags & StatusFlag.USER_PROGRAM_RUNNING:
+            nonlocal running_seen
+            if flags & StatusFlag.USER_PROGRAM_RUNNING:
+                running_seen = True
+            elif not finished.done() and (running_seen or start_returned):
                 finished.set_result(None)
 
         def connection(state):
             if state.name == "DISCONNECTED" and not finished.done():
                 finished.set_exception(ConnectionError(tr("Hub disconnected.")))
 
-        # Ignore the cached pre-START status. Periodic reports also confirm that
-        # a short program stopped without relying on a guessed startup timeout.
+        # Subscribe before START so a short program cannot finish during the
+        # start request. Ignore cached and pre-start idle reports; a running
+        # report followed by idle, or a fresh idle after START returns, confirms
+        # completion without a guessed startup delay.
         with (
             hub.status_observable.pipe(op.skip(1)).subscribe(status),
             hub.connection_state_observable.subscribe(connection),
         ):
+            await start()
+            start_returned = True
             await finished
 
     async def stop(self) -> None:

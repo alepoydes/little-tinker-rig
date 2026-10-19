@@ -13,6 +13,19 @@ from little_tinker_rig.pybricks.virtual import VirtualConnection
 from little_tinker_rig.pybricks.worker import HubWorker
 
 
+def test_worker_close_is_idempotent():
+    worker = HubWorker(
+        output=lambda *_: None,
+        failed=lambda *_: None,
+        updated=lambda *_: None,
+        busy_changed=lambda *_: None,
+        problem=lambda *_: None,
+        program_started=lambda *_: None,
+    )
+    worker.close()
+    worker.close()
+
+
 def test_disconnected_worker_rejects_program_actions_and_releases_connection(tmp_path):
     calls, failures = [], []
 

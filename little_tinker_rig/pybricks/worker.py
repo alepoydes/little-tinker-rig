@@ -34,6 +34,8 @@ class HubWorker:
         self.tasks = set()
         self.generation = 0
         self.connection_generation = 0
+        self._close_lock = Lock()
+        self._closed = False
         ready = Event()
 
         def run():
@@ -385,10 +387,14 @@ class HubWorker:
         )
 
     def close(self):
-        future = self.disconnect_hub()
-        try:
-            future.result(timeout=7)
-        except Exception:
-            future.cancel()
-        self.loop.call_soon_threadsafe(self.loop.stop)
-        self.thread.join(timeout=5)
+        with self._close_lock:
+            if self._closed:
+                return
+            self._closed = True
+            future = self.disconnect_hub()
+            try:
+                future.result(timeout=7)
+            except Exception:
+                future.cancel()
+            self.loop.call_soon_threadsafe(self.loop.stop)
+            self.thread.join(timeout=5)
