@@ -474,6 +474,144 @@ def test_execution_snapshot_captures_imports_and_rejects_unrelated_trace_paths(
 
 
 @pytest.mark.parametrize(
+    "relative, override, declaration",
+    [
+        pytest.param(False, False, '__all__ = ["sub"]\n', id="absolute"),
+        pytest.param(True, False, '__all__ = ["sub"]\n', id="relative"),
+        pytest.param(False, True, '__all__ = ("sub",)\n', id="unsaved-override"),
+        pytest.param(False, False, '__all__ = [] + ["sub"]\n', id="literal-add"),
+        pytest.param(False, False, '__all__ = []\n__all__ += ["sub"]\n', id="augmented"),
+        pytest.param(False, False, '__all__ = []\n__all__.append("sub")\n', id="append"),
+        pytest.param(False, False, '__all__ = []\n__all__.extend(["sub"])\n', id="extend"),
+    ],
+)
+def test_execution_snapshot_includes_package_wildcard_exports(
+    tmp_path, relative, override, declaration
+):
+    import subprocess
+    import sys
+
+    package = tmp_path / "pkg"
+    package.mkdir()
+    init = package / "__init__.py"
+    init.write_text("__all__ = []\n" if override else declaration)
+    sub = package / "sub.py"
+    sub.write_text("value = 42\n")
+    main = tmp_path / "main.py"
+    if relative:
+        (package / "consumer.py").write_text("from . import *\nprint(sub.value)\n")
+        main.write_text("import pkg.consumer\n")
+    else:
+        main.write_text("from pkg import *\nprint(sub.value)\n")
+    overrides = {init: declaration} if override else None
+
+    program = Program(main, overrides)
+    try:
+        assert sub in program.sources
+        result = subprocess.run(
+            [sys.executable, str(program.entry)],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        assert result.stdout.strip() == "42"
+    finally:
+        program.cleanup()
+
+
+@pytest.mark.parametrize(
+    "wildcard, explicit_all", [(False, True), (True, True), (True, False)]
+)
+def test_execution_snapshot_does_not_capture_shadowed_package_module(
+    tmp_path, wildcard, explicit_all
+):
+    import subprocess
+    import sys
+
+    package = tmp_path / "pkg"
+    package.mkdir()
+    (package / "__init__.py").write_text(
+        'sub = 42\n' + ('__all__ = ["sub"]\n' if explicit_all else "")
+    )
+    sub = package / "sub.py"
+    sub.write_text("def broken(:\n")
+    main = tmp_path / "main.py"
+    main.write_text(f"from pkg import {'*' if wildcard else 'sub'}\nprint(sub)\n")
+
+    program = Program(main)
+    try:
+        assert sub not in program.sources
+        result = subprocess.run(
+            [sys.executable, str(program.entry)],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        assert result.stdout.strip() == "42"
+    finally:
+        program.cleanup()
+
+
+@pytest.mark.parametrize(
+    "wildcard, explicit_all", [(False, True), (True, True), (True, False)]
+)
+def test_execution_snapshot_keeps_dynamically_imported_package_module(
+    tmp_path, wildcard, explicit_all
+):
+    import subprocess
+    import sys
+
+    package = tmp_path / "pkg"
+    package.mkdir()
+    (package / "__init__.py").write_text(
+        'import importlib\nsub = importlib.import_module(".sub", __name__)\n'
+        + ('__all__ = ["sub"]\n' if explicit_all else "")
+    )
+    sub = package / "sub.py"
+    sub.write_text("value = 42\n")
+    main = tmp_path / "main.py"
+    main.write_text(f"from pkg import {'*' if wildcard else 'sub'}\nprint(sub.value)\n")
+
+    program = Program(main)
+    try:
+        assert sub in program.sources
+        result = subprocess.run(
+            [sys.executable, str(program.entry)],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        assert result.stdout.strip() == "42"
+    finally:
+        program.cleanup()
+
+
+def test_execution_snapshot_keeps_unsaved_wildcard_module(tmp_path):
+    import subprocess
+    import sys
+
+    package = tmp_path / "pkg"
+    package.mkdir()
+    (package / "__init__.py").write_text('__all__ = ["sub"]\n')
+    sub = package / "sub.py"
+    main = tmp_path / "main.py"
+    main.write_text("from pkg import *\nprint(sub.value)\n")
+
+    program = Program(main, {sub: "value = 42\n"})
+    try:
+        assert sub in program.sources and not sub.exists()
+        result = subprocess.run(
+            [sys.executable, str(program.entry)],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        assert result.stdout.strip() == "42"
+    finally:
+        program.cleanup()
+
+
+@pytest.mark.parametrize(
     "trace",
     [
         'Uploading 95%\rTraceback (most recent call last):\r  File "main.py", line 1, in <module>\rZeroDivisionError: division by zero\r',
