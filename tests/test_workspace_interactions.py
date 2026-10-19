@@ -3,7 +3,7 @@
 from types import SimpleNamespace
 
 import pytest
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import QEvent, Qt, QTimer
 from PySide6.QtGui import QAction, QTextCursor
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QFileDialog, QPushButton
@@ -153,6 +153,16 @@ def test_compact_catalog_releases_editor_width_without_overriding_manual_split(w
     window.resize(1380, 880)
     QApplication.processEvents()
     assert abs(window.library_pane.width() - 340) <= 1
+
+
+def test_closing_window_cancels_queued_catalog_layout(tmp_path, qt_app):
+    window = Studio(tmp_path / "plain.py")
+    window.confirm_close = lambda *_: True
+    assert window.close()
+    qt_app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    qt_app.processEvents()
+    QTest.qWait(10)
+    window._fit_catalog_width()
 
 
 def test_compact_control_keeps_motor_assignments_above_controller(windows):

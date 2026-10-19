@@ -243,6 +243,7 @@ class Studio(QMainWindow):
         self.program_page.setChildrenCollapsible(False)
         self._catalog_width_manual = False
         self._catalog_resize_pending = False
+        self._closing = False
         self.program_page.splitterMoved.connect(self._catalog_splitter_moved)
         self.controls = ControlsPage()
         self.controls.monitor_requested.connect(self.start_monitor)
@@ -323,7 +324,7 @@ class Studio(QMainWindow):
         self.recovery = Recovery(self)
         self.documents.tabBar().tabMoved.connect(lambda *_: self.recovery.schedule())
         self.recovery.schedule()
-        QTimer.singleShot(0, self.recovery.offer)
+        QTimer.singleShot(0, self.recovery, self.recovery.offer)
         if geometry := self.settings.value("windowGeometry", b""):
             self.restoreGeometry(geometry)
         self._schedule_catalog_width()
@@ -806,14 +807,22 @@ class Studio(QMainWindow):
         self._catalog_width_manual = True
 
     def _schedule_catalog_width(self):
-        if self._catalog_width_manual or self._catalog_resize_pending:
+        if (
+            self._closing
+            or self._catalog_width_manual
+            or self._catalog_resize_pending
+        ):
             return
         self._catalog_resize_pending = True
-        QTimer.singleShot(0, self._fit_catalog_width)
+        QTimer.singleShot(0, self, self._fit_catalog_width)
 
     def _fit_catalog_width(self):
         self._catalog_resize_pending = False
-        if self._catalog_width_manual or not self.library_pane.isVisible():
+        if (
+            self._closing
+            or self._catalog_width_manual
+            or not self.library_pane.isVisible()
+        ):
             return
         available = self.program_page.width()
         if available <= 0:
@@ -2480,6 +2489,8 @@ class Studio(QMainWindow):
             self.error(str(error))
             event.ignore()
             return
+        self._closing = True
+        self.lessons.assembly_host.cancel_loading()
         self.controls.close()
         if self.robot:
             self.robot.close()

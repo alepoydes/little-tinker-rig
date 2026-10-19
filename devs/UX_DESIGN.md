@@ -220,6 +220,9 @@ exposes the student program, without its own command-line options, in `sys.argv`
 A per-run telemetry marker keeps program diagnostics on stderr from changing the
 virtual hub's status.
 
+Replacing an assembly model or closing the window cancels its pending parts
+preparation immediately, without waiting for the old page to be destroyed.
+
 Target Pybricks models are Robot Inventor / SPIKE Prime (A–F), BOOST Move Hub
 (built-in A/B motors and external C/D), and LEGO Technic Hub (A–D). The monitor
 must work on BOOST without ujson or PUPDevice. The common helper is tested with

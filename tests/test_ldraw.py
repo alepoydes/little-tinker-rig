@@ -131,6 +131,55 @@ def test_cancelled_assembly_result_does_not_show_finished_scene(model, qt_app):
         page.deleteLater()
 
 
+def test_replacing_assembly_page_cancels_its_active_load(model, tmp_path, qt_app):
+    import json
+
+    from PySide6.QtCore import QSettings
+
+    from little_tinker_rig.qt.assembly import AssemblyPage, AssemblyWorkspace
+    from little_tinker_rig.qt.resources import ResourceJob
+
+    description = model.with_suffix(".json")
+    description.write_text(json.dumps({"format": 1, "model": model.name}))
+    workspace = AssemblyWorkspace(
+        QSettings(str(tmp_path / "settings.ini"), QSettings.Format.IniFormat)
+    )
+    page = AssemblyPage(description)
+    job = ResourceJob(lambda **kwargs: None)
+    page.job = job
+    try:
+        workspace.replace_page(None, page)
+        workspace.replace_page(page, None)
+        assert job.cancelled.is_set()
+    finally:
+        workspace.deleteLater()
+
+
+def test_closing_window_cancels_assembly_load(model, tmp_path, qt_app):
+    import json
+
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.resources import ResourceJob
+
+    description = model.with_suffix(".json")
+    description.write_text(json.dumps({"format": 1, "model": model.name}))
+    window = Studio(tmp_path / "plain.py")
+    try:
+        window.lessons.assembly_host.open(description)
+        page = window.lessons.assembly_host.free_page
+        job = ResourceJob(lambda **kwargs: None)
+        page.job = job
+        window.confirm_close = lambda *_: False
+        assert not window.close()
+        assert not job.cancelled.is_set()
+        window.confirm_close = lambda *_: True
+        assert window.close()
+        assert job.cancelled.is_set()
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
 def test_failed_assembly_load_keeps_selected_step_instructions(model, qt_app):
     import json
 

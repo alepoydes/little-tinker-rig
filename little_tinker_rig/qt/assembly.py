@@ -222,6 +222,10 @@ class AssemblyPage(QWidget):
         if name:
             self.load(local=Path(name))
 
+    def cancel_loading(self):
+        if self.job:
+            self.job.cancelled.set()
+
     def load(self, *, local=None):
         if self.job:
             return
@@ -687,10 +691,16 @@ class AssemblyWorkspace(QWidget):
 
     def replace_page(self, previous, page):
         if previous:
+            previous.cancel_loading()
             self.pages.removeWidget(previous)
             previous.deleteLater()
         if page:
             self.pages.addWidget(page)
+
+    def cancel_loading(self):
+        for page in (self.lesson_page, self.free_page):
+            if page:
+                page.cancel_loading()
 
     def set_lesson(self, path, state=None):
         page = AssemblyPage(path, state) if path else None
