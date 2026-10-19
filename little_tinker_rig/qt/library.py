@@ -422,6 +422,7 @@ class Library(QTreeWidget):
         )
 
     def render(self):
+        self.refresh_history_titles()
         selected, scroll, expanded = self.view_states.get(self.view, (None, 0, {}))
         self.blockSignals(True)
         self.clear()
@@ -503,6 +504,25 @@ class Library(QTreeWidget):
         item.setData(0, REFERENCE, key)
         self.rows[key] = item
         self.paint_variant(item, family.primary)
+
+    @staticmethod
+    def history_title(family):
+        primary = family.primary
+        return primary.title or primary.help or primary.identity
+
+    def refresh_history_titles(self):
+        self.read_history()
+        changed = False
+        for key, entry in self.history.entries.items():
+            family = self.families.get(entry["identity"])
+            if family is None or key != reference(family.identity, self.scope):
+                continue
+            title = self.history_title(family)
+            if entry["title"] != title:
+                entry["title"] = title
+                changed = True
+        if changed and self.settings is not None:
+            self.settings.setValue("blockLibrary", self.history.dumps())
 
     def paint_variant(self, item, snippet):
         family = self.families[snippet.catalog_id]
@@ -586,9 +606,10 @@ class Library(QTreeWidget):
         snippet = self.snippets.get(identity)
         if snippet is None:
             return
-        primary = self.families[snippet.catalog_id].primary
-        title = primary.help or primary.identity
-        self.mutate_history("use", primary.identity, self.scope, title)
+        family = self.families[snippet.catalog_id]
+        self.mutate_history(
+            "use", family.primary.identity, self.scope, self.history_title(family)
+        )
         # Frequent is a snapshot until the user enters that view again.
         if self.view == "recent":
             self.set_view(self.view)
@@ -599,8 +620,7 @@ class Library(QTreeWidget):
             return
         key = item.data(0, REFERENCE)
         if family := self.families.get(item.data(0, FAMILY)):
-            primary = family.primary
-            title = primary.help or primary.identity
+            title = self.history_title(family)
             self.mutate_history("favorite", family.identity, self.scope, title)
         elif key in self.history.entries:
             entry = self.history.entries[key]

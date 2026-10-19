@@ -245,8 +245,8 @@ at the current selection.
 - **Favorites:** click the star on a card to add or remove its link; a filled star
   means it is already a favorite. The context menu offers the same action and
   **Move up** / **Move down** to set its order. Favorites
-  have no twelve-card limit. Missing definitions remain listed and recover when
-  their collection or document becomes available again.
+  have no twelve-card limit. Missing definitions retain their card titles in the
+  list and recover when their collection or document becomes available again.
 - **Recent:** the last twelve distinct families. Inserting another variant of a
   family moves the same entry to the front. The **Clear recent** icon clears this list.
 - **Frequent:** up to twelve families ranked by successful insertions over the

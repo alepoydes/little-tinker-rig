@@ -124,13 +124,70 @@ def test_family_navigation_filters_variants_and_retains_personal_links(
         library.load(())
         assert library.topLevelItemCount() == 1
         assert library.topLevelItem(0).data(0, IDENTITY) is None
-        help_text = next(s.help for s in snippets if s.identity == identity)
-        assert library.topLevelItem(0).text(0) == tr(help_text).splitlines()[0]
+        title = next(s.title for s in snippets if s.identity == identity)
+        assert library.topLevelItem(0).text(0) == tr(title)
         assert library.history.favorites == [key]
         library.load(snippets)
         assert library.topLevelItem(0).data(0, IDENTITY) == identity
         persisted = History(settings.value("blockLibrary"))
         assert persisted.favorites == [key] and persisted.recent[-1] == key
+    finally:
+        library.close()
+
+
+def test_existing_favorite_stores_card_title_before_collection_disappears(
+    tmp_path, qt_app
+):
+    from PySide6.QtCore import QSettings
+
+    from little_tinker_rig.qt.library import Library
+
+    snippets = builtin_snippets()
+    snippet = next(
+        item for item in snippets if item.identity == "pybricks/motors/motor_target"
+    )
+    history = History()
+    history.favorite(snippet.identity, title=snippet.help)
+    settings = QSettings(str(tmp_path / "catalog.ini"), QSettings.Format.IniFormat)
+    settings.setValue("blockLibrary", history.dumps())
+    library = Library(snippets, settings)
+    try:
+        assert (
+            library.history.entries[reference(snippet.identity)]["title"]
+            == snippet.title
+        )
+        library.set_view("favorites")
+        library.load(())
+        assert library.topLevelItem(0).text(0) == snippet.title
+        saved = History(settings.value("blockLibrary"))
+        assert saved.entries[reference(snippet.identity)]["title"] == snippet.title
+    finally:
+        library.close()
+
+
+def test_title_refresh_keeps_favorites_added_by_another_window(tmp_path, qt_app):
+    from PySide6.QtCore import QSettings
+
+    from little_tinker_rig.qt.library import Library
+
+    snippets = builtin_snippets()
+    first = next(
+        item for item in snippets if item.identity == "pybricks/motors/motor_target"
+    )
+    second = "python/basics/display"
+    history = History()
+    history.favorite(first.identity, title=first.help)
+    settings = QSettings(str(tmp_path / "catalog.ini"), QSettings.Format.IniFormat)
+    settings.setValue("blockLibrary", history.dumps())
+    library = Library((), settings)
+    try:
+        newer = History(settings.value("blockLibrary"))
+        newer.favorite(second, title="Display")
+        settings.setValue("blockLibrary", newer.dumps())
+        library.load(snippets)
+        saved = History(settings.value("blockLibrary"))
+        assert saved.favorites == [reference(first.identity), reference(second)]
+        assert saved.entries[reference(first.identity)]["title"] == first.title
     finally:
         library.close()
 
