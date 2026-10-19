@@ -22,7 +22,12 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from little_tinker_rig.core.lessons import localized, resource, robot_description
+from little_tinker_rig.core.lessons import (
+    camera_values,
+    localized,
+    resource,
+    robot_description,
+)
 from little_tinker_rig.i18n import N_, language, tr
 
 from .help import HelpBrowser
@@ -59,7 +64,15 @@ class AssemblyPage(QWidget):
 
     def __init__(self, path, state=None):
         super().__init__()
-        self.state = state if state is not None else {}
+        self.state = state if isinstance(state, dict) else {}
+        step = self.state.get("step", 0)
+        if type(step) is not int or not 0 <= step <= 2**31 - 1:
+            step = 0
+        if "camera" in self.state:
+            try:
+                camera_values(self.state["camera"])
+            except ValueError:
+                self.state.pop("camera")
         path = Path(path)
         self.robot = robot_description(path)
         self.root = path.parent
@@ -70,7 +83,7 @@ class AssemblyPage(QWidget):
         self.job = None
         self.attempted = False
         self.error_kind = None
-        self.step = max(0, self.state.get("step", 0))
+        self.step = step
         layout = QVBoxLayout(self)
         self.caption = QLabel(tr("Loading robot model…"))
         layout.addWidget(self.caption)

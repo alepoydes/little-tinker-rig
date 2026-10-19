@@ -9,6 +9,7 @@ import pytest
 from little_tinker_rig.core.lessons import (
     Lesson,
     StudentProject,
+    camera_values,
     extract,
     pack,
     resource,
@@ -49,6 +50,33 @@ def lesson(tmp_path):
         encoding="utf-8",
     )
     return root
+
+
+def test_extreme_assembly_camera_value_is_rejected_cleanly():
+    with pytest.raises(ValueError, match="Invalid assembly camera"):
+        camera_values(
+            {"center": [10**400, 0, 0], "extent": 10, "yaw": 0, "pitch": 0}
+        )
+
+
+@pytest.mark.parametrize("coordinate", [True, 10**400])
+def test_robot_description_rejects_non_numeric_port_coordinates(
+    tmp_path, coordinate
+):
+    (tmp_path / "robot.ldr").write_text("0 Robot\n", encoding="utf-8")
+    path = tmp_path / "robot.json"
+    path.write_text(
+        json.dumps(
+            {
+                "format": 1,
+                "model": "robot.ldr",
+                "ports": {"A": [coordinate, 0, 0]},
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="Port markers need three finite coordinates"):
+        robot_description(path)
 
 
 def test_independent_projects_and_portable_draft(lesson, tmp_path):

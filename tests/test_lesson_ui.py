@@ -1200,6 +1200,69 @@ def test_independent_assembly_survives_lesson_and_document_changes(tmp_path, qt_
         window.deleteLater()
 
 
+@pytest.mark.parametrize(
+    "saved_state",
+    [
+        [],
+        {"step": "bad"},
+        {"step": True},
+        {"step": 10**400},
+        {"camera": {"center": [0, 0, 0], "extent": "wide", "yaw": 0, "pitch": 0}},
+        {"camera": {"center": [10**400, 0, 0], "extent": 10, "yaw": 0, "pitch": 0}},
+    ],
+)
+def test_free_assembly_discards_invalid_saved_view_state(
+    tmp_path, qt_app, monkeypatch, saved_state
+):
+    from PySide6.QtCore import QSettings
+    from PySide6.QtGui import QShowEvent
+
+    from little_tinker_rig.qt.assembly import AssemblyPage, AssemblyWorkspace
+
+    (tmp_path / "robot.ldr").write_text("0 Robot\n", encoding="utf-8")
+    path = tmp_path / "robot.json"
+    path.write_text(json.dumps({"format": 1, "model": "robot.ldr"}), encoding="utf-8")
+    settings = QSettings(str(tmp_path / "assembly.ini"), QSettings.Format.IniFormat)
+    settings.setValue("assembly/path", str(path))
+    settings.setValue("assembly/state", json.dumps(saved_state))
+    monkeypatch.setattr(AssemblyPage, "load", lambda self: None)
+    workspace = AssemblyWorkspace(settings)
+    try:
+        workspace.showEvent(QShowEvent())
+        assert workspace.free_page is not None
+        assert workspace.free_page.step == 0
+        assert workspace.free_page.state["step"] == 0
+        assert "camera" not in workspace.free_page.state
+    finally:
+        workspace.deleteLater()
+
+
+def test_free_assembly_keeps_valid_saved_view_state(tmp_path, qt_app, monkeypatch):
+    from PySide6.QtCore import QSettings
+    from PySide6.QtGui import QShowEvent
+
+    from little_tinker_rig.qt.assembly import AssemblyPage, AssemblyWorkspace
+
+    (tmp_path / "robot.ldr").write_text("0 Robot\n", encoding="utf-8")
+    path = tmp_path / "robot.json"
+    path.write_text(json.dumps({"format": 1, "model": "robot.ldr"}), encoding="utf-8")
+    state = {
+        "step": 2,
+        "camera": {"center": [0, 0, 0], "extent": 10, "yaw": 0, "pitch": 0},
+    }
+    settings = QSettings(str(tmp_path / "assembly.ini"), QSettings.Format.IniFormat)
+    settings.setValue("assembly/path", str(path))
+    settings.setValue("assembly/state", json.dumps(state))
+    monkeypatch.setattr(AssemblyPage, "load", lambda self: None)
+    workspace = AssemblyWorkspace(settings)
+    try:
+        workspace.showEvent(QShowEvent())
+        assert workspace.free_page.step == 2
+        assert workspace.free_page.state == state
+    finally:
+        workspace.deleteLater()
+
+
 def test_assembly_link_works_without_task_card_and_selects_lesson_robot(
     tmp_path, qt_app, monkeypatch
 ):

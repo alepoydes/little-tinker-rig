@@ -61,12 +61,19 @@ def _archive_hash(path):
     return hashlib.sha256(path.read_bytes()).hexdigest() if path.exists() else None
 
 
+def _finite_number(value):
+    if type(value) not in (int, float):
+        return False
+    try:
+        return math.isfinite(value)
+    except OverflowError:
+        return False
+
+
 def camera_values(state):
     try:
         values = (*state["center"], state["extent"], state["yaw"], state["pitch"])
-        valid = len(values) == 6 and all(
-            type(v) in (int, float) and math.isfinite(v) for v in values
-        )
+        valid = len(values) == 6 and all(_finite_number(v) for v in values)
         if valid and values[3] > 0 and abs(values[5]) < 90:
             return values
     except (KeyError, TypeError):
@@ -104,7 +111,7 @@ def robot_description(path):
         if (
             not isinstance(point, list)
             or len(point) != 3
-            or not all(isinstance(v, (int, float)) and math.isfinite(v) for v in point)
+            or not all(_finite_number(v) for v in point)
         ):
             raise ValueError("Port markers need three finite coordinates")
     devices = data.get("devices", [])
