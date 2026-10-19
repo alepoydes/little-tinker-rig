@@ -32,6 +32,29 @@ def test_history_bounds_counts_expires_and_keeps_favorites_and_document_scope():
     assert set(json.loads(restored.dumps())["entries"]) == set(history.favorites)
 
 
+def test_history_live_clock_rolls_daily_usage_and_frequent_window(monkeypatch):
+    clock = [100 * 86400 + 10]
+    monkeypatch.setattr(
+        "little_tinker_rig.core.catalog_history.time.time", lambda: clock[0]
+    )
+    history = History()
+    first = "test/actions/first"
+    second = "test/actions/second"
+    history.use(first)
+    clock[0] = 101 * 86400 + 20
+    history.use(second)
+    assert history.entries[reference(first)]["days"] == {"100": 1}
+    assert history.entries[reference(second)]["days"] == {"101": 1}
+    assert history.entries[reference(second)]["last"] == clock[0]
+
+    clock[0] = 130 * 86400 + 30
+    assert history.frequent() == [reference(second)]
+    clock[0] = 131 * 86400 + 40
+    assert history.frequent() == []
+    history.dumps()
+    assert all(not item["days"] for item in history.entries.values())
+
+
 def test_family_navigation_filters_variants_and_retains_personal_links(
     tmp_path, qt_app
 ):

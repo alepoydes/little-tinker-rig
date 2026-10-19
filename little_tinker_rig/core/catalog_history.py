@@ -17,7 +17,7 @@ def reference(identity, scope=""):
 
 class History:
     def __init__(self, source="", *, now=None):
-        self.now = int(time.time() if now is None else now)
+        self._fixed_now = int(now) if now is not None else None
         try:
             data = json.loads(source)
         except (ValueError, TypeError):
@@ -70,7 +70,21 @@ class History:
         self.recent = self.recent[:LIMIT]
         self.prune()
 
+    @property
+    def now(self):
+        return int(time.time()) if self._fixed_now is None else self._fixed_now
+
+    def _expire(self):
+        day = self.now // 86400
+        for value in self.entries.values():
+            value["days"] = {
+                recorded: count
+                for recorded, count in value["days"].items()
+                if 0 <= day - int(recorded) < WINDOW_DAYS
+            }
+
     def prune(self):
+        self._expire()
         retained = set(self.favorites) | set(self.recent)
         self.entries = {
             key: value
@@ -94,10 +108,12 @@ class History:
         return key, value
 
     def use(self, identity, scope="", title=""):
+        self._expire()
         key, value = self.entry(identity, scope, title or identity)
-        day = str(self.now // 86400)
+        now = self.now
+        day = str(now // 86400)
         value["days"][day] = value["days"].get(day, 0) + 1
-        value["last"] = self.now
+        value["last"] = now
         self.recent = [key, *(k for k in self.recent if k != key)][:LIMIT]
 
     def favorite(self, identity, scope="", title=""):
@@ -113,6 +129,7 @@ class History:
         self.favorites.insert(target, self.favorites.pop(index))
 
     def frequent(self):
+        self._expire()
         return sorted(
             (key for key, value in self.entries.items() if value["days"]),
             key=lambda key: (

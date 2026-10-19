@@ -15,7 +15,9 @@ from little_tinker_rig.i18n import tr
 def decode_source(raw: bytes) -> tuple[str, str]:
     """Read a Python file even when a valid UTF-8 draft has a bad cookie."""
     try:
-        encoding, _ = tokenize.detect_encoding(io.BytesIO(raw).readline)
+        # BytesIO.readline only splits on LF; Python also accepts CR-only files.
+        universal = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+        encoding, _ = tokenize.detect_encoding(io.BytesIO(universal).readline)
     except SyntaxError:
         encoding = "utf-8-sig" if raw.startswith(BOM_UTF8) else "utf-8"
     return raw.decode(encoding), encoding
@@ -23,7 +25,9 @@ def decode_source(raw: bytes) -> tuple[str, str]:
 
 def utf8_source(source: str) -> str:
     """Normalize a Python encoding declaration, including in invalid drafts."""
-    lines = source.removeprefix("\ufeff").split("\n", 2)
+    lines = re.split(
+        r"(?<=\n)|(?<=\r)(?!\n)", source.removeprefix("\ufeff"), maxsplit=2
+    )
     for index, line in enumerate(lines[:2]):
         cookie = re.match(r"[ \t\f]*#.*?coding[:=][ \t]*([-a-zA-Z0-9_.]+)", line)
         if cookie:
@@ -32,7 +36,7 @@ def utf8_source(source: str) -> str:
             break
         if not re.match(r"[ \t\f]*(?:#|\r?$)", line):
             break
-    return "\n".join(lines)
+    return "".join(lines)
 
 
 def atomic_write(path: Path, text: str | bytes, encoding: str = "utf-8") -> None:

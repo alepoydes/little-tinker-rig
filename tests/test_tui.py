@@ -44,6 +44,30 @@ def test_utf8_saves_preserve_drafts_newlines_metadata_and_detect_disk_changes(tm
     assert file.path == new and not file.dirty("value = 2")
 
 
+def test_cr_only_source_decodes_second_line_cookie_and_saves_utf8(tmp_path):
+    path = tmp_path / "cr_only.py"
+    source = "#!/usr/bin/python\r# coding: cp1251\rmessage = 'Привет'\r"
+    path.write_bytes(source.encode("cp1251"))
+
+    file = SourceFile(path)
+    assert file.source == source
+    file.save(file.source)
+    expected = source.replace("cp1251", "utf-8")
+    assert path.read_bytes() == expected.encode("utf-8")
+    assert SourceFile(path).source == expected
+
+
+def test_cr_only_source_ignores_third_line_cookie_comment(tmp_path):
+    path = tmp_path / "cr_only.py"
+    source = "# first\r# second\r# coding: cp1251\rmessage = 'Привет'\r"
+    path.write_bytes(source.encode("utf-8"))
+
+    file = SourceFile(path)
+    assert file.source == source
+    file.save(file.source)
+    assert path.read_bytes() == source.encode("utf-8")
+
+
 @pytest.mark.parametrize("save_as", [False, True])
 def test_source_save_rechecks_external_edit_after_encoding(
     tmp_path, monkeypatch, save_as
