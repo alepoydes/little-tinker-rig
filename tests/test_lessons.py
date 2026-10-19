@@ -12,6 +12,7 @@ from little_tinker_rig.core.lessons import (
     extract,
     pack,
     resource,
+    robot_description,
 )
 from little_tinker_rig.core.project import Project
 
@@ -109,6 +110,42 @@ def test_task_points_reject_invalid_values(lesson, points):
     (lesson / "lesson.json").write_text(json.dumps(data), encoding="utf-8")
     with pytest.raises(ValueError, match="points"):
         Lesson.load(lesson)
+
+
+def test_device_check_requires_distinct_devices_on_distinct_ports(lesson):
+    (lesson / "robot.ldr").write_text("0 Robot\n", encoding="utf-8")
+    robot_path = lesson / "robot.json"
+    robot = {
+        "format": 1,
+        "model": "robot.ldr",
+        "devices": [
+            {"instance": "left", "name": "Left", "port": "A", "type": "motor"},
+            {"instance": "right", "name": "Right", "port": "B", "type": "motor"},
+        ],
+    }
+    robot_path.write_text(json.dumps(robot), encoding="utf-8")
+    lesson_path = lesson / "lesson.json"
+    data = json.loads(lesson_path.read_text(encoding="utf-8"))
+    data["robot"] = "robot.json"
+    stage = data["stages"][0]
+    stage.update(check="devices", devices=["left", "right"])
+    lesson_path.write_text(json.dumps(data), encoding="utf-8")
+    Lesson.load(lesson)
+
+    for required in ([], ["left", "left"]):
+        stage["devices"] = required
+        lesson_path.write_text(json.dumps(data), encoding="utf-8")
+        with pytest.raises(ValueError, match="distinct required devices"):
+            Lesson.load(lesson)
+    del stage["devices"]
+    lesson_path.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(ValueError, match="distinct required devices"):
+        Lesson.load(lesson)
+
+    robot["devices"][1]["port"] = "A"
+    robot_path.write_text(json.dumps(robot), encoding="utf-8")
+    with pytest.raises(ValueError, match="unique ports"):
+        robot_description(robot_path)
 
 
 def test_localized_task_card_markdown_is_packaged_and_validated(lesson):

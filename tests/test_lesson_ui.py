@@ -537,6 +537,13 @@ def test_task_checkbox_points_and_evidence_are_idempotent(tmp_path, qt_app):
         window.update_hub(
             HubInfo(connected=True, monitoring=True, ports={"A": {"type": "motor"}})
         )
+        stage = lesson.current.lesson.stages[1]
+        for required in ([], ["left", "left"], ["unknown"]):
+            stage["devices"] = required
+            assert not lesson.check_ready(stage)
+            lesson.set_completion("stop", True)
+            assert lesson.current.score == (0, 5)
+        stage["devices"] = ["left"]
         lesson.cards["stop"]["check"].setChecked(True)
         assert lesson.current.score == (3, 5)
         assert lesson.current.progress["evidence"] == {"stop": "devices"}

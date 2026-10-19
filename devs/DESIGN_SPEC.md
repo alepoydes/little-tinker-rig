@@ -2061,6 +2061,9 @@ in the current project and reopens that document on later clicks; it never
 replaces another document, including unfinished Python drafts.
 Visiting an assembly step, changing a camera or viewing a hint never completes a
 physical task. Manual completion and observable device checks remain distinct.
+Each device-checked task names at least one distinct robot device. Robot devices
+have unique physical ports; a monitored connection must report the expected type
+on every required port before the task can be marked complete.
 A right-side task panel shows the selected task's Markdown, revealed hints,
 links and completion status across workspaces. Help shows the whole localized
 lesson instruction file from the top on first open, or at the selected task

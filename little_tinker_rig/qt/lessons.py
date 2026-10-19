@@ -1142,13 +1142,21 @@ class Lessons(QObject):
         ]
 
     def check_ready(self, stage=None):
+        if self.current is None:
+            return False
         info = self.window.hub_info
+        if not info.connected or not info.monitoring:
+            return False
+        required = (stage or self.current.stage).get("devices", [])
+        if not required:
+            return False
+        connections = self.connections(stage)
         return (
-            info.connected
-            and info.monitoring
+            len(connections) == len(required)
+            and len({d["port"] for d in connections}) == len(required)
             and all(
                 info.ports.get(d["port"], {}).get("type") == d["type"]
-                for d in self.connections(stage)
+                for d in connections
             )
         )
 

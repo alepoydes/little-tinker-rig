@@ -111,6 +111,7 @@ def robot_description(path):
     if not isinstance(devices, list):
         raise ValueError("Robot devices must be a list")
     identities = set()
+    ports = set()
     for device in devices:
         if (
             not isinstance(device, dict)
@@ -124,6 +125,9 @@ def robot_description(path):
             device.get("type"), str
         ):
             raise ValueError("Invalid robot device connection")
+        if device["port"] in ports:
+            raise ValueError("Robot devices need unique ports")
+        ports.add(device["port"])
     return data
 
 
@@ -349,6 +353,10 @@ class Lesson:
                     isinstance(v, str) for v in stage.get(key, [])
                 ):
                     raise ValueError(f"Stage {key} must be a list of names")
+            if stage.get("check") == "devices":
+                required = stage.get("devices", [])
+                if not required or len(required) != len(set(required)):
+                    raise ValueError("Device checks need distinct required devices")
             if "starter" in stage and not lesson.file(stage["starter"]).is_file():
                 raise ValueError("Missing starter program")
             if "program" in stage and (
