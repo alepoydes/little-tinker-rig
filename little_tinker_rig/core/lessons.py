@@ -851,12 +851,20 @@ class StudentProject:
 
     @classmethod
     def restore(cls, data):
-        project = cls(
-            Path(data["root"]),
-            Path(data["path"]) if data["path"] else None,
-            data["disk_hash"],
-            retain=data.get("retain", False),
-        )
+        project = cls(Path(data["root"]), retain=data.get("retain", False))
+        archive = project.data.get("archive") if project.retain else None
+        if (
+            isinstance(archive, dict)
+            and isinstance(archive.get("path"), str)
+            and Path(archive["path"]).is_absolute()
+            and isinstance(archive.get("hash"), str)
+            and isinstance(archive.get("progress"), str)
+            and type(archive.get("pending")) is bool
+        ):
+            # A successful save can be newer than the window's recovery record.
+            return project
+        project.path = Path(data["path"]).resolve() if data["path"] else None
+        project.disk_hash = data["disk_hash"]
         project.saved_progress = data["saved_progress"]
         project.pending = data.get("pending", False)
         return project

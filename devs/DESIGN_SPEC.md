@@ -2038,7 +2038,9 @@ Student projects (`.ltr`) snapshot these materials together with ordinary
 Python files, per-file Scratch, editor state and lesson progress. The writable
 working directory belongs to the user data directory. Archives are atomic, detect
 external modifications and retain unfinished Python. Recovery retains archive
-save baselines; template attempts remain in user data across normal close.
+save baselines; for a retained attempt, the working copy's record of a successful
+save takes precedence over an older window recovery checkpoint. Template attempts
+remain in user data across normal close.
 
 Bundled Pybricks exploration projects reuse licensed example programs through explicit file
 references; packaging resolves them into immutable lesson resources. The `programs`

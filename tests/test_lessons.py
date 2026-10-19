@@ -252,6 +252,35 @@ def test_saved_template_attempt_retains_archive_and_dirty_baseline(lesson, tmp_p
     assert "archive" not in StudentProject.open(copy).data
 
 
+@pytest.mark.parametrize("save_as", [False, True])
+def test_stale_recovery_uses_newer_saved_attempt_baseline(lesson, tmp_path, save_as):
+    project = StudentProject.create(lesson)
+    destination = tmp_path / "student.ltr"
+    project.save(destination)
+    stale_recovery = project.checkpoint()
+
+    project.progress["completed"].append("build")
+    if save_as:
+        destination = tmp_path / "copy.ltr"
+    project.save(destination)
+    restored = StudentProject.restore(stale_recovery)
+
+    assert restored.path == destination
+    assert restored.disk_hash == project.disk_hash
+    assert restored.saved_progress == project.saved_progress
+    assert not restored.dirty
+    restored.save()
+
+
+def test_unsaved_attempt_restores_pending_recovery_state(lesson):
+    project = StudentProject.create(lesson)
+    project.pending = True
+    restored = StudentProject.restore(project.checkpoint())
+    assert restored.path is None
+    assert restored.pending
+    assert restored.dirty
+
+
 def test_save_as_and_export_require_explicit_overwrite(lesson, tmp_path):
     first = StudentProject.create(lesson)
     second = StudentProject.create(lesson)
