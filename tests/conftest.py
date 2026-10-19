@@ -65,3 +65,9 @@ def isolated_qt_settings(request, tmp_path, monkeypatch):
             "recovery_directory",
             lambda: tmp_path / "recovery",
         )
+    yield
+    if "qt_app" in request.fixturenames:
+        from PySide6.QtCore import QCoreApplication, QEvent
+
+        # processEvents() does not flush deleteLater() calls without an event loop.
+        QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
