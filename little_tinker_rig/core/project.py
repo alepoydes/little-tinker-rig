@@ -233,6 +233,8 @@ class Project:
         )
 
         def write_workspace(scratch):
+            if self._hash(self.workspace_path) != self._workspace_hash:
+                raise ExternalChangeError(self.workspace_path, workspace=True)
             text = (
                 json.dumps(
                     dict(metadata, scratch=list(scratch)), ensure_ascii=False, indent=2
@@ -247,6 +249,10 @@ class Project:
             # either file fails. Interrupted saves may leave extra copies.
             missing = Counter(self._saved.scratch) - Counter(state.scratch)
             write_workspace((*state.scratch, *missing.elements()))
+        if self._hash(self.path) != self._disk_hash:
+            raise ExternalChangeError(self.path)
+        if self._hash(self.workspace_path) != self._workspace_hash:
+            raise ExternalChangeError(self.workspace_path, workspace=True)
         atomic_write(self.path, state.source)
         self.encoding = "utf-8"
         self._disk_hash = hashlib.sha256(state.source.encode("utf-8")).hexdigest()

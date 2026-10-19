@@ -206,7 +206,7 @@ def extract(data: bytes, destination: Path):
                     path.mkdir(parents=True, exist_ok=True)
                 else:
                     path.parent.mkdir(parents=True, exist_ok=True)
-                    path.write_bytes(archive.read(member))
+                    atomic_write(path, archive.read(member))
     except BadZipFile as error:
         raise ValueError(tr("Not a valid LittleTinker Rig archive")) from error
 

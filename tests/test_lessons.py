@@ -1,6 +1,7 @@
 import io
 import json
 import os
+from pathlib import Path
 from zipfile import ZIP_STORED, ZipFile
 
 import pytest
@@ -296,6 +297,29 @@ def test_corrupt_archive_member_cannot_overwrite_existing_files(tmp_path):
         extract(bytes(corrupted), destination)
     assert existing.read_text(encoding="utf-8") == "Original notes"
     assert not (destination / "last.txt").exists()
+
+
+def test_extract_replace_failure_keeps_existing_file(tmp_path, monkeypatch):
+    destination = tmp_path / "output"
+    destination.mkdir()
+    existing = destination / "notes.txt"
+    existing.write_text("Original notes", encoding="utf-8")
+    data = io.BytesIO()
+    with ZipFile(data, "w") as archive:
+        archive.writestr("notes.txt", "Replacement notes")
+
+    original_replace = Path.replace
+
+    def fail_replace(source, target):
+        if target == existing:
+            raise OSError("simulated replacement failure")
+        return original_replace(source, target)
+
+    monkeypatch.setattr(Path, "replace", fail_replace)
+    with pytest.raises(OSError, match="simulated replacement failure"):
+        extract(data.getvalue(), destination)
+    assert existing.read_text(encoding="utf-8") == "Original notes"
+    assert {path.name for path in destination.iterdir()} == {"notes.txt"}
 
 
 def test_archive_rejects_case_collisions_in_parent_directories(tmp_path):

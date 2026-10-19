@@ -3,7 +3,7 @@ import json
 import pytest
 
 from little_tinker_rig.cli.main import main
-from little_tinker_rig.core.project import Project
+from little_tinker_rig.core.project import ExternalChangeError, Project
 from little_tinker_rig.core.session import Session
 from little_tinker_rig.core.source_file import SourceFile
 
@@ -101,6 +101,52 @@ def test_external_scratch_change_is_not_overwritten(tmp_path):
         project.save()
     reopened = Project(project.path)
     assert reopened.document.state == other.document.state
+
+
+def test_save_rechecks_main_after_workspace_checkpoint(tmp_path, monkeypatch):
+    from little_tinker_rig.core import project as storage
+
+    path = tmp_path / "main.py"
+    project = Project(path)
+    project.document.commit("value = 1\n", ("old draft",))
+    project.save()
+    project.document.commit("value = 2\n", ("new draft",))
+    write = storage.atomic_write
+    changed = False
+
+    def change_main_after_workspace(destination, text, encoding="utf-8"):
+        nonlocal changed
+        write(destination, text, encoding)
+        if destination == project.workspace_path and not changed:
+            path.write_text("external = 3\n", encoding="utf-8")
+            changed = True
+
+    monkeypatch.setattr(storage, "atomic_write", change_main_after_workspace)
+    with pytest.raises(ExternalChangeError):
+        project.save()
+    assert path.read_text(encoding="utf-8") == "external = 3\n"
+
+
+def test_save_rechecks_workspace_after_main_write(tmp_path, monkeypatch):
+    from little_tinker_rig.core import project as storage
+
+    path = tmp_path / "main.py"
+    project = Project(path)
+    project.document.commit("value = 1\n", ("old draft",))
+    project.save()
+    project.document.commit("value = 2\n", ("new draft",))
+    write = storage.atomic_write
+    external = '{"external": true}\n'
+
+    def change_workspace_after_main(destination, text, encoding="utf-8"):
+        write(destination, text, encoding)
+        if destination == path:
+            project.workspace_path.write_text(external, encoding="utf-8")
+
+    monkeypatch.setattr(storage, "atomic_write", change_workspace_after_main)
+    with pytest.raises(ExternalChangeError, match="Workspace changed outside"):
+        project.save()
+    assert project.workspace_path.read_text(encoding="utf-8") == external
 
 
 def test_session_inserts_imports_and_edits_parameters_atomically(tmp_path):
