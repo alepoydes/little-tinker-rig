@@ -449,8 +449,8 @@ def test_closing_invalid_draft_and_save_as_preserve_other_documents(
         monkeypatch.setattr(
             QFileDialog, "getSaveFileName", lambda *args: (str(first), "Python (*.py)")
         )
-        with pytest.raises(ValueError):
-            window.save_as()
+        assert window.save_as() is False
+        assert "already open in another tab" in window.last_error
         assert first.read_text() == "value = 1\n"
         assert second.read_text() == "value = 2\n"
         window.new_file()

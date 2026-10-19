@@ -359,8 +359,8 @@ def test_example_resume_restart_autosave_and_save_as_with_modules(
         assert ast.dump(ast.parse(fresh.text)) == ast.dump(ast.parse(entry.read_text()))
         assert old_page.text == "print(42)\n"
         assert len(ExampleWork.all()) == 2
-        with pytest.raises(ValueError, match="another example attempt"):
-            window.save_as()
+        assert window.save_as() is False
+        assert "another example attempt" in window.last_error
         assert old_page.text == "print(42)\n"
         window.open_document(entry)
         assert window.document_page is fresh
@@ -413,8 +413,8 @@ def test_example_autosave_preserves_external_edits_and_save_as_module_conflicts(
         monkeypatch.setattr(
             QFileDialog, "getSaveFileName", lambda *a: (str(destination), "")
         )
-        with pytest.raises(ValueError, match="different module"):
-            window.save_as()
+        assert window.save_as() is False
+        assert "different module" in window.last_error
         assert not destination.exists() and collision.read_text() == "value = 99\n"
         assert page.session.project.path == copied
     finally:

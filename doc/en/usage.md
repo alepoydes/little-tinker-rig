@@ -61,6 +61,9 @@ open document and Scratch; copying preserves both versions. **File → Reload fr
 disk…** is also available without first saving. Ordinary Open selects an existing
 tab and does not discard its edits. Running a snapshot does not resolve or
 overwrite external file changes; explicit Save still checks them.
+If opening, saving or reloading fails, the error appears in the Console and the
+current document stays open. When opening several files, a damaged file does not
+prevent the remaining files from opening.
 
 The Python editor has syntax highlighting, line numbers, indentation with
 Tab/Shift+Tab, and search with Ctrl+F. Enter preserves existing tab or space

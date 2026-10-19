@@ -6,7 +6,7 @@ import pytest
 from PySide6.QtCore import QEvent, Qt, QTimer
 from PySide6.QtGui import QAction, QTextCursor
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QFileDialog, QPushButton
+from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox, QPushButton
 
 from little_tinker_rig.qt.app import Studio
 
@@ -747,6 +747,114 @@ def test_save_conflict_has_explicit_non_overwriting_actions(
         assert copy.exists() == (choice == "Save a copy…")
         if copy.exists():
             assert copy.read_text() == page.text
+
+
+def test_save_conflict_failed_reload_keeps_editable_document(windows):
+    window = windows()
+    page = window.document_page
+    path = page.session.project.path
+    page.session.editor.commit("edited = 2\n")
+    path.write_bytes(b"\xff")
+
+    def reload_from_dialog():
+        dialog = QApplication.activeModalWidget()
+        button = next(
+            item
+            for item in dialog.buttons()
+            if item.text().replace("&", "") == "Reload from disk"
+        )
+        button.click()
+
+    QTimer.singleShot(0, reload_from_dialog)
+    assert window.save_document(page) is False
+    assert "utf-8" in window.last_error
+    assert page.text == "edited = 2\n" and page.dirty
+    assert path.read_bytes() == b"\xff"
+
+
+def test_save_failure_reports_error_and_keeps_document(windows, monkeypatch):
+    window = windows()
+    page = window.document_page
+    path = page.session.project.path
+    page.session.editor.commit("edited = 2\n")
+
+    def fail_save():
+        raise OSError("disk full")
+
+    monkeypatch.setattr(page, "save", fail_save)
+
+    assert window.save_document(page) is False
+    assert "disk full" in window.last_error
+    assert page.text == "edited = 2\n" and page.dirty
+    assert path.read_text(encoding="utf-8") == "x = 1\n"
+    window.last_error = ""
+    window.save_action.trigger()
+    assert "disk full" in window.last_error
+
+
+def test_save_as_failure_reports_error_without_retargeting(
+    windows, tmp_path, monkeypatch
+):
+    from little_tinker_rig.core.project import Project
+
+    window = windows()
+    page = window.document_page
+    original = page.session.project.path
+    destination = tmp_path / "copy.py"
+    page.session.editor.commit("edited = 2\n")
+    monkeypatch.setattr(
+        QFileDialog, "getSaveFileName", lambda *a, **k: (str(destination), "")
+    )
+
+    def fail_save(_project):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(Project, "save", fail_save)
+
+    assert window.save_as(page=page) is False
+    assert "disk full" in window.last_error
+    assert page.session.project.path == original
+    assert page.text == "edited = 2\n" and page.dirty
+    assert not destination.exists()
+
+
+def test_open_file_reports_bad_document_and_opens_remaining_files(
+    windows, tmp_path, monkeypatch
+):
+    window = windows()
+    damaged = tmp_path / "damaged.py"
+    damaged.write_bytes(b"\xff")
+    valid = tmp_path / "valid.py"
+    valid.write_text("value = 3\n", encoding="utf-8")
+    monkeypatch.setattr(
+        QFileDialog,
+        "getOpenFileNames",
+        lambda *a, **k: ([str(damaged), str(valid)], ""),
+    )
+
+    window.open_file()
+    assert "damaged.py" in window.last_error
+    assert window.document_page.session.project.path == valid
+    assert window.document_page.text == "value = 3\n"
+
+
+def test_reload_failure_reports_error_and_preserves_open_document(windows, monkeypatch):
+    window = windows()
+    page = window.document_page
+    page.session.editor.commit("edited = 2\n")
+    monkeypatch.setattr(
+        QMessageBox,
+        "question",
+        lambda *a, **k: QMessageBox.StandardButton.Yes,
+    )
+
+    def fail_reload():
+        raise OSError("reload failed")
+
+    monkeypatch.setattr(page, "reload", fail_reload)
+    window.reload_document()
+    assert "reload failed" in window.last_error
+    assert page.text == "edited = 2\n" and page.dirty
 
 
 def test_trigger_release_and_focus_loss_stop_motor_commands(qt_app):

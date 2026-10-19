@@ -2109,7 +2109,11 @@ class Studio(QMainWindow):
         if not self.finish_parameters():
             return False
         if page.lesson_project:
-            return self.lessons.save(page.lesson_project)
+            try:
+                return self.lessons.save(page.lesson_project)
+            except (OSError, ValueError, SyntaxError) as error:
+                self.error(str(error))
+                return False
         if page.unnamed:
             return self.save_as(page=page)
         try:
@@ -2136,8 +2140,15 @@ class Studio(QMainWindow):
             if dialog.clickedButton() is copy:
                 return self.save_as(page=page, copy_only=True)
             if dialog.clickedButton() is reload:
-                page.reload()
-                self.document_changed()
+                try:
+                    page.reload()
+                except (OSError, ValueError, SyntaxError) as reload_error:
+                    self.error(str(reload_error))
+                else:
+                    self.document_changed()
+            return False
+        except (OSError, ValueError, SyntaxError) as error:
+            self.error(str(error))
             return False
         self.remember_file(page.session.project.path)
         self.recovery.flush()
@@ -2161,8 +2172,12 @@ class Studio(QMainWindow):
             != QMessageBox.StandardButton.Yes
         ):
             return
-        page.reload()
-        self.document_changed()
+        try:
+            page.reload()
+        except (OSError, ValueError, SyntaxError) as error:
+            self.error(str(error))
+        else:
+            self.document_changed()
 
     def new_document_path(self, parent=None):
         if parent is None or parent.is_relative_to(examples_directory().resolve()):
@@ -2208,12 +2223,27 @@ class Studio(QMainWindow):
             str(self.session.project.path.parent),
             "Programs and lessons (*.py *.ltr *.pylesson *.pyblocks);;Python (*.py);;LittleTinker Rig (*.ltr *.pylesson *.pyblocks)",
         )
+        opened = None
         for path in paths:
-            self.open_document(Path(path))
-        if paths and Path(paths[-1]).suffix == ".py":
+            try:
+                self.open_document(Path(path))
+            except (OSError, ValueError, SyntaxError) as error:
+                self.error(
+                    tr("Could not open {path}: {detail}", path=path, detail=str(error))
+                )
+            else:
+                opened = Path(path)
+        if opened is not None and opened.suffix == ".py":
             self.set_mode(0)
 
     def save_as(self, *, page=None, copy_only=False):
+        try:
+            return self._save_as(page=page, copy_only=copy_only)
+        except (OSError, ValueError, SyntaxError) as error:
+            self.error(str(error))
+            return False
+
+    def _save_as(self, *, page=None, copy_only=False):
         if page is None and self.pages.currentIndex() == 3:
             self.block_editor.copy_block()
             return True

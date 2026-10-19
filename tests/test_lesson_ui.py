@@ -166,6 +166,28 @@ def test_lesson_save_confirms_the_normalized_archive_destination(
         window.deleteLater()
 
 
+def test_lesson_save_failure_reports_error_and_keeps_program(
+    tmp_path, qt_app, monkeypatch
+):
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "plain.py")
+    try:
+        page = window.lessons.open(make_lesson(tmp_path))
+        page.session.editor.commit("answer = 42\n")
+
+        def fail_save(*args, **kwargs):
+            raise OSError("lesson disk full")
+
+        monkeypatch.setattr(window.lessons, "save", fail_save)
+        assert window.save_document(page) is False
+        assert "lesson disk full" in window.last_error
+        assert page.text == "answer = 42\n" and page.dirty
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
 def test_invalid_later_lesson_tab_does_not_partly_restore_layout(tmp_path, qt_app):
     from little_tinker_rig.qt.app import Studio
 

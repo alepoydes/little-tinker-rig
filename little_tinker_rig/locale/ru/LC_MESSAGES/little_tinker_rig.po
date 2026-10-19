@@ -1454,6 +1454,11 @@ msgstr "Не удалось загрузить модель робота. Пов
 msgid "Could not open USB serial port {port}."
 msgstr "Не удалось открыть последовательный порт USB {port}."
 
+#: little_tinker_rig/qt/app.py:2232
+#, python-brace-format
+msgid "Could not open {path}: {detail}"
+msgstr "Не удалось открыть {path}: {detail}"
+
 #: little_tinker_rig/pybricks/firmware.py:197
 #, python-brace-format
 msgid "Could not refresh firmware versions: {error}. Using the saved catalog."
