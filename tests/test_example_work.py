@@ -67,6 +67,60 @@ def test_snapshot_does_not_descend_into_a_plain_module(tmp_path):
         program.cleanup()
 
 
+def test_snapshot_skips_imports_in_constant_false_branches(tmp_path):
+    import subprocess
+    import sys
+
+    entry = tmp_path / "main.py"
+    entry.write_text(
+        "if False:\n    import unused\n"
+        "if True:\n    print(42)\nelse:\n    import unused\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "unused.py").write_text("def broken(:\n", encoding="utf-8")
+
+    program = Program(entry)
+    try:
+        assert set(program.sources) == {entry}
+        result = subprocess.run(
+            [sys.executable, str(program.entry)],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        assert result.stdout.strip() == "42"
+    finally:
+        program.cleanup()
+
+
+def test_snapshot_respects_constant_branch_package_bindings(tmp_path):
+    import subprocess
+    import sys
+
+    entry = tmp_path / "main.py"
+    entry.write_text("from package import sub\nprint(sub)\n", encoding="utf-8")
+    package = tmp_path / "package"
+    package.mkdir()
+    initializer = package / "__init__.py"
+    initializer.write_text(
+        "if False:\n    sub = 0\nelse:\n    sub = 42\n", encoding="utf-8"
+    )
+    (package / "sub.py").write_text("def broken(:\n", encoding="utf-8")
+
+    program = Program(entry)
+    try:
+        assert set(program.sources) == {entry, initializer}
+        result = subprocess.run(
+            [sys.executable, str(program.entry)],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        assert result.stdout.strip() == "42"
+    finally:
+        program.cleanup()
+
+
 def test_snapshot_includes_regular_and_relative_package_imports(tmp_path):
     entry = tmp_path / "main.py"
     entry.write_text("from package.runner import value\n", encoding="utf-8")

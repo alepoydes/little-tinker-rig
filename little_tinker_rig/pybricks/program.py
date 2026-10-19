@@ -42,13 +42,39 @@ def _literal_value(node):
     return True
 
 
+def _constant_branch(node):
+    if isinstance(node, ast.If) and isinstance(node.test, ast.Constant):
+        if type(node.test.value) is bool:
+            return node.body if node.test.value else node.orelse
+    return None
+
+
+def _reachable_nodes(node):
+    """Visit imports in possible paths, omitting literal dead branches."""
+    yield node
+    branch = _constant_branch(node)
+    children = ast.iter_child_nodes(node) if branch is None else branch
+    for child in children:
+        yield from _reachable_nodes(child)
+
+
+def _certain_statements(statements):
+    """Flatten branches whose execution is certain for package bindings."""
+    for statement in statements:
+        branch = _constant_branch(statement)
+        if branch is None:
+            yield statement
+        else:
+            yield from _certain_statements(branch)
+
+
 def _package_exports_and_bindings(tree):
     """Resolve static exports and names not requiring a sibling module."""
     exports = None
     bound = set()
     declared = set()
     has_all = False
-    for statement in tree.body:
+    for statement in _certain_statements(tree.body):
         if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
             bound.add(statement.name)
             declared.add(statement.name)
@@ -193,7 +219,7 @@ class Program:
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(raw)
                 self.sources[file] = source
-                for node in ast.walk(tree):
+                for node in _reachable_nodes(tree):
                     names, base = [], root
                     if isinstance(node, ast.Import):
                         names = [
