@@ -46,11 +46,15 @@ class Recovery(QObject):
         if self.closed:
             return False
         window = self.window
-        if not window.documents.count():
-            return True
-        if window.documents.count() == 1 and window._unused_startup_placeholder():
-            return True
         try:
+            if not window.documents.count() or (
+                window.documents.count() == 1
+                and window._unused_startup_placeholder()
+            ):
+                self.path.unlink(missing_ok=True)
+                self.previous = None
+                self.reported_error = False
+                return True
             autosave_error = None
             for autosave in (
                 window.example_workspaces.autosave,

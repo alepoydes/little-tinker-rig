@@ -235,6 +235,30 @@ def test_recovery_refreshes_mutated_pins_and_recreates_missing_checkpoint(
         close(window)
 
 
+def test_clearing_startup_draft_removes_obsolete_recovery(tmp_path, qt_app):
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio()
+    try:
+        window.change_editor(1)
+        window.code.setPlainText("print('temporary')\n")
+        assert window.recovery.flush()
+        assert window.recovery.path.exists()
+
+        window.code.clear()
+        assert window._unused_startup_placeholder()
+        assert window.recovery.flush()
+        assert not window.recovery.path.exists()
+
+        window.code.setPlainText("print('new draft')\n")
+        assert window.recovery.flush()
+        assert json.loads(window.recovery.path.read_text(encoding="utf-8"))[
+            "documents"
+        ][0]["source"] == "print('new draft')\n"
+    finally:
+        close(window)
+
+
 def test_cancel_recovery_keeps_all_pending_checkpoints(qt_app, monkeypatch):
     from PySide6.QtWidgets import QMessageBox
 
