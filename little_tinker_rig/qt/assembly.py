@@ -285,11 +285,14 @@ class AssemblyPage(QWidget):
         self.download_status.show()
 
     def loaded(self, scene, error):
+        cancelled = self.job is not None and self.job.cancelled.is_set()
         self.job = None
         self.progress.hide()
         self.download_status.clear()
         self.download_status.hide()
         self.cancel.hide()
+        if cancelled:
+            scene, error = None, "cancelled"
         if scene is not None:
             identities = {i.identity for i in scene.instances}
             missing = {
@@ -301,15 +304,13 @@ class AssemblyPage(QWidget):
             self.retry.show()
             self.local.setVisible(isinstance(self.robot.get("library"), dict))
             self.caption.setText(tr("Robot instructions"))
-            self.error_kind = "load"
+            self.error_kind = "cancelled" if cancelled else "load"
             self.update_error_text()
             self.error.setVisible(self.view_container is not None)
             self.placeholder_text.setText(self.error.text())
             self.placeholder.setVisible(self.view_container is None)
             self.reset_button.setVisible(self.view is not None)
-            self.notes.setMarkdown(
-                localized(self.robot.get("description", ""), language())
-            )
+            self.notes.setMarkdown(self.step_description())
             return
         self.scene = scene
         self.error_kind = None
@@ -363,12 +364,22 @@ class AssemblyPage(QWidget):
                     "Could not load the robot model. Retry loading parts; step descriptions remain available."
                 )
             )
+        elif self.error_kind == "cancelled":
+            self.error.setText(
+                tr("Robot model loading was cancelled. Retry when ready.")
+            )
         elif self.error_kind == "display":
             self.error.setText(
                 tr(
                     "3D is unavailable on this display. Step descriptions and parts are still available."
                 )
             )
+
+    def step_description(self):
+        details = self.robot.get("steps", {}).get(str(self.step + 1), {})
+        return localized(
+            details.get("text", self.robot.get("description", "")), language()
+        )
 
     def set_step(self, step):
         # Annotations may cover only a few steps. Only the loaded model knows
@@ -400,12 +411,7 @@ class AssemblyPage(QWidget):
             if count > 1
             else localized(self.robot.get("title", ""), language()) or tr("Robot model")
         )
-        details = self.robot.get("steps", {}).get(str(self.step + 1), {})
-        self.notes.setMarkdown(
-            localized(
-                details.get("text", self.robot.get("description", "")), language()
-            )
-        )
+        self.notes.setMarkdown(self.step_description())
         self.changed.emit()
         if self.scene is None:
             return

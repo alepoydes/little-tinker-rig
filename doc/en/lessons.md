@@ -174,6 +174,8 @@ Opening **Assembly** downloads the pinned official LDraw archive if it is missin
 from the shared user cache. Opening a lesson or editing a program does not start
 this download. Assembly shows progress and a Cancel button; after a failed or
 cancelled download, retry or choose **Open parts ZIP…** with a matching local copy.
+The written instructions for the selected step stay visible if loading fails or is
+cancelled.
 The first-drive archive is about 139 MiB. It is downloaded once for all projects.
 
 On Linux the default cache is `~/.cache/little-tinker-rig/ldraw/`; other platforms use

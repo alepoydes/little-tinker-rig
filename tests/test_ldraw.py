@@ -89,6 +89,73 @@ def test_saved_assembly_step_waits_for_model_count(model, qt_app, saved, expecte
         page.deleteLater()
 
 
+def test_cancelled_assembly_result_does_not_show_finished_scene(model, qt_app):
+    import json
+
+    from little_tinker_rig.i18n import language, set_language, tr
+    from little_tinker_rig.qt.assembly import AssemblyPage
+    from little_tinker_rig.qt.resources import ResourceJob
+
+    description = model.with_suffix(".json")
+    description.write_text(json.dumps({"format": 1, "model": model.name}))
+    page = AssemblyPage(description)
+    try:
+        job = ResourceJob(lambda **kwargs: None)
+        page.job = job
+        page.cancel.click()
+        assert job.cancelled.is_set()
+        with LDraw(model) as reader:
+            finished_scene = reader.scene()
+        page.loaded(finished_scene, "")
+        assert page.job is None
+        assert page.scene is None
+        assert page.error_kind == "cancelled"
+        assert not page.retry.isHidden()
+        assert page.placeholder_text.text() == tr(
+            "Robot model loading was cancelled. Retry when ready."
+        )
+        previous = language()
+        try:
+            set_language("ru")
+            page.retranslate()
+            assert "отменена" in page.placeholder_text.text()
+        finally:
+            set_language(previous)
+            page.retranslate()
+
+        page.job = ResourceJob(lambda **kwargs: None)
+        page.loaded(finished_scene, "")
+        assert page.scene is finished_scene
+        assert page.error_kind != "cancelled"
+    finally:
+        page.deleteLater()
+
+
+def test_failed_assembly_load_keeps_selected_step_instructions(model, qt_app):
+    import json
+
+    from little_tinker_rig.qt.assembly import AssemblyPage
+
+    description = model.with_suffix(".json")
+    description.write_text(
+        json.dumps(
+            {
+                "format": 1,
+                "model": model.name,
+                "description": "Robot overview",
+                "steps": {"2": {"text": "Attach the right motor"}},
+            }
+        )
+    )
+    page = AssemblyPage(description, {"step": 1})
+    try:
+        assert "Attach the right motor" in page.notes.toPlainText()
+        page.loaded(None, "Parts unavailable")
+        assert "Attach the right motor" in page.notes.toPlainText()
+    finally:
+        page.deleteLater()
+
+
 def test_circular_references_fail_without_recursion(model):
     (model.parent / "part.dat").write_text("1 16 0 0 0 1 0 0 0 1 0 0 0 1 part.dat")
     with pytest.raises(ValueError, match="Circular"):

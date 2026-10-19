@@ -4829,6 +4829,10 @@ msgstr "Инструкция сборки робота"
 msgid "Robot model"
 msgstr "Модель робота"
 
+#: little_tinker_rig/qt/assembly.py
+msgid "Robot model loading was cancelled. Retry when ready."
+msgstr "Загрузка модели робота отменена. Повторите, когда будете готовы."
+
 #: little_tinker_rig/snippets/pybricks/hub_display.py:15
 msgid "Rotate the display for the way the hub is mounted. Options: up."
 msgstr "Повернуть изображение с учётом установки хаба. Параметры: up."
