@@ -79,6 +79,15 @@ class HubWorker:
         generation = self.generation
         lifecycle_lock = Lock()
         started = aborted = released = False
+        idle_sent = False
+
+        def finish_busy():
+            nonlocal idle_sent
+            with lifecycle_lock:
+                if idle_sent or not operation or generation != self.generation:
+                    return
+                idle_sent = True
+            self._busy_changed(False)
 
         def release(*, succeeded=False):
             nonlocal released
@@ -97,6 +106,7 @@ class HubWorker:
                 started = True
                 cancelled_before_start = aborted
             succeeded = False
+            cancelled = False
             try:
                 if cancelled_before_start:
                     raise asyncio.CancelledError
@@ -116,11 +126,16 @@ class HubWorker:
                     result = await coroutine
                     succeeded = True
                     return result
+            except asyncio.CancelledError:
+                cancelled = True
+                raise
             finally:
                 self.tasks.discard(task)
-                if operation and generation == self.generation:
-                    self._busy_changed(False)
-                release(succeeded=succeeded)
+                try:
+                    release(succeeded=succeeded)
+                finally:
+                    if cancelled or aborted:
+                        finish_busy()
 
         future = asyncio.run_coroutine_threadsafe(serialized(), self.loop)
 
@@ -131,14 +146,17 @@ class HubWorker:
                     aborted = True
                     cancelled_before_start = not started
                 if cancelled_before_start:
-                    release()
-                    if operation and generation == self.generation:
-                        self._busy_changed(False)
+                    try:
+                        release()
+                    finally:
+                        finish_busy()
                 return
             try:
                 result.result()
             except Exception as error:
                 self._failed(str(error) or type(error).__name__)
+            finally:
+                finish_busy()
 
         future.add_done_callback(finished)
         if operation:

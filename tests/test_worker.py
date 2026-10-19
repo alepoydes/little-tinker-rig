@@ -78,6 +78,81 @@ def test_worker_rejects_upload_after_unexpected_connection_loss(tmp_path):
         worker.close()
 
 
+def test_failed_operation_reports_error_before_idle():
+    events = []
+    idle = Event()
+
+    def busy_changed(value):
+        events.append(("busy", value))
+        if not value:
+            idle.set()
+
+    worker = HubWorker(
+        output=lambda *_: None,
+        failed=lambda error: events.append(("failed", error)),
+        updated=lambda *_: None,
+        busy_changed=busy_changed,
+        problem=lambda *_: None,
+        program_started=lambda *_: None,
+    )
+
+    async def fail():
+        raise OSError("Transfer interrupted")
+
+    try:
+        future = worker.submit(fail(), operation=True)
+        with pytest.raises(OSError, match="Transfer interrupted"):
+            future.result(timeout=1)
+        assert idle.wait(1)
+        assert events == [
+            ("busy", True),
+            ("failed", "Transfer interrupted"),
+            ("busy", False),
+        ]
+    finally:
+        worker.close()
+
+
+def test_cancelled_operation_stays_busy_until_cleanup_finishes():
+    events = []
+    entered, cleaning, release, idle = Event(), Event(), Event(), Event()
+
+    def busy_changed(value):
+        events.append(value)
+        if not value:
+            idle.set()
+
+    worker = HubWorker(
+        output=lambda *_: None,
+        failed=lambda *_: None,
+        updated=lambda *_: None,
+        busy_changed=busy_changed,
+        problem=lambda *_: None,
+        program_started=lambda *_: None,
+    )
+
+    async def wait_forever():
+        entered.set()
+        await asyncio.Event().wait()
+
+    def cleanup():
+        cleaning.set()
+        release.wait(1)
+
+    try:
+        future = worker.submit(wait_forever(), operation=True, cleanup=cleanup)
+        assert entered.wait(1)
+        future.cancel()
+        assert cleaning.wait(1)
+        assert events == [True]
+        release.set()
+        assert idle.wait(1)
+        assert events == [True, False]
+    finally:
+        release.set()
+        worker.close()
+
+
 def test_failed_disconnect_clears_old_transport():
     output = []
 
