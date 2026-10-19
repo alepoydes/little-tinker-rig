@@ -63,10 +63,12 @@ tab and does not discard its edits. Running a snapshot does not resolve or
 overwrite external file changes; explicit Save still checks them.
 
 The Python editor has syntax highlighting, line numbers, indentation with
-Tab/Shift+Tab, and search with Ctrl+F. Completion appears while typing names or
-after a dot; **Ctrl+Space** requests it explicitly. Choose with arrows and accept
-with Enter or Tab; Escape dismisses. Suggestions follow local scope, imports,
-object methods and the installed Pybricks API descriptions. Call hints show the
+Tab/Shift+Tab, and search with Ctrl+F. Enter preserves existing tab or space
+indentation, and Tab/Shift+Tab follow the file's indentation style. Completion
+appears while typing names or after a dot; **Ctrl+Space** requests it explicitly.
+Choose with arrows and accept with Enter or Tab; Escape dismisses. Suggestions
+follow local scope, imports, object methods and the installed Pybricks API
+descriptions. Call hints show the
 signature and current parameter; **Ctrl+Shift+Space** requests a hint or documentation
 for the name under the cursor. Jedi analyzes unfinished source in the background
 without running it. Dynamic Python objects may have incomplete suggestions;

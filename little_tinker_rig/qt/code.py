@@ -207,7 +207,11 @@ class CodeEdit(QPlainTextEdit):
         if event.key() in (Qt.Key.Key_Tab, Qt.Key.Key_Backtab):
             cursor = self.textCursor()
             if not cursor.hasSelection() and event.key() == Qt.Key.Key_Tab:
-                cursor.insertText(" " * (4 - cursor.positionInBlock() % 4))
+                cursor.insertText(
+                    "\t"
+                    if self._indent_unit(cursor.block()) == "\t"
+                    else " " * (4 - cursor.positionInBlock() % 4)
+                )
             else:
                 self.indent(-1 if event.key() == Qt.Key.Key_Backtab else 1)
             return
@@ -216,12 +220,10 @@ class CodeEdit(QPlainTextEdit):
             prefix = cursor.block().text()[
                 : source_offset(cursor.block().text(), cursor.positionInBlock())
             ]
-            indent = (
-                len(prefix)
-                - len(prefix.lstrip())
-                + (4 if prefix.rstrip().endswith(":") else 0)
-            )
-            cursor.insertText("\n" + " " * indent)
+            leading = prefix[: len(prefix) - len(prefix.lstrip(" \t"))]
+            if prefix.rstrip().endswith(":"):
+                leading += self._indent_unit(cursor.block())
+            cursor.insertText("\n" + leading)
             return
         super().keyPressEvent(event)
         if event.text().isprintable() or event.key() in (
@@ -229,6 +231,18 @@ class CodeEdit(QPlainTextEdit):
             Qt.Key.Key_Delete,
         ):
             self.assist.timer.start()
+
+    def _indent_unit(self, block):
+        """Follow the current line's indentation or the file's nearby style."""
+        for direction in ("previous", "next"):
+            candidate = block
+            while candidate.isValid():
+                line = candidate.text()
+                leading = line[: len(line) - len(line.lstrip(" \t"))]
+                if leading:
+                    return "\t" if leading.startswith("\t") else "    "
+                candidate = getattr(candidate, direction)()
+        return "    "
 
     def new_history_group(self):
         self.history_group = object()
@@ -278,14 +292,28 @@ class CodeEdit(QPlainTextEdit):
             .findBlock(max(cursor.selectionStart(), cursor.selectionEnd() - 1))
             .blockNumber()
         )
+        indentation = "    "
+        if direction > 0:
+            indentation = (
+                "\t"
+                if any(
+                    self.document().findBlockByNumber(row).text().startswith("\t")
+                    for row in range(start, end + 1)
+                )
+                else self._indent_unit(self.document().findBlockByNumber(start))
+            )
         cursor.beginEditBlock()
         for row in range(end, start - 1, -1):
             block = self.document().findBlockByNumber(row)
             cursor.setPosition(block.position())
             if direction > 0:
-                cursor.insertText("    ")
+                cursor.insertText(indentation)
             else:
-                count = min(4, len(block.text()) - len(block.text().lstrip(" ")))
+                count = (
+                    1
+                    if block.text().startswith("\t")
+                    else min(4, len(block.text()) - len(block.text().lstrip(" ")))
+                )
                 cursor.setPosition(
                     block.position() + count, QTextCursor.MoveMode.KeepAnchor
                 )

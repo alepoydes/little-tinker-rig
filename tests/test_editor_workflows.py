@@ -16,6 +16,90 @@ def close_window(window):
         window.close()
 
 
+def test_python_enter_continues_tab_indentation(qt_app):
+    from PySide6.QtCore import Qt
+    from PySide6.QtGui import QTextCursor
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.code import CodeEdit
+
+    editor = CodeEdit()
+    editor.setPlainText("if True:\n\tif True:")
+    editor.show()
+    editor.moveCursor(QTextCursor.MoveOperation.End)
+    QTest.keyClick(editor, Qt.Key.Key_Return)
+    QTest.keyClicks(editor, "print(1)")
+    assert editor.toPlainText() == "if True:\n\tif True:\n\t\tprint(1)"
+    editor.close()
+
+
+def test_python_enter_uses_existing_tabs_after_top_level_colon(qt_app):
+    from PySide6.QtCore import Qt
+    from PySide6.QtGui import QTextCursor
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.code import CodeEdit
+
+    editor = CodeEdit()
+    editor.setPlainText("if True:\n\tpass\n\nif False:")
+    editor.show()
+    editor.moveCursor(QTextCursor.MoveOperation.End)
+    QTest.keyClick(editor, Qt.Key.Key_Return)
+    QTest.keyClicks(editor, "pass")
+    assert editor.toPlainText() == "if True:\n\tpass\n\nif False:\n\tpass"
+    editor.close()
+
+
+def test_python_backtab_removes_leading_tab(qt_app):
+    from PySide6.QtCore import Qt
+    from PySide6.QtGui import QTextCursor
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.code import CodeEdit
+
+    editor = CodeEdit()
+    editor.setPlainText("\tprint(1)\n")
+    editor.show()
+    editor.moveCursor(QTextCursor.MoveOperation.Start)
+    QTest.keyClick(editor, Qt.Key.Key_Backtab)
+    assert editor.toPlainText() == "print(1)\n"
+    editor.close()
+
+
+def test_python_tab_extends_tab_indentation(qt_app):
+    from PySide6.QtCore import Qt
+    from PySide6.QtGui import QTextCursor
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.code import CodeEdit
+
+    editor = CodeEdit()
+    editor.setPlainText("\tprint(1)\n")
+    editor.show()
+    editor.moveCursor(QTextCursor.MoveOperation.Start)
+    QTest.keyClick(editor, Qt.Key.Key_Tab)
+    assert editor.toPlainText() == "\t\tprint(1)\n"
+    editor.close()
+
+
+def test_python_tab_indents_selected_tabbed_lines_consistently(qt_app):
+    from PySide6.QtCore import Qt
+    from PySide6.QtGui import QTextCursor
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.code import CodeEdit
+
+    editor = CodeEdit()
+    editor.setPlainText("\tfirst()\n\tsecond()\n")
+    editor.show()
+    cursor = editor.textCursor()
+    cursor.select(QTextCursor.SelectionType.Document)
+    editor.setTextCursor(cursor)
+    QTest.keyClick(editor, Qt.Key.Key_Tab)
+    assert editor.toPlainText() == "\t\tfirst()\n\t\tsecond()\n"
+    editor.close()
+
+
 def test_closed_studio_windows_release_qt_objects(tmp_path, qt_app):
     from PySide6.QtCore import QCoreApplication, QEvent
 
