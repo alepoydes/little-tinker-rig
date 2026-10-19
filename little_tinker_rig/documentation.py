@@ -7,15 +7,30 @@ from pathlib import Path
 DEVELOPER_PAGES = frozenset(
     Path(name) for name in ("api.md", "architecture.md", "development.md")
 )
+CODE_FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})([^\r\n]*)")
+
+
+def _outside_fences(lines):
+    opener = None
+    for index, line in enumerate(lines):
+        match = CODE_FENCE.match(line)
+        if opener is None:
+            if match and (match[1][0] == "~" or "`" not in match[2]):
+                opener = match[1]
+            else:
+                yield index, line
+        elif (
+            match
+            and match[1][0] == opener[0]
+            and len(match[1]) >= len(opener)
+            and not match[2].strip()
+        ):
+            opener = None
 
 
 def prose(text):
-    fenced = False
-    for line in text.splitlines():
-        if line.lstrip().startswith(("```", "~~~")):
-            fenced = not fenced
-        elif not fenced:
-            yield line
+    for _, line in _outside_fences(text.splitlines()):
+        yield line
 
 
 def heading_anchors(text):
@@ -40,11 +55,9 @@ def section(text, anchor):
     """Select an ATX section with its subsections; ignore headings in code fences."""
     anchors = iter(heading_anchors(text))
     lines = text.splitlines(keepends=True)
-    start, level, fenced = None, 0, False
-    for index, line in enumerate(lines):
-        if line.lstrip().startswith(("```", "~~~")):
-            fenced = not fenced
-        elif not fenced and (match := re.match(r"^(#{1,6})\s+(.+?)\s*#*$", line)):
+    start, level = None, 0
+    for index, line in _outside_fences(lines):
+        if match := re.match(r"^(#{1,6})\s+(.+?)\s*#*$", line):
             names = next(anchors)
             if start is not None and len(match[1]) <= level:
                 return "".join(lines[start:index])

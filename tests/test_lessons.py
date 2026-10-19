@@ -424,6 +424,54 @@ Save.
         section(text, "missing")
 
 
+@pytest.mark.parametrize(
+    ("opening", "embedded", "closing"),
+    [
+        ("```python", "~~~", "```"),
+        ("````python", "```", "````"),
+        ("~~~python", "```", "~~~"),
+        ("```python", "``` still code", "```"),
+    ],
+)
+def test_markdown_fences_require_matching_marker_and_length(opening, embedded, closing):
+    from little_tinker_rig.documentation import heading_anchors, section
+
+    text = f"""# Lesson
+## Drive
+Before code.
+{opening}
+{embedded}
+<a name="hidden"></a>
+## Fake section
+{closing}
+### Hint
+After code.
+## Finish
+Done.
+"""
+    assert list(heading_anchors(text)) == [
+        ["lesson"],
+        ["drive"],
+        ["hint"],
+        ["finish"],
+    ]
+    selected = section(text, "drive")
+    assert "## Fake section\n" in selected
+    assert "### Hint\nAfter code." in selected
+    assert "## Finish\n" not in selected
+    with pytest.raises(ValueError, match="Missing Markdown section"):
+        section(text, "hidden")
+
+
+@pytest.mark.parametrize("line", ["    ```", "```invalid`info"])
+def test_invalid_code_fence_does_not_hide_following_heading(line):
+    from little_tinker_rig.documentation import heading_anchors, section
+
+    text = f"# Lesson\n{line}\n## Real section\nContent.\n"
+    assert list(heading_anchors(text)) == [["lesson"], ["real-section"]]
+    assert section(text, "real-section") == "## Real section\nContent.\n"
+
+
 def test_multifile_lesson_snapshot_is_independent_of_installed_examples(
     lesson, tmp_path, monkeypatch
 ):
