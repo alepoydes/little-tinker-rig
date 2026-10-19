@@ -7,6 +7,9 @@ from tempfile import TemporaryDirectory
 from little_tinker_rig.core.placeholders import unfinished_inputs
 from little_tinker_rig.core.source_file import decode_source, utf8_source
 
+# These imports cannot resolve to a sibling Python file on the target runtime.
+INTRINSIC_IMPORTS = frozenset({"__future__", "sys"})
+
 
 def _literal_exports(node):
     if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
@@ -166,7 +169,7 @@ class Program:
                     else decode_source(file.read_bytes())[0]
                 )
                 source = utf8_source(source)
-                parsed[file] = source, ast.parse(source)
+                parsed[file] = source, ast.parse(source, filename=str(file))
             return parsed[file]
 
         try:
@@ -193,8 +196,18 @@ class Program:
                 for node in ast.walk(tree):
                     names, base = [], root
                     if isinstance(node, ast.Import):
-                        names = [alias.name for alias in node.names]
+                        names = [
+                            alias.name
+                            for alias in node.names
+                            if alias.name.split(".", 1)[0] not in INTRINSIC_IMPORTS
+                        ]
                     elif isinstance(node, ast.ImportFrom):
+                        if (
+                            not node.level
+                            and node.module
+                            and node.module.split(".", 1)[0] in INTRINSIC_IMPORTS
+                        ):
+                            continue
                         if node.level:
                             base = file.parent
                             for _ in range(node.level - 1):

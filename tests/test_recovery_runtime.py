@@ -473,6 +473,75 @@ def test_execution_snapshot_captures_imports_and_rejects_unrelated_trace_paths(
     assert "1 / 0" in problem.source
 
 
+def test_execution_snapshot_ignores_builtin_and_future_module_names(tmp_path):
+    import subprocess
+    import sys
+
+    main = tmp_path / "main.py"
+    main.write_text(
+        "from __future__ import annotations\n"
+        "import sys, helper\n"
+        "print(sys.version_info.major, helper.value)\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "sys.py").write_text("def broken(:\n", encoding="utf-8")
+    (tmp_path / "__future__.py").write_text("def broken(:\n", encoding="utf-8")
+    helper = tmp_path / "helper.py"
+    helper.write_text("value = 0\n", encoding="utf-8")
+
+    program = Program(main, {helper: "value = 42\n"})
+    try:
+        assert set(program.sources) == {main, helper}
+        result = subprocess.run(
+            [sys.executable, str(program.entry)],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        assert result.stdout.strip() == f"{sys.version_info.major} 42"
+    finally:
+        program.cleanup()
+
+
+def test_execution_snapshot_keeps_explicit_relative_sys_module(tmp_path):
+    import subprocess
+    import sys
+
+    package = tmp_path / "pkg"
+    package.mkdir()
+    (package / "__init__.py").write_text("", encoding="utf-8")
+    (package / "worker.py").write_text(
+        "from . import sys\nprint(sys.value)\n", encoding="utf-8"
+    )
+    local_sys = package / "sys.py"
+    main = tmp_path / "main.py"
+    main.write_text("import pkg.worker\n", encoding="utf-8")
+
+    program = Program(main, {local_sys: "value = 42\n"})
+    try:
+        assert local_sys in program.sources
+        result = subprocess.run(
+            [sys.executable, str(program.entry)],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        assert result.stdout.strip() == "42"
+    finally:
+        program.cleanup()
+
+
+def test_execution_snapshot_reports_syntax_error_in_unsaved_module(tmp_path):
+    main = tmp_path / "main.py"
+    helper = tmp_path / "helper.py"
+    main.write_text("import helper\n", encoding="utf-8")
+
+    with pytest.raises(SyntaxError) as error:
+        Program(main, {helper: "value = (\n"})
+    assert error.value.filename == str(helper)
+    assert helper.name in str(error.value)
+
+
 @pytest.mark.parametrize(
     "relative, override, declaration",
     [
