@@ -370,6 +370,51 @@ async def test_virtual_manual_motor_lease_and_disconnect():
     assert process.returncode is not None
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize("operation", ["drive", "configure"])
+@pytest.mark.parametrize("interrupt", ["stop", "disconnect"])
+async def test_virtual_interrupt_rejects_write_queued_for_previous_process(
+    operation, interrupt
+):
+    hub = VirtualConnection()
+    await hub.connect()
+    entered = asyncio.Event()
+    original_write = hub._write
+
+    async def observed_write(data):
+        entered.set()
+        await original_write(data)
+
+    hub._write = observed_write
+    await hub.write_lock.acquire()
+    locked = True
+    pending = None
+    try:
+        previous = hub.process
+        pending = asyncio.create_task(
+            hub.drive((("A", "speed", 500),))
+            if operation == "drive"
+            else hub.configure("C", "color", 80)
+        )
+        await asyncio.wait_for(entered.wait(), 2)
+        assert not pending.done()
+        await getattr(hub, interrupt)()
+        assert hub.process is not previous
+        hub.write_lock.release()
+        locked = False
+        with pytest.raises(ValueError, match="interrupted"):
+            await pending
+        assert hub.info.ports["A"]["speed"] == 0
+        assert hub.info.ports["C"]["reflection"] == 50
+    finally:
+        if locked:
+            hub.write_lock.release()
+        if pending is not None and not pending.done():
+            pending.cancel()
+            await asyncio.gather(pending, return_exceptions=True)
+        await hub.disconnect()
+
+
 @pytest.mark.parametrize(
     "model, ports", [("inventor", "ABCDEF"), ("boost", "ABCD"), ("technic", "ABCD")]
 )

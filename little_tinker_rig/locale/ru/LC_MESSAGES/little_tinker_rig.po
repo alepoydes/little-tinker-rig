@@ -6284,6 +6284,10 @@ msgstr "Вид:"
 msgid "Virtual hub"
 msgstr "Виртуальный хаб"
 
+#: little_tinker_rig/pybricks/virtual.py:135
+msgid "Virtual hub operation was interrupted"
+msgstr "Операция виртуального хаба была прервана"
+
 #: little_tinker_rig/qt/device.py:72 little_tinker_rig/tui/app.py:504
 msgid "Virtual hub model"
 msgstr "Модель виртуального хаба"

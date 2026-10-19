@@ -7,6 +7,8 @@ import sys
 from dataclasses import replace
 from pathlib import Path
 
+from little_tinker_rig.i18n import tr
+
 from .devices import PREFIX, HubInfo
 from .program import Program
 from .simulation import PROFILES, World
@@ -120,15 +122,19 @@ class VirtualConnection:
         self.ready.set()
 
     async def _write(self, data):
-        if (
-            not self.info.connected
-            or self.process is None
-            or self.process.returncode is not None
-        ):
+        process = self.process
+        if not self.info.connected or process is None or process.returncode is not None:
             raise ValueError("Connect a virtual hub first")
         async with self.write_lock:
-            self.process.stdin.write(data)
-            await self.process.stdin.drain()
+            if (
+                self.process is not process
+                or process.returncode is not None
+                or self.stopping
+                or not self.info.connected
+            ):
+                raise ValueError(tr("Virtual hub operation was interrupted"))
+            process.stdin.write(data)
+            await process.stdin.drain()
 
     async def _store(self, path, *, monitor):
         if not self.info.connected:
