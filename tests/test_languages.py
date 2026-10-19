@@ -223,6 +223,41 @@ def test_help_groups_links_back_search_and_language(qt_app):
         page.close()
 
 
+def test_help_page_change_keeps_find_query_without_skipping_first_match(qt_app):
+    from little_tinker_rig.qt.help import HelpPage
+
+    page = HelpPage(builtin_snippets())
+    page.resize(1100, 760)
+    page.show()
+    qt_app.processEvents()
+    try:
+        page.show_page("usage.md")
+        page.find_field.setText("block")
+        assert page.find_index == 0
+
+        page.show_page("index.md")
+        assert len(page.find_matches) > 1
+        assert page.find_count.text() == f"0/{len(page.find_matches)}"
+        page.next_match(1)
+        assert page.find_index == 0
+        page.show_page("index.md#learn-and-build")
+        qt_app.processEvents()
+        assert (
+            0
+            <= block_position(page.browser, "Learn and build")
+            < page.browser.viewport().height()
+        )
+        assert page.find_count.text() == f"0/{len(page.find_matches)}"
+        page.next_match(1)
+        assert page.find_index == 0
+
+        page.show_page("usage.md")
+        page.next_match(-1)
+        assert page.find_index == len(page.find_matches) - 1
+    finally:
+        page.close()
+
+
 def test_help_custom_group_without_docstring_excludes_historical_versions(qt_app):
     from little_tinker_rig.qt.help import HelpPage
 

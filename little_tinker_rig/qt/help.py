@@ -601,6 +601,7 @@ class HelpPage(QWidget):
                 self.browser.scrollToAnchor(anchor)
             else:
                 self.browser.verticalScrollBar().setValue(0)
+            self.find_in_document(self.find_field.text(), focus_first=False)
             return
         previous = self.current
         if previous and previous.partition("#")[0] != page:
@@ -652,11 +653,11 @@ class HelpPage(QWidget):
                     )
                 }
                 self.browser.decorate_lesson_headings(self.browser.lesson_numbers)
-            self.find_in_document(self.find_field.text())
         if anchor:
             self.browser.scrollToAnchor(anchor)
         else:
             self.browser.verticalScrollBar().setValue(0)
+        self.find_in_document(self.find_field.text(), focus_first=False)
 
     def back(self):
         if self.history:
@@ -692,7 +693,7 @@ class HelpPage(QWidget):
         self.find_field.clear()
         self.browser.setFocus()
 
-    def find_in_document(self, query):
+    def find_in_document(self, query, *, focus_first=True):
         self.find_matches = []
         self.find_index = -1
         self.browser.setExtraSelections([])
@@ -706,14 +707,17 @@ class HelpPage(QWidget):
                 self.find_matches.append(cursor)
                 position = cursor.selectionEnd()
             if self.find_matches:
-                self.find_index = 0
+                self.find_index = 0 if focus_first else -1
                 self._show_find_match()
         self._update_find_count()
 
     def next_match(self, direction):
         if not self.find_matches:
             return
-        self.find_index = (self.find_index + direction) % len(self.find_matches)
+        if self.find_index < 0:
+            self.find_index = 0 if direction > 0 else len(self.find_matches) - 1
+        else:
+            self.find_index = (self.find_index + direction) % len(self.find_matches)
         self._show_find_match()
         self._update_find_count()
 
@@ -735,8 +739,9 @@ class HelpPage(QWidget):
             )
             selections.append(selection)
         self.browser.setExtraSelections(selections)
-        self.browser.setTextCursor(self.find_matches[self.find_index])
-        self.browser.ensureCursorVisible()
+        if self.find_index >= 0:
+            self.browser.setTextCursor(self.find_matches[self.find_index])
+            self.browser.ensureCursorVisible()
 
     def filter(self, query):
         for identity, (text, item) in self.pages.items():
