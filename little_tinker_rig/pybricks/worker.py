@@ -2,7 +2,6 @@
 
 import asyncio
 import codecs
-from concurrent.futures import CancelledError
 from dataclasses import replace
 from threading import Event, Lock, Thread
 
@@ -56,10 +55,16 @@ class HubWorker:
         self.info = replace(self.info, connection_action=action)
         self._updated(self.info)
 
-    def submit(self, coroutine, *, operation=False, interrupt=False):
+    def _clear_connection_action(self, action):
+        if self.info.connection_action == action:
+            self._connection_action("")
+
+    def submit(self, coroutine, *, operation=False, interrupt=False, cleanup=None):
         if operation and self.operation and not self.operation.done():
             if not interrupt:
                 coroutine.close()
+                if cleanup:
+                    cleanup()
                 self._failed(tr("Wait for the hub operation to finish"))
                 return None
         if operation:
@@ -72,10 +77,29 @@ class HubWorker:
                     self.pending.cancel()
             self._busy_changed(True)
         generation = self.generation
+        lifecycle_lock = Lock()
+        started = aborted = released = False
+
+        def release(*, succeeded=False):
+            nonlocal released
+            with lifecycle_lock:
+                if released:
+                    return
+                released = True
+            coroutine.close()
+            if not succeeded and cleanup:
+                cleanup()
 
         async def serialized():
+            nonlocal started
             task = asyncio.current_task()
+            with lifecycle_lock:
+                started = True
+                cancelled_before_start = aborted
+            succeeded = False
             try:
+                if cancelled_before_start:
+                    raise asyncio.CancelledError
                 if interrupt:
                     # Console writes and device configuration share this lock
                     # too. Interrupt every earlier task, including queued work.
@@ -86,20 +110,33 @@ class HubWorker:
                             previous.cancel()
                 self.tasks.add(task)
                 async with self.lock:
-                    return await coroutine
+                    with lifecycle_lock:
+                        if aborted:
+                            raise asyncio.CancelledError
+                    result = await coroutine
+                    succeeded = True
+                    return result
             finally:
                 self.tasks.discard(task)
-                coroutine.close()
                 if operation and generation == self.generation:
                     self._busy_changed(False)
+                release(succeeded=succeeded)
 
         future = asyncio.run_coroutine_threadsafe(serialized(), self.loop)
 
         def finished(result):
+            nonlocal aborted
+            if result.cancelled():
+                with lifecycle_lock:
+                    aborted = True
+                    cancelled_before_start = not started
+                if cancelled_before_start:
+                    release()
+                    if operation and generation == self.generation:
+                        self._busy_changed(False)
+                return
             try:
                 result.result()
-            except CancelledError:
-                pass
             except Exception as error:
                 self._failed(str(error) or type(error).__name__)
 
@@ -161,6 +198,7 @@ class HubWorker:
         return self.submit(
             self._connect(name, transport, model, self.connection_generation),
             operation=True,
+            cleanup=lambda: self._clear_connection_action("connecting"),
         )
 
     def _queue_program(self, path, sources, *, run):
@@ -171,10 +209,11 @@ class HubWorker:
             self._failed(tr("Wait for the hub operation to finish"))
             return None
         program = Program(path, sources)
-        future = self.submit(self._transfer(program, run=run), operation=True)
-        if future is None:
-            program.cleanup()
-        return future
+        return self.submit(
+            self._transfer(program, run=run),
+            operation=True,
+            cleanup=program.cleanup,
+        )
 
     def run_file(self, path, sources=None):
         return self._queue_program(path, sources, run=True)
@@ -214,19 +253,25 @@ class HubWorker:
         self._program_started(program)
 
     async def _transfer(self, program, *, run):
-        self._output(tr("Uploading {name}…", name=program.entry.name) + "\n")
-        if self.info.running:
-            await self.connection.stop()
-        self.tracebacks = None
-        self.stored_program = None
-        path = (
-            program if isinstance(self.connection, VirtualConnection) else program.entry
-        )
-        if run:
-            self._start_trace(program)
-            await self.connection.run(path)
-        else:
-            await self.connection.upload(path)
+        try:
+            self._output(tr("Uploading {name}…", name=program.entry.name) + "\n")
+            if self.info.running:
+                await self.connection.stop()
+            self.tracebacks = None
+            self.stored_program = None
+            path = (
+                program
+                if isinstance(self.connection, VirtualConnection)
+                else program.entry
+            )
+            if run:
+                self._start_trace(program)
+                await self.connection.run(path)
+            else:
+                await self.connection.upload(path)
+        except BaseException:
+            self.tracebacks = None
+            raise
         self.stored_program = program
         self._output(
             (tr("Program started.") if run else tr("Program uploaded.")) + "\n"
@@ -314,7 +359,12 @@ class HubWorker:
             finally:
                 self._connection_action("")
 
-        return self.submit(disconnect(), operation=True, interrupt=True)
+        return self.submit(
+            disconnect(),
+            operation=True,
+            interrupt=True,
+            cleanup=lambda: self._clear_connection_action("disconnecting"),
+        )
 
     def close(self):
         future = self.disconnect_hub()

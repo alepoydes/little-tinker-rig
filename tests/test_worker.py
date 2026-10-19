@@ -173,6 +173,195 @@ def test_transfer_rejected_during_snapshot_creation_cleans_temporary_files(
         worker.close()
 
 
+@pytest.mark.parametrize("action", ["run_file", "upload_file"])
+def test_failed_transfer_cleans_temporary_snapshot(tmp_path, monkeypatch, action):
+    snapshots = []
+    original = Program
+
+    def capture(path, sources):
+        program = original(path, sources)
+        snapshots.append(program.entry.parent)
+        return program
+
+    monkeypatch.setattr("little_tinker_rig.pybricks.worker.Program", capture)
+
+    class Transport:
+        async def run(self, path):
+            raise RuntimeError("transfer failed")
+
+        async def upload(self, path):
+            raise RuntimeError("transfer failed")
+
+        async def disconnect(self):
+            pass
+
+    worker = HubWorker(
+        output=lambda *_: None,
+        failed=lambda *_: None,
+        updated=lambda *_: None,
+        busy_changed=lambda *_: None,
+        problem=lambda *_: None,
+        program_started=lambda *_: None,
+    )
+    path = tmp_path / "main.py"
+    path.write_text("print(42)\n", encoding="utf-8")
+    worker.connection = Transport()
+    worker.info = HubInfo(connected=True)
+    try:
+        with pytest.raises(RuntimeError, match="transfer failed"):
+            getattr(worker, action)(path).result(timeout=2)
+        assert snapshots and not snapshots[0].exists()
+        assert worker.stored_program is None
+    finally:
+        worker.close()
+
+
+def test_interrupted_transfer_cleans_temporary_snapshot(tmp_path, monkeypatch):
+    entered = Event()
+    snapshots = []
+    original = Program
+
+    def capture(path, sources):
+        program = original(path, sources)
+        snapshots.append(program.entry.parent)
+        return program
+
+    monkeypatch.setattr("little_tinker_rig.pybricks.worker.Program", capture)
+
+    class Transport:
+        async def upload(self, path):
+            entered.set()
+            await asyncio.Event().wait()
+
+        async def stop(self):
+            pass
+
+        async def disconnect(self):
+            pass
+
+    worker = HubWorker(
+        output=lambda *_: None,
+        failed=lambda *_: None,
+        updated=lambda *_: None,
+        busy_changed=lambda *_: None,
+        problem=lambda *_: None,
+        program_started=lambda *_: None,
+    )
+    path = tmp_path / "main.py"
+    path.write_text("print(42)\n", encoding="utf-8")
+    worker.connection = Transport()
+    worker.info = HubInfo(connected=True)
+    try:
+        transfer = worker.upload_file(path)
+        assert entered.wait(2)
+        worker.stop_program().result(timeout=2)
+        assert transfer.cancelled()
+        assert snapshots and not snapshots[0].exists()
+    finally:
+        worker.close()
+
+
+def test_stop_cancels_transfer_queued_before_worker_loop_runs(tmp_path, monkeypatch):
+    entered, release = Event(), Event()
+    snapshots, calls = [], []
+    original = Program
+
+    def capture(path, sources):
+        program = original(path, sources)
+        snapshots.append(program.entry.parent)
+        return program
+
+    monkeypatch.setattr("little_tinker_rig.pybricks.worker.Program", capture)
+
+    class Transport:
+        async def upload(self, path):
+            calls.append("upload")
+
+        async def stop(self):
+            calls.append("stop")
+
+        async def disconnect(self):
+            pass
+
+    worker = HubWorker(
+        output=lambda *_: None,
+        failed=lambda *_: None,
+        updated=lambda *_: None,
+        busy_changed=lambda *_: None,
+        problem=lambda *_: None,
+        program_started=lambda *_: None,
+    )
+    path = tmp_path / "main.py"
+    path.write_text("print(42)\n", encoding="utf-8")
+    worker.connection = Transport()
+    worker.info = HubInfo(connected=True)
+
+    def hold_loop():
+        entered.set()
+        release.wait(2)
+
+    try:
+        worker.loop.call_soon_threadsafe(hold_loop)
+        assert entered.wait(2)
+        transfer = worker.upload_file(path)
+        stop = worker.stop_program()
+        release.set()
+        stop.result(timeout=2)
+        assert transfer.cancelled()
+        assert calls == ["stop"]
+        assert snapshots and not snapshots[0].exists()
+    finally:
+        release.set()
+        worker.close()
+
+
+@pytest.mark.parametrize("queued", ["connect", "disconnect"])
+def test_stop_clears_queued_connection_action(queued):
+    entered, release = Event(), Event()
+    calls = []
+
+    class Transport:
+        async def stop(self):
+            calls.append("stop")
+
+        async def disconnect(self):
+            calls.append("disconnect")
+
+    worker = HubWorker(
+        output=lambda *_: None,
+        failed=lambda *_: None,
+        updated=lambda *_: None,
+        busy_changed=lambda *_: None,
+        problem=lambda *_: None,
+        program_started=lambda *_: None,
+    )
+    if queued == "disconnect":
+        worker.connection = Transport()
+        worker.info = HubInfo(connected=True)
+
+    def hold_loop():
+        entered.set()
+        release.wait(2)
+
+    try:
+        worker.loop.call_soon_threadsafe(hold_loop)
+        assert entered.wait(2)
+        pending = (
+            worker.connect_hub(transport="virtual")
+            if queued == "connect"
+            else worker.disconnect_hub()
+        )
+        stop = worker.stop_program()
+        release.set()
+        stop.result(timeout=2)
+        assert pending.cancelled()
+        assert worker.info.connection_action == ""
+        assert calls == ([] if queued == "connect" else ["stop"])
+    finally:
+        release.set()
+        worker.close()
+
+
 def test_virtual_worker_uses_one_process_transition_per_program_action(
     tmp_path, monkeypatch
 ):
