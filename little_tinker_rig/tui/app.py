@@ -83,6 +83,7 @@ class Studio(App):
         self.exit_approved = False
         self.recovery = Recovery()
         self.recovery_timer = None
+        self._recovery_offer_lock = asyncio.Lock()
 
     def compose(self):
         self.status = Static(id="status", markup=False)
@@ -233,8 +234,12 @@ class Studio(App):
             self.failed(tr("Could not save recovery data: {detail}", detail=str(error)))
             return False
 
-    @work(group="recovery", exclusive=True)
+    @work(group="recovery")
     async def offer_recovery(self):
+        async with self._recovery_offer_lock:
+            await self._offer_recovery()
+
+    async def _offer_recovery(self):
         for path, lock in self.recovery.stale():
             removed = False
             try:
