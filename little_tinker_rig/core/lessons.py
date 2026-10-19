@@ -26,6 +26,7 @@ from .project import atomic_write
 from .timestamps import valid_unix_ns
 
 WORKSPACES = ("program", "control", "help", "block_editor", "assembly")
+MAX_ASSEMBLY_STEP = 2**31 - 1
 WINDOWS_DEVICE_NAMES = {
     "CON",
     "PRN",
@@ -83,7 +84,11 @@ def camera_values(state):
 
 def robot_description(path):
     data = read_json(path)
-    if not isinstance(data, dict) or data.get("format") != 1:
+    if (
+        not isinstance(data, dict)
+        or type(data.get("format")) is not int
+        or data["format"] != 1
+    ):
         raise ValueError("Unsupported robot description")
     if not resource(path.parent, data.get("model", "")).is_file():
         raise ValueError("Missing robot model")
@@ -259,7 +264,11 @@ class Lesson:
     def load(cls, root: Path):
         root = root.resolve()
         data = read_json(root / "lesson.json")
-        if not isinstance(data, dict) or data.get("format") != 1:
+        if (
+            not isinstance(data, dict)
+            or type(data.get("format")) is not int
+            or data["format"] != 1
+        ):
             raise ValueError("Unsupported lesson format")
         if not isinstance(data.get("id"), str) or not data["id"]:
             raise ValueError("A lesson needs an id")
@@ -554,7 +563,11 @@ class StudentProject:
         self.disk_hash = disk_hash
         self.retain = retain
         self.data = read_json(self.root / "project.json")
-        if not isinstance(self.data, dict) or self.data.get("format") != 1:
+        if (
+            not isinstance(self.data, dict)
+            or type(self.data.get("format")) is not int
+            or self.data["format"] != 1
+        ):
             raise ValueError("Unsupported student project format")
         archive = self.data.get("archive") if retain else None
         if (
@@ -629,7 +642,7 @@ class StudentProject:
         if (
             not isinstance(assembly, dict)
             or type(assembly.get("step", 0)) is not int
-            or assembly.get("step", 0) < 0
+            or not 0 <= assembly.get("step", 0) <= MAX_ASSEMBLY_STEP
         ):
             raise ValueError("Invalid assembly state")
         if "camera" in assembly:

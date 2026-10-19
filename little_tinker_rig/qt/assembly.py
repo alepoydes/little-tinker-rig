@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (
 )
 
 from little_tinker_rig.core.lessons import (
+    MAX_ASSEMBLY_STEP,
     camera_values,
     localized,
     resource,
@@ -66,7 +67,7 @@ class AssemblyPage(QWidget):
         super().__init__()
         self.state = state if isinstance(state, dict) else {}
         step = self.state.get("step", 0)
-        if type(step) is not int or not 0 <= step <= 2**31 - 1:
+        if type(step) is not int or not 0 <= step <= MAX_ASSEMBLY_STEP:
             step = 0
         if "camera" in self.state:
             try:

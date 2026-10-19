@@ -54,15 +54,11 @@ def lesson(tmp_path):
 
 def test_extreme_assembly_camera_value_is_rejected_cleanly():
     with pytest.raises(ValueError, match="Invalid assembly camera"):
-        camera_values(
-            {"center": [10**400, 0, 0], "extent": 10, "yaw": 0, "pitch": 0}
-        )
+        camera_values({"center": [10**400, 0, 0], "extent": 10, "yaw": 0, "pitch": 0})
 
 
 @pytest.mark.parametrize("coordinate", [True, 10**400])
-def test_robot_description_rejects_non_numeric_port_coordinates(
-    tmp_path, coordinate
-):
+def test_robot_description_rejects_non_numeric_port_coordinates(tmp_path, coordinate):
     (tmp_path / "robot.ldr").write_text("0 Robot\n", encoding="utf-8")
     path = tmp_path / "robot.json"
     path.write_text(
@@ -77,6 +73,45 @@ def test_robot_description_rejects_non_numeric_port_coordinates(
     )
     with pytest.raises(ValueError, match="Port markers need three finite coordinates"):
         robot_description(path)
+
+
+def test_robot_description_rejects_boolean_format(tmp_path):
+    (tmp_path / "robot.ldr").write_text("0 Robot\n", encoding="utf-8")
+    path = tmp_path / "robot.json"
+    path.write_text(
+        json.dumps({"format": True, "model": "robot.ldr"}), encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="Unsupported robot description"):
+        robot_description(path)
+
+
+def test_lesson_rejects_boolean_format(lesson):
+    path = lesson / "lesson.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data["format"] = True
+    path.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(ValueError, match="Unsupported lesson format"):
+        Lesson.load(lesson)
+
+
+def test_student_project_rejects_boolean_format(lesson):
+    project = StudentProject.create(lesson)
+    path = project.root / "project.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data["format"] = True
+    path.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(ValueError, match="Unsupported student project format"):
+        StudentProject(project.root)
+
+
+def test_student_project_rejects_unrepresentable_assembly_step(lesson):
+    project = StudentProject.create(lesson)
+    path = project.root / "progress.json"
+    progress = json.loads(path.read_text(encoding="utf-8"))
+    progress["assembly"] = {"step": 2**31}
+    path.write_text(json.dumps(progress), encoding="utf-8")
+    with pytest.raises(ValueError, match="Invalid assembly state"):
+        StudentProject(project.root)
 
 
 def test_independent_projects_and_portable_draft(lesson, tmp_path):
