@@ -274,6 +274,8 @@ For multi-file activities, `programs` maps workspace paths to lesson files and
 }
 ```
 
+Workspace paths must be portable and cannot overlap as files and directories
+or differ only in letter case.
 A stage's optional `program` selects one of these Python files. Markdown links
 such as `[Open robot](program:robot.py)` open its editable copy without resetting
 it. `assembly:`, `devices:`, and `connect:` open the assembly workspace, the
@@ -299,6 +301,8 @@ Use `Lesson.load(directory).archive()` to produce a portable `.pylesson`: this
 materializes the referenced files and removes the `examples` mapping. Creating a
 student project does this automatically. The student's archive never depends on
 its author's installation or a future version of the example catalog.
+The archive writer enforces the reader's member-count and uncompressed-size
+limits, so Save and export reject a project that could not be opened again.
 
 Stage `mode` is `program`, `control` or `assembly`; `assembly: [1, 7]` names an
 inclusive range of model steps. `check` is `manual` (default) or `devices`; a stage's

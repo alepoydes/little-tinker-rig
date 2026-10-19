@@ -27,6 +27,8 @@ from .timestamps import valid_unix_ns
 
 WORKSPACES = ("program", "control", "help", "block_editor", "assembly")
 MAX_ASSEMBLY_STEP = 2**31 - 1
+MAX_ARCHIVE_MEMBERS = 20_000
+MAX_ARCHIVE_BYTES = 256 * 1024**2
 WINDOWS_DEVICE_NAMES = {
     "CON",
     "PRN",
@@ -180,17 +182,18 @@ def _check_archive_names(entries):
             )
 
 
+def _check_archive_limits(count, size):
+    if count > MAX_ARCHIVE_MEMBERS or size > MAX_ARCHIVE_BYTES:
+        raise ValueError(tr("The project archive is too large"))
+
+
 def extract(data: bytes, destination: Path):
     """Validate the entire member list before creating any files."""
     try:
         with ZipFile(io.BytesIO(data)) as archive:
             root = destination.resolve()
             members = archive.infolist()
-            if (
-                len(members) > 20000
-                or sum(m.file_size for m in members) > 256 * 1024**2
-            ):
-                raise ValueError("The project archive is too large")
+            _check_archive_limits(len(members), sum(m.file_size for m in members))
             _check_archive_names((m.filename, m.is_dir()) for m in members)
             paths = [resource(destination, m.filename) for m in members]
             if len(set(paths)) != len(paths):
@@ -247,6 +250,16 @@ def pack(directory: Path, additions=None, *, cancelled=None) -> bytes:
             files.append((name, path))
     names = [name for name, _ in files]
     names.extend(additions)
+    _check_archive_limits(len(names), 0)
+    size = 0
+    for _, path in files:
+        check_cancelled(cancelled)
+        size += path.stat().st_size
+        _check_archive_limits(len(names), size)
+    for data in additions.values():
+        check_cancelled(cancelled)
+        size += len(data.encode("utf-8")) if isinstance(data, str) else len(data)
+        _check_archive_limits(len(names), size)
     _check_archive_names((name, False) for name in names)
     for name in additions:
         resource(directory, name)
@@ -258,6 +271,8 @@ def pack(directory: Path, additions=None, *, cancelled=None) -> bytes:
         for name, data in additions.items():
             check_cancelled(cancelled)
             archive.writestr(name, data)
+        members = archive.infolist()
+        _check_archive_limits(len(members), sum(item.file_size for item in members))
     check_cancelled(cancelled)
     return output.getvalue()
 
@@ -316,6 +331,7 @@ class Lesson:
         programs = data.get("programs", {})
         if not isinstance(programs, dict):
             raise ValueError("Lesson programs must map workspace paths to lesson files")
+        _check_archive_names((name, False) for name in programs)
         targets = set()
         for name, origin in programs.items():
             target = resource(root / "programs", name)

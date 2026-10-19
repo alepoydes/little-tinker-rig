@@ -116,6 +116,24 @@ def test_student_project_rejects_unrepresentable_assembly_step(lesson):
         StudentProject(project.root)
 
 
+@pytest.mark.parametrize(
+    "extra",
+    [
+        {"folder": "start.py", "folder/helper.py": "start.py"},
+        {"Robot/main.py": "start.py", "robot/helper.py": "start.py"},
+    ],
+)
+def test_lesson_rejects_conflicting_student_program_paths(lesson, extra):
+    manifest = lesson / "lesson.json"
+    data = json.loads(manifest.read_text(encoding="utf-8"))
+    data["programs"] = {"main.py": "start.py", **extra}
+    data["main"] = "main.py"
+    manifest.write_text(json.dumps(data), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="conflict"):
+        Lesson.load(lesson)
+
+
 def test_pack_stops_between_files_when_cancelled(tmp_path, monkeypatch):
     (tmp_path / "a.py").write_text("a = 1\n", encoding="utf-8")
     (tmp_path / "b.py").write_text("b = 2\n", encoding="utf-8")
@@ -130,6 +148,32 @@ def test_pack_stops_between_files_when_cancelled(tmp_path, monkeypatch):
     monkeypatch.setattr(ZipFile, "write", write)
     with pytest.raises(CancelledError):
         pack(tmp_path, cancelled=cancelled.is_set)
+
+
+def test_pack_rejects_archive_larger_than_extract_limit_before_writing(
+    tmp_path, monkeypatch
+):
+    large = tmp_path / "large.bin"
+    with large.open("wb") as stream:
+        stream.truncate(256 * 1024**2 + 1)
+
+    def unexpected_write(*args, **kwargs):
+        raise AssertionError("oversized archive was written")
+
+    monkeypatch.setattr(ZipFile, "write", unexpected_write)
+    with pytest.raises(ValueError, match="too large"):
+        pack(tmp_path)
+
+
+def test_pack_rejects_too_many_members_before_writing(tmp_path, monkeypatch):
+    additions = {f"file-{index}.txt": "" for index in range(20001)}
+
+    def unexpected_write(*args, **kwargs):
+        raise AssertionError("oversized archive was written")
+
+    monkeypatch.setattr(ZipFile, "writestr", unexpected_write)
+    with pytest.raises(ValueError, match="too large"):
+        pack(tmp_path, additions)
 
 
 def test_independent_projects_and_portable_draft(lesson, tmp_path):

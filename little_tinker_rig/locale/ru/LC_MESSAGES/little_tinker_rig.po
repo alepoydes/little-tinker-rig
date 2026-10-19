@@ -5765,6 +5765,10 @@ msgstr ""
 msgid "The port monitor is running. Assign a motor, then enable commands."
 msgstr "Монитор портов работает. Назначьте мотор, затем включите передачу команд."
 
+#: little_tinker_rig/core/lessons.py:187
+msgid "The project archive is too large"
+msgstr "Архив проекта слишком велик"
+
 #: little_tinker_rig/qt/runtime.py:104
 msgid ""
 "The program has changed since this run. This is the executed source; your current "
