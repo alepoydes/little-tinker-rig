@@ -194,9 +194,12 @@ class Studio(App):
         self.push_screen(CommandPalette(placeholder=tr("Search commands…")))
 
     def check_action(self, action, parameters):
-        # Editor shortcuts must not start hub actions behind a modal dialog.
+        # Stop and disconnect must still reach the hub behind a modal dialog.
         if isinstance(self.screen, ModalScreen):
-            return False
+            return action in {"stop", "disconnect"} or (
+                action == "connect"
+                and (self.info.connected or self.info.connection_action == "connecting")
+            )
         return True
 
     def load_file(self, file):

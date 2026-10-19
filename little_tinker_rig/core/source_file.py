@@ -90,6 +90,12 @@ class SourceFile:
             raise FileExistsError(tr("The file already exists. Replace it?"))
         text = utf8_source(text)
         data = text.encode("utf-8")
+        if (target.read_bytes() if target.exists() else None) != raw:
+            raise ValueError(
+                tr(
+                    "File changed outside LittleTinker Rig; reopen it or save to another path"
+                )
+            )
         atomic_write(target, data)
         self.path, self.source = target, text
         self.encoding = "utf-8"

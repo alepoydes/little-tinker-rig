@@ -44,6 +44,44 @@ def test_utf8_saves_preserve_drafts_newlines_metadata_and_detect_disk_changes(tm
     assert file.path == new and not file.dirty("value = 2")
 
 
+@pytest.mark.parametrize("save_as", [False, True])
+def test_source_save_rechecks_external_edit_after_encoding(
+    tmp_path, monkeypatch, save_as
+):
+    from little_tinker_rig.core import source_file as storage
+
+    path = tmp_path / "main.py"
+    path.write_text("original = 1\n", encoding="utf-8")
+    file = SourceFile() if save_as else SourceFile(path)
+    normalize = storage.utf8_source
+
+    def external_edit(source):
+        path.write_text("external = 2\n", encoding="utf-8")
+        return normalize(source)
+
+    monkeypatch.setattr(storage, "utf8_source", external_edit)
+    with pytest.raises(ValueError, match="changed outside"):
+        file.save("mine = 3\n", path if save_as else None, overwrite=save_as)
+    assert path.read_text(encoding="utf-8") == "external = 2\n"
+
+
+def test_source_save_as_rechecks_new_destination(tmp_path, monkeypatch):
+    from little_tinker_rig.core import source_file as storage
+
+    path = tmp_path / "copy.py"
+    file = SourceFile()
+    normalize = storage.utf8_source
+
+    def create_destination(source):
+        path.write_text("someone else's file\n", encoding="utf-8")
+        return normalize(source)
+
+    monkeypatch.setattr(storage, "utf8_source", create_destination)
+    with pytest.raises(ValueError, match="changed outside"):
+        file.save("mine = 1\n", path)
+    assert path.read_text(encoding="utf-8") == "someone else's file\n"
+
+
 async def until(predicate):
     async with asyncio.timeout(8):
         while not predicate():
@@ -182,6 +220,41 @@ async def test_tui_virtual_upload_run_error_location_and_explicit_monitor(tmp_pa
         app.action_disconnect()
         await until(lambda: not app.info.connected)
     assert not app.robot.thread.is_alive()
+
+
+async def test_tui_stop_and_disconnect_shortcuts_reach_hub_behind_modal(
+    tmp_path, monkeypatch
+):
+    from little_tinker_rig.pybricks.devices import HubInfo
+    from little_tinker_rig.tui.app import Studio
+    from little_tinker_rig.tui.dialogs import Form
+
+    app = Studio(tmp_path / "main.py")
+    async with app.run_test(size=(120, 40)) as pilot:
+        stopped, disconnected = [], []
+        with monkeypatch.context() as patch:
+            patch.setattr(app.robot, "stop_program", lambda: stopped.append(True))
+            patch.setattr(
+                app.robot, "disconnect_hub", lambda: disconnected.append(True)
+            )
+            app.info = HubInfo(connected=True)
+            app.push_screen(Form("Open dialog"))
+            await until(lambda: isinstance(app.screen, Form))
+            await pilot.press("f6")
+            assert stopped == [True]
+            await pilot.press("f7")
+            await pilot.pause()
+            assert disconnected == [True]
+            app.info = HubInfo(connection_action="connecting")
+            await pilot.press("f7")
+            await pilot.pause()
+            assert disconnected == [True, True]
+            dialog = app.screen
+            app.info = HubInfo()
+            await pilot.press("f7")
+            await pilot.pause()
+            assert app.screen is dialog and disconnected == [True, True]
+            await pilot.click("#cancel")
 
 
 async def test_tui_runs_unsaved_editor_snapshot_without_overwriting_file(tmp_path):

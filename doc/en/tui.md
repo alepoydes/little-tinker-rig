@@ -57,6 +57,9 @@ Inventor / SPIKE Prime, BOOST and Technic hubs are also available. The model
 choice applies only to virtual hubs. The status line shows the connection and
 program state.
 
+F6 still stops the program, and F7 still cancels a connection or disconnects a
+connected hub, while a dialog is open.
+
 | Key | Action |
 | --- | --- |
 | F4 | Upload the current editor text, without starting |
