@@ -451,6 +451,51 @@ async def test_virtual_error_and_stderr_do_not_break_telemetry(tmp_path):
         await hub.disconnect()
 
 
+@pytest.mark.asyncio
+async def test_program_stderr_that_looks_like_telemetry_does_not_complete_run(tmp_path):
+    output = []
+    hub = VirtualConnection(output.append)
+    marker = tmp_path / "finished.txt"
+    program = tmp_path / "stderr.py"
+    program.write_text(
+        "import sys, time\n"
+        "from pathlib import Path\n"
+        'sys.stderr.write(\'\\x1eLITTLE_TINKER_RIG {"ports": {}, '
+        '"running": false, "connected": false}\\n\')\n'
+        "sys.stderr.flush()\n"
+        "time.sleep(0.3)\n"
+        f"Path({str(marker)!r}).write_text('finished')\n",
+        encoding="utf-8",
+    )
+    try:
+        await hub.connect()
+        await hub.run(program, wait=True)
+        assert marker.read_text(encoding="utf-8") == "finished"
+        assert hub.info.connected
+        assert b"LITTLE_TINKER_RIG" in b"".join(output)
+    finally:
+        await hub.disconnect()
+
+
+@pytest.mark.asyncio
+async def test_virtual_program_does_not_receive_simulator_arguments(tmp_path):
+    output = []
+    hub = VirtualConnection(output.append)
+    program = tmp_path / "arguments.py"
+    program.write_text(
+        "import argparse, sys\n"
+        "argparse.ArgumentParser().parse_args()\n"
+        "print(f'argv_count={len(sys.argv)}')\n",
+        encoding="utf-8",
+    )
+    try:
+        await hub.connect()
+        await hub.run(program, wait=True)
+        assert b"argv_count=1" in b"".join(output)
+    finally:
+        await hub.disconnect()
+
+
 @pytest.mark.parametrize(
     "model, ports", [("inventor", "ABCDEF"), ("boost", "ABCD"), ("technic", "ABCD")]
 )

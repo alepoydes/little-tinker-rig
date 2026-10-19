@@ -215,7 +215,10 @@ stop control. The hub also stops motors when fresh commands expire.
 Virtual hubs use the same connection, execution, port, and control workflows.
 User Python runs in a separate process over explicit device models. This is a
 teaching model, not physical simulation or a sandbox for untrusted code. Sensor
-inputs can be changed on screen; unsupported APIs fail explicitly.
+inputs can be changed on screen; unsupported APIs fail explicitly. The runner
+exposes the student program, without its own command-line options, in `sys.argv`.
+A per-run telemetry marker keeps program diagnostics on stderr from changing the
+virtual hub's status.
 
 Target Pybricks models are Robot Inventor / SPIKE Prime (A–F), BOOST Move Hub
 (built-in A/B motors and external C/D), and LEGO Technic Hub (A–D). The monitor

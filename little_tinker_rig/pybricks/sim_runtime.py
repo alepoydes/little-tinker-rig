@@ -422,6 +422,7 @@ def main():
     parser.add_argument("--program", type=Path)
     parser.add_argument("--ports", default="{}")
     parser.add_argument("--model", default="inventor")
+    parser.add_argument("--telemetry-token", default="")
     arguments = parser.parse_args()
     world = World(json.loads(arguments.ports) or None, arguments.model)
     incoming = queue.Queue()
@@ -439,8 +440,14 @@ def main():
             "error": error,
         }
         with output_lock:
-            # Telemetry has its own pipe, so print(..., end='') remains immediate.
-            sys.stderr.write(PREFIX.decode() + json.dumps(payload) + "\n")
+            # Program diagnostics may share stderr; the per-run token separates them.
+            token = arguments.telemetry_token
+            sys.stderr.write(
+                PREFIX.decode()
+                + (token + " " if token else "")
+                + json.dumps(payload)
+                + "\n"
+            )
             sys.stderr.flush()
 
     def tick():
@@ -474,6 +481,7 @@ def main():
     report()
     if arguments.program:
         sys.path.insert(0, str(arguments.program.resolve().parent))
+        sys.argv = [str(arguments.program)]
         try:
             runpy.run_path(str(arguments.program), run_name="__main__")
         except BaseException as exception:

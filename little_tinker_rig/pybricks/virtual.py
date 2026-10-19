@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import secrets
 import sys
 from dataclasses import replace
 from pathlib import Path
@@ -32,6 +33,7 @@ class VirtualConnection:
         self.ports = world.snapshot()
         self.stored = None
         self.stored_path = None
+        self.telemetry_token = ""
 
     def _update(self, **values):
         self.info = replace(self.info, **values)
@@ -44,6 +46,7 @@ class VirtualConnection:
         await self._terminate()
         self.ready.clear()
         self.done.clear()
+        self.telemetry_token = secrets.token_hex(16)
         arguments = [
             sys.executable,
             "-u",
@@ -53,6 +56,8 @@ class VirtualConnection:
             json.dumps(self.ports),
             "--model",
             self.info.model,
+            "--telemetry-token",
+            self.telemetry_token,
         ]
         if path is not None:
             arguments.extend(("--program", str(Path(path).resolve())))
@@ -83,12 +88,13 @@ class VirtualConnection:
             self.output(data)
 
     async def _telemetry(self):
+        marker = PREFIX + self.telemetry_token.encode("ascii") + b" "
         while line := await self.process.stderr.readline():
-            if not line.startswith(PREFIX):
+            if not line.startswith(marker):
                 self.output(line)
                 continue
             try:
-                data = json.loads(line[len(PREFIX) :])
+                data = json.loads(line[len(marker) :])
                 if (
                     not isinstance(data, dict)
                     or not isinstance(data.get("ports"), dict)
