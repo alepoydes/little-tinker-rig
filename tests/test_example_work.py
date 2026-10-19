@@ -93,6 +93,29 @@ def test_snapshot_skips_imports_in_constant_false_branches(tmp_path):
         program.cleanup()
 
 
+def test_snapshot_handles_deep_valid_expression_without_recursion(tmp_path):
+    import subprocess
+    import sys
+
+    entry = tmp_path / "main.py"
+    entry.write_text(
+        "result = " + " + ".join(["1"] * 1200) + "\nprint(result)\n",
+        encoding="utf-8",
+    )
+
+    program = Program(entry)
+    try:
+        result = subprocess.run(
+            [sys.executable, str(program.entry)],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        assert result.stdout.strip() == "1200"
+    finally:
+        program.cleanup()
+
+
 def test_snapshot_respects_constant_branch_package_bindings(tmp_path):
     import subprocess
     import sys

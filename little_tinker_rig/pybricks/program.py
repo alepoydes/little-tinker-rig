@@ -51,11 +51,13 @@ def _constant_branch(node):
 
 def _reachable_nodes(node):
     """Visit imports in possible paths, omitting literal dead branches."""
-    yield node
-    branch = _constant_branch(node)
-    children = ast.iter_child_nodes(node) if branch is None else branch
-    for child in children:
-        yield from _reachable_nodes(child)
+    pending = [node]
+    while pending:
+        current = pending.pop()
+        yield current
+        branch = _constant_branch(current)
+        children = ast.iter_child_nodes(current) if branch is None else branch
+        pending.extend(reversed(tuple(children)))
 
 
 def _certain_statements(statements):
