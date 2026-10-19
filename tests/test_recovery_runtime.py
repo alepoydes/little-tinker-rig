@@ -420,6 +420,29 @@ def test_execution_snapshot_captures_imports_and_rejects_unrelated_trace_paths(
     assert "1 / 0" in problem.source
 
 
+@pytest.mark.parametrize(
+    "trace",
+    [
+        'Uploading 95%\rTraceback (most recent call last):\r  File "main.py", line 1, in <module>\rZeroDivisionError: division by zero\r',
+        '\x1b[31mTraceback (most recent call last):\x1b[0m\n  File "main.py", line 1, in <module>\n\x1b[31mZeroDivisionError: division by zero\x1b[0m\n',
+    ],
+)
+def test_traceback_parser_handles_carriage_returns_and_ansi(tmp_path, trace):
+    path = tmp_path / "main.py"
+    path.write_text("result = 1 / 0\n", encoding="utf-8")
+    program = Program(path)
+    try:
+        received = []
+        parser = Tracebacks(program, received.append)
+        for character in trace:
+            parser.feed(character)
+        assert [(problem.path, problem.line, problem.kind) for problem in received] == [
+            (path, 1, "ZeroDivisionError")
+        ]
+    finally:
+        program.cleanup()
+
+
 def test_managed_helper_errors_locate_call_and_stops_are_not_errors(tmp_path):
     path = tmp_path / "main.py"
     path.write_text(
@@ -489,6 +512,51 @@ def test_runtime_error_marks_block_but_changed_source_opens_executed_snapshot(
     finally:
         for dialog in dialogs:
             dialog.close()
+        close(window)
+
+
+@pytest.mark.parametrize(
+    "replacement",
+    [
+        b"# coding: unknown-codec\nresult = 2\n",
+        b"# coding: utf-8\nresult = \xff\n",
+    ],
+)
+def test_runtime_location_uses_snapshot_if_module_encoding_changed(
+    tmp_path, qt_app, replacement
+):
+    from PySide6.QtWidgets import QDialog
+
+    from little_tinker_rig.core.runtime_errors import RuntimeProblem
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.code import CodeEdit
+
+    path = tmp_path / "main.py"
+    module = tmp_path / "helper.py"
+    path.write_text("import helper\n", encoding="utf-8")
+    module.write_text("result = 1 / 0\n", encoding="utf-8")
+    window = Studio(path)
+    program = Program(path)
+    dialogs = []
+    try:
+        module.write_bytes(replacement)
+        problem = RuntimeProblem(program, module, 1, "ZeroDivisionError", "")
+        window.runtime_panel.receive(problem)
+        window.runtime_panel.show_block()
+        dialogs = [
+            dialog
+            for dialog in window.findChildren(QDialog)
+            if dialog.findChild(CodeEdit)
+        ]
+        assert len(dialogs) == 1
+        editor = dialogs[0].findChild(CodeEdit)
+        assert editor.isReadOnly()
+        assert editor.toPlainText() == program.sources[module]
+        assert window.documents.count() == 1
+    finally:
+        for dialog in dialogs:
+            dialog.close()
+        program.cleanup()
         close(window)
 
 

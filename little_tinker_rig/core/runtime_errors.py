@@ -10,6 +10,7 @@ from .helpers import helper_section
 
 FRAME = re.compile(r'^\s*File "([^"]+)", line (\d+)(?:, in (.*))?$')
 EXCEPTION = re.compile(r"^([A-Za-z_]\w*(?:\.\w+)*)(?::\s*(.*))?$")
+ANSI_ESCAPE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 
 EXPLANATIONS = {
     "NameError": N_(
@@ -79,10 +80,10 @@ class Tracebacks:
         self.frames = None
 
     def feed(self, text):
-        self.buffer += text
+        self.buffer += text.replace("\r", "\n")
         while "\n" in self.buffer:
             line, self.buffer = self.buffer.split("\n", 1)
-            self.line(line.rstrip("\r"))
+            self.line(ANSI_ESCAPE.sub("", line))
         if len(self.buffer) > 65536:
             self.buffer = self.buffer[-65536:]
 

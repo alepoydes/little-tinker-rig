@@ -91,7 +91,7 @@ class RuntimePanel(QWidget):
             try:
                 with tokenize.open(problem.path) as stream:
                     same = stream.read() == problem.source
-            except OSError:
+            except (OSError, SyntaxError, UnicodeError, LookupError):
                 same = False
             if same:
                 page = window.open_document(problem.path)
