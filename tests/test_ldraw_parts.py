@@ -188,6 +188,41 @@ def test_subset_is_complete_and_preserves_attribution(parts):
     assert scene.colors[4][0][0] == pytest.approx(170 / 255)
 
 
+def test_cancelled_scene_stops_while_parsing_part(tmp_path):
+    from little_tinker_rig.core.ldraw import LDraw
+
+    model = tmp_path / "model.ldr"
+    model.write_text(
+        "0 Robot\n1 16 0 0 0 1 0 0 0 1 0 0 0 1 part.dat\n", encoding="utf-8"
+    )
+    (tmp_path / "part.dat").write_text(
+        "0 Part\n3 16 0 0 0 20 0 0 0 -20 0\n", encoding="utf-8"
+    )
+    with LDraw(model, tmp_path) as reader:
+        reader.cancelled = lambda: "part.dat" in reader.loading
+        with pytest.raises(CancelledError):
+            reader.scene()
+
+
+def test_failed_part_lookup_does_not_leave_false_cycle(tmp_path):
+    from little_tinker_rig.core.ldraw import LDraw
+
+    model = tmp_path / "model.ldr"
+    model.write_text(
+        "0 Robot\n1 16 0 0 0 1 0 0 0 1 0 0 0 1 part.dat\n", encoding="utf-8"
+    )
+    (tmp_path / "part.dat").write_text(
+        "0 Part\n1 16 0 0 0 1 0 0 0 1 0 0 0 1 child.dat\n", encoding="utf-8"
+    )
+    with LDraw(model, tmp_path) as reader:
+        with pytest.raises(ValueError, match="Missing LDraw part"):
+            reader.scene()
+        (tmp_path / "child.dat").write_text(
+            "0 Child\n3 16 0 0 0 20 0 0 0 -20 0\n", encoding="utf-8"
+        )
+        assert len(reader.scene().instances) == 1
+
+
 def test_model_preparation_preserves_assembly_and_excludes_embedded_part_metadata(
     parts,
 ):
@@ -322,6 +357,55 @@ def test_thin_save_and_offline_export_do_not_depend_on_cache(
     library = resolve_library(reopened.lesson.root, robot["library"])
     with LDraw(reopened.lesson.root / robot["model"], library) as reader:
         assert len(reader.scene().instances) == 1
+
+
+def test_cancelled_offline_export_skips_model_subset(parts, tmp_path, monkeypatch):
+    archive, _, _ = parts
+    project = StudentProject.create(make_lesson(parts))
+    snapshot = project.portable_snapshot()
+    output = tmp_path / "offline.ltr"
+    output.write_bytes(b"Existing export")
+    cancelled = Event()
+
+    def resolve(*args, **kwargs):
+        cancelled.set()
+        return archive
+
+    monkeypatch.setattr(ldraw_parts, "resolve_library", resolve)
+    monkeypatch.setattr(
+        ldraw_parts, "subset", lambda *a, **k: pytest.fail("Parsed after cancellation")
+    )
+    with pytest.raises(CancelledError):
+        project.export(
+            output, snapshot=snapshot, overwrite=True, cancelled=cancelled.is_set
+        )
+    assert output.read_bytes() == b"Existing export"
+
+
+def test_cancelled_offline_export_skips_final_archive(parts, tmp_path, monkeypatch):
+    from little_tinker_rig.core import lessons
+
+    archive, _, _ = parts
+    project = StudentProject.create(make_lesson(parts))
+    snapshot = project.portable_snapshot()
+    output = tmp_path / "offline.ltr"
+    output.write_bytes(b"Existing export")
+    cancelled = Event()
+
+    def subset_and_cancel(*args, **kwargs):
+        cancelled.set()
+        return b"subset"
+
+    monkeypatch.setattr(ldraw_parts, "resolve_library", lambda *a, **k: archive)
+    monkeypatch.setattr(ldraw_parts, "subset", subset_and_cancel)
+    monkeypatch.setattr(
+        lessons, "pack", lambda *a, **k: pytest.fail("Packed after cancellation")
+    )
+    with pytest.raises(CancelledError):
+        project.export(
+            output, snapshot=snapshot, overwrite=True, cancelled=cancelled.is_set
+        )
+    assert output.read_bytes() == b"Existing export"
 
 
 def test_lesson_waits_for_assembly_and_can_import_local_zip(

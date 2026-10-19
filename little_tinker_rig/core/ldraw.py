@@ -8,11 +8,12 @@ or physical simulation is performed.
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from functools import cached_property
+from itertools import chain
 from pathlib import Path, PurePosixPath
 
 import numpy as np
 
-from .ldraw_parts import PartLibrary, read_file
+from .ldraw_parts import PartLibrary, check_cancelled, read_file
 from .paths import resource
 
 
@@ -112,8 +113,10 @@ def reference(tokens):
 
 
 class LDraw(AbstractContextManager):
-    def __init__(self, path: Path, library: Path | None = None):
+    def __init__(self, path: Path, library: Path | None = None, *, cancelled=None):
         path = path.resolve()
+        self.cancelled = cancelled
+        check_cancelled(cancelled)
         self.root = path.parent
         self.dependencies = {}
         self.files = {}
@@ -129,6 +132,7 @@ class LDraw(AbstractContextManager):
         self.colors = {}
         self.loading = set()
         data = read_file(path, self.dependencies)
+        check_cancelled(cancelled)
         if data is None:
             raise FileNotFoundError(path)
         self.main = self.add_file(path.name, data.decode("utf-8-sig"))
@@ -160,7 +164,9 @@ class LDraw(AbstractContextManager):
         scope = {}
         lines = text.splitlines()
         has_files = has_data = False
-        for line in lines:
+        for index, line in enumerate(lines):
+            if index % 256 == 0:
+                check_cancelled(self.cancelled)
             marker = line.split(maxsplit=2)[:2]
             has_files |= marker == ["0", "FILE"]
             has_data |= marker == ["0", "!DATA"]
@@ -178,7 +184,9 @@ class LDraw(AbstractContextManager):
         # MPD content before the first FILE or !DATA marker is outside any file.
         active = not (has_files or has_data)
         embedded = False
-        for line in lines:
+        for index, line in enumerate(lines):
+            if index % 256 == 0:
+                check_cancelled(self.cancelled)
             tokens = line.split()
             if not tokens:
                 continue
@@ -265,6 +273,7 @@ class LDraw(AbstractContextManager):
         return name
 
     def records(self, name):
+        check_cancelled(self.cancelled)
         if name not in self.files:
             base, reference, container = self.lookups.get(
                 name, (PurePosixPath("."), name, None)
@@ -283,6 +292,7 @@ class LDraw(AbstractContextManager):
                 source_base = PurePosixPath(".")
             if data is None:
                 raise ValueError(f"Missing LDraw part: {reference}")
+            check_cancelled(self.cancelled)
             self.add_file(
                 name,
                 data.decode("utf-8-sig"),
@@ -293,15 +303,18 @@ class LDraw(AbstractContextManager):
         return self.files[name]
 
     def mesh(self, name):
+        check_cancelled(self.cancelled)
         if name in self.meshes:
             return self.meshes[name]
         if name in self.loading:
             raise ValueError(f"Circular LDraw reference: {name}")
         self.loading.add(name)
         triangles, colors, lines, line_colors = [], [], [], []
-        records = self.records(name)
         try:
-            for tokens in records:
+            records = self.records(name)
+            for index, tokens in enumerate(records):
+                if index % 256 == 0:
+                    check_cancelled(self.cancelled)
                 kind = tokens[0]
                 if kind == "1":
                     color, matrix, child = reference(tokens)
@@ -353,6 +366,7 @@ class LDraw(AbstractContextManager):
             self.loading.remove(name)
 
     def scene(self):
+        check_cancelled(self.cancelled)
         instances = []
         used = set()
         stack = set()
@@ -364,7 +378,9 @@ class LDraw(AbstractContextManager):
             # in its own right. Preserve its position among references and steps.
             primitives = []
             number = 0
-            for tokens in [*self.records(name), ["0", "END"]]:
+            for index, tokens in enumerate(chain(self.records(name), (["0", "END"],))):
+                if index % 256 == 0:
+                    check_cancelled(self.cancelled)
                 if tokens[0] in {"2", "3", "4", "5"}:
                     primitives.append(tokens)
                     continue
@@ -435,4 +451,5 @@ class LDraw(AbstractContextManager):
             self.mesh(self.main)
             instances.append(Instance("part", self.main, 7, np.eye(4), 0, ()))
         meshes = {item.part: self.meshes[item.part] for item in instances}
+        check_cancelled(self.cancelled)
         return Scene(meshes, tuple(instances), self.colors, step + 1)

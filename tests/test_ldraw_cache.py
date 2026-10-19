@@ -219,3 +219,25 @@ def test_cancelled_build_does_not_install_cache(model, monkeypatch):
     with pytest.raises(CancelledError):
         load_scene(path, library, cancelled=lambda: cancelled)
     assert not list((parts_cache() / "scenes").glob("*"))
+
+
+def test_cancelled_build_stops_before_finishing_part_mesh(model, monkeypatch):
+    from threading import Event
+
+    path, library = model
+    cancelled = Event()
+    completed = []
+    mesh = LDraw.mesh
+
+    def cancel_during_mesh(reader, name):
+        if name == "part.dat":
+            cancelled.set()
+        result = mesh(reader, name)
+        completed.append(name)
+        return result
+
+    monkeypatch.setattr(LDraw, "mesh", cancel_during_mesh)
+    with pytest.raises(CancelledError):
+        load_scene(path, library, cancelled=cancelled.is_set)
+    assert "part.dat" not in completed
+    assert not list((parts_cache() / "scenes").glob("*"))

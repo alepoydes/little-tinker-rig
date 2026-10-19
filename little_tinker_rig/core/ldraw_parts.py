@@ -228,15 +228,17 @@ class PartLibrary(AbstractContextManager):
         self.close()
 
 
-def subset(model, library, reference=None):
+def subset(model, library, reference=None, *, cancelled=None):
     """Return only the model's library dependencies, colors and attribution."""
     import io
     from zipfile import ZIP_DEFLATED
 
     from .ldraw import LDraw
 
-    with LDraw(model, library) as reader:
+    check_cancelled(cancelled)
+    with LDraw(model, library, cancelled=cancelled) as reader:
         reader.scene()
+        check_cancelled(cancelled)
         parts = reader.library
         for name in (
             "CAreadme.txt",
@@ -245,11 +247,15 @@ def subset(model, library, reference=None):
             "Readme.txt",
             "sources.json",
         ):
+            check_cancelled(cancelled)
             parts.read(name)
         output = io.BytesIO()
         with ZipFile(output, "w", ZIP_DEFLATED) as archive:
             for name, data in sorted(parts.used.items()):
+                check_cancelled(cancelled)
                 archive.writestr(name, data)
             if reference:
+                check_cancelled(cancelled)
                 archive.writestr("source.json", json.dumps(reference, indent=2) + "\n")
+        check_cancelled(cancelled)
         return output.getvalue()

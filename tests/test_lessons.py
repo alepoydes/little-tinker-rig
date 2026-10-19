@@ -1,7 +1,9 @@
 import io
 import json
 import os
+from concurrent.futures import CancelledError
 from pathlib import Path
+from threading import Event
 from zipfile import ZIP_STORED, ZipFile
 
 import pytest
@@ -112,6 +114,22 @@ def test_student_project_rejects_unrepresentable_assembly_step(lesson):
     path.write_text(json.dumps(progress), encoding="utf-8")
     with pytest.raises(ValueError, match="Invalid assembly state"):
         StudentProject(project.root)
+
+
+def test_pack_stops_between_files_when_cancelled(tmp_path, monkeypatch):
+    (tmp_path / "a.py").write_text("a = 1\n", encoding="utf-8")
+    (tmp_path / "b.py").write_text("b = 2\n", encoding="utf-8")
+    cancelled = Event()
+    original = ZipFile.write
+
+    def write(archive, filename, arcname=None, compress_type=None, compresslevel=None):
+        result = original(archive, filename, arcname, compress_type, compresslevel)
+        cancelled.set()
+        return result
+
+    monkeypatch.setattr(ZipFile, "write", write)
+    with pytest.raises(CancelledError):
+        pack(tmp_path, cancelled=cancelled.is_set)
 
 
 def test_independent_projects_and_portable_draft(lesson, tmp_path):

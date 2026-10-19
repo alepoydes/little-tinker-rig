@@ -113,6 +113,8 @@ lesson project with resources…** creates a separate offline copy containing on
 the required parts, colors and attribution. It includes current unfinished code
 and Scratch, and keeps the original project's save path. User-authored model files
 remain in the project; they are never placed only in a disposable cache.
+You can cancel export preparation while parts are collected. Canceling before the
+final write leaves an existing export file unchanged.
 
 Working files and crash recovery live in the platform's user data directory,
 under `little-tinker-rig/projects` and `little-tinker-rig/recovery`, never in the

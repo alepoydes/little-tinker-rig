@@ -182,7 +182,7 @@ def load_scene(path, library, *, library_digest=None, cancelled=None):
         # The source model remains authoritative; damaged caches are replaceable.
         pass
     check_cancelled(cancelled)
-    with LDraw(path, library) as reader:
+    with LDraw(path, library, cancelled=cancelled) as reader:
         scene = reader.scene()
         dependencies = []
         for dependency, checksum in reader.dependencies.items():

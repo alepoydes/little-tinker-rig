@@ -227,10 +227,14 @@ def extract(data: bytes, destination: Path):
         raise ValueError(tr("Not a valid LittleTinker Rig archive")) from error
 
 
-def pack(directory: Path, additions=None) -> bytes:
+def pack(directory: Path, additions=None, *, cancelled=None) -> bytes:
+    from .ldraw_parts import check_cancelled
+
+    check_cancelled(cancelled)
     additions = additions or {}
     files = []
     for path in sorted(directory.rglob("*")):
+        check_cancelled(cancelled)
         if path.is_symlink():
             raise ValueError("Packages cannot contain symbolic links")
         relative = path.relative_to(directory)
@@ -249,9 +253,12 @@ def pack(directory: Path, additions=None) -> bytes:
     output = io.BytesIO()
     with ZipFile(output, "w", ZIP_DEFLATED) as archive:
         for name, path in files:
+            check_cancelled(cancelled)
             archive.write(path, name)
         for name, data in additions.items():
+            check_cancelled(cancelled)
             archive.writestr(name, data)
+    check_cancelled(cancelled)
     return output.getvalue()
 
 
@@ -941,6 +948,7 @@ class StudentProject:
         """Write an offline copy without changing this project's save baseline."""
         from .ldraw_parts import check_cancelled, resolve_library, subset
 
+        check_cancelled(cancelled)
         destination = Path(destination).resolve()
         if destination == self.path or destination.is_relative_to(self.root):
             raise ValueError("Export to a separate project file")
@@ -950,9 +958,11 @@ class StudentProject:
         if snapshot is None:
             self.checkpoint()
             snapshot = self.portable_snapshot()
+        check_cancelled(cancelled)
         with TemporaryDirectory(prefix="little-tinker-rig-export-") as temporary:
             root = Path(temporary)
             extract(snapshot, root)
+            check_cancelled(cancelled)
             manifest = read_json(root / "project.json")
             if "archive" in manifest:
                 manifest.pop("archive")
@@ -971,9 +981,16 @@ class StudentProject:
                         progress=progress,
                         cancelled=cancelled,
                     )
+                    check_cancelled(cancelled)
+                    if progress:
+                        progress(0, 0)
                     archive = subset(
-                        resource(path.parent, robot["model"]), library, reference
+                        resource(path.parent, robot["model"]),
+                        library,
+                        reference,
+                        cancelled=cancelled,
                     )
+                    check_cancelled(cancelled)
                     robot["library"] = "offline-parts.zip"
                     number = 1
                     while (path.parent / robot["library"]).exists():
@@ -984,7 +1001,8 @@ class StudentProject:
                     additions[path.relative_to(root).as_posix()] = (
                         json.dumps(robot, ensure_ascii=False, indent=2) + "\n"
                     )
-            data = pack(root, additions)
+            check_cancelled(cancelled)
+            data = pack(root, additions, cancelled=cancelled)
             check_cancelled(cancelled)
             if _archive_hash(destination) != current:
                 raise ValueError(
