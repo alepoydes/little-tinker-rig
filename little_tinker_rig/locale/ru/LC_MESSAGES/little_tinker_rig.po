@@ -1389,6 +1389,10 @@ msgstr "Управление"
 msgid "Control flow"
 msgstr "Управление ходом программы"
 
+#: little_tinker_rig/qt/controls.py
+msgid "Control target"
+msgstr "Цель управления"
+
 #: little_tinker_rig/snippets/pybricks/lessons.py:175
 msgid "Control force gripper"
 msgstr "Управлять захватом по силе"
@@ -3657,6 +3661,10 @@ msgstr ""
 msgid "New block"
 msgstr "Новый блок"
 
+#: little_tinker_rig/qt/authoring.py
+msgid "New block type"
+msgstr "Тип нового блока"
+
 #: little_tinker_rig/tui/app.py:231
 msgid "New console output · F8"
 msgstr "Новый вывод в консоли · F8"
@@ -4050,6 +4058,11 @@ msgstr "Монитор портов"
 msgid "Ports"
 msgstr "Порты"
 
+#: little_tinker_rig/qt/controls.py little_tinker_rig/qt/device.py
+#, python-brace-format
+msgid "Port {port}: {field}"
+msgstr "Порт {port}: {field}"
+
 #: little_tinker_rig/snippets/pybricks/motor_motion.py:314
 #: little_tinker_rig/snippets/pybricks/motors.py:192
 msgid "Position profile"
@@ -4088,6 +4101,10 @@ msgstr "Только предпросмотр; код шаблона не вып
 #: little_tinker_rig/qt/authoring.py:794
 msgid "Preview value only; does not change the definition default."
 msgstr "Только для предпросмотра; значение по умолчанию в определении не меняется."
+
+#: little_tinker_rig/qt/authoring.py
+msgid "Preview view"
+msgstr "Вид предпросмотра"
 
 #: little_tinker_rig/qt/find.py:42 little_tinker_rig/qt/help.py:258
 #: little_tinker_rig/qt/help.py:259 little_tinker_rig/qt/help.py:521

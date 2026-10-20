@@ -20,6 +20,8 @@ automatically; multiple serial hubs require a port selection. Real connections
 require the `pybricks` extra. USB depends on firmware and OS permissions.
 
 For permission errors and port troubleshooting, open [USB connection help](usb.md).
+Connection fields and per-port device and motor controls have localized names
+for screen readers.
 
 While connecting, the hub button and F7 cancel the attempt. Once connected,
 they disconnect; port monitoring has its own button in **Hub and devices**.

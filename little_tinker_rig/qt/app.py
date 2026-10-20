@@ -154,6 +154,7 @@ class Studio(QMainWindow):
         )
         self.search = QLineEdit()
         self.search.setPlaceholderText(N_("Find a block…"))
+        self.search.setAccessibleName(N_("Find a block…"))
         self.search_action = self.search.addAction(
             svg_icon("search"), QLineEdit.ActionPosition.LeadingPosition
         )

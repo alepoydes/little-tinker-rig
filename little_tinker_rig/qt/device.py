@@ -53,6 +53,7 @@ class ConnectDialog(QDialog):
         layout.addWidget(header)
         form = self.form = QFormLayout()
         self.transport = QComboBox()
+        self.transport.setAccessibleName(N_("Connection"))
         for label, key in (
             (N_("Virtual hub · no hardware needed"), "virtual"),
             ("Bluetooth · Pybricks", "ble"),
@@ -60,6 +61,7 @@ class ConnectDialog(QDialog):
         ):
             self.transport.addItem(label, key)
         self.name = QLineEdit()
+        self.name.setAccessibleName(N_("Hub name / USB port"))
         self.name.setPlaceholderText(N_("Empty — first available hub"))
         self.name.setToolTip(
             N_(
@@ -67,6 +69,7 @@ class ConnectDialog(QDialog):
             )
         )
         self.model = QComboBox()
+        self.model.setAccessibleName(N_("Virtual hub model"))
         for label, key in (
             ("Robot Inventor / SPIKE Prime", "inventor"),
             ("BOOST Move Hub", "boost"),
@@ -249,6 +252,14 @@ class DevicePanel(QWidget):
         )
         virtual = info.connected and info.transport == "virtual"
         for port, (kind, label, slider) in self.rows.items():
+            for widget, field in (
+                (kind, tr("Device")),
+                (slider, tr("Sensor value")),
+                (self.distance_sliders[port], tr("BOOST distance, %")),
+            ):
+                name = tr("Port {port}: {field}", port=port, field=field)
+                if widget.accessibleName() != name:
+                    widget.setAccessibleName(name)
             data = info.ports.get(port, {}) if info.connected else {}
             key = data.get("type", "empty")
             kind.blockSignals(True)

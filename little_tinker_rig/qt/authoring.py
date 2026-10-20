@@ -222,6 +222,7 @@ class BlockEditor(QWidget):
         self.timer.timeout.connect(self.check)
         self.search = QLineEdit()
         self.search.setPlaceholderText(N_("Find a definition…"))
+        self.search.setAccessibleName(N_("Find a definition…"))
         self.search.setClearButtonEnabled(True)
         for button in self.search.findChildren(QToolButton):
             label = N_("Clear definition search")
@@ -237,6 +238,7 @@ class BlockEditor(QWidget):
         self.tree.setHeaderHidden(True)
         self.tree.currentItemChanged.connect(self.browse)
         self.starters = QComboBox()
+        self.starters.setAccessibleName(N_("New block type"))
         for label, key in (
             (N_("Action"), "action"),
             (N_("Expression"), "expression"),
@@ -245,6 +247,7 @@ class BlockEditor(QWidget):
             self.starters.addItem(label, key)
         self.module_name = QLineEdit("custom")
         self.module_name.setPlaceholderText(N_("Group / module"))
+        self.module_name.setAccessibleName(N_("Group / module"))
         self.module_name.setToolTip(
             N_("Module in your collection; its functions share a help page.")
         )
@@ -292,16 +295,27 @@ class BlockEditor(QWidget):
         self.reopen_button.clicked.connect(lambda: self.attempt(self.reopen))
         self.level = QComboBox()
         self.level.setToolTip(N_("Block level · stored in the decorator"))
+        self.level.setAccessibleName(N_("Block level"))
         for level in LEVELS:
             self.level.addItem(LEVEL_TITLES[level], level)
         self.level.currentIndexChanged.connect(self.change_level)
         self.icon = AppearanceChoice()
         self.icon.setToolTip(N_("Block icon · stored in the decorator"))
+        self.icon.setAccessibleName(N_("Block icon · stored in the decorator"))
+        self.icon.lineEdit().setAccessibleName(
+            N_("Block icon · stored in the decorator")
+        )
         self.icon.changed.connect(
             lambda value: self.attempt(lambda: self.change_metadata("icon", value))
         )
         self.color = AppearanceChoice(color=True)
         self.color.setToolTip(N_("Palette role or #RRGGBB · stored in the decorator"))
+        self.color.setAccessibleName(
+            N_("Palette role or #RRGGBB · stored in the decorator")
+        )
+        self.color.lineEdit().setAccessibleName(
+            N_("Palette role or #RRGGBB · stored in the decorator")
+        )
         self.color.changed.connect(
             lambda value: self.attempt(lambda: self.change_metadata("color", value))
         )
@@ -335,6 +349,7 @@ class BlockEditor(QWidget):
         self.preview_stack.addWidget(self.preview)
         self.preview_stack.addWidget(self.card)
         self.preview_mode = QComboBox()
+        self.preview_mode.setAccessibleName(N_("Preview view"))
         self.preview_mode.addItems([N_("In the program"), N_("In the library")])
         self.preview_mode.currentIndexChanged.connect(
             self.preview_stack.setCurrentIndex

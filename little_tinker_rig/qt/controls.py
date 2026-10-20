@@ -300,6 +300,7 @@ class ControlsPage(QWidget):
         self.physical.setToolTip(N_("Physical Xbox / SDL controller"))
         self.physical.toggled.connect(self._physical)
         self.target = QComboBox()
+        self.target.setAccessibleName(N_("Control target"))
         self.target.addItem(N_("Assign motors to sticks and triggers"), "motors")
         self.target.addItem(N_("Send controller input to my program"), "program")
         self.target.currentIndexChanged.connect(self._target_changed)
@@ -467,6 +468,14 @@ class ControlsPage(QWidget):
             )
         )
         for row, port in enumerate("ABCDEF"):
+            for widget, field in zip(
+                self.rows[port],
+                (N_("Input"), N_("Mode"), N_("Scale"), N_("Center, °"), N_("Reverse")),
+                strict=True,
+            ):
+                name = tr("Port {port}: {field}", port=port, field=tr(field))
+                if widget.accessibleName() != name:
+                    widget.setAccessibleName(name)
             data = info.ports.get(port, {})
             motor = data.get("type") == "motor"
             self.table.setRowHidden(row, not motor)

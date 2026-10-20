@@ -1,5 +1,6 @@
 """Protect edits and command destinations across workspace transitions."""
 
+from time import monotonic
 from types import SimpleNamespace
 
 import pytest
@@ -253,7 +254,9 @@ def test_compact_control_keeps_sticks_visible_and_opens_motor_assignments(window
             ports={"A": {"type": "motor"}, "B": {"type": "motor"}},
         )
     )
-    QTest.qWait(90)
+    deadline = monotonic() + 2
+    while not 150 <= window.device_dock.height() <= 190 and monotonic() < deadline:
+        QTest.qWait(10)
     assert window.dockWidgetArea(window.device_dock) == (
         Qt.DockWidgetArea.BottomDockWidgetArea
     )

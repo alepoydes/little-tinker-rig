@@ -30,6 +30,8 @@ separately, as described below.
 Use the two document icons or **View → Blocks / Python** to change the editor mode.
 Global workspaces appear as icons in the narrow left sidebar. Hover over an icon
 to see its full name. The selected mode has a shaded background and a left accent.
+Block search and other controls without visible labels have localized names for
+screen readers.
 Short panels scroll vertically without changing the current mode. Assembly is
 available from the sidebar; a lesson project adds a full-height task panel on the
 right, without changing the workspace modes. At narrow widths it opens over the

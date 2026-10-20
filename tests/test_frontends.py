@@ -577,3 +577,82 @@ def test_connection_dialog_remembers_successful_transport_and_virtual_model(
         ]
     finally:
         window.close()
+
+
+def test_unlabeled_editor_and_hub_fields_have_localized_accessible_names(
+    tmp_path, qt_app
+):
+    from PySide6.QtWidgets import QComboBox, QLineEdit
+
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.device import ConnectDialog
+
+    window = Studio(tmp_path / "main.py")
+    window.show()
+    try:
+        for code, names in (
+            (
+                "en",
+                (
+                    "Find a block…",
+                    "Control target",
+                    "Port A: Input",
+                    "Port A: Device",
+                    "New block type",
+                    "Preview view",
+                    "Connection",
+                ),
+            ),
+            (
+                "ru",
+                (
+                    "Найти блок…",
+                    "Цель управления",
+                    "Порт A: Вход",
+                    "Порт A: Устройство",
+                    "Тип нового блока",
+                    "Вид предпросмотра",
+                    "Подключение",
+                ),
+            ),
+        ):
+            window.change_language(code)
+            dialog = ConnectDialog(window)
+            try:
+                assert (
+                    window.search.accessibleName(),
+                    window.controls.target.accessibleName(),
+                    window.controls.rows["A"][0].accessibleName(),
+                    window.device_panel.rows["A"][0].accessibleName(),
+                    window.block_editor.starters.accessibleName(),
+                    window.block_editor.preview_mode.accessibleName(),
+                    dialog.transport.accessibleName(),
+                ) == names
+                assert window.block_editor.icon.lineEdit().accessibleName() == (
+                    "Block icon · stored in the decorator"
+                    if code == "en"
+                    else "Значок блока · хранится в декораторе"
+                )
+                assert window.block_editor.color.lineEdit().accessibleName()
+                assert dialog.name.accessibleName()
+                assert dialog.model.accessibleName()
+                assert window.controls.rows["A"][0].itemText(0) == (
+                    "Unassigned" if code == "en" else "Не назначен"
+                )
+                assert window.device_panel.rows["A"][0].itemText(0) == (
+                    "Empty" if code == "en" else "Пусто"
+                )
+                for mode in (0, 1, 2, 3, 5):
+                    window.set_mode(mode)
+                    unnamed = [
+                        widget
+                        for kind in (QComboBox, QLineEdit)
+                        for widget in window.findChildren(kind)
+                        if widget.isVisible() and not widget.accessibleName()
+                    ]
+                    assert not unnamed, (code, mode, unnamed)
+            finally:
+                dialog.close()
+                dialog.deleteLater()
+    finally:
+        window.close()
