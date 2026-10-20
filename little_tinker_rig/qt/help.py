@@ -346,6 +346,7 @@ class HelpPage(QWidget):
         self.lesson_group = None
         self.lesson_item = None
         self.lesson_page_names = {}
+        self.lesson_page_titles = {}
         self._search_expanded = None
         self._search_selected = None
         self.tree = QTreeWidget()
@@ -503,7 +504,40 @@ class HelpPage(QWidget):
             self.pages[identity] = (text, self.lesson_item)
             self.page_paths[identity] = self.lesson.file(logical)
             self.lesson_page_names[identity] = logical
+            if identity != "lesson/instructions":
+                self.lesson_page_titles[identity] = self._lesson_material_title(
+                    name, text
+                )
+        if title and identity != "lesson/instructions":
+            self.lesson_page_titles[identity] = title
         return identity
+
+    def _lesson_material_title(self, name, text):
+        logical, _, _ = name.partition("#")
+        links = [
+            (
+                localized(link["target"], language()),
+                localized(link["label"], language()),
+            )
+            for stage in self.lesson.stages
+            for link in stage.get("links", [])
+            if link["kind"] == "markdown"
+        ]
+        for labels in (
+            {label for target, label in links if target == name},
+            {
+                label
+                for target, label in links
+                if target.partition("#")[0] == logical
+            },
+        ):
+            if len(labels) == 1:
+                return labels.pop()
+        heading = next(
+            (line[2:].strip() for line in text.splitlines() if line.startswith("# ")),
+            None,
+        )
+        return heading or Path(logical).stem
 
     def show_lesson_home(self, lesson):
         if lesson is None:
@@ -577,6 +611,7 @@ class HelpPage(QWidget):
         self.root = self.base_root / language()
         self.pages, self.page_paths, self.snippet_targets = {}, {}, {}
         self.lesson_page_names = {}
+        self.lesson_page_titles = {}
         self.lesson_group = None
         self.lesson_item = None
         self.groups = snippet_groups(self.snippets)
@@ -801,7 +836,7 @@ class HelpPage(QWidget):
             if page == "lesson/instructions":
                 title = f"{self.lesson_group.text(0)} · {title}"
             elif page.startswith("lesson/resource/"):
-                title = f"{title} · {Path(self.lesson_page_names[page]).name}"
+                title = f"{title} · {self.lesson_page_titles[page]}"
             action = self.recent_menu.addAction(title)
             action.setData(identity)
             action.triggered.connect(

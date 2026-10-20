@@ -1097,9 +1097,17 @@ def test_language_switch_keeps_localized_task_material_in_help_history(
     page = HelpPage([])
     try:
         page.show_lesson_stage(lesson, lesson.stages[0])
-        page.show_lesson_material(lesson, "extra_en.md#details")
+        page.show_lesson_material(lesson, "extra_en.md#details", "More")
         assert page.current == "lesson/resource/extra_en.md#details"
         assert page.history[-1] == "lesson/instructions#first"
+        page.back()
+        english_action = next(
+            action
+            for action in page.recent_menu.actions()
+            if action.data() == "lesson/resource/extra_en.md#details"
+        )
+        assert english_action.text() == "Training · More"
+        english_action.trigger()
 
         set_language("ru")
         page.retranslate()
@@ -1115,6 +1123,7 @@ def test_language_switch_keeps_localized_task_material_in_help_history(
             for action in page.recent_menu.actions()
             if action.data() == "lesson/resource/extra_ru.md#подробности"
         )
+        assert resource_action.text() == "Обучение · Подробнее"
         resource_action.trigger()
         assert page.current == "lesson/resource/extra_ru.md#подробности"
     finally:
