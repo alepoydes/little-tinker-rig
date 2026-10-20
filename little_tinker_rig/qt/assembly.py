@@ -107,6 +107,7 @@ class AssemblyPage(QWidget):
         self.view_host.layout().addWidget(self.placeholder)
         split.addWidget(self.view_host)
         side = QWidget()
+        side.setMinimumWidth(260)
         sidebar = QVBoxLayout(side)
         self.notes = HelpBrowser()
         self.notes.setOpenExternalLinks(True)

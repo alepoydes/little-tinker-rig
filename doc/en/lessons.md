@@ -20,7 +20,8 @@ and the instruction index uses the same circles as links. First drive includes d
 of the rolling base, travel directions, and obstacle distance in both the task
 cards and full instructions.
 Use **Assembly** for the actual part-by-part model; the diagrams explain the
-connections and measurements.
+connections and measurements. In a narrow window, the step instructions retain
+enough width to read beside the model.
 The selected task expands to show its goal, completion guidance, links and hints;
 other tasks stay compact. It appears only while a lesson project is active.
 Clicking a task title selects it, updates suggested blocks, and opens its section

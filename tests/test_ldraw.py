@@ -39,6 +39,60 @@ def test_shared_geometry_transforms_and_nested_steps(model):
     np.testing.assert_allclose(scene.bounds(), [[-30, -20, 0], [40, 40, 0]])
 
 
+def test_compact_assembly_keeps_instructions_readable(qt_app):
+    from pathlib import Path
+
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.assembly import AssemblyPage
+
+    page = AssemblyPage(Path("lessons/first_drive/robot/robot.json"))
+    page.resize(738, 477)
+    page.show()
+    try:
+        page.set_step(4)
+        QTest.qWait(30)
+        assert page.notes.viewport().width() >= 240
+        assert page.view_host.width() >= 400
+    finally:
+        page.close()
+        page.deleteLater()
+
+
+def test_compact_loaded_assembly_keeps_model_and_notes_visible(model, qt_app):
+    import json
+
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.assembly import AssemblyPage
+
+    description = model.with_suffix(".json")
+    description.write_text(
+        json.dumps(
+            {
+                "format": 1,
+                "model": model.name,
+                "steps": {"3": {"text": "Attach the assembled section to the robot."}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    page = AssemblyPage(description)
+    page.resize(738, 477)
+    page.show()
+    try:
+        with LDraw(model) as reader:
+            page.loaded(reader.scene(), "")
+        page.set_step(2)
+        QTest.qWait(30)
+        assert page.notes.viewport().width() >= 240
+        assert page.view_host.width() >= 400
+        assert page.back.isVisible() and page.next_step.isVisible()
+    finally:
+        page.close()
+        page.deleteLater()
+
+
 @pytest.mark.parametrize("saved, expected", [(2, 2), (99, 3)])
 def test_saved_assembly_step_waits_for_model_count(model, qt_app, saved, expected):
     import json
