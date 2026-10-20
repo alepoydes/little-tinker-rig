@@ -107,7 +107,8 @@ def capture_language(output, app, window, code):
     capture(output, code, "python-editor", app, window)
     window.document_page.change_mode(0)
 
-    window.lessons.show_stage()
+    window.set_mode(2)
+    window.help_page.show_lesson_home(window.lessons.current.lesson)
     capture(output, code, "help", app, window)
 
 

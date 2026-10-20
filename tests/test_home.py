@@ -124,7 +124,9 @@ def test_home_first_project_resumes_one_attempt(tmp_path, qt_app):
         assert window.documents.count() == 1
         project = window.document_page.lesson_project
         assert project.lesson.data["id"] == "first-python-program"
-        assert project.main.read_text(encoding="utf-8").startswith('"""First program')
+        assert project.main.read_text(encoding="utf-8").startswith(
+            'message = "Hello from LittleTinker Rig!"\n'
+        )
         assert window.help_page.current == "lesson/instructions"
         pictures = rendered_images(window.help_page.browser)
         assert len(pictures) == 1 and pictures[0].width() > 0
@@ -152,6 +154,29 @@ def test_home_first_project_resumes_one_attempt(tmp_path, qt_app):
     finally:
         set_language(original)
         close(window)
+
+
+def test_first_python_template_fits_compact_block_and_python_views(tmp_path, qt_app):
+    window = Studio(tmp_path / "plain.py")
+    window.confirm_close = lambda *_: True
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.show()
+    try:
+        window.lessons.open(Path("lessons/first_python"))
+        window.set_mode(0)
+        QTest.qWait(70)
+        assert window.session.document.state.source.startswith(
+            'message = "Hello from LittleTinker Rig!"\n'
+        )
+        assert window.source.horizontalScrollBar().maximum() == 0
+
+        window.document_page.change_mode(1)
+        QTest.qWait(50)
+        assert window.code.horizontalScrollBar().maximum() == 0
+    finally:
+        window.close()
+        window.deleteLater()
 
 
 def test_saved_lesson_is_one_recent_attempt_after_restart(

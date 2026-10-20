@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="172" viewBox="0 0 720 172" role="img" aria-label="Текстовое значение проходит через цикл повторения и выводится в консоль">
+  <rect width="720" height="172" rx="20" fill="#eaf3ff"/>
+  <rect x="35" y="42" width="178" height="88" rx="16" fill="#b9efd0" stroke="#42976d" stroke-width="2"/>
+  <text x="57" y="78" fill="#173d2c" font-size="20" font-family="sans-serif" font-weight="700">message</text>
+  <text x="57" y="107" fill="#173d2c" font-size="17" font-family="monospace">"Hello!"</text>
+  <path d="M223 86h46m-12-12 12 12-12 12" fill="none" stroke="#1268d9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="280" y="30" width="170" height="112" rx="16" fill="#ffda9f" stroke="#d49b44" stroke-width="2"/>
+  <text x="302" y="71" fill="#543b15" font-size="21" font-family="sans-serif" font-weight="700">повтор × 3</text>
+  <rect x="301" y="87" width="128" height="34" rx="9" fill="#b8d8ff"/>
+  <text x="313" y="110" fill="#173553" font-size="17" font-family="monospace">print(…)</text>
+  <path d="M460 86h46m-12-12 12 12-12 12" fill="none" stroke="#1268d9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="520" y="35" width="166" height="102" rx="16" fill="#173553"/>
+  <text x="538" y="65" fill="#9be5ff" font-size="18" font-family="sans-serif" font-weight="700">Консоль</text>
+  <text x="538" y="90" fill="#ffffff" font-size="16" font-family="monospace">Hello!</text>
+  <text x="538" y="110" fill="#ffffff" font-size="16" font-family="monospace">Hello! …</text>
+</svg>

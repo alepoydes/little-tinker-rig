@@ -36,8 +36,8 @@ whole catalog remains available.
 ![The block editor with its library, Python program, and three lesson tasks](../images/editor.png)
 
 You are editing a real `.py` file. The colored blocks show Python statements and
-their nesting. In the starter program, `message` stores some text, and the
-indented `print(message)` reads it inside a repeat loop.
+their nesting. The starter begins with the line you will edit: `message` stores
+some text. The indented `print(message)` reads it inside a repeat loop.
 
 ## 3. Edit two parameters
 
