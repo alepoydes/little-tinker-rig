@@ -362,6 +362,43 @@ def test_first_console_open_keeps_compact_program_visible(windows):
     assert not window.hub_input.isVisible()
 
 
+def test_console_request_reveals_tab_behind_device_panel(windows):
+    window = windows("print(1)\n")
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.set_mode(1)
+    window.set_mode(0)
+    QTest.qWait(50)
+    assert not window.console_dock.isVisible()
+    assert not window.device_dock.visibleRegion().isEmpty()
+
+    QTest.mouseClick(window.console_button, Qt.MouseButton.LeftButton)
+    QTest.qWait(30)
+    assert not window.console_dock.visibleRegion().isEmpty()
+    assert window.device_dock.visibleRegion().isEmpty()
+
+    window.device_dock.raise_()
+    QTest.qWait(30)
+    window.append_output("Output in the background\n")
+    assert window.unread == 1
+    window.console_dock.raise_()
+    QTest.qWait(30)
+    assert window.unread == 0
+
+    window.device_dock.raise_()
+    window.append_output("More background output\n")
+    assert window.unread == 1
+    QTest.mouseClick(window.console_button, Qt.MouseButton.LeftButton)
+    QTest.qWait(30)
+    assert not window.console_dock.visibleRegion().isEmpty()
+    assert window.unread == 0
+
+    window.device_dock.raise_()
+    window.error("Failed to run")
+    QTest.qWait(30)
+    assert not window.console_dock.visibleRegion().isEmpty()
+
+
 def test_sequence_bar_keeps_program_source_clear_of_line_numbers(windows):
     from PySide6.QtCore import QPoint
 

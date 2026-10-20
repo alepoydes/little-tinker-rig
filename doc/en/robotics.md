@@ -46,7 +46,9 @@ Upload and Run open **Console** automatically. It shows connection messages,
 transfer progress, program output and errors, including stdout/stderr from the
 hub worker. The bottom-bar activity indicator stays visible during hub operations.
 Terminal progress updates replace their previous line. After hiding Console,
-its button counts new messages. TUI uses F7/F5/F6 and F8 for its console.
+its button counts new messages. On narrow windows, the Console button brings it
+in front of the Hub and devices tab; clicking it again hides it. TUI uses
+F7/F5/F6 and F8 for its console.
 CLI can wait for completion:
 
 ```sh

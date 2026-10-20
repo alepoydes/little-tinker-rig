@@ -491,6 +491,17 @@ class Studio(QMainWindow):
             dock.show()
             dock.raise_()
 
+    def show_console(self):
+        self.console_dock.show()
+        self.console_dock.raise_()
+        self._clear_console_unread_if_visible()
+        QTimer.singleShot(0, self, self._clear_console_unread_if_visible)
+
+    def toggle_console(self):
+        self.toggle_dock(self.console_dock)
+        self._clear_console_unread_if_visible()
+        QTimer.singleShot(0, self, self._clear_console_unread_if_visible)
+
     def _menus(self):
         toolbar = self.addToolBar(N_("Program"))
         self.main_toolbar = toolbar
@@ -790,9 +801,7 @@ class Studio(QMainWindow):
             Qt.ToolButtonStyle.ToolButtonTextBesideIcon
         )
         self.console_button.setText(N_("Console"))
-        self.console_button.clicked.connect(
-            lambda: self.console_dock.setVisible(not self.console_dock.isVisible())
-        )
+        self.console_button.clicked.connect(self.toggle_console)
         self.hub_progress = QProgressBar()
         self.hub_progress.setRange(0, 0)
         self.hub_progress.setFixedWidth(130)
@@ -1889,16 +1898,23 @@ class Studio(QMainWindow):
                 cursor.insertText(part)
         self.console.setTextCursor(cursor)
         self.console.ensureCursorVisible()
-        if not self.console_dock.isVisible() and text:
+        if self.console_dock.visibleRegion().isEmpty() and text:
             self.unread += max(1, text.count("\n"))
             self.console_button.setText(tr("Console · {p0}", p0=self.unread))
 
     def console_visibility(self, visible):
-        if visible and hasattr(self, "console_button"):
-            self.unread = 0
-            self.console_button.setText(tr("Console"))
+        if visible:
+            QTimer.singleShot(0, self, self._clear_console_unread_if_visible)
         if visible and not self._console_sizing:
             self._queue_console_size()
+
+    def _clear_console_unread_if_visible(self):
+        if (
+            hasattr(self, "console_button")
+            and not self.console_dock.visibleRegion().isEmpty()
+        ):
+            self.unread = 0
+            self.console_button.setText(tr("Console"))
 
     def _queue_console_size(self):
         if not self._console_size_pending:
@@ -1933,7 +1949,7 @@ class Studio(QMainWindow):
         self.copy_error.show()
         self.statusBar().showMessage(message.splitlines()[0] if message else "", 15000)
         self.append_output(message + "\n")
-        self.console_dock.show()
+        self.show_console()
         self.controls.armed.setChecked(False)
 
     def hub_error(self, message):
@@ -2171,7 +2187,7 @@ class Studio(QMainWindow):
             self.append_output(f"{line}:{column}: {diagnostic.message}\n")
         if not diagnostics:
             self.append_output(tr("No unknown names found.\n"))
-        self.console_dock.show()
+        self.show_console()
 
     def show_find(self):
         if self.pages.currentIndex() == 2:
@@ -2562,14 +2578,14 @@ class Studio(QMainWindow):
             self.documents.widget(i).session.project.path: self.documents.widget(i).text
             for i in range(self.documents.count())
         }
-        self.console_dock.show()
+        self.show_console()
         robot = self._robot()
         transfer = robot.run_file if run else robot.upload_file
         transfer(self.session.project.path, sources)
 
     def run_stored_hub(self):
         self.controls.armed.setChecked(False)
-        self.console_dock.show()
+        self.show_console()
         self._robot().run_stored()
 
     def show_firmware(self):
