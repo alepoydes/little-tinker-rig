@@ -520,9 +520,41 @@ def test_definition_search_reports_misses_and_restores_tree_after_escape(
         page.close()
 
 
-def test_narrow_definition_editor_keeps_python_readable_with_console(
-    tmp_path, qt_app
-):
+def test_hidden_definition_opens_with_its_source_visible(tmp_path, qt_app):
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "main.py")
+    window.resize(930, 620)
+    window.show()
+    try:
+        page = window.block_editor
+        repeat = next(
+            snippet
+            for snippet in window.session.available_snippets
+            if snippet.identity == "python/basics/repeat"
+        )
+        page.open_definition(repeat)
+        assert not page.isVisible()
+        window.set_mode(3)
+        qt_app.processEvents()
+        assert page.selected_name == "repeat"
+        assert (
+            page.code.viewport()
+            .rect()
+            .intersects(page.code.cursorRect(page.code.textCursor()))
+        )
+
+        page.code.verticalScrollBar().setValue(0)
+        window.set_mode(0)
+        window.set_mode(3)
+        qt_app.processEvents()
+        assert page.code.verticalScrollBar().value() == 0
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
+def test_narrow_definition_editor_keeps_python_readable_with_console(tmp_path, qt_app):
     from PySide6.QtCore import Qt
     from PySide6.QtTest import QTest
 

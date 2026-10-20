@@ -67,6 +67,7 @@ class DefinitionCode(CodeEdit):
         self.tree = None
         self.snippets = ()
         self.syntax = None
+        self._reveal_when_shown = False
         self.setAcceptDrops(False)
         self.setPlainText(draft.source)
         self.setReadOnly(draft.read_only)
@@ -115,16 +116,18 @@ class DefinitionCode(CodeEdit):
                 if decorator(node) is None:
                     continue
                 for item in node.decorator_list:
-                    self.semantic.append((self.syntax.spans[item], "code_keyword", False))
-                self.semantic.append((name_span(self.syntax, node), "code_keyword", False))
+                    self.semantic.append(
+                        (self.syntax.spans[item], "code_keyword", False)
+                    )
+                self.semantic.append(
+                    (name_span(self.syntax, node), "code_keyword", False)
+                )
                 for arg in (
                     *node.args.posonlyargs,
                     *node.args.args,
                     *node.args.kwonlyargs,
                 ):
-                    self.semantic.append(
-                        (name_span(self.syntax, arg), "accent", False)
-                    )
+                    self.semantic.append((name_span(self.syntax, arg), "accent", False))
                     if arg.annotation:
                         self.semantic.append(
                             (self.syntax.spans[arg.annotation], "code_number", False)
@@ -159,8 +162,22 @@ class DefinitionCode(CodeEdit):
             qt_offset(self.toPlainText(), span.end), QTextCursor.MoveMode.KeepAnchor
         )
         self.setTextCursor(cursor)
-        self.centerCursor()
+        if self.isVisible() and self.viewport().height():
+            self._reveal_when_shown = False
+            self.centerCursor()
+        else:
+            self._reveal_when_shown = True
         self.setFocus()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if self._reveal_when_shown:
+            QTimer.singleShot(0, self, self._reveal_selected_definition)
+
+    def _reveal_selected_definition(self):
+        if self._reveal_when_shown and self.isVisible() and self.viewport().height():
+            self.centerCursor()
+            self._reveal_when_shown = False
 
 
 class BlockPreview(SourceView):
@@ -278,17 +295,11 @@ class BlockEditor(QWidget):
         self.version_button = QPushButton(N_("Start next version…"))
         self.version_button.clicked.connect(lambda: self.attempt(self.start_version))
         layout.addWidget(self.version_button)
-        self.copy_button = tool_button(
-            N_("Copy to my collection"), "duplicate"
-        )
+        self.copy_button = tool_button(N_("Copy to my collection"), "duplicate")
         self.copy_button.clicked.connect(lambda: self.attempt(self.copy_block))
-        self.save_button = tool_button(
-            N_("Save and apply"), "document-save"
-        )
+        self.save_button = tool_button(N_("Save and apply"), "document-save")
         self.save_button.clicked.connect(lambda: self.attempt(self.save))
-        self.reopen_button = tool_button(
-            N_("Reopen saved"), "edit-redo"
-        )
+        self.reopen_button = tool_button(N_("Reopen saved"), "edit-redo")
         self.reopen_button.setToolTip(
             N_("Discard this module draft and reload its saved definition")
         )
@@ -357,23 +368,17 @@ class BlockEditor(QWidget):
         self.preview_more = QLabel()
         self.preview_more.setProperty("translationSources", {})
         self.preview_more.setFixedHeight(self.fontMetrics().height())
-        self.expand = tool_button(
-            N_("Expand preview"), "expand-all"
-        )
+        self.expand = tool_button(N_("Expand preview"), "expand-all")
         self.expand.setCheckable(True)
         self.expand.toggled.connect(self.resize_preview)
-        self.tests = tool_button(
-            N_("Test values"), "test-values"
-        )
+        self.tests = tool_button(N_("Test values"), "test-values")
         self.tests.setCheckable(True)
         self.test_panel = QScrollArea()
         self.test_panel.setWidgetResizable(True)
         self.test_panel.setMaximumHeight(160)
         self.test_panel.hide()
         self.tests.toggled.connect(self.test_panel.setVisible)
-        self.reset_tests = tool_button(
-            N_("Reset test values"), "edit-redo"
-        )
+        self.reset_tests = tool_button(N_("Reset test values"), "edit-redo")
         self.reset_tests.clicked.connect(self.reset_values)
         self.test_fields = {}
         top = QWidget()
@@ -439,9 +444,7 @@ class BlockEditor(QWidget):
         self.apply_theme()
 
     def apply_theme(self):
-        self.new_button.setIcon(
-            svg_icon("document-new", tint=colors()["accent_text"])
-        )
+        self.new_button.setIcon(svg_icon("document-new", tint=colors()["accent_text"]))
         self.catalog_button.setIcon(svg_icon("catalog"))
         self.browser_button.setIcon(svg_icon("search"))
         self.preview.apply_theme()
@@ -1138,9 +1141,7 @@ class BlockEditor(QWidget):
 
     def refresh_browser_button(self):
         label = (
-            tr("Hide definitions")
-            if self._browser_visible
-            else tr("Show definitions")
+            tr("Hide definitions") if self._browser_visible else tr("Show definitions")
         )
         self.browser_button.setToolTip(label)
         self.browser_button.setAccessibleName(label)

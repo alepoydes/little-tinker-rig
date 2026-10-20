@@ -11,6 +11,8 @@ parses them; it never executes their defaults, imports, or bodies.
 ## Inspect and create
 
 Collections, modules and blocks appear on the left. Search includes descriptions.
+Selecting a block reveals its function in the Python source, including when the
+editor was hidden. Returning to the editor preserves a later manual scroll.
 Screen readers identify the search, group, starter type, preview view and block
 metadata selectors by their localized names.
 If nothing matches, the editor says so without moving the Python cursor. Clear the
