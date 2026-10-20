@@ -42,6 +42,9 @@ details if one is already connected; they never disconnect a hub.
 Use its collapse icon or **View → Task panel** to hide it. A progress control
 such as **Lesson · 1/6 · 0 done** beside the hub connection opens it again. On narrow
 windows the panel opens over the workspace, so it does not shrink the editor.
+In Program, the block catalog temporarily hides while the task panel is open,
+leaving the code readable. Collapse the panel or click outside it to bring the
+catalog back.
 In Help, the page list temporarily hides and the instructions fit beside the
 open task panel; closing the panel restores the page list.
 Escape, a click outside it, or following a destination link hides it temporarily;

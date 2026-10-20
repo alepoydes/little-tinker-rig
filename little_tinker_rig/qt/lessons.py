@@ -910,6 +910,7 @@ class Lessons(QObject):
             self._dock_active = visible
         finally:
             self._updating_panel = False
+        self.window.sync_catalog_visibility()
         self._sync_help_clearance()
         self._sync_panel_toggle()
         QTimer.singleShot(0, self, self._sync_panel_toggle)

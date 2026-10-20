@@ -1719,6 +1719,19 @@ class Studio(QMainWindow):
             cell.source is view and not cell.code_active for cell in self.scratch.cells
         )
 
+    def sync_catalog_visibility(self):
+        page = self.editing_page
+        if page is None:
+            return
+        task_overlay = (
+            hasattr(self, "lessons") and self.lessons.overlay.isVisible()
+        )
+        visible = not page.code_active and not task_overlay
+        was_visible = self.library_pane.isVisible()
+        self.library_pane.setVisible(visible)
+        if visible and not was_visible:
+            self._schedule_catalog_width()
+
     def refresh_status(self):
         if not hasattr(self, "undo_action"):
             return
@@ -1731,10 +1744,7 @@ class Studio(QMainWindow):
                 self.clear_input_search()
         page = self.editing_page
         if page is not None:
-            was_visible = self.library_pane.isVisible()
-            self.library_pane.setVisible(not page.code_active)
-            if not was_visible and self.library_pane.isVisible():
-                self._schedule_catalog_width()
+            self.sync_catalog_visibility()
         session = self.editing_session
         match = session.selected_match()
         selection = (

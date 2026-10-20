@@ -722,6 +722,59 @@ def test_compact_tasks_keep_lesson_instructions_readable(tmp_path, qt_app):
         window.deleteLater()
 
 
+def test_compact_task_overlay_leaves_program_editable(tmp_path, qt_app):
+    from pathlib import Path
+
+    from PySide6.QtCore import QPoint, Qt
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "plain.py")
+    window.confirm_close = lambda *_: True
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.show()
+    try:
+        window.lessons.open(Path("lessons/first_python"))
+        window.set_mode(0)
+        window.lessons.set_panel_expanded(True)
+        QTest.qWait(90)
+
+        overlay = window.lessons.overlay
+        assert overlay.isVisible()
+        assert not window.library_pane.isVisible()
+        editor_left = window.source.viewport().mapTo(
+            window.workspace, window.source.viewport().rect().topLeft()
+        ).x()
+        assert overlay.x() - editor_left >= 300
+
+        QTest.mouseClick(
+            window.source.viewport(), Qt.MouseButton.LeftButton, pos=QPoint(20, 200)
+        )
+        QTest.qWait(30)
+        assert not overlay.isVisible()
+        assert window.library_pane.isVisible()
+
+        window.lessons.set_panel_expanded(True)
+        QTest.qWait(30)
+        assert not window.library_pane.isVisible()
+        window.lessons.set_panel_expanded(False)
+        QTest.qWait(30)
+        assert window.library_pane.isVisible()
+        assert window.source.viewport().width() >= 300
+
+        window.change_editor(1)
+        window.lessons.set_panel_expanded(True)
+        window.lessons.set_panel_expanded(False)
+        assert not window.library_pane.isVisible()
+        window.change_editor(0)
+        assert window.library_pane.isVisible()
+    finally:
+        window.close()
+        window.deleteLater()
+
+
 def test_compact_lesson_help_shows_first_task_with_console_open(tmp_path, qt_app):
     from pathlib import Path
 
