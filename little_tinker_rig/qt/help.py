@@ -154,9 +154,7 @@ class HelpBrowser(QTextBrowser):
         badge.setName(url.toString())
         badge.setWidth(26)
         badge.setHeight(26)
-        badge.setVerticalAlignment(
-            QTextCharFormat.VerticalAlignment.AlignMiddle
-        )
+        badge.setVerticalAlignment(QTextCharFormat.VerticalAlignment.AlignMiddle)
         badge.setToolTip(str(number))
         if href:
             badge.setAnchor(True)
@@ -525,11 +523,7 @@ class HelpPage(QWidget):
         ]
         for labels in (
             {label for target, label in links if target == name},
-            {
-                label
-                for target, label in links
-                if target.partition("#")[0] == logical
-            },
+            {label for target, label in links if target.partition("#")[0] == logical},
         ):
             if len(labels) == 1:
                 return labels.pop()
@@ -598,9 +592,7 @@ class HelpPage(QWidget):
         except (OSError, ValueError):
             return None
         _, _, translated_anchor = target.partition("#")
-        return translated_page + (
-            "#" + translated_anchor if translated_anchor else ""
-        )
+        return translated_page + ("#" + translated_anchor if translated_anchor else "")
 
     def retranslate(self):
         current, history, recent = self.current, self.history, self.recent_pages
@@ -699,22 +691,16 @@ class HelpPage(QWidget):
         developers.setExpanded(False)
         self.tree.blockSignals(False)
         mapped_history = [
-            self._translated_lesson_key(key, old_names, old_language)
-            for key in history
+            self._translated_lesson_key(key, old_names, old_language) for key in history
         ]
         mapped_recent = [
-            self._translated_lesson_key(key, old_names, old_language)
-            for key in recent
+            self._translated_lesson_key(key, old_names, old_language) for key in recent
         ]
         self.history = [
-            key.partition("#")[0] if key.startswith("lesson/") else key
-            for key in mapped_history
-            if key and key.partition("#")[0] in self.pages
+            key for key in mapped_history if key and key.partition("#")[0] in self.pages
         ]
         self.recent_pages = [
-            key.partition("#")[0] if key.startswith("lesson/") else key
-            for key in mapped_recent
-            if key and key.partition("#")[0] in self.pages
+            key for key in mapped_recent if key and key.partition("#")[0] in self.pages
         ]
         self.back_button.setToolTip(tr("Back"))
         self.back_button.setAccessibleName(tr("Back"))

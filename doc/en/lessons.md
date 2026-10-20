@@ -39,9 +39,9 @@ until you choose a result with Next or Previous. Reading or scrolling a section
 does not change the selected task or its recommended blocks.
 Changing the interface language keeps the same task section open, including when
 the translated instruction uses a different section address.
-Task-linked Markdown material follows its translated link, and Back and Recent
-pages keep the material available after a language change. Recent pages uses
-the translated task-link label for the material instead of its filename.
+Task-linked Markdown material follows its translated link. Back and Recent pages
+return to the matching section after a language change. Recent pages names the
+material by its translated task-link label instead of its filename.
 **Program**, **Assembly**,
 **Controls**, and links to **Hub and devices** open the relevant file or panel. **Next hint**
 reveals help on that card. The panel is available in every workspace.

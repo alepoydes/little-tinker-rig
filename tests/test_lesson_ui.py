@@ -1120,10 +1120,10 @@ def test_language_switch_keeps_localized_task_material_in_help_history(
         assert page.current == "lesson/resource/extra_ru.md#подробности"
         assert page.page_paths["lesson/resource/extra_ru.md"] == root / "extra_ru.md"
         assert "Русские подробности." in page.browser.toPlainText()
-        assert page.history[-1] == "lesson/instructions"
+        assert page.history[-1] == "lesson/instructions#первый"
 
         page.back()
-        assert page.current == "lesson/instructions"
+        assert page.current == "lesson/instructions#первый"
         resource_action = next(
             action
             for action in page.recent_menu.actions()
@@ -1132,6 +1132,24 @@ def test_language_switch_keeps_localized_task_material_in_help_history(
         assert resource_action.text() == "Обучение · Подробнее"
         resource_action.trigger()
         assert page.current == "lesson/resource/extra_ru.md#подробности"
+        instruction_action = next(
+            action
+            for action in page.recent_menu.actions()
+            if action.data() == "lesson/instructions#первый"
+        )
+        instruction_action.trigger()
+        assert page.current == "lesson/instructions#первый"
+
+        set_language("en")
+        page.retranslate()
+        assert page.current == "lesson/instructions#first"
+        english_resource = next(
+            action
+            for action in page.recent_menu.actions()
+            if action.data() == "lesson/resource/extra_en.md#details"
+        )
+        english_resource.trigger()
+        assert page.current == "lesson/resource/extra_en.md#details"
     finally:
         set_language(previous_language)
         page.deleteLater()
