@@ -156,6 +156,35 @@ def test_home_first_project_resumes_one_attempt(tmp_path, qt_app):
         close(window)
 
 
+def test_home_project_card_body_and_button_each_open_once(qt_app, monkeypatch):
+    window = Studio()
+    window.show()
+    opened = []
+    original_open = window.lessons.open
+
+    def record_open(*args, **kwargs):
+        opened.append(args[0])
+        return original_open(*args, **kwargs)
+
+    monkeypatch.setattr(window.lessons, "open", record_open)
+    try:
+        card = window.home_page.project_layout.itemAt(0).widget()
+        title = card.findChild(QLabel, "homeCardTitle")
+        assert card.cursor().shape() == Qt.CursorShape.PointingHandCursor
+        QTest.mouseClick(title, Qt.MouseButton.LeftButton)
+        assert window.document_page.lesson_project is not None
+        assert len(opened) == 1
+        attempt = window.document_page.lesson_project.root
+        window.set_mode(5)
+        card = window.home_page.project_layout.itemAt(0).widget()
+        button = card.findChild(QPushButton, "homeCardAction")
+        QTest.mouseClick(button, Qt.MouseButton.LeftButton)
+        assert len(opened) == 2
+        assert window.document_page.lesson_project.root == attempt
+    finally:
+        close(window)
+
+
 def test_first_python_template_fits_compact_block_and_python_views(tmp_path, qt_app):
     window = Studio(tmp_path / "plain.py")
     window.confirm_close = lambda *_: True

@@ -22,7 +22,8 @@ card or its Continue button to see the full path. A saved lesson attempt keeps
 its archive path and checks for external changes when saved again. The equipment
 filter changes the displayed
 starter projects and remembers the choice. **All lessons…** and **All examples…**
-open the complete bundled catalogs. Run and
+open the complete bundled catalogs. Click anywhere on a project card to open it;
+its button is also available to keyboard users. Run and
 Upload need no filename; explicit Save asks for one. Cancelling Save leaves the
 document open. Saving while closing uses the same rule. Example attempts autosave
 separately, as described below.

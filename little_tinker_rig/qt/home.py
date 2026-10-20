@@ -5,7 +5,7 @@ from pathlib import Path
 from time import time_ns
 from zipfile import BadZipFile, ZipFile
 
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtWidgets import (
     QComboBox,
     QFrame,
@@ -25,6 +25,31 @@ from little_tinker_rig.examples import examples_directory
 from little_tinker_rig.i18n import language, tr
 
 from .theme import colors, svg_pixmap
+
+
+class HomeCard(QFrame):
+    activated = Signal()
+
+    def __init__(self):
+        super().__init__()
+        self._pressed = False
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._pressed = True
+            event.accept()
+        else:
+            super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            if self._pressed and self.rect().contains(event.position().toPoint()):
+                self.activated.emit()
+            self._pressed = False
+            event.accept()
+        else:
+            super().mouseReleaseEvent(event)
 
 
 class HomePage(QScrollArea):
@@ -165,8 +190,9 @@ class HomePage(QScrollArea):
     def _card(
         self, title, description, action, callback, *, icon=None, detail=None, tip=None
     ):
-        card = QFrame()
+        card = HomeCard()
         card.setObjectName("homeCard")
+        card.activated.connect(lambda: self.window.perform(callback))
         if tip:
             card.setToolTip(tip)
         card.setMinimumHeight(120 if icon else 72)
@@ -199,6 +225,7 @@ class HomePage(QScrollArea):
         box.addLayout(words, 1)
         button = QPushButton(action)
         button.setObjectName("homeCardAction")
+        button.setCursor(Qt.CursorShape.PointingHandCursor)
         button.setAccessibleName(f"{action}: {title}")
         if tip:
             button.setToolTip(tip)
@@ -445,6 +472,7 @@ class HomePage(QScrollArea):
             f"#homeSection {{ color: {c['text']}; font-size: 18px; font-weight: 750; }}"
             f"#homeIntro, #homeCardDescription, #homeCardDetail {{ color: {c['muted']}; }}"
             f"#homeCard {{ background: {c['panel']}; border: 1px solid {c['border']}; border-radius: 13px; }}"
+            f"#homeCard:hover {{ border-color: {c['accent']}; }}"
             f"#homeCardTitle {{ color: {c['text']}; font-size: 15px; font-weight: 700; }}"
             f"#homePicture {{ background: {c['selected']}; border-radius: 12px; }}"
             f"#homePrimary {{ background: {c['accent']}; color: {c['accent_text']}; border: 0; border-radius: 9px; padding: 7px 16px; font-weight: 700; }}"
