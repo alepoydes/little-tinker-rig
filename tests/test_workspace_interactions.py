@@ -235,11 +235,13 @@ def test_closing_window_cancels_queued_catalog_layout(tmp_path, qt_app):
     window._fit_catalog_width()
 
 
-def test_compact_control_keeps_motor_assignments_above_controller(windows):
+def test_compact_control_keeps_sticks_visible_and_opens_motor_assignments(windows):
     from little_tinker_rig.pybricks.devices import HubInfo
 
     window = windows()
-    window.resize(930, 620)
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.change_language("ru")
     window.set_mode(1)
     window.device_dock.show()
     window.update_hub(
@@ -257,15 +259,24 @@ def test_compact_control_keeps_motor_assignments_above_controller(windows):
     assert window.pages.height() >= 300
     table = window.controls.table
     assert table.isVisible()
-    table_top = table.mapToGlobal(table.rect().topLeft()).y()
     controller = window.controls.controller
-    controller_top = controller.mapToGlobal(controller.rect().topLeft()).y()
-    assert table_top < controller_top
+    assert controller.visibleRegion().boundingRect().height() == controller.height()
+    assert controller.mapToGlobal(controller.rect().topLeft()).y() < (
+        table.mapToGlobal(table.rect().topLeft()).y()
+    )
+    assert window.controls.assignments.isVisible()
+    assert window.controls.assignments.text() == "Настроить моторы ↓"
     widths = [table.columnWidth(column) for column in range(6)]
     assert max(widths) - min(widths) <= 2
     assert table.horizontalScrollBar().maximum() == 0
     outer = window.controls.parentWidget().parentWidget()
     assert outer.horizontalScrollBar().maximum() == 0
+    assert outer.verticalScrollBar().value() == 0
+
+    window.controls.assignments.click()
+    QTest.qWait(50)
+    assert outer.verticalScrollBar().value() > 0
+    assert table.visibleRegion().boundingRect().height() == table.height()
 
     window.resize(1380, 880)
     QTest.qWait(90)
@@ -274,6 +285,8 @@ def test_compact_control_keeps_motor_assignments_above_controller(windows):
     )
     widths = [table.columnWidth(column) for column in range(6)]
     assert max(widths) - min(widths) <= 2
+    window.controls.target.setCurrentIndex(1)
+    assert not window.controls.assignments.isVisible()
 
 
 def test_narrow_toolbar_and_device_panel_keep_program_available(windows):

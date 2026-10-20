@@ -71,10 +71,11 @@ percentages; ultrasonic distance is in millimeters.
 
 ## Manual control
 
-Select **Control → Assign motors to sticks and triggers**. Start manual control,
-assign a motor to an axis or trigger, choose its mode/scale, then enable commands.
-This mode shows the two sticks and triggers; the assignment table lists detected
-motors. **Send controller input to my program** shows the complete controller,
+Select **Control → Assign motors to sticks and triggers** and start manual control.
+With a detected motor, **Configure motors ↓** jumps to its assignment table below
+the sticks and triggers. Assign an axis or trigger, choose its mode/scale, scroll
+back up, then enable commands.
+**Send controller input to my program** shows the complete controller,
 including buttons. Both layouts fit the available width.
 
 Rotation scale is degrees per second at full input. Servo scale is an angle added

@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QHeaderView,
     QLabel,
     QPushButton,
+    QScrollArea,
     QSlider,
     QTableWidget,
     QTableWidgetItem,
@@ -293,6 +294,8 @@ class ControlsPage(QWidget):
         self.start.clicked.connect(self.monitor_requested)
         self.armed = QCheckBox(N_("Enable commands"))
         self.armed.toggled.connect(self._armed)
+        self.assignments = QPushButton(N_("Configure motors ↓"))
+        self.assignments.clicked.connect(self.show_motor_assignments)
         self.physical = QCheckBox(N_("Physical controller"))
         self.physical.setToolTip(N_("Physical Xbox / SDL controller"))
         self.physical.toggled.connect(self._physical)
@@ -367,6 +370,7 @@ class ControlsPage(QWidget):
         row = QHBoxLayout()
         row.addWidget(self.start)
         row.addWidget(self.armed)
+        row.addWidget(self.assignments)
         row.addStretch()
         row.addWidget(self.physical)
         layout.addLayout(row)
@@ -382,9 +386,9 @@ class ControlsPage(QWidget):
             )
         )
         self.assignment_hint.setWordWrap(True)
+        layout.addLayout(body)
         layout.addWidget(self.assignment_hint)
         layout.addWidget(self.table)
-        layout.addLayout(body)
         layout.addWidget(self.state_label)
         layout.addStretch()
         self.timer = QTimer(self)
@@ -427,6 +431,14 @@ class ControlsPage(QWidget):
             and self.info.ports.get(port, {}).get("type") == "motor"
         )
 
+    def show_motor_assignments(self):
+        parent = self.parentWidget()
+        while parent is not None and not isinstance(parent, QScrollArea):
+            parent = parent.parentWidget()
+        if parent is not None:
+            parent.ensureWidgetVisible(self.table, 12, 12)
+            self.table.setFocus()
+
     def update_info(self, info):
         self.info = info
         program = self.target.currentData() == "program"
@@ -465,6 +477,7 @@ class ControlsPage(QWidget):
         visible_rows = sum(not self.table.isRowHidden(row) for row in range(6))
         self.table.setVisible(bool(visible_rows) and not program)
         self.assignment_hint.setVisible(bool(visible_rows) and not program)
+        self.assignments.setVisible(bool(visible_rows) and not program)
         self.table.setFixedHeight(
             self.table.horizontalHeader().height() + visible_rows * 30 + 4
         )

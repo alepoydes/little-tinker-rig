@@ -1165,6 +1165,10 @@ msgstr ""
 msgid "Configure app processor"
 msgstr "Настроить обработчик приложения"
 
+#: little_tinker_rig/qt/controls.py:297
+msgid "Configure motors ↓"
+msgstr "Настроить моторы ↓"
+
 #: little_tinker_rig/snippets/pybricks/drive.py:200
 msgid ""
 "Configure finite robot movements.\n"
