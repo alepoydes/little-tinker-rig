@@ -55,8 +55,10 @@ leaving the code readable. Collapse the panel or click outside it to bring the
 catalog back.
 In Help, the page list temporarily hides and the instructions fit beside the
 open task panel; closing the panel restores the page list.
-Escape, a click outside it, or following a destination link hides it temporarily;
-resizing to a wide window restores the saved expanded preference. Scratch and
+Escape, a click outside it, or following a destination link hides it temporarily.
+Switching to Controls, Block Editor or Assembly also hides it on a narrow window
+so their tools have room. The progress control reopens it in any of those views.
+Resizing to a wide window restores the saved expanded preference. Scratch and
 the task panel share the right-hand dock area; the Console can stay open below
 the editor.
 

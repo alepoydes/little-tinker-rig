@@ -1681,6 +1681,12 @@ class Studio(QMainWindow):
             self.lessons.update_card()
             if index == 5 or was_home:
                 self.lessons.update_panel_visibility()
+            elif (
+                previous_mode != index
+                and index in (1, 3, 4)
+                and self.lessons.overlay.isVisible()
+            ):
+                self.lessons._collapse_for_destination()
         self.scratch_dock.setVisible(index == 0 and self.scratch_visible)
         self.scratch_dock.toggleViewAction().setEnabled(index == 0)
         self.dock_view_actions[self.scratch_dock].setEnabled(index == 0)

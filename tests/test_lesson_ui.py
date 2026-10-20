@@ -777,6 +777,39 @@ def test_compact_task_overlay_leaves_program_editable(tmp_path, qt_app):
         window.deleteLater()
 
 
+def test_compact_task_overlay_releases_control_assembly_and_block_editor(
+    tmp_path, qt_app
+):
+    from pathlib import Path
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "plain.py")
+    window.resize(930, 620)
+    window.show()
+    try:
+        window.lessons.open(Path("lessons/first_python"))
+        for mode in (3, 1, 4):
+            window.lessons.set_panel_expanded(True)
+            qt_app.processEvents()
+            assert window.lessons.overlay.isVisible()
+            window.set_mode(mode)
+            qt_app.processEvents()
+            assert not window.lessons.overlay.isVisible()
+            assert window.lessons.progress_button.isVisible()
+            if mode == 3:
+                assert window.block_editor.code.viewport().width() >= 450
+
+        window.lessons.progress_button.click()
+        qt_app.processEvents()
+        assert window.lessons.overlay.isVisible()
+        window.set_mode(4)
+        assert window.lessons.overlay.isVisible()
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
 def test_compact_lesson_help_shows_first_task_with_console_open(tmp_path, qt_app):
     from pathlib import Path
 
