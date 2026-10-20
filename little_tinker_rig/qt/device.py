@@ -26,7 +26,7 @@ from .theme import colors, svg_pixmap
 
 
 class ConnectDialog(QDialog):
-    def __init__(self, parent):
+    def __init__(self, parent, *, preferred_transport=None):
         super().__init__(parent)
         self.setWindowTitle(N_("Connect hub"))
         self.resize(470, 285)
@@ -84,7 +84,12 @@ class ConnectDialog(QDialog):
                 self.transport.currentData() == "virtual"
             )
         )
-        self.transport.setCurrentIndex(self.transport.findData("ble"))
+        transport = (
+            preferred_transport
+            if preferred_transport in {"virtual", "ble", "usb"}
+            else "ble"
+        )
+        self.transport.setCurrentIndex(self.transport.findData(transport))
         form.addRow(N_("Connection"), self.transport)
         form.addRow(N_("Hub name / USB port"), self.name)
         form.addRow(N_("Virtual hub model"), self.model)

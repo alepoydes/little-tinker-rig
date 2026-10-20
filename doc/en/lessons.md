@@ -37,6 +37,8 @@ does not change the selected task or its recommended blocks.
 **Program**, **Assembly**,
 **Controls**, and links to **Hub and devices** open the relevant file or panel. **Next hint**
 reveals help on that card. The panel is available in every workspace.
+Lesson connection links open the connection choices, or show the current hub
+details if one is already connected; they never disconnect a hub.
 Use its collapse icon or **View → Task panel** to hide it. A progress control
 such as **Lesson · 1/6 · 0 done** beside the hub connection opens it again. On narrow
 windows the panel opens over the workspace, so it does not shrink the editor.
@@ -283,8 +285,12 @@ or differ only in letter case.
 A stage's optional `program` selects one of these Python files. Markdown links
 such as `[Open robot](program:robot.py)` open its editable copy without resetting
 it. `assembly:`, `devices:`, and `connect:` open the assembly workspace, the
-Hub and devices panel, and the connection dialog respectively. Other files,
-such as licenses, may also be copied through `programs`.
+Hub and devices panel, and the connection dialog respectively. Use
+`connect:virtual` to preselect a virtual hub. A typed `connect` task link may
+set `"target": "virtual"`, `"ble"`, or `"usb"`; without a target it uses the
+normal connection dialog. These links show the current hub details when a hub
+is already connected. Other files, such as licenses, may also be copied
+through `programs`.
 Local documentation links stay inside the lesson; HTTP(S) links open the browser.
 
 Optional `scratch_seeds` maps a student Python filename to a list of lesson

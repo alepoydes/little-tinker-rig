@@ -54,10 +54,11 @@ If an input is invalid, correct it or press **Escape** to cancel that edit.
 
 ## 4. Run and inspect the result
 
-Select **Run and inspect** in the task panel. Use its **Connect virtual hub**
-link, or **Connect hub** in the top bar. Choose **Virtual hub**, then
-**Robot Inventor / SPIKE Prime**, and connect. This is an execution target for
-the lesson; it needs no robot build. Press **Run** or **F5**, then open **Console**
+Select **Run and inspect** in the task panel. Use its **Choose virtual hub…**
+link to open the connection dialog with **Virtual hub** and
+**Robot Inventor / SPIKE Prime** already selected, then press **Connect**.
+You can also use **Connect hub** in the top bar and choose those options yourself.
+This execution target needs no robot build. Press **Run** or **F5**, then open **Console**
 from the bottom bar. Your message should appear five times. Console may also
 show connection or run status messages. Mark the third task complete after you
 have checked the output. **Stop / F6** interrupts a running program.

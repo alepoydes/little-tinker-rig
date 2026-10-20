@@ -383,7 +383,7 @@ class Lessons(QObject):
             self.window.device_dock.show()
             self.window.device_dock.raise_()
         elif scheme == "connect":
-            self.window.connect_hub()
+            self.window.open_hub_connection(url.path() or None)
         elif scheme == "scratch":
             name = (
                 url.path()
@@ -431,7 +431,7 @@ class Lessons(QObject):
             self.window.device_dock.show()
             self.window.device_dock.raise_()
         elif kind == "connect":
-            self.window.connect_hub()
+            self.window.open_hub_connection(target)
 
     def choose(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -1053,7 +1053,7 @@ class Lessons(QObject):
             self._collapse_for_destination()
         elif scheme == "connect":
             self._collapse_for_destination()
-            self.window.connect_hub()
+            self.window.open_hub_connection(url.path() or None)
         elif scheme == "scratch":
             target = (
                 url.path()

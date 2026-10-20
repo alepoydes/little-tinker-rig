@@ -437,6 +437,9 @@ class Lesson:
                         or not target.endswith(".py")
                     ):
                         raise ValueError("Task link must name a student Python file")
+                elif kind == "connect":
+                    if target is not None and target not in ("virtual", "ble", "usb"):
+                        raise ValueError("Unknown preferred hub transport")
                 elif target is not None:
                     raise ValueError("Workspace task links have no target")
             steps = stage.get("assembly")

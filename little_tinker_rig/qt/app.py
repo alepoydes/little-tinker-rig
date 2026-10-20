@@ -2517,7 +2517,14 @@ class Studio(QMainWindow):
         if self.hub_info.connected or self.hub_info.connection_action == "connecting":
             self.disconnect_hub()
             return
-        dialog = ConnectDialog(self)
+        self.open_hub_connection()
+
+    def open_hub_connection(self, preferred_transport=None):
+        if self.hub_info.connected or self.hub_info.connection_action:
+            self.device_dock.show()
+            self.device_dock.raise_()
+            return
+        dialog = ConnectDialog(self, preferred_transport=preferred_transport)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self._robot().connect_hub(
                 dialog.name.text() or None,

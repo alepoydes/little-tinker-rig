@@ -24,7 +24,7 @@ Try moving the print block after the loop to compare the result. **Undo** restor
 
 ## Run and inspect
 
-Choose [Connect hub](connect:), select **Virtual hub**, choose **Robot Inventor / SPIKE Prime**, and connect. A physical robot is not needed. Press **Run** in the top bar, then open **Console** at the bottom. The message should appear as many times as you predicted.
+Click [Choose virtual hub…](connect:virtual). The connection dialog opens with **Virtual hub** and **Robot Inventor / SPIKE Prime** selected; press **Connect**. A physical robot is not needed. If a hub is already connected, the link shows its details instead of disconnecting it. Press **Run** in the top bar, then open **Console** at the bottom. The message should appear as many times as you predicted.
 
 If you see fewer lines, check the loop count and indentation. If the Console is closed, open it; your program can still run. Change the message once more and run again. Mark the task complete after the output matches your prediction.
 

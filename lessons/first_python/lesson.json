@@ -41,7 +41,7 @@
       "program": "main.py",
       "points": 1,
       "links": [
-        {"kind": "connect", "label": {"en": "Connect virtual hub", "ru": "Подключить виртуальный хаб"}}
+        {"kind": "connect", "target": "virtual", "label": {"en": "Choose virtual hub…", "ru": "Выбрать виртуальный хаб…"}}
       ]
     }
   ]

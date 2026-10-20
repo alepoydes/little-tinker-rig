@@ -96,6 +96,20 @@ def test_lesson_rejects_boolean_format(lesson):
         Lesson.load(lesson)
 
 
+def test_connect_task_link_accepts_only_known_hub_transports(lesson):
+    path = lesson / "lesson.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    link = {"kind": "connect", "label": "Choose hub", "target": "virtual"}
+    data["stages"][0]["links"] = [link]
+    path.write_text(json.dumps(data), encoding="utf-8")
+    assert Lesson.load(lesson).stages[0]["links"][0]["target"] == "virtual"
+
+    link["target"] = "unknown"
+    path.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(ValueError, match="Unknown preferred hub transport"):
+        Lesson.load(lesson)
+
+
 def test_student_project_rejects_boolean_format(lesson):
     project = StudentProject.create(lesson)
     path = project.root / "project.json"

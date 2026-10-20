@@ -785,6 +785,70 @@ def test_help_destination_link_clears_compact_task_overlay(tmp_path, qt_app):
         window.deleteLater()
 
 
+def test_lesson_connect_link_keeps_an_existing_hub_connected(
+    tmp_path, qt_app, monkeypatch
+):
+    from pathlib import Path
+
+    from PySide6.QtCore import QUrl
+
+    from little_tinker_rig.pybricks.devices import HubInfo
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "plain.py")
+    window.confirm_close = lambda *_: True
+    window.show()
+    try:
+        window.lessons.open(Path("lessons/first_python"))
+        window.update_hub(HubInfo(connected=True, transport="virtual"))
+        disconnected = []
+        monkeypatch.setattr(window, "disconnect_hub", lambda: disconnected.append(True))
+
+        window.help_page.follow_link(QUrl("connect:"))
+        assert not disconnected
+        assert window.device_dock.isVisible()
+    finally:
+        window.close()
+        window.deleteLater()
+
+
+def test_first_lesson_connect_links_choose_virtual_hub(tmp_path, qt_app, monkeypatch):
+    from pathlib import Path
+
+    from PySide6.QtCore import QUrl
+    from PySide6.QtWidgets import QDialog
+
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.device import ConnectDialog
+
+    choices = []
+
+    def reject_after_inspection(dialog):
+        choices.append((dialog.transport.currentData(), dialog.model.currentData()))
+        return QDialog.DialogCode.Rejected
+
+    monkeypatch.setattr(ConnectDialog, "exec", reject_after_inspection)
+    window = Studio(tmp_path / "plain.py")
+    window.confirm_close = lambda *_: True
+    window.show()
+    try:
+        window.lessons.open(Path("lessons/first_python"))
+        run_link = window.lessons.current.lesson.stages[-1]["links"][0]
+        assert run_link["target"] == "virtual"
+        window.lessons.select_stage(2)
+        body = window.lessons.cards["run"]["body"]
+        window.lessons.follow_task_anchor("run", QUrl("task:extra/0"), body)
+        window.help_page.follow_link(QUrl("connect:virtual"))
+        assert choices == [("virtual", "inventor"), ("virtual", "inventor")]
+
+        ordinary = ConnectDialog(window)
+        assert ordinary.transport.currentData() == "ble"
+        ordinary.close()
+    finally:
+        window.close()
+        window.deleteLater()
+
+
 def test_bundled_lesson_sections_share_one_help_document(tmp_path, qt_app):
     from pathlib import Path
 
