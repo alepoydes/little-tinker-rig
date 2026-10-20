@@ -65,7 +65,8 @@ On wide windows, **Hub and devices** and **Scratch** share the right dock as tab
 On narrower windows, Scratch moves below the workspace; on very narrow windows,
 Hub and devices joins the bottom tabs with Scratch and Console. Each panel can
 still be detached, resized or closed.
-**Open port monitor** replaces the user program with a small monitor; it reports
+**Open port monitor** brings Hub and devices to the front and replaces the user
+program with a small monitor; it reports
 motor angles/speeds and color, distance or force values. Real readings become
 stale when a user program replaces the monitor. Virtual telemetry continues during
 program execution. Its battery is a fixed 8 V. BOOST color/distance readings are

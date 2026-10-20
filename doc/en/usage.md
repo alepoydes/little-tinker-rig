@@ -114,6 +114,10 @@ maximization; drag it or a window edge to move or resize. F11 toggles full scree
 On very narrow windows, Hub and devices joins the bottom dock tabs so it does not
 squeeze the editor. The hub connection button becomes an icon with a tooltip;
 **F7** also opens the connection dialog when disconnected.
+The Console, Scratch, and Hub and devices commands in **View** select their panel
+even when another bottom tab is in front. A second selection hides the active panel.
+The dock context menu offers the same controls; **Task panel** appears there only
+while a lesson is open.
 
 The compact LittleTinker Rig header keeps File, Edit, View, and Hub menus visible,
 including in full screen. Use **View → Appearance → Light / Dark** to switch the

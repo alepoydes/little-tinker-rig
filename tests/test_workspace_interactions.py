@@ -399,6 +399,93 @@ def test_console_request_reveals_tab_behind_device_panel(windows):
     assert not window.console_dock.visibleRegion().isEmpty()
 
 
+def test_port_monitor_request_reveals_device_tab_behind_console(windows, monkeypatch):
+    window = windows()
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.set_mode(1)
+    window.show_console()
+    QTest.qWait(30)
+    assert not window.console_dock.visibleRegion().isEmpty()
+
+    calls = []
+    monkeypatch.setattr(
+        window, "_robot", lambda: SimpleNamespace(start_monitor=lambda: calls.append(1))
+    )
+    window.start_monitor()
+    QTest.qWait(30)
+    assert calls == [1]
+    assert not window.device_dock.visibleRegion().isEmpty()
+
+
+def test_view_menu_reveals_tabbed_panels_in_compact_window(windows):
+    window = windows()
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.set_mode(1)
+    window.set_mode(0)
+    QTest.qWait(30)
+
+    for dock in (window.console_dock, window.scratch_dock, window.device_dock):
+        action = next(
+            action
+            for action in window.view_menu.actions()
+            if action.text() == dock.windowTitle()
+        )
+        window.view_menu.aboutToShow.emit()
+        assert not action.isChecked()
+        action.trigger()
+        QTest.qWait(30)
+        assert not dock.visibleRegion().isEmpty()
+        window.view_menu.aboutToShow.emit()
+        assert action.isChecked()
+
+    window.dock_view_actions[window.device_dock].trigger()
+    QTest.qWait(30)
+    assert window.device_dock.visibleRegion().isEmpty()
+
+    window.change_language("ru")
+    for dock in (window.console_dock, window.scratch_dock, window.device_dock):
+        assert window.dock_view_actions[dock].text() == dock.windowTitle()
+    window.set_mode(2)
+    assert not window.dock_view_actions[window.scratch_dock].isEnabled()
+    window.set_mode(0)
+    assert window.dock_view_actions[window.scratch_dock].isEnabled()
+
+
+def test_dock_context_menu_selects_visible_tab_without_empty_task_panel(windows):
+    from pathlib import Path
+
+    window = windows()
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.set_mode(1)
+    window.set_mode(0)
+    popup = window.createPopupMenu()
+    try:
+        assert window.lessons.dock.toggleViewAction() not in popup.actions()
+        assert window.lessons.guidance not in popup.actions()
+        console_action = next(
+            action
+            for action in popup.actions()
+            if action.text() == window.console_dock.windowTitle()
+        )
+        assert console_action is window.dock_view_actions[window.console_dock]
+        console_action.trigger()
+        QTest.qWait(30)
+        assert not window.console_dock.visibleRegion().isEmpty()
+    finally:
+        popup.deleteLater()
+
+    window.lessons.open(Path("lessons/first_python"))
+    popup = window.createPopupMenu()
+    try:
+        assert window.lessons.guidance in popup.actions()
+        assert window.lessons.dock.toggleViewAction() not in popup.actions()
+    finally:
+        popup.deleteLater()
+
+
 def test_sequence_bar_keeps_program_source_clear_of_line_numbers(windows):
     from PySide6.QtCore import QPoint
 

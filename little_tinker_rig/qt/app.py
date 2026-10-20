@@ -484,6 +484,25 @@ class Studio(QMainWindow):
         self.addDockWidget(area, dock)
         return dock
 
+    def createPopupMenu(self):
+        menu = super().createPopupMenu()
+        if menu is None:
+            return None
+        if hasattr(self, "dock_view_actions"):
+            self.sync_dock_view_actions()
+            for dock, action in self.dock_view_actions.items():
+                original = dock.toggleViewAction()
+                if original in menu.actions():
+                    menu.insertAction(original, action)
+                    menu.removeAction(original)
+        if hasattr(self, "lessons"):
+            original = self.lessons.dock.toggleViewAction()
+            if original in menu.actions():
+                if self.lessons.guidance.isEnabled():
+                    menu.insertAction(original, self.lessons.guidance)
+                menu.removeAction(original)
+        return menu
+
     def toggle_dock(self, dock):
         if dock.isVisible() and not dock.visibleRegion().isEmpty():
             dock.hide()
@@ -501,6 +520,16 @@ class Studio(QMainWindow):
         self.toggle_dock(self.console_dock)
         self._clear_console_unread_if_visible()
         QTimer.singleShot(0, self, self._clear_console_unread_if_visible)
+
+    def toggle_view_dock(self, dock):
+        if dock is self.console_dock:
+            self.toggle_console()
+        else:
+            self.toggle_dock(dock)
+
+    def sync_dock_view_actions(self):
+        for dock, action in self.dock_view_actions.items():
+            action.setChecked(not dock.visibleRegion().isEmpty())
 
     def _menus(self):
         toolbar = self.addToolBar(N_("Program"))
@@ -715,9 +744,16 @@ class Studio(QMainWindow):
             group.addAction(action)
             languages.addAction(action)
             self.language_actions[code] = action
-        view.addAction(self.console_dock.toggleViewAction())
-        view.addAction(self.scratch_dock.toggleViewAction())
-        view.addAction(self.device_dock.toggleViewAction())
+        self.dock_view_actions = {}
+        for dock in (self.console_dock, self.scratch_dock, self.device_dock):
+            action = QAction(dock.windowTitle(), self)
+            action.setCheckable(True)
+            action.triggered.connect(
+                lambda checked=False, panel=dock: self.toggle_view_dock(panel)
+            )
+            view.addAction(action)
+            self.dock_view_actions[dock] = action
+        view.aboutToShow.connect(self.sync_dock_view_actions)
         self._action(
             view,
             N_("Full screen"),
@@ -1620,6 +1656,7 @@ class Studio(QMainWindow):
                 self.lessons.update_panel_visibility()
         self.scratch_dock.setVisible(index == 0 and self.scratch_visible)
         self.scratch_dock.toggleViewAction().setEnabled(index == 0)
+        self.dock_view_actions[self.scratch_dock].setEnabled(index == 0)
         self.scratch_button.setEnabled(index == 0)
         self._fit_device_layout()
         if index == 1:
@@ -2602,6 +2639,7 @@ class Studio(QMainWindow):
         self.controls.armed.setChecked(False)
         self._robot().start_monitor()
         self.device_dock.show()
+        self.device_dock.raise_()
 
     def disconnect_hub(self):
         self.controls.armed.setChecked(False)
