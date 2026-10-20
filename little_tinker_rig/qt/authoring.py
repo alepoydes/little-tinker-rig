@@ -394,7 +394,7 @@ class BlockEditor(QWidget):
         self.browser_button.setCheckable(True)
         self.browser_button.setChecked(True)
         self.browser_button.setProperty("translationSources", {})
-        self.browser_button.toggled.connect(self.set_browser_visible)
+        self.browser_button.toggled.connect(self.choose_browser_visible)
         row.addWidget(self.browser_button)
         row.addWidget(self.copy_button)
         row.addWidget(self.level)
@@ -418,6 +418,7 @@ class BlockEditor(QWidget):
         layout.addWidget(splitter)
         self._browser_compact = None
         self._browser_visible = True
+        self._browser_user_choice = None
         self.refresh_browser_button()
         self.update_status()
         self.apply_theme()
@@ -1091,7 +1092,11 @@ class BlockEditor(QWidget):
         compact = event.size().width() < 800
         if compact != self._browser_compact:
             self._browser_compact = compact
-            self.set_browser_visible(not compact)
+            self.set_browser_visible(
+                self._browser_user_choice
+                if self._browser_user_choice is not None
+                else not compact
+            )
         orientation = (
             Qt.Orientation.Horizontal
             if event.size().height() < 430
@@ -1100,6 +1105,10 @@ class BlockEditor(QWidget):
         if self.preview_splitter.orientation() != orientation:
             self.preview_splitter.setOrientation(orientation)
             self.resize_preview(self.expand.isChecked())
+
+    def choose_browser_visible(self, visible):
+        self._browser_user_choice = visible
+        self.set_browser_visible(visible)
 
     def set_browser_visible(self, visible):
         self._browser_visible = visible

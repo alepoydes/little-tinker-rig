@@ -17,7 +17,8 @@ their previous open state.
 In a very narrow editor, the definition browser starts collapsed so Python stays
 readable. Use the search icon at the start of the editor toolbar to show or hide
 the browser. While it is open, the level, icon, color and catalog controls are
-hidden to make room; hide the browser to edit those properties.
+hidden to make room; hide the browser to edit those properties. Once you choose
+whether to show the browser, resizing the window keeps your choice.
 
 Built-in definitions are read-only examples. **Copy to my collection** copies the
 selected function, including its decorators, imports and reachable helper functions.

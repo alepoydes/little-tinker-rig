@@ -546,6 +546,12 @@ def test_narrow_definition_editor_keeps_python_readable_with_console(
         assert page.code.viewport().width() >= 350
         assert page.browser_button.toolTip() == "Показать определения"
         assert page.browser_button.accessibleName() == page.browser_button.toolTip()
+        window.resize(930, 620)
+        QTest.qWait(50)
+        assert page.browser_pane.isVisible()
+        window.resize(800, 620)
+        QTest.qWait(50)
+        assert not page.browser_pane.isVisible()
 
         QTest.mouseClick(page.browser_button, Qt.MouseButton.LeftButton)
         QTest.qWait(50)
@@ -559,6 +565,17 @@ def test_narrow_definition_editor_keeps_python_readable_with_console(
         assert not page.browser_pane.isVisible()
         assert page.level.isVisible()
         assert page.code.toPlainText() == source
+        window.resize(930, 620)
+        QTest.qWait(50)
+        assert not page.browser_pane.isVisible()
+        assert page.level.isVisible()
+
+        QTest.mouseClick(page.browser_button, Qt.MouseButton.LeftButton)
+        assert page.browser_pane.isVisible()
+        window.resize(800, 620)
+        QTest.qWait(50)
+        assert page.browser_pane.isVisible()
+        assert not page.level.isVisible()
         window.resize(930, 620)
         QTest.qWait(50)
         assert page.browser_pane.isVisible()
