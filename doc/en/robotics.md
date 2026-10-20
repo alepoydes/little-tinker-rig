@@ -10,9 +10,11 @@ Real hubs use Pybricks firmware. Virtual profiles provide the same port layout:
 | `boost` | BOOST Move Hub | Built-in motors A/B; external C/D |
 | `technic` | LEGO Technic Hub | A–D |
 
-F7 or the top-right hub button opens connection options with Bluetooth selected
-by default; USB and virtual hubs are also available. Choose the model for a
-virtual hub, or optionally a Bluetooth name / USB serial port (`COM3`,
+F7 or the top-right hub button opens connection options with a virtual hub
+selected on first use. Later, the dialog remembers the last successfully
+connected transport and virtual model; lesson links select their own transport.
+Bluetooth and USB are also available. Choose the model for a virtual hub, or
+optionally a Bluetooth name / USB serial port (`COM3`,
 `/dev/ttyACM0`). An empty name selects the first Bluetooth hub or discovers USB
 automatically; multiple serial hubs require a port selection. Real connections
 require the `pybricks` extra. USB depends on firmware and OS permissions.

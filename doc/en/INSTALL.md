@@ -55,9 +55,10 @@ launch from the project folder with:
 
 On first launch, **Home** shows **First Python program**, an illustrated
 three-task lesson. Open that card, change its message and loop count, then choose
-**Connect hub → Virtual hub → Robot Inventor / SPIKE Prime → Connect** and press
-**F5 / Run**. Open **Console** to inspect the output. A physical robot is not
-needed. **New program** starts an empty file; **Open a file…** opens existing
+**Connect hub**, keep **Virtual hub** and **Robot Inventor / SPIKE Prime** selected,
+then press **Connect**, followed by **F5 / Run**. Open **Console** to inspect
+the output. A physical robot is not needed. **New program** starts an empty file;
+**Open a file…** opens existing
 work. The Home icon returns to this page without closing your work. Opening a
 lesson card again continues your last attempt. No file path is needed to start
 the editor.

@@ -534,3 +534,46 @@ def test_connection_dialog_keeps_primary_action_after_language_switch(tmp_path, 
     finally:
         window.change_language("en")
         window.close()
+
+
+def test_connection_dialog_remembers_successful_transport_and_virtual_model(
+    tmp_path, qt_app, monkeypatch
+):
+    from PySide6.QtWidgets import QDialog
+
+    from little_tinker_rig.pybricks.devices import HubInfo
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.device import ConnectDialog
+
+    choices = []
+
+    def inspect(dialog):
+        choices.append((dialog.transport.currentData(), dialog.model.currentData()))
+        return QDialog.DialogCode.Rejected
+
+    monkeypatch.setattr(ConnectDialog, "exec", inspect)
+    window = Studio(tmp_path / "main.py")
+    window.show()
+    try:
+        window.open_hub_connection()
+        window.update_hub(
+            HubInfo(connected=True, transport="usb", connection_action="connecting")
+        )
+        window.update_hub(HubInfo())
+        window.open_hub_connection()
+        window.update_hub(HubInfo(connected=True, transport="virtual", model="boost"))
+        window.update_hub(HubInfo())
+        window.open_hub_connection()
+        window.update_hub(HubInfo(connected=True, transport="ble"))
+        window.update_hub(HubInfo())
+        window.open_hub_connection()
+        window.open_hub_connection("virtual")
+        assert choices == [
+            ("virtual", "inventor"),
+            ("virtual", "inventor"),
+            ("virtual", "boost"),
+            ("ble", "boost"),
+            ("virtual", "inventor"),
+        ]
+    finally:
+        window.close()

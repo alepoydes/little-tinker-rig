@@ -26,7 +26,7 @@ from .theme import colors, svg_pixmap
 
 
 class ConnectDialog(QDialog):
-    def __init__(self, parent, *, preferred_transport=None):
+    def __init__(self, parent, *, preferred_transport=None, preferred_model=None):
         super().__init__(parent)
         self.setWindowTitle(N_("Connect hub"))
         self.resize(470, 260)
@@ -73,10 +73,16 @@ class ConnectDialog(QDialog):
             ("LEGO Technic Hub", "technic"),
         ):
             self.model.addItem(label, key)
+        model = (
+            preferred_model
+            if preferred_model in {"inventor", "boost", "technic"}
+            else "inventor"
+        )
+        self.model.setCurrentIndex(self.model.findData(model))
         transport = (
             preferred_transport
             if preferred_transport in {"virtual", "ble", "usb"}
-            else "ble"
+            else "virtual"
         )
         self.transport.setCurrentIndex(self.transport.findData(transport))
         form.addRow(N_("Connection"), self.transport)

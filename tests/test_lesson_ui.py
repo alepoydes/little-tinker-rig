@@ -895,7 +895,7 @@ def test_first_lesson_connect_links_choose_virtual_hub(tmp_path, qt_app, monkeyp
         assert choices == [("virtual", "inventor"), ("virtual", "inventor")]
 
         ordinary = ConnectDialog(window)
-        assert ordinary.transport.currentData() == "ble"
+        assert ordinary.transport.currentData() == "virtual"
         ordinary.close()
     finally:
         window.close()

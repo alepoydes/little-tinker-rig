@@ -2552,6 +2552,17 @@ class Studio(QMainWindow):
         if info.error and info.error != self.hub_info.error:
             self.error(info.error)
         self.hub_info = info
+        if info.connected and not info.connection_action:
+            if info.transport in {"virtual", "ble", "usb"} and (
+                self.settings.value("lastHubTransport") != info.transport
+            ):
+                self.settings.setValue("lastHubTransport", info.transport)
+            if info.transport == "virtual" and info.model in {
+                "inventor",
+                "boost",
+                "technic",
+            } and self.settings.value("lastVirtualHubModel") != info.model:
+                self.settings.setValue("lastVirtualHubModel", info.model)
         input_available = info.connected and info.transport in ("ble", "usb")
         self.hub_input.setVisible(input_available)
         self.hub_input.setEnabled(
@@ -2623,7 +2634,19 @@ class Studio(QMainWindow):
             self.device_dock.show()
             self.device_dock.raise_()
             return
-        dialog = ConnectDialog(self, preferred_transport=preferred_transport)
+        dialog = ConnectDialog(
+            self,
+            preferred_transport=(
+                preferred_transport
+                if preferred_transport is not None
+                else self.settings.value("lastHubTransport", "virtual")
+            ),
+            preferred_model=(
+                None
+                if preferred_transport is not None
+                else self.settings.value("lastVirtualHubModel", "inventor")
+            ),
+        )
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self._robot().connect_hub(
                 dialog.name.text() or None,
