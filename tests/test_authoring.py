@@ -520,6 +520,65 @@ def test_definition_search_reports_misses_and_restores_tree_after_escape(
         page.close()
 
 
+def test_narrow_definition_editor_keeps_python_readable_with_console(
+    tmp_path, qt_app
+):
+    from PySide6.QtCore import Qt
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "main.py")
+    window.confirm_close = lambda *_: True
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.show()
+    try:
+        window.change_language("ru")
+        window.set_mode(3)
+        window.console_dock.show()
+        QTest.qWait(90)
+        page = window.block_editor
+        source = page.code.toPlainText()
+        assert window.width() == 800
+        assert not page.browser_pane.isVisible()
+        assert page.preview_splitter.orientation() == Qt.Orientation.Horizontal
+        assert page.code.viewport().width() >= 350
+        assert page.browser_button.toolTip() == "Показать определения"
+        assert page.browser_button.accessibleName() == page.browser_button.toolTip()
+
+        QTest.mouseClick(page.browser_button, Qt.MouseButton.LeftButton)
+        QTest.qWait(50)
+        assert window.width() == 800
+        assert page.browser_pane.isVisible()
+        assert not page.level.isVisible()
+        assert page.browser_button.toolTip() == "Скрыть определения"
+        assert page.code.toPlainText() == source
+
+        QTest.mouseClick(page.browser_button, Qt.MouseButton.LeftButton)
+        assert not page.browser_pane.isVisible()
+        assert page.level.isVisible()
+        assert page.code.toPlainText() == source
+        window.resize(930, 620)
+        QTest.qWait(50)
+        assert page.browser_pane.isVisible()
+        assert page.level.isVisible()
+        motor = next(
+            snippet
+            for snippet in window.session.available_snippets
+            if snippet.identity.endswith("/motor_target")
+        )
+        page.open_definition(motor)
+        QTest.qWait(50)
+        assert window.width() == 930
+        assert page.icon.width() >= (
+            page.icon.fontMetrics().horizontalAdvance(page.icon.currentText()) + 30
+        )
+    finally:
+        window.close()
+        window.deleteLater()
+
+
 def test_metadata_controls_are_source_edits_with_undo_and_no_manifest_changes(
     tmp_path, qt_app
 ):

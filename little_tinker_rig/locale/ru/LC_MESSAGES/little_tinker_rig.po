@@ -2755,6 +2755,10 @@ msgstr "Помощь"
 msgid "Helper: shared ordinary Python; it does not appear in the block library."
 msgstr "Вспомогательная функция: общий код Python; в библиотеке блоков не показывается."
 
+#: little_tinker_rig/qt/authoring.py
+msgid "Hide definitions"
+msgstr "Скрыть определения"
+
 #: little_tinker_rig/qt/lessons.py:567
 msgid "Hint"
 msgstr "Подсказка"
@@ -5396,6 +5400,10 @@ msgstr "Показать блок"
 #: little_tinker_rig/snippets/pybricks/hub_display.py:51
 msgid "Show character"
 msgstr "Показать символ"
+
+#: little_tinker_rig/qt/authoring.py
+msgid "Show definitions"
+msgstr "Показать определения"
 
 #: little_tinker_rig/qt/assembly.py:136
 msgid "Show future parts as outlines"

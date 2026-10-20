@@ -255,7 +255,7 @@ class BlockEditor(QWidget):
                 lambda: self.create(STARTERS[self.starters.currentData()])
             )
         )
-        left = QWidget()
+        left = self.browser_pane = QWidget()
         layout = QVBoxLayout(left)
         layout.addWidget(self.search)
         layout.addWidget(self.search_status)
@@ -389,6 +389,13 @@ class BlockEditor(QWidget):
         right = QWidget()
         layout = QVBoxLayout(right)
         row = QHBoxLayout()
+        self.browser_button = QToolButton()
+        self.browser_button.setIcon(svg_icon("search"))
+        self.browser_button.setCheckable(True)
+        self.browser_button.setChecked(True)
+        self.browser_button.setProperty("translationSources", {})
+        self.browser_button.toggled.connect(self.set_browser_visible)
+        row.addWidget(self.browser_button)
         row.addWidget(self.copy_button)
         row.addWidget(self.level)
         row.addWidget(self.icon)
@@ -409,6 +416,9 @@ class BlockEditor(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(splitter)
+        self._browser_compact = None
+        self._browser_visible = True
+        self.refresh_browser_button()
         self.update_status()
         self.apply_theme()
 
@@ -417,6 +427,7 @@ class BlockEditor(QWidget):
             svg_icon("document-new", tint=colors()["accent_text"])
         )
         self.catalog_button.setIcon(svg_icon("catalog"))
+        self.browser_button.setIcon(svg_icon("search"))
         self.preview.apply_theme()
         self.card.itemDelegate().apply_theme()
         self.card.viewport().update()
@@ -1077,6 +1088,10 @@ class BlockEditor(QWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
+        compact = event.size().width() < 800
+        if compact != self._browser_compact:
+            self._browser_compact = compact
+            self.set_browser_visible(not compact)
         orientation = (
             Qt.Orientation.Horizontal
             if event.size().height() < 430
@@ -1085,6 +1100,26 @@ class BlockEditor(QWidget):
         if self.preview_splitter.orientation() != orientation:
             self.preview_splitter.setOrientation(orientation)
             self.resize_preview(self.expand.isChecked())
+
+    def set_browser_visible(self, visible):
+        self._browser_visible = visible
+        self.browser_pane.setVisible(visible)
+        show_metadata = not (self._browser_compact and visible)
+        for widget in (self.level, self.icon, self.color, self.catalog_button):
+            widget.setVisible(show_metadata)
+        self.browser_button.blockSignals(True)
+        self.browser_button.setChecked(visible)
+        self.browser_button.blockSignals(False)
+        self.refresh_browser_button()
+
+    def refresh_browser_button(self):
+        label = (
+            tr("Hide definitions")
+            if self._browser_visible
+            else tr("Show definitions")
+        )
+        self.browser_button.setToolTip(label)
+        self.browser_button.setAccessibleName(label)
 
     def resize_preview(self, expanded):
         total = sum(self.preview_splitter.sizes())
@@ -1285,6 +1320,7 @@ class BlockEditor(QWidget):
 
     def retranslate(self):
         localize(self)
+        self.refresh_browser_button()
         self.icon.retranslate()
         self.color.retranslate()
         self.rebuild_tree()

@@ -14,6 +14,11 @@ Collections, modules and blocks appear on the left. Search includes descriptions
 If nothing matches, the editor says so without moving the Python cursor. Clear the
 query with its icon or press Escape to return to the tree; branches then regain
 their previous open state.
+In a very narrow editor, the definition browser starts collapsed so Python stays
+readable. Use the search icon at the start of the editor toolbar to show or hide
+the browser. While it is open, the level, icon, color and catalog controls are
+hidden to make room; hide the browser to edit those properties.
+
 Built-in definitions are read-only examples. **Copy to my collection** copies the
 selected function, including its decorators, imports and reachable helper functions.
 The copy has its own identity; it does not replace the built-in block.

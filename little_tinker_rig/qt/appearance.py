@@ -29,6 +29,7 @@ class AppearanceChoice(QComboBox):
         self.setEditable(True)
         self.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         self.setMinimumContentsLength(9)
+        self.setMinimumWidth(135 if color else 165)
         self.setSizeAdjustPolicy(
             QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
         )
