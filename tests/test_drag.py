@@ -46,6 +46,88 @@ def hover(qt_app, view, args, point):
     return event
 
 
+def test_library_drop_keeps_invalid_inline_parameter(tmp_path, qt_app):
+    from PySide6.QtCore import QMimeData, QPoint, QPointF, Qt
+    from PySide6.QtGui import QDragEnterEvent, QDragMoveEvent, QDropEvent
+
+    from little_tinker_rig.qt.app import Studio
+
+    path = tmp_path / "program.py"
+    path.write_text("print(1)\n", encoding="utf-8")
+    window = Studio(path)
+    window.confirm_close = lambda *_: True
+    window.show()
+    qt_app.processEvents()
+    try:
+        view = window.source
+        slot = next(s for s in view.parameter_slots if s.parameter.name == "value")
+        view.show_parameter(slot)
+        field = view.parameter_editor.line_edit
+        field.setText("300")
+        point = QPoint(300, max(150, int(view._rect(1, 0).bottom() + 60)))
+        unsupported_data = QMimeData()
+        unsupported = QDragEnterEvent(
+            point,
+            Qt.DropAction.CopyAction,
+            unsupported_data,
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+        )
+        view.dragEnterEvent(unsupported)
+        assert not unsupported.isAccepted()
+        assert field.isVisible() and field.text() == "300"
+        assert window.document_page.text == "print(1)\n"
+
+        field.setText("1 +")
+        data = QMimeData()
+        data.setData(
+            "application/x-little-tinker-rig-snippet", b"python/basics/display"
+        )
+        args = (
+            Qt.DropAction.CopyAction,
+            data,
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+        )
+        invalid = QDragEnterEvent(point, *args)
+        view.dragEnterEvent(invalid)
+        assert not invalid.isAccepted()
+        assert view.drop_snippet is None
+        assert field.isVisible() and field.text() == "1 +"
+        assert window.document_page.text == "print(1)\n"
+
+        field.setText("300")
+        valid = QDragEnterEvent(point, *args)
+        view.dragEnterEvent(valid)
+        assert valid.isAccepted()
+        assert window.document_page.text == "print(300)\n"
+        move = QDragMoveEvent(point, *args)
+        view.dragMoveEvent(move)
+        assert move.isAccepted()
+        drop = QDropEvent(QPointF(point), *args)
+        view.dropEvent(drop)
+        qt_app.processEvents()
+        assert drop.isAccepted()
+        assert window.document_page.text == 'print(300)\nprint("Hello!")\n'
+
+        point = QPoint(300, max(180, int(view._rect(2, 0).bottom() + 60)))
+        view.dragEnterEvent(QDragEnterEvent(point, *args))
+        view.dragMoveEvent(QDragMoveEvent(point, *args))
+        slot = next(s for s in view.parameter_slots if s.parameter.name == "value")
+        view.show_parameter(slot)
+        field = view.parameter_editor.line_edit
+        field.setText("300 +")
+        rejected = QDropEvent(QPointF(point), *args)
+        view.dropEvent(rejected)
+        qt_app.processEvents()
+        assert not rejected.isAccepted()
+        assert field.isVisible() and field.text() == "300 +"
+        assert window.document_page.text == 'print(300)\nprint("Hello!")\n'
+    finally:
+        window.close()
+        window.deleteLater()
+
+
 @pytest.mark.parametrize("count", [0, 150])
 def test_insert_rows_preserve_pointer_anchor_at_both_halves_and_document_edges(
     qt_app, count

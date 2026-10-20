@@ -229,6 +229,8 @@ same source row and relative point under the pointer. Edges scroll the view;
 dragging does not fold code automatically.
 
 Ordinary drops accept compatible expressions only in empty parameters (`...`).
+An open inline field must contain a valid value before dropping into the program;
+an invalid draft stays visible and the drop is refused.
 After **Find value blocks**, the searched input also accepts replacement of its
 current value; other populated inputs remain protected. Invalid contexts offer no insertion and
 release restores the source. Library blocks use defaults and known device names.

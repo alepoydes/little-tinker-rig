@@ -1925,6 +1925,10 @@ class SourceView(QTextEdit):
                 return
         else:
             return
+        if not self.finish_parameter():
+            self.dragLeaveEvent(None)
+            event.ignore()
+            return
         # Choose the geometric destination first, then validate that destination.
         # An invalid context must never snap to another, distant legal target.
         self.drop_candidates = tuple(edit.targets(self.session.document.syntax))
@@ -2137,6 +2141,12 @@ class SourceView(QTextEdit):
             event.acceptProposedAction()
             return
         if self.drop_target is None:
+            self.dragLeaveEvent(event)
+            event.ignore()
+            return
+        syntax = self.session.document.syntax
+        if not self.finish_parameter() or self.session.document.syntax is not syntax:
+            self.dragLeaveEvent(event)
             event.ignore()
             return
         target, transfer, snippet = (

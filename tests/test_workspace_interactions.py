@@ -949,6 +949,27 @@ def test_context_menu_waits_for_inline_parameter(windows, monkeypatch):
     assert view.parameter_editor is None
 
 
+def test_insertion_handler_waits_for_inline_parameter(windows):
+    window = windows("print(1)\n")
+    view = window.source
+    slot = next(slot for slot in view.parameter_slots if slot.parameter.name == "value")
+    view.show_parameter(slot)
+    field = view.parameter_editor.line_edit
+    field.setText("1 +")
+
+    window.insert_snippet("python/basics/display")
+    assert window.document_page.text == "print(1)\n"
+    assert field.isVisible() and field.text() == "1 +"
+
+    field.setText("300")
+    window.insert_snippet("python/basics/display")
+    assert window.document_page.text == "print(300)\n"
+    assert view.parameter_editor is None
+
+    window.insert_snippet("python/basics/display")
+    assert window.document_page.text == 'print(300)\nprint("Hello!")\n'
+
+
 def test_stop_and_disconnect_bypass_invalid_edits(windows, monkeypatch):
     from PySide6.QtWidgets import QToolBar
 

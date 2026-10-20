@@ -2123,6 +2123,12 @@ class Studio(QMainWindow):
                 tr("Switch this editor to Blocks before inserting a block.")
             )
         view = view or (self.editing_source if target is None else self.source)
+        syntax_before_edit = view.session.document.syntax
+        if (
+            not view.finish_parameter()
+            or view.session.document.syntax is not syntax_before_edit
+        ):
+            return
         session = view.session
         snippet = next(
             (
