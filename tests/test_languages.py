@@ -258,6 +258,40 @@ def test_help_page_change_keeps_find_query_without_skipping_first_match(qt_app):
         page.close()
 
 
+def test_help_search_restores_branches_and_keeps_new_destination_visible(qt_app):
+    from little_tinker_rig.qt.help import HelpPage
+
+    page = HelpPage(builtin_snippets())
+    page.resize(900, 600)
+    page.show()
+    qt_app.processEvents()
+    try:
+        guide = page.tree.topLevelItem(0)
+        library = page.tree.topLevelItem(1)
+        guide.setExpanded(False)
+        library.setExpanded(False)
+
+        page.search.setText("run_target")
+        assert library.isExpanded()
+        page.search.setText("no-such-help-topic-123")
+        assert page.no_results.isVisible()
+        page.search.clear()
+        assert not guide.isExpanded()
+        assert not library.isExpanded()
+        assert not page.no_results.isVisible()
+
+        page.search.setText("run_target")
+        destination = page.pages["library/pybricks/motors"][1]
+        assert not destination.isHidden()
+        page.show_page("library/pybricks/motors")
+        page.search.clear()
+        assert not guide.isExpanded()
+        assert library.isExpanded()
+        assert page.tree.currentItem() is destination
+    finally:
+        page.close()
+
+
 def test_help_custom_group_without_docstring_excludes_historical_versions(qt_app):
     from little_tinker_rig.qt.help import HelpPage
 

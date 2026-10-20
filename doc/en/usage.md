@@ -324,6 +324,8 @@ color as inserted blocks. Hover shows the full preview. F1 opens the selected
 block's section on its group page or the guide. Help includes offline Markdown and snippet
 parameters/source, with search, internal links, a compact Back control, and a
 Recent pages menu that lists unique documents.
+Searching the Help sidebar opens matching groups; clearing the query restores
+their previous open state while keeping a newly opened page visible.
 
 Scratch is a vertical ribbon of independent editable fragments. Drag blocks from
 the program or library into the ribbon. The ⠿ handle moves a whole cell; a block

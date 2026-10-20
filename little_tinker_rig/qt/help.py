@@ -288,6 +288,8 @@ class HelpPage(QWidget):
         self.lesson_group = None
         self.lesson_item = None
         self.lesson_page_names = {}
+        self._search_expanded = None
+        self._search_selected = None
         self.tree = QTreeWidget()
         self.tree.setHeaderHidden(True)
         self.tree.setMinimumWidth(230)
@@ -454,6 +456,8 @@ class HelpPage(QWidget):
 
     def retranslate(self):
         current, history, recent = self.current, self.history, self.recent_pages
+        self._search_expanded = None
+        self._search_selected = None
         lesson_target = None
         if self.lesson and current and current.startswith("lesson/"):
             lesson_target = (
@@ -744,6 +748,14 @@ class HelpPage(QWidget):
             self.browser.ensureCursorVisible()
 
     def filter(self, query):
+        needle = query.strip().casefold()
+        searching = bool(needle)
+        if searching and self._search_expanded is None:
+            self._search_expanded = {
+                index: self.tree.topLevelItem(index).isExpanded()
+                for index in range(self.tree.topLevelItemCount())
+            }
+            self._search_selected = self.tree.currentItem()
         for identity, (text, item) in self.pages.items():
             if identity.startswith("lesson/resource/"):
                 continue
@@ -753,19 +765,32 @@ class HelpPage(QWidget):
                     for key, (content, _) in self.pages.items()
                     if key.startswith("lesson/resource/")
                 )
-            item.setHidden(query.casefold() not in (identity + text).casefold())
+            item.setHidden(needle not in (identity + text).casefold())
         for index in range(self.tree.topLevelItemCount()):
             group = self.tree.topLevelItem(index)
             group.setHidden(
                 all(group.child(i).isHidden() for i in range(group.childCount()))
             )
-            if query and not group.isHidden():
+            if searching and not group.isHidden():
                 group.setExpanded(True)
+        if not searching and self._search_expanded is not None:
+            for index in range(self.tree.topLevelItemCount()):
+                group = self.tree.topLevelItem(index)
+                group.setExpanded(self._search_expanded.get(index, group.isExpanded()))
+            selected = self.tree.currentItem()
+            if selected is not None and selected is not self._search_selected:
+                ancestor = selected.parent()
+                while ancestor is not None:
+                    ancestor.setExpanded(True)
+                    ancestor = ancestor.parent()
+            self._search_expanded = None
+            self._search_selected = None
         self.no_results.setText(
             tr("No matching pages. Clear the search to browse all topics.")
         )
         self.no_results.setVisible(
-            not any(not item.isHidden() for _, item in self.pages.values())
+            searching
+            and not any(not item.isHidden() for _, item in self.pages.values())
         )
 
     def follow_link(self, url):
