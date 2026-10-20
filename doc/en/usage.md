@@ -121,6 +121,8 @@ The Console, Scratch, and Hub and devices commands in **View** select their pane
 even when another bottom tab is in front. A second selection hides the active panel.
 The dock context menu offers the same controls; **Task panel** appears there only
 while a lesson is open.
+Hover over a dock's title icons to see which panel will be detached or hidden.
+The document tab close icons name the file they will close.
 
 The compact LittleTinker Rig header keeps File, Edit, View, and Hub menus visible,
 including in full screen. Use **View → Appearance → Light / Dark** to switch the

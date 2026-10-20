@@ -339,6 +339,11 @@ msgstr "Назначить моторы осям и триггерам"
 msgid "Assign value"
 msgstr "Присвоить значение"
 
+#: little_tinker_rig/qt/app.py:496
+#, python-brace-format
+msgid "Attach panel: {panel}"
+msgstr "Закрепить панель: {panel}"
+
 #: little_tinker_rig/qt/editor.py:1308
 msgid "At program level"
 msgstr "На уровне программы"
@@ -1027,6 +1032,11 @@ msgstr ""
 #: little_tinker_rig/qt/find.py:48
 msgid "Close search"
 msgstr "Закрыть поиск"
+
+#: little_tinker_rig/qt/app.py:1910
+#, python-brace-format
+msgid "Close tab: {name}"
+msgstr "Закрыть вкладку: {name}"
 
 #: little_tinker_rig/pybricks/firmware.py:508
 msgid ""
@@ -1786,6 +1796,11 @@ msgstr "Определения"
 #: little_tinker_rig/qt/code.py:252 little_tinker_rig/qt/structure.py:465
 msgid "Delete"
 msgstr "Удалить"
+
+#: little_tinker_rig/qt/app.py:498
+#, python-brace-format
+msgid "Detach panel: {panel}"
+msgstr "Открепить панель: {panel}"
 
 #: little_tinker_rig/snippets/pybricks/sensor_values.py:76
 #: little_tinker_rig/snippets/pybricks/sensors.py:198
@@ -2762,6 +2777,11 @@ msgstr "Вспомогательная функция: общий код Python;
 #: little_tinker_rig/qt/authoring.py
 msgid "Hide definitions"
 msgstr "Скрыть определения"
+
+#: little_tinker_rig/qt/app.py:500
+#, python-brace-format
+msgid "Hide panel: {panel}"
+msgstr "Скрыть панель: {panel}"
 
 #: little_tinker_rig/qt/lessons.py:567
 msgid "Hint"

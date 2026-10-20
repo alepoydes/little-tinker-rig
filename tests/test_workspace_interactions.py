@@ -7,10 +7,12 @@ from PySide6.QtCore import QEvent, Qt, QTimer
 from PySide6.QtGui import QAction, QTextCursor
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import (
+    QAbstractButton,
     QApplication,
     QFileDialog,
     QMessageBox,
     QPushButton,
+    QTabBar,
     QToolButton,
 )
 
@@ -455,6 +457,44 @@ def test_view_menu_reveals_tabbed_panels_in_compact_window(windows):
     assert not window.dock_view_actions[window.scratch_dock].isEnabled()
     window.set_mode(0)
     assert window.dock_view_actions[window.scratch_dock].isEnabled()
+
+
+def test_dock_and_tab_icon_controls_explain_their_actions(windows, tmp_path):
+    window = windows()
+    window.set_mode(1)
+    window.change_language("ru")
+    QTest.qWait(30)
+    dock = window.device_dock
+    floating = dock.findChild(QAbstractButton, "qt_dockwidget_floatbutton")
+    close_dock = dock.findChild(QAbstractButton, "qt_dockwidget_closebutton")
+    assert floating.toolTip() == "Открепить панель: Хаб и устройства"
+    assert floating.accessibleName() == floating.toolTip()
+    assert close_dock.toolTip() == "Скрыть панель: Хаб и устройства"
+    assert close_dock.accessibleName() == close_dock.toolTip()
+
+    bar = window.documents.tabBar()
+    close_tab = bar.tabButton(0, QTabBar.ButtonPosition.RightSide)
+    assert close_tab.toolTip() == "Закрыть вкладку: program_0.py"
+    assert close_tab.accessibleName() == close_tab.toolTip()
+
+    dock.setFloating(True)
+    try:
+        QTest.qWait(30)
+        assert floating.toolTip() == "Закрепить панель: Хаб и устройства"
+        assert floating.accessibleName() == floating.toolTip()
+    finally:
+        dock.setFloating(False)
+
+    second = tmp_path / "second.py"
+    second.write_text("value = 2\n", encoding="utf-8")
+    window.open_document(second)
+    close_second = bar.tabButton(1, QTabBar.ButtonPosition.RightSide)
+    assert close_second.toolTip() == "Закрыть вкладку: second.py"
+    window.change_language("en")
+    assert floating.toolTip() == "Detach panel: Hub and devices"
+    assert close_second.accessibleName() == "Close tab: second.py"
+    QTest.mouseClick(close_second, Qt.MouseButton.LeftButton)
+    assert window.documents.count() == 1
 
 
 def test_dock_context_menu_selects_visible_tab_without_empty_task_panel(windows):

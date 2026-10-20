@@ -10,6 +10,7 @@ from time import time_ns
 from PySide6.QtCore import QEvent, QSettings, QSize, QStandardPaths, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QTextCursor
 from PySide6.QtWidgets import (
+    QAbstractButton,
     QApplication,
     QDialog,
     QDockWidget,
@@ -30,6 +31,7 @@ from PySide6.QtWidgets import (
     QSplitter,
     QStackedWidget,
     QStyle,
+    QTabBar,
     QTabWidget,
     QToolBar,
     QToolButton,
@@ -482,7 +484,25 @@ class Studio(QMainWindow):
         dock.setObjectName(title)
         dock.setWidget(widget)
         self.addDockWidget(area, dock)
+        dock.topLevelChanged.connect(
+            lambda *_: self._translate_dock_buttons(dock)
+        )
         return dock
+
+    def _translate_dock_buttons(self, dock):
+        panel = dock.windowTitle()
+        labels = {
+            "qt_dockwidget_floatbutton": (
+                tr("Attach panel: {panel}", panel=panel)
+                if dock.isFloating()
+                else tr("Detach panel: {panel}", panel=panel)
+            ),
+            "qt_dockwidget_closebutton": tr("Hide panel: {panel}", panel=panel),
+        }
+        for name, label in labels.items():
+            if button := dock.findChild(QAbstractButton, name):
+                button.setToolTip(label)
+                button.setAccessibleName(label)
 
     def createPopupMenu(self):
         menu = super().createPopupMenu()
@@ -1291,6 +1311,8 @@ class Studio(QMainWindow):
     def retranslate(self):
         translate_standard_dialogs()
         localize(self)
+        for dock in (self.console_dock, self.scratch_dock, self.device_dock):
+            self._translate_dock_buttons(dock)
         home_name = tr("Home")
         self.home_button.setToolTip(home_name)
         self.home_button.setAccessibleName(home_name)
@@ -1873,6 +1895,7 @@ class Studio(QMainWindow):
         )
         if self.pages.currentIndex() == 3:
             self.statusBar().showMessage(self.block_editor.caption.text())
+        bar = self.documents.tabBar()
         for index in range(self.documents.count()):
             page = self.documents.widget(index)
             self.documents.setTabText(
@@ -1880,6 +1903,13 @@ class Studio(QMainWindow):
                 ("● " if page.dirty else "") + self._document_tab_label(page),
             )
             self.documents.setTabToolTip(index, self._document_tab_tooltip(page))
+            close = bar.tabButton(index, QTabBar.ButtonPosition.RightSide)
+            if close is None:
+                close = bar.tabButton(index, QTabBar.ButtonPosition.LeftSide)
+            if close is not None:
+                label = tr("Close tab: {name}", name=self._document_tab_label(page))
+                close.setToolTip(label)
+                close.setAccessibleName(label)
         self.source.viewport().update()
 
     def _document_tab_label(self, page):
