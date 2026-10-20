@@ -142,6 +142,49 @@ class HelpBrowser(QTextBrowser):
         painter.end()
         return image
 
+    def lesson_number_badge(self, number, href=None):
+        document = self.document()
+        url = QUrl(f"lesson-number:{number}")
+        document.addResource(
+            document.ResourceType.ImageResource,
+            url,
+            self.lesson_number_image(number),
+        )
+        badge = QTextImageFormat()
+        badge.setName(url.toString())
+        badge.setWidth(26)
+        badge.setHeight(26)
+        badge.setVerticalAlignment(
+            QTextCharFormat.VerticalAlignment.AlignMiddle
+        )
+        badge.setToolTip(str(number))
+        if href:
+            badge.setAnchor(True)
+            badge.setAnchorHref(href)
+        return badge
+
+    def decorate_lesson_index(self, numbers):
+        document = self.document()
+        seen = set()
+        block = document.begin()
+        while block.isValid() and len(seen) < len(numbers):
+            following = block.next()
+            if block.blockFormat().headingLevel() == 2:
+                break
+            fragment = block.begin()
+            while not fragment.atEnd():
+                href = fragment.fragment().charFormat().anchorHref()
+                anchor = href.removeprefix("#")
+                if href.startswith("#") and anchor in numbers and anchor not in seen:
+                    cursor = QTextCursor(block)
+                    cursor.setPosition(block.position())
+                    cursor.insertImage(self.lesson_number_badge(numbers[anchor], href))
+                    cursor.insertText("  ")
+                    seen.add(anchor)
+                    break
+                fragment += 1
+            block = following
+
     def decorate_lesson_headings(self, numbers):
         document = self.document()
         block = document.begin()
@@ -160,23 +203,9 @@ class HelpBrowser(QTextBrowser):
                     None,
                 )
                 if number is not None:
-                    url = QUrl(f"lesson-number:{number}")
-                    document.addResource(
-                        document.ResourceType.ImageResource,
-                        url,
-                        self.lesson_number_image(number),
-                    )
-                    badge = QTextImageFormat()
-                    badge.setName(url.toString())
-                    badge.setWidth(26)
-                    badge.setHeight(26)
-                    badge.setVerticalAlignment(
-                        QTextCharFormat.VerticalAlignment.AlignMiddle
-                    )
-                    badge.setToolTip(str(number))
                     cursor.clearSelection()
                     cursor.setPosition(block.position())
-                    cursor.insertImage(badge)
+                    cursor.insertImage(self.lesson_number_badge(number))
                     cursor.insertText("  ", title_format)
             block = following
 
@@ -522,11 +551,11 @@ class HelpPage(QWidget):
             title = localized(self.lesson.data["title"], language())
             text, name = self.lesson.instructions_document(language())
             tasks = []
-            for index, stage in enumerate(self.lesson.stages, 1):
+            for stage in self.lesson.stages:
                 anchor = self.lesson.instructions_anchor(stage, language())
                 if anchor:
                     stage_title = localized(stage["title"], language())
-                    tasks.append(f"- [{index}. {stage_title}](#{anchor})")
+                    tasks.append(f"[{stage_title}](#{anchor})")
             if tasks:
                 lines = text.splitlines(keepends=True)
                 heading_end = 1 if lines and lines[0].startswith("# ") else 0
@@ -542,7 +571,7 @@ class HelpPage(QWidget):
                 text = (
                     "".join(lines[:heading_end])
                     + contents
-                    + "\n".join(tasks)
+                    + "\n\n".join(tasks)
                     + "\n\n"
                     + "".join(lines[heading_end:])
                 )
@@ -695,6 +724,7 @@ class HelpPage(QWidget):
                         )
                     )
                 }
+                self.browser.decorate_lesson_index(self.browser.lesson_numbers)
                 self.browser.decorate_lesson_headings(self.browser.lesson_numbers)
         if anchor:
             self.browser.scrollToAnchor(anchor)

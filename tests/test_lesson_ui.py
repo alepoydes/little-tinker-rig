@@ -997,8 +997,22 @@ def test_instruction_heading_numbers_match_task_panel_order(tmp_path, qt_app):
                     for index, stage in enumerate(lesson.stages, 1)
                 }
                 numbered = {}
+                index_badges = {}
                 block = page.browser.document().begin()
                 while block.isValid():
+                    item = block.begin()
+                    while not item.atEnd():
+                        fragment = item.fragment()
+                        fmt = fragment.charFormat()
+                        anchor = fmt.anchorHref().removeprefix("#")
+                        if fmt.isImageFormat() and anchor in expected:
+                            number = expected[anchor]
+                            assert fmt.toImageFormat().name() == (
+                                f"lesson-number:{number}"
+                            )
+                            assert block.textList() is None
+                            index_badges[anchor] = number
+                        item += 1
                     if block.blockFormat().headingLevel() == 2:
                         fragments = []
                         item = block.begin()
@@ -1021,10 +1035,11 @@ def test_instruction_heading_numbers_match_task_panel_order(tmp_path, qt_app):
                             numbered[anchor] = number
                     block = block.next()
                 assert numbered == expected
+                assert index_badges == expected
                 index_text = page.pages["lesson/instructions"][0]
                 assert all(
-                    f"](#{anchor})" in index_text and f"[{number}. " in index_text
-                    for anchor, number in expected.items()
+                    f"](#{anchor})" in index_text
+                    for anchor in expected
                 )
                 page.show_lesson_stage(lesson, lesson.stages[-1])
                 assert page.current == (
@@ -1033,6 +1048,46 @@ def test_instruction_heading_numbers_match_task_panel_order(tmp_path, qt_app):
                 )
     finally:
         set_language(original_language)
+        page.deleteLater()
+
+
+def test_lesson_index_badge_opens_its_instruction_section(qt_app):
+    from pathlib import Path
+
+    from PySide6.QtCore import Qt
+    from PySide6.QtGui import QTextCursor
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.help import HelpPage
+
+    lesson = Lesson.load(Path("lessons/first_python"))
+    page = HelpPage([])
+    page.resize(900, 650)
+    page.show()
+    try:
+        page.show_lesson_home(lesson)
+        browser = page.browser
+        block = browser.document().begin()
+        badge_position = None
+        while block.isValid() and badge_position is None:
+            item = block.begin()
+            while not item.atEnd():
+                fragment = item.fragment()
+                fmt = fragment.charFormat()
+                if fmt.isImageFormat() and fmt.anchorHref() == "#message":
+                    badge_position = fragment.position()
+                    break
+                item += 1
+            block = block.next()
+        assert badge_position is not None
+        cursor = QTextCursor(browser.document())
+        cursor.setPosition(badge_position)
+        point = browser.cursorRect(cursor).center()
+        assert browser.viewport().rect().contains(point)
+        QTest.mouseClick(browser.viewport(), Qt.MouseButton.LeftButton, pos=point)
+        assert page.current == "lesson/instructions#message"
+    finally:
+        page.close()
         page.deleteLater()
 
 

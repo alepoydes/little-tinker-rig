@@ -16,7 +16,7 @@ attempt opens the selected task's section in that same document.
 
 The right-side **Task panel** shows every task with its step number, checkbox,
 title, and points. The matching sections in **Help** use blue numbered circles,
-and the instruction index includes those numbers. First drive includes diagrams
+and the instruction index uses the same circles as links. First drive includes diagrams
 of the rolling base, travel directions, and obstacle distance in both the task
 cards and full instructions.
 Use **Assembly** for the actual part-by-part model; the diagrams explain the
