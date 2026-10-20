@@ -6,7 +6,7 @@ import tomllib
 from dataclasses import replace
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QTimer, QUrl, Signal
+from PySide6.QtCore import QEvent, Qt, QTimer, QUrl, Signal
 from PySide6.QtGui import QColor, QDesktopServices, QTextCharFormat, QTextCursor
 from PySide6.QtWidgets import (
     QComboBox,
@@ -214,13 +214,25 @@ class BlockEditor(QWidget):
         self.test_values = {}
         self.snippets = ()
         self.roots = ()
+        self._search_expanded = None
+        self._search_selected = None
         self.timer = QTimer(self)
         self.timer.setSingleShot(True)
         self.timer.setInterval(250)
         self.timer.timeout.connect(self.check)
         self.search = QLineEdit()
         self.search.setPlaceholderText(N_("Find a definition…"))
+        self.search.setClearButtonEnabled(True)
+        for button in self.search.findChildren(QToolButton):
+            label = N_("Clear definition search")
+            button.defaultAction().setText(label)
+            button.setToolTip(label)
+            button.setAccessibleName(label)
+        self.search.installEventFilter(self)
         self.search.textChanged.connect(self.filter)
+        self.search_status = QLabel()
+        self.search_status.setProperty("translationSources", {})
+        self.search_status.hide()
         self.tree = QTreeWidget()
         self.tree.setHeaderHidden(True)
         self.tree.currentItemChanged.connect(self.browse)
@@ -246,6 +258,7 @@ class BlockEditor(QWidget):
         left = QWidget()
         layout = QVBoxLayout(left)
         layout.addWidget(self.search)
+        layout.addWidget(self.search_status)
         layout.addWidget(self.tree, 1)
         layout.addWidget(self.module_name)
         layout.addWidget(self.starters)
@@ -534,6 +547,25 @@ class BlockEditor(QWidget):
     def filter(self, text):
         words = text.casefold().split()
 
+        def key(item):
+            data = item.data(0, Qt.ItemDataRole.UserRole)
+            return ("definition", *data) if data else ("collection", item.toolTip(0))
+
+        def walk(item):
+            yield item
+            for index in range(item.childCount()):
+                yield from walk(item.child(index))
+
+        items = [
+            descendant
+            for index in range(self.tree.topLevelItemCount())
+            for descendant in walk(self.tree.topLevelItem(index))
+        ]
+        if words and self._search_expanded is None:
+            self._search_expanded = {key(item): item.isExpanded() for item in items}
+            selected = self.tree.currentItem()
+            self._search_selected = key(selected) if selected is not None else None
+
         def visit(item, parent_text=""):
             content = parent_text + " " + item.text(0) + " " + item.toolTip(0)
             own = all(word in content.casefold() for word in words)
@@ -544,8 +576,40 @@ class BlockEditor(QWidget):
                 item.setExpanded(True)
             return visible
 
-        for i in range(self.tree.topLevelItemCount()):
-            visit(self.tree.topLevelItem(i))
+        matches = [
+            visit(self.tree.topLevelItem(index))
+            for index in range(self.tree.topLevelItemCount())
+        ]
+        found = any(matches)
+        self.search_status.setText(tr("No matching definitions"))
+        self.search_status.setVisible(bool(words) and not found)
+        if not words and self._search_expanded is not None:
+            for item in items:
+                item.setExpanded(
+                    self._search_expanded.get(key(item), item.isExpanded())
+                )
+            self._search_expanded = None
+            selected = self.tree.currentItem()
+            if selected is not None and key(selected) != self._search_selected:
+                ancestor = selected.parent()
+                while ancestor is not None:
+                    ancestor.setExpanded(True)
+                    ancestor = ancestor.parent()
+            self._search_selected = None
+
+    def dismiss_search(self):
+        self.search.clear()
+        self.tree.setFocus()
+
+    def eventFilter(self, watched, event):
+        if (
+            watched is self.search
+            and event.type() == QEvent.Type.KeyPress
+            and event.key() == Qt.Key.Key_Escape
+        ):
+            self.dismiss_search()
+            return True
+        return super().eventFilter(watched, event)
 
     def browse(self, item, old):
         data = item.data(0, Qt.ItemDataRole.UserRole) if item else None

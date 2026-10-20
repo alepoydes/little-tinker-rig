@@ -465,6 +465,61 @@ def test_editor_groups_copies_and_language_changes_keep_edits(tmp_path, qt_app):
         window.deleteLater()
 
 
+def test_definition_search_reports_misses_and_restores_tree_after_escape(
+    tmp_path, qt_app
+):
+    from PySide6.QtCore import Qt
+    from PySide6.QtTest import QTest
+    from PySide6.QtWidgets import QToolButton
+
+    from little_tinker_rig.i18n import set_language
+    from little_tinker_rig.qt.authoring import BlockEditor
+
+    root = user_collection(tmp_path)
+    page = BlockEditor(lambda: root, lambda *_: None)
+    page.resize(868, 477)
+    page.show()
+    try:
+        page.configure(builtin_snippets(), (root,))
+        module = next(
+            item for path, item in page.module_items.items() if path.name == "motors.py"
+        )
+        assert not module.isExpanded()
+        cursor = page.code.textCursor().position()
+        page.search.setText("run_motor")
+        assert module.isExpanded()
+        assert not page.search_status.isVisible()
+
+        set_language("ru")
+        page.retranslate()
+        page.search.setText("there_is_no_such_definition")
+        assert page.search_status.isVisible()
+        assert page.search_status.text() == "Определения не найдены"
+        assert page.code.textCursor().position() == cursor
+        clear = page.search.findChild(QToolButton)
+        assert clear.toolTip() == clear.accessibleName() == "Очистить поиск определений"
+
+        page.search.setFocus()
+        QTest.keyClick(page.search, Qt.Key.Key_Escape)
+        qt_app.processEvents()
+        assert not page.search.text()
+        assert page.tree.hasFocus()
+        module = next(
+            item for path, item in page.module_items.items() if path.name == "motors.py"
+        )
+        assert not module.isExpanded()
+        assert not page.search_status.isVisible()
+
+        page.search.setText("run_motor")
+        assert module.isExpanded()
+        QTest.mouseClick(clear, Qt.MouseButton.LeftButton)
+        assert not page.search.text()
+        assert not module.isExpanded()
+    finally:
+        set_language("en")
+        page.close()
+
+
 def test_metadata_controls_are_source_edits_with_undo_and_no_manifest_changes(
     tmp_path, qt_app
 ):

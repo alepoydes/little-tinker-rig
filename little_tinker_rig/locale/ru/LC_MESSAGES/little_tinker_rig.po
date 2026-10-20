@@ -967,6 +967,10 @@ msgstr "Очистить"
 msgid "Clear block search"
 msgstr "Очистить поиск блоков"
 
+#: little_tinker_rig/qt/authoring.py
+msgid "Clear definition search"
+msgstr "Очистить поиск определений"
+
 #: little_tinker_rig/snippets/pybricks/hubs.py:244
 msgid "Clear display"
 msgstr "Очистить дисплей"
@@ -3698,6 +3702,10 @@ msgstr "Хаб не подключён"
 #: little_tinker_rig/pybricks/firmware.py:444
 msgid "No matching hub found in Bluetooth bootloader mode"
 msgstr "Подходящий хаб в режиме загрузчика Bluetooth не найден"
+
+#: little_tinker_rig/qt/authoring.py
+msgid "No matching definitions"
+msgstr "Определения не найдены"
 
 #: little_tinker_rig/qt/help.py:697
 msgid "No matching pages. Clear the search to browse all topics."

@@ -11,6 +11,9 @@ parses them; it never executes their defaults, imports, or bodies.
 ## Inspect and create
 
 Collections, modules and blocks appear on the left. Search includes descriptions.
+If nothing matches, the editor says so without moving the Python cursor. Clear the
+query with its icon or press Escape to return to the tree; branches then regain
+their previous open state.
 Built-in definitions are read-only examples. **Copy to my collection** copies the
 selected function, including its decorators, imports and reachable helper functions.
 The copy has its own identity; it does not replace the built-in block.
