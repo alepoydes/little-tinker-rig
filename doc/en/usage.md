@@ -103,6 +103,8 @@ applies valid input; Escape cancels it. Save and Run apply the active field firs
 Invalid input stays editable and prevents saving, running or leaving its document
 until corrected or cancelled. Choosing another value through the context menu
 first applies a valid draft; an invalid draft stays open for correction.
+Right-clicking elsewhere while a field is open applies it first. If that changes
+the program, right-click again to open the menu on the updated block.
 **Stop (F6)** and **Disconnect** always remain available when connected, even
 with invalid input; they preserve that input.
 F6 also stops the owning window's hub while one of its dialogs is open.

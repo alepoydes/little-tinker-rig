@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 from PySide6.QtCore import QEvent, Qt, QTimer
-from PySide6.QtGui import QAction, QTextCursor
+from PySide6.QtGui import QAction, QContextMenuEvent, QTextCursor
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import (
     QAbstractButton,
@@ -857,6 +857,62 @@ def test_context_value_edit_keeps_invalid_draft_and_commits_valid_one(windows):
         assert view.parameter_editor.line_edit.text() == "2"
     finally:
         menu.deleteLater()
+
+
+def test_context_menu_waits_for_inline_parameter(windows, monkeypatch):
+    window = windows("print(1)\nprint(2)\n")
+    view = window.source
+    slots = [slot for slot in view.parameter_slots if slot.parameter.name == "value"]
+    view.show_parameter(slots[0])
+    field = view.parameter_editor.line_edit
+    field.setText("1 +")
+    view.reveal(slots[1].span.start)
+    QApplication.processEvents()
+    point = view.parameter_rect(slots[1]).center().toPoint()
+    opened = []
+
+    def menu_for(_view, _point):
+        opened.append(_point)
+        return SimpleNamespace(
+            isEmpty=lambda: False,
+            exec=lambda _position: None,
+            deleteLater=lambda: None,
+        )
+
+    monkeypatch.setattr("little_tinker_rig.qt.editor.block_menu", menu_for)
+
+    def right_click():
+        event = QContextMenuEvent(
+            QContextMenuEvent.Reason.Mouse,
+            point,
+            view.viewport().mapToGlobal(point),
+        )
+        view.contextMenuEvent(event)
+        QApplication.processEvents()
+
+    right_click()
+    assert opened == []
+    assert field.isVisible() and field.text() == "1 +"
+    assert window.document_page.text == "print(1)\nprint(2)\n"
+
+    field.setText("300")
+    right_click()
+    assert opened == []
+    assert window.document_page.text == "print(300)\nprint(2)\n"
+    assert view.parameter_editor is None
+
+    right_click()
+    assert opened == [point]
+
+    second = next(
+        slot
+        for slot in view.parameter_slots
+        if slot.parameter.name == "value" and slot.span.start > 10
+    )
+    view.show_parameter(second)
+    right_click()
+    assert opened == [point, point]
+    assert view.parameter_editor is None
 
 
 def test_stop_and_disconnect_bypass_invalid_edits(windows, monkeypatch):

@@ -1750,6 +1750,14 @@ class SourceView(QTextEdit):
                 self.structure_bar.activate(point)
 
     def contextMenuEvent(self, event):
+        if self.parameter_editor:
+            syntax = self.session.document.syntax
+            if (
+                not self.finish_parameter()
+                or self.session.document.syntax is not syntax
+            ):
+                event.accept()
+                return
         menu = block_menu(self, event.pos())
         if not menu.isEmpty():
             menu.exec(event.globalPos())
