@@ -722,6 +722,37 @@ def test_compact_tasks_keep_lesson_instructions_readable(tmp_path, qt_app):
         window.deleteLater()
 
 
+def test_help_destination_link_clears_compact_task_overlay(tmp_path, qt_app):
+    from pathlib import Path
+
+    from PySide6.QtCore import QUrl
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "plain.py")
+    window.confirm_close = lambda *_: True
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.show()
+    try:
+        window.lessons.open(Path("lessons/first_python"))
+        window.lessons.set_panel_expanded(True)
+        QTest.qWait(70)
+        assert window.pages.currentIndex() == 2
+        assert window.lessons.overlay.isVisible()
+
+        window.help_page.follow_link(QUrl("program:main.py"))
+        QTest.qWait(30)
+        assert window.pages.currentIndex() == 0
+        assert window.document_page.lesson_project is window.lessons.current
+        assert not window.lessons.overlay.isVisible()
+        assert window.lessons.progress_button.isVisible()
+    finally:
+        window.close()
+        window.deleteLater()
+
+
 def test_bundled_lesson_sections_share_one_help_document(tmp_path, qt_app):
     from pathlib import Path
 

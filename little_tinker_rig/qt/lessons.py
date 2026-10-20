@@ -363,18 +363,28 @@ class Lessons(QObject):
         self.window.set_mode(0)
 
     def follow_link(self, url):
-        if url.scheme() == "program":
+        scheme = url.scheme()
+        if scheme in {
+            "program",
+            "assembly",
+            "control",
+            "devices",
+            "connect",
+            "scratch",
+        }:
+            self._collapse_for_destination()
+        if scheme == "program":
             self.open_program(url.path())
-        elif url.scheme() == "assembly":
+        elif scheme == "assembly":
             self.open_assembly()
-        elif url.scheme() == "control":
+        elif scheme == "control":
             self.window.set_mode(1)
-        elif url.scheme() == "devices":
+        elif scheme == "devices":
             self.window.device_dock.show()
             self.window.device_dock.raise_()
-        elif url.scheme() == "connect":
+        elif scheme == "connect":
             self.window.connect_hub()
-        elif url.scheme() == "scratch":
+        elif scheme == "scratch":
             name = (
                 url.path()
                 or self.current.main.relative_to(
@@ -384,7 +394,7 @@ class Lessons(QObject):
             self.open_program(name)
             self.window.scratch_dock.show()
             self.window.scratch_dock.raise_()
-        elif url.scheme() == "lesson":
+        elif scheme == "lesson":
             self.show_stage()
 
     def show_stage(self):
