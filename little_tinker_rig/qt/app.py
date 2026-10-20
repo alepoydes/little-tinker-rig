@@ -2168,6 +2168,7 @@ class Studio(QMainWindow):
             self.help_page.open_find()
             return
         if self.pages.currentIndex() == 3:
+            self.block_editor.choose_browser_visible(True)
             search = self.block_editor.search
             search.setFocus()
             search.selectAll()

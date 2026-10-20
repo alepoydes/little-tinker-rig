@@ -596,6 +596,32 @@ def test_narrow_definition_editor_keeps_python_readable_with_console(
         window.deleteLater()
 
 
+def test_compact_definition_find_reveals_search_field(tmp_path, qt_app):
+    from PySide6.QtCore import Qt
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "main.py")
+    window.confirm_close = lambda *_: True
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.show()
+    try:
+        window.set_mode(3)
+        QTest.qWait(50)
+        page = window.block_editor
+        assert not page.browser_pane.isVisible()
+        page.code.setFocus()
+        QTest.keyClick(page.code, Qt.Key.Key_F, Qt.KeyboardModifier.ControlModifier)
+        QTest.qWait(30)
+        assert page.browser_pane.isVisible()
+        assert page.search.hasFocus()
+    finally:
+        window.close()
+        window.deleteLater()
+
+
 def test_metadata_controls_are_source_edits_with_undo_and_no_manifest_changes(
     tmp_path, qt_app
 ):

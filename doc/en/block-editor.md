@@ -16,7 +16,8 @@ query with its icon or press Escape to return to the tree; branches then regain
 their previous open state.
 In a very narrow editor, the definition browser starts collapsed so Python stays
 readable. Use the search icon at the start of the editor toolbar to show or hide
-the browser. While it is open, the level, icon, color and catalog controls are
+the browser. Ctrl+F also opens the browser and focuses its search field. While
+it is open, the level, icon, color and catalog controls are
 hidden to make room; hide the browser to edit those properties. Once you choose
 whether to show the browser, resizing the window keeps your choice.
 
