@@ -665,6 +665,63 @@ def test_authored_task_card_link_opens_instructions_from_visible_markdown(
         window.deleteLater()
 
 
+def test_compact_tasks_keep_lesson_instructions_readable(tmp_path, qt_app):
+    from pathlib import Path
+
+    from PySide6.QtCore import QPoint, Qt
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "plain.py")
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.show()
+    try:
+        window.change_language("ru")
+        window.lessons.open(Path("lessons/first_python"))
+        window.set_mode(2)
+        QTest.qWait(90)
+        page = window.help_page
+        assert page.sidebar.isVisible()
+        assert page.browser.viewport().width() >= 400
+        original_split = page.sidebar.parentWidget().sizes()
+
+        window.lessons.set_panel_expanded(True)
+        QTest.qWait(90)
+        assert window.lessons.overlay.isVisible()
+        assert not page.sidebar.isVisible()
+        assert page.browser.viewport().width() >= 300
+        browser_right = page.browser.mapTo(
+            window.workspace, page.browser.rect().topRight()
+        ).x()
+        assert browser_right < window.lessons.overlay.x()
+        assert "Первая программа на Python" in page.browser.toPlainText()
+
+        window.set_mode(0)
+        assert page._overlay_clearance == 0
+        window.set_mode(2)
+        assert page._overlay_clearance == window.lessons.overlay.width()
+        window.lessons.show_stage()
+        QTest.qWait(90)
+        assert not window.lessons.overlay.isVisible()
+        assert page.sidebar.isVisible()
+        assert page.browser.viewport().width() >= 400
+        assert page.sidebar.parentWidget().sizes() == original_split
+
+        window.lessons.set_panel_expanded(True)
+        QTest.mouseClick(
+            page.browser.viewport(), Qt.MouseButton.LeftButton, pos=QPoint(20, 20)
+        )
+        QTest.qWait(50)
+        assert not window.lessons.overlay.isVisible()
+        assert page.sidebar.isVisible()
+    finally:
+        window.confirm_close = lambda *_: True
+        window.close()
+        window.deleteLater()
+
+
 def test_bundled_lesson_sections_share_one_help_document(tmp_path, qt_app):
     from pathlib import Path
 

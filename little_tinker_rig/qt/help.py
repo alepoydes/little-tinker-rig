@@ -372,7 +372,7 @@ class HelpPage(QWidget):
         navigation.addWidget(self.back_button)
         navigation.addWidget(self.recent_button)
         navigation.addWidget(search, 1)
-        sidebar = QWidget()
+        sidebar = self.sidebar = QWidget()
         sidebar.setMinimumWidth(230)
         left = QVBoxLayout(sidebar)
         left.addLayout(navigation)
@@ -387,8 +387,18 @@ class HelpPage(QWidget):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(splitter)
+        self._overlay_clearance = 0
         self.apply_theme()
         self.retranslate()
+
+    def set_overlay_clearance(self, width):
+        width = max(0, width)
+        if width == self._overlay_clearance:
+            return
+        self._overlay_clearance = width
+        self.sidebar.setVisible(not width)
+        self.find_field.setMinimumWidth(160 if width else 240)
+        self.layout().setContentsMargins(0, 0, width + 8 if width else 0, 0)
 
     def apply_theme(self):
         c = colors()

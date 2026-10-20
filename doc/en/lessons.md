@@ -40,6 +40,8 @@ reveals help on that card. The panel is available in every workspace.
 Use its collapse icon or **View → Task panel** to hide it. A progress control
 such as **Lesson · 1/6 · 0 done** beside the hub connection opens it again. On narrow
 windows the panel opens over the workspace, so it does not shrink the editor.
+In Help, the page list temporarily hides and the instructions fit beside the
+open task panel; closing the panel restores the page list.
 Escape, a click outside it, or following a destination link hides it temporarily;
 resizing to a wide window restores the saved expanded preference. Scratch and
 the task panel share the right-hand dock area; the Console can stay open below

@@ -215,6 +215,7 @@ class Lessons(QObject):
         )
         window.tabifyDockWidget(window.scratch_dock, self.dock)
         self.dock.visibilityChanged.connect(self._dock_visibility_changed)
+        window.pages.currentChanged.connect(self._sync_help_clearance)
         app = QApplication.instance()
         app.installEventFilter(self)
         window.destroyed.connect(lambda *_: app.removeEventFilter(self))
@@ -862,6 +863,17 @@ class Lessons(QObject):
             workspace.width() - width - 4, 4, width, max(80, workspace.height() - 8)
         )
         self.overlay.raise_()
+        self._sync_help_clearance()
+
+    def _sync_help_clearance(self, *_):
+        visible = (
+            not self.overlay.isHidden()
+            and self.window.width() < LESSON_DOCK_MIN_WIDTH
+            and self.window.pages.currentIndex() == 2
+        )
+        self.window.help_page.set_overlay_clearance(
+            self.overlay.width() if visible else 0
+        )
 
     def update_panel_visibility(self):
         expanded = bool(
@@ -888,6 +900,7 @@ class Lessons(QObject):
             self._dock_active = visible
         finally:
             self._updating_panel = False
+        self._sync_help_clearance()
         self._sync_panel_toggle()
         QTimer.singleShot(0, self, self._sync_panel_toggle)
         if expanded and not narrow and not self._transient_hidden:
