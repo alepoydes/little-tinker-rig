@@ -31,6 +31,26 @@ class HomePage(QScrollArea):
     """Only explicit actions open examples or create learner attempts."""
 
     @staticmethod
+    def _recent_folders(paths):
+        names = {}
+        for path in paths:
+            names.setdefault(path.name.casefold(), []).append(path)
+        labels = {}
+        for group in names.values():
+            if len(group) < 2:
+                continue
+            parents = [path.parent.parts for path in group]
+            for depth in range(1, max(map(len, parents)) + 1):
+                suffixes = [parts[-depth:] for parts in parents]
+                if len(set(suffixes)) == len(group):
+                    break
+            labels.update(
+                (path, str(Path(*suffix)))
+                for path, suffix in zip(group, suffixes, strict=True)
+            )
+        return labels
+
+    @staticmethod
     def _archive_attempt_id(path):
         if path.suffix != ".ltr":
             return None
@@ -142,9 +162,13 @@ class HomePage(QScrollArea):
                 widget.setParent(None)
                 widget.deleteLater()
 
-    def _card(self, title, description, action, callback, *, icon=None, detail=None):
+    def _card(
+        self, title, description, action, callback, *, icon=None, detail=None, tip=None
+    ):
         card = QFrame()
         card.setObjectName("homeCard")
+        if tip:
+            card.setToolTip(tip)
         card.setMinimumHeight(120 if icon else 72)
         box = QHBoxLayout(card)
         box.setContentsMargins(17, 14, 17, 14)
@@ -176,6 +200,8 @@ class HomePage(QScrollArea):
         button = QPushButton(action)
         button.setObjectName("homeCardAction")
         button.setAccessibleName(f"{action}: {title}")
+        if tip:
+            button.setToolTip(tip)
         button.clicked.connect(lambda: self.window.perform(callback))
         box.addWidget(button, alignment=Qt.AlignmentFlag.AlignVCenter)
         return card
@@ -254,6 +280,7 @@ class HomePage(QScrollArea):
         activity = activity if isinstance(activity, dict) else {}
         recent = self.window.settings.value("recentFiles", [])
         recent = [recent] if isinstance(recent, str) else recent or []
+        ordinary_files = []
         for value in recent:
             if not isinstance(value, str):
                 continue
@@ -272,16 +299,23 @@ class HomePage(QScrollArea):
                 opened = int(activity.get(str(path)) or path.stat().st_mtime_ns)
             except (OSError, TypeError, ValueError):
                 continue
+            ordinary_files.append((opened, path))
+        folders = self._recent_folders([path for _, path in ordinary_files])
+        for opened, path in ordinary_files:
+            detail = (
+                tr("Lesson project")
+                if path.suffix in (".ltr", ".pyblocks")
+                else tr("Python program")
+            )
+            if folder := folders.get(path):
+                detail += f" · {folder}"
             entries.append(
                 (
                     opened,
                     path.name,
-                    (
-                        tr("Lesson project")
-                        if path.suffix in (".ltr", ".pyblocks")
-                        else tr("Python program")
-                    ),
+                    detail,
                     lambda path=path: self.window.open_recent(path),
+                    str(path),
                 )
             )
         for work in works:
@@ -299,6 +333,7 @@ class HomePage(QScrollArea):
                         lambda work=work: self.window.example_workspaces.open(
                             work=work
                         ),
+                        None,
                     )
                 )
         for attempt in attempts:
@@ -323,6 +358,7 @@ class HomePage(QScrollArea):
                     lambda attempt=attempt: self.window.lessons.open(
                         Path(attempt.data["origin"]), attempt=attempt
                     ),
+                    None,
                 )
             )
         current = self.window.document_page
@@ -338,14 +374,15 @@ class HomePage(QScrollArea):
                     tr("Untitled program"),
                     tr("Open in this window"),
                     lambda: self.window.set_mode(0),
+                    None,
                 )
             )
         entries.sort(key=lambda entry: entry[0], reverse=True)
         self.recent_title.setVisible(bool(entries))
         self.recent_host.setVisible(bool(entries))
-        for _, title, detail, callback in entries[:3]:
+        for _, title, detail, callback, tip in entries[:3]:
             self.recent_layout.addWidget(
-                self._card(title, detail, tr("Continue"), callback)
+                self._card(title, detail, tr("Continue"), callback, tip=tip)
             )
         self.recent_host.setMinimumHeight(
             72 * min(3, len(entries)) + 7 * max(0, min(3, len(entries)) - 1)

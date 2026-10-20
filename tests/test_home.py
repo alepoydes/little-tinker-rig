@@ -263,6 +263,50 @@ def test_standalone_lesson_archive_is_labeled_as_a_project(tmp_path, qt_app):
         close(window)
 
 
+def test_home_distinguishes_same_named_files_and_opens_each_one(tmp_path, qt_app):
+    first = tmp_path / "alpha" / "work" / "main.py"
+    second = tmp_path / "beta" / "work" / "main.py"
+    for path in (first, second):
+        path.parent.mkdir(parents=True)
+        path.write_text("print('hello')\n", encoding="utf-8")
+    window = Studio(first)
+    window.resize(930, 620)
+    window.show()
+    previous_language = language()
+    try:
+        window.open_document(second)
+        window.set_mode(5)
+        labels = recent_labels(window)
+        assert labels == [
+            ["main.py", "Python program · beta/work"],
+            ["main.py", "Python program · alpha/work"],
+        ]
+        set_language("ru")
+        window.retranslate()
+        assert recent_labels(window) == [
+            ["main.py", "Программа Python · beta/work"],
+            ["main.py", "Программа Python · alpha/work"],
+        ]
+        set_language(previous_language)
+        window.retranslate()
+        recent = window.home_page.recent_layout.itemAt(0).widget()
+        button = recent.findChild(QPushButton, "homeCardAction")
+        assert button.toolTip() == str(second)
+        QTest.mouseClick(button, Qt.MouseButton.LeftButton)
+        assert window.pages.currentIndex() == 0
+        assert window.document_page.session.project.path == second
+        window.set_mode(5)
+        recent = window.home_page.recent_layout.itemAt(1).widget()
+        button = recent.findChild(QPushButton, "homeCardAction")
+        button.setFocus()
+        QTest.keyClick(button, Qt.Key.Key_Space)
+        assert window.pages.currentIndex() == 0
+        assert window.document_page.session.project.path == first
+    finally:
+        set_language(previous_language)
+        close(window)
+
+
 def test_home_numbers_multiple_attempts_in_both_languages(tmp_path, qt_app):
     original = language()
     window = Studio()
