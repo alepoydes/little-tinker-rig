@@ -59,8 +59,10 @@ On Windows, use `.\.venv\Scripts\little-tinker-rig.exe` in place of
 in [installation](INSTALL.md), before using a real hub.
 
 The device panel shows hub identity, firmware, battery and port readings.
-**Hub and devices** and **Scratch** share the right dock as tabs. Their buttons
-select the corresponding tab; each panel can still be detached or closed.
+On wide windows, **Hub and devices** and **Scratch** share the right dock as tabs.
+On narrower windows, Scratch moves below the workspace; on very narrow windows,
+Hub and devices joins the bottom tabs with Scratch and Console. Each panel can
+still be detached, resized or closed.
 **Open port monitor** replaces the user program with a small monitor; it reports
 motor angles/speeds and color, distance or force values. Real readings become
 stale when a user program replaces the monitor. Virtual telemetry continues during

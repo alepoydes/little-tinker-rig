@@ -110,6 +110,11 @@ Scratch and Hub and devices start hidden to leave room for your program.
 Open Scratch with the bottom button; resize or close it with its dock controls. Control mode hides Scratch. The title bar
 always shows minimize, maximize/restore, and close. Double-click it to toggle
 maximization; drag it or a window edge to move or resize. F11 toggles full screen.
+
+On very narrow windows, Hub and devices joins the bottom dock tabs so it does not
+squeeze the editor. The hub connection button becomes an icon with a tooltip;
+**F7** also opens the connection dialog when disconnected.
+
 The compact LittleTinker Rig header keeps File, Edit, View, and Hub menus visible,
 including in full screen. Use **View → Appearance → Light / Dark** to switch the
 interface immediately, or click the sun/moon button beside the hub control to

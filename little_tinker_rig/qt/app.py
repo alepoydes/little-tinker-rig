@@ -313,9 +313,17 @@ class Studio(QMainWindow):
         self._scratch_relocating = False
         self._scratch_layout_pending = False
         self._scratch_needs_size = False
+        self._device_dock_auto = True
+        self._device_relocating = False
+        self._device_layout_pending = False
+        self._device_needs_size = False
         self.scratch_dock.dockLocationChanged.connect(
             self._scratch_dock_location_changed
         )
+        self.device_dock.dockLocationChanged.connect(
+            self._device_dock_location_changed
+        )
+        self.device_dock.visibilityChanged.connect(self._device_visibility_changed)
         self.block_editor.configure(
             self.session.snippets, self.session.collection_paths
         )
@@ -340,6 +348,7 @@ class Studio(QMainWindow):
             self.restoreGeometry(geometry)
         self._schedule_catalog_width()
         self._schedule_scratch_layout()
+        self._schedule_device_layout()
         if startup_home and not lesson_path and not example_path:
             self.set_mode(5)
         if lesson_path:
@@ -820,6 +829,11 @@ class Studio(QMainWindow):
         )
         self.run_button.setToolButtonStyle(style)
         self.stop_button.setToolButtonStyle(style)
+        self.hub_button.setToolButtonStyle(
+            Qt.ToolButtonStyle.ToolButtonIconOnly
+            if self.width() < 900
+            else Qt.ToolButtonStyle.ToolButtonTextBesideIcon
+        )
 
     def _catalog_splitter_moved(self, *_):
         self._catalog_width_manual = True
@@ -861,6 +875,83 @@ class Studio(QMainWindow):
                 ),
             )
 
+    def _device_dock_location_changed(self, area):
+        if not self._device_relocating:
+            self._device_dock_auto = False
+
+    def _right_dock_anchor(self, moving):
+        lessons = getattr(self, "lessons", None)
+        for dock in (getattr(lessons, "dock", None), self.scratch_dock, self.device_dock):
+            if (
+                dock is not None
+                and dock is not moving
+                and self.dockWidgetArea(dock)
+                == Qt.DockWidgetArea.RightDockWidgetArea
+            ):
+                return dock
+        return None
+
+    def _device_visibility_changed(self, visible):
+        if visible and not self._device_relocating and self._device_needs_size:
+            self._schedule_device_size()
+
+    def _schedule_device_layout(self):
+        if not self._device_dock_auto or self._device_layout_pending:
+            return
+        self._device_layout_pending = True
+        QTimer.singleShot(0, self, self._fit_device_layout)
+
+    def _fit_device_layout(self):
+        self._device_layout_pending = False
+        if not self._device_dock_auto:
+            return
+        narrow = self.width() < 1100
+        target = (
+            Qt.DockWidgetArea.BottomDockWidgetArea
+            if narrow
+            else Qt.DockWidgetArea.RightDockWidgetArea
+        )
+        if self.dockWidgetArea(self.device_dock) == target:
+            return
+        active = (
+            self.device_dock.isVisible()
+            and not self.device_dock.visibleRegion().isEmpty()
+        )
+        hidden = self.device_dock.isHidden()
+        self._device_relocating = True
+        try:
+            self.removeDockWidget(self.device_dock)
+            self.addDockWidget(target, self.device_dock)
+            if narrow:
+                self.tabifyDockWidget(self.console_dock, self.device_dock)
+            elif anchor := self._right_dock_anchor(self.device_dock):
+                self.tabifyDockWidget(anchor, self.device_dock)
+            self.device_dock.setVisible(not hidden)
+            if active:
+                self.device_dock.raise_()
+            self._device_needs_size = True
+        finally:
+            self._device_relocating = False
+        if active:
+            self._schedule_device_size()
+
+    def _schedule_device_size(self):
+        QTimer.singleShot(0, self, self._size_device_once)
+
+    def _size_device_once(self):
+        if not self._device_needs_size or not self.device_dock.isVisible():
+            return
+        bottom = (
+            self.dockWidgetArea(self.device_dock)
+            == Qt.DockWidgetArea.BottomDockWidgetArea
+        )
+        self.resizeDocks(
+            [self.device_dock],
+            [160 if bottom else 300],
+            Qt.Orientation.Vertical if bottom else Qt.Orientation.Horizontal,
+        )
+        self._device_needs_size = False
+
     def _schedule_scratch_layout(self):
         if not self._scratch_dock_auto or self._scratch_layout_pending:
             return
@@ -890,8 +981,8 @@ class Studio(QMainWindow):
             self.addDockWidget(target, self.scratch_dock)
             if narrow:
                 self.tabifyDockWidget(self.console_dock, self.scratch_dock)
-            else:
-                self.tabifyDockWidget(self.device_dock, self.scratch_dock)
+            elif anchor := self._right_dock_anchor(self.scratch_dock):
+                self.tabifyDockWidget(anchor, self.scratch_dock)
             self.pages.setSizePolicy(
                 QSizePolicy.Policy.Expanding,
                 (
@@ -934,6 +1025,8 @@ class Studio(QMainWindow):
             self._schedule_catalog_width()
         if hasattr(self, "_scratch_dock_auto"):
             self._schedule_scratch_layout()
+        if hasattr(self, "_device_dock_auto"):
+            self._schedule_device_layout()
         target = 145 if self.height() < 700 else 220
         if (
             getattr(self, "_console_auto_target", None) is not None
@@ -1519,6 +1612,7 @@ class Studio(QMainWindow):
         self.scratch_dock.setVisible(index == 0 and self.scratch_visible)
         self.scratch_dock.toggleViewAction().setEnabled(index == 0)
         self.scratch_button.setEnabled(index == 0)
+        self._fit_device_layout()
         if index == 1:
             self.device_dock.show()
             self.device_dock.raise_()
@@ -2393,10 +2487,15 @@ class Studio(QMainWindow):
                 else (
                     tr("Disconnect {name}", name=info.name or tr("Virtual hub"))
                     if info.connected
-                    else tr("Bluetooth, USB or virtual hub")
+                    else (
+                        tr("Connect hub")
+                        + " · "
+                        + tr("Bluetooth, USB or virtual hub")
+                    )
                 )
             )
         )
+        self.hub_button.setAccessibleName(self.hub_button.toolTip())
         self.run_action.setEnabled(
             info.connected
             and not self.hub_is_busy

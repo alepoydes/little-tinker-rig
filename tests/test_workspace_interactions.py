@@ -222,23 +222,81 @@ def test_compact_control_keeps_motor_assignments_above_controller(windows):
             ports={"A": {"type": "motor"}, "B": {"type": "motor"}},
         )
     )
-    QApplication.processEvents()
+    QTest.qWait(90)
+    assert window.dockWidgetArea(window.device_dock) == (
+        Qt.DockWidgetArea.BottomDockWidgetArea
+    )
+    assert window.device_dock.height() <= 190
+    assert window.pages.height() >= 300
     table = window.controls.table
     assert table.isVisible()
     table_top = table.mapToGlobal(table.rect().topLeft()).y()
     controller = window.controls.controller
     controller_top = controller.mapToGlobal(controller.rect().topLeft()).y()
     assert table_top < controller_top
-    assert table.columnWidth(1) > table.columnWidth(3)
-    assert table.columnWidth(2) > table.columnWidth(4)
+    widths = [table.columnWidth(column) for column in range(6)]
+    assert max(widths) - min(widths) <= 2
     assert table.horizontalScrollBar().maximum() == 0
     outer = window.controls.parentWidget().parentWidget()
     assert outer.horizontalScrollBar().maximum() == 0
 
     window.resize(1380, 880)
-    QApplication.processEvents()
+    QTest.qWait(90)
+    assert window.dockWidgetArea(window.device_dock) == (
+        Qt.DockWidgetArea.RightDockWidgetArea
+    )
     widths = [table.columnWidth(column) for column in range(6)]
     assert max(widths) - min(widths) <= 2
+
+
+def test_narrow_toolbar_and_device_panel_keep_program_available(windows):
+    from pathlib import Path
+
+    from PySide6.QtCore import QPoint
+
+    window = windows()
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.change_language("ru")
+    window.lessons.open(Path("lessons/first_python"))
+    window.set_mode(0)
+    window.console_dock.show()
+    window.device_dock.show()
+    window.device_dock.raise_()
+    QTest.qWait(90)
+
+    assert window.width() == 800
+    assert window.dockWidgetArea(window.device_dock) == (
+        Qt.DockWidgetArea.BottomDockWidgetArea
+    )
+    assert window.source.viewport().width() >= 350
+    assert window.source.viewport().height() >= 180
+    assert window.hub_button.toolButtonStyle() == Qt.ToolButtonStyle.ToolButtonIconOnly
+    assert window.hub_button.accessibleName().startswith("Подключить хаб")
+    assert window.lessons.progress_button.isVisible()
+    for button in (window.hub_button, window.theme_toggle):
+        assert button.isVisible()
+        left = button.mapTo(window, QPoint()).x()
+        assert left >= 0 and left + button.width() <= window.width()
+
+
+def test_device_dock_keeps_user_chosen_area_after_resize(windows):
+    window = windows()
+    window.resize(930, 620)
+    window.set_mode(1)
+    QTest.qWait(60)
+    assert window.dockWidgetArea(window.device_dock) == (
+        Qt.DockWidgetArea.BottomDockWidgetArea
+    )
+
+    window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, window.device_dock)
+    QApplication.processEvents()
+    assert not window._device_dock_auto
+    window.resize(1380, 880)
+    QTest.qWait(60)
+    assert window.dockWidgetArea(window.device_dock) == (
+        Qt.DockWidgetArea.LeftDockWidgetArea
+    )
 
 
 def test_first_console_open_keeps_compact_program_visible(windows):
