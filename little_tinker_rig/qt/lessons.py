@@ -703,7 +703,9 @@ class Lessons(QObject):
             Qt.TextInteractionFlag.LinksAccessibleByMouse
             | Qt.TextInteractionFlag.LinksAccessibleByKeyboard
         )
-        name.linkActivated.connect(lambda _, row=index: self.open_task(row))
+        name.linkActivated.connect(
+            lambda _, row=index: self.window.perform(lambda: self.open_task(row))
+        )
         header.addWidget(name, 1)
         points = QLabel(f"★ {stage.get('points', 1)}")
         points.setToolTip(tr("Points for this task"))

@@ -744,9 +744,11 @@ def test_compact_task_overlay_leaves_program_editable(tmp_path, qt_app):
         overlay = window.lessons.overlay
         assert overlay.isVisible()
         assert not window.library_pane.isVisible()
-        editor_left = window.source.viewport().mapTo(
-            window.workspace, window.source.viewport().rect().topLeft()
-        ).x()
+        editor_left = (
+            window.source.viewport()
+            .mapTo(window.workspace, window.source.viewport().rect().topLeft())
+            .x()
+        )
         assert overlay.x() - editor_left >= 300
 
         QTest.mouseClick(
@@ -1054,8 +1056,12 @@ def test_language_switch_keeps_localized_task_material_in_help_history(
 
     root = tmp_path / "materials"
     root.mkdir()
-    (root / "en.md").write_text("# Training\n\n## First\n\nStart here.\n", encoding="utf-8")
-    (root / "ru.md").write_text("# Обучение\n\n## Первый\n\nНачни здесь.\n", encoding="utf-8")
+    (root / "en.md").write_text(
+        "# Training\n\n## First\n\nStart here.\n", encoding="utf-8"
+    )
+    (root / "ru.md").write_text(
+        "# Обучение\n\n## Первый\n\nНачни здесь.\n", encoding="utf-8"
+    )
     (root / "extra_en.md").write_text(
         "# More\n\n## Details\n\nEnglish details.\n", encoding="utf-8"
     )
@@ -1192,10 +1198,7 @@ def test_instruction_heading_numbers_match_task_panel_order(tmp_path, qt_app):
                 assert numbered == expected
                 assert index_badges == expected
                 index_text = page.pages["lesson/instructions"][0]
-                assert all(
-                    f"](#{anchor})" in index_text
-                    for anchor in expected
-                )
+                assert all(f"](#{anchor})" in index_text for anchor in expected)
                 page.show_lesson_stage(lesson, lesson.stages[-1])
                 assert page.current == (
                     "lesson/instructions#"
@@ -1392,6 +1395,47 @@ def test_task_title_navigates_checkbox_stays_put_and_help_finds_text(tmp_path, q
         assert "Hub and devices" in body.toPlainText()
         window.lessons.follow_task_anchor("connect", QUrl("task:extra/2"), body)
         assert window.device_dock.isVisible()
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
+def test_task_title_waits_for_invalid_block_parameter(tmp_path, qt_app):
+    from pathlib import Path
+
+    from little_tinker_rig.qt.app import Studio
+
+    source = Path(__file__).resolve().parents[1] / "lessons" / "first_python"
+    window = Studio(tmp_path / "plain.py")
+    window.resize(1440, 900)
+    window.show()
+    try:
+        window.lessons.open(source, new=True)
+        window.set_mode(0)
+        slot = next(
+            slot
+            for slot in window.source.parameter_slots
+            if slot.parameter.name == "argument 1"
+        )
+        window.source.show_parameter(slot)
+        field = window.source.parameter_editor.line_edit
+        field.setText("1 +")
+        previous_help = window.help_page.current
+
+        window.lessons.cards["repeat"]["title"].linkActivated.emit("task:select")
+        qt_app.processEvents()
+        assert window.lessons.current.stage["id"] == "message"
+        assert window.help_page.current == previous_help
+        assert window.pages.currentIndex() == 0
+        assert field.isVisible() and field.text() == "1 +"
+
+        field.setText("4")
+        window.lessons.cards["repeat"]["title"].linkActivated.emit("task:select")
+        qt_app.processEvents()
+        assert window.lessons.current.stage["id"] == "repeat"
+        assert window.help_page.current == "lesson/instructions#repeat"
+        assert window.pages.currentIndex() == 2
+        assert "range(4)" in window.document_page.text
     finally:
         window.recovery.close()
         window.deleteLater()

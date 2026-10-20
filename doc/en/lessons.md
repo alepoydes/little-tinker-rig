@@ -25,10 +25,12 @@ enough width to read beside the model.
 The selected task expands to show its goal, completion guidance, links and hints;
 other tasks stay compact. It appears only while a lesson project is active.
 Clicking a task title selects it, updates suggested blocks, and opens its section
-in **Help**; it does not change code or completion. A checkbox only records
-completion and does not navigate. **Instructions** opens the lesson's full
-localized Markdown in **Help**, positioned at that task's section; it does not
-open another window or add a task page to the Help tree. **This lesson** has one
+in **Help**. An active block parameter is applied first; invalid input keeps the
+current task selected so it can be fixed. The title does not mark a task complete.
+A checkbox only records completion and does not navigate. **Instructions** opens
+the lesson's full localized Markdown in **Help**, positioned at that task's
+section; it does not open another window or add a task page to the Help tree.
+**This lesson** has one
 document entry; clicking it returns to the top. An inline task list jumps between
 sections. The always-visible **Find in document** field searches with highlighted
 matches, next/previous controls, and a match count; Ctrl+F focuses it. Opening
