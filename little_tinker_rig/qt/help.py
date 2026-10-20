@@ -528,11 +528,22 @@ class HelpPage(QWidget):
         self._search_selected = None
         lesson_target = None
         if self.lesson and current and current.startswith("lesson/"):
+            page, _, anchor = current.partition("#")
             lesson_target = (
-                current
-                if current.partition("#")[0] == "lesson/instructions"
-                else "lesson/instructions"
+                current if page == "lesson/instructions" else "lesson/instructions"
             )
+            if page == "lesson/instructions" and anchor:
+                # Match the old fragment to a task before loading translated headings.
+                previous_language = self.root.name
+                for stage in self.lesson.stages:
+                    if self.lesson.instructions_anchor(stage, previous_language) == anchor:
+                        translated_anchor = self.lesson.instructions_anchor(
+                            stage, language()
+                        )
+                        lesson_target = page + (
+                            "#" + translated_anchor if translated_anchor else ""
+                        )
+                        break
         self.root = self.base_root / language()
         self.pages, self.page_paths, self.snippet_targets = {}, {}, {}
         self.lesson_page_names = {}

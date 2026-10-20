@@ -976,6 +976,77 @@ def test_bundled_lesson_sections_share_one_help_document(tmp_path, qt_app):
         window.deleteLater()
 
 
+def test_language_switch_keeps_task_section_with_localized_anchor(tmp_path, qt_app):
+    from PySide6.QtCore import QPoint
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.help import HelpPage
+
+    root = tmp_path / "translated"
+    root.mkdir()
+    (root / "en.md").write_text(
+        "# Training\n\n## First\n\n"
+        + "Start here.\n\n" * 35
+        + "## Second\n\n"
+        + "Continue here.\n\n" * 35,
+        encoding="utf-8",
+    )
+    (root / "ru.md").write_text(
+        "# Обучение\n\n## Первый\n\n"
+        + "Начни здесь.\n\n" * 35
+        + "## Второй\n\n"
+        + "Продолжай здесь.\n\n" * 35,
+        encoding="utf-8",
+    )
+    (root / "lesson.json").write_text(
+        json.dumps(
+            {
+                "format": 1,
+                "id": "translated",
+                "title": {"en": "Training", "ru": "Обучение"},
+                "instructions": {"en": "en.md", "ru": "ru.md"},
+                "stages": [
+                    {
+                        "id": "first",
+                        "title": {"en": "First", "ru": "Первый"},
+                        "description": {"en": "en.md#first", "ru": "ru.md#первый"},
+                    },
+                    {
+                        "id": "second",
+                        "title": {"en": "Second", "ru": "Второй"},
+                        "description": {"en": "en.md#second", "ru": "ru.md#второй"},
+                    },
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    lesson = Lesson.load(root)
+    previous_language = language()
+    set_language("en")
+    page = HelpPage([])
+    page.resize(760, 520)
+    page.show()
+    try:
+        page.show_lesson_stage(lesson, lesson.stages[1])
+        QTest.qWait(30)
+        assert page.current == "lesson/instructions#second"
+        assert page.browser.verticalScrollBar().value() > 0
+
+        set_language("ru")
+        page.retranslate()
+        QTest.qWait(30)
+        assert page.current == "lesson/instructions#второй"
+        assert "Продолжай здесь." in page.browser.toPlainText()
+        assert page.browser.verticalScrollBar().value() > 0
+        assert "Второй" in page.browser.cursorForPosition(QPoint(24, 24)).block().text()
+    finally:
+        set_language(previous_language)
+        page.close()
+        page.deleteLater()
+
+
 def test_instruction_heading_numbers_match_task_panel_order(tmp_path, qt_app):
     from pathlib import Path
 

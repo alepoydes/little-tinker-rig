@@ -35,6 +35,8 @@ matches, next/previous controls, and a match count; Ctrl+F focuses it. Opening
 another page or section keeps the query and highlights; the count starts at 0
 until you choose a result with Next or Previous. Reading or scrolling a section
 does not change the selected task or its recommended blocks.
+Changing the interface language keeps the same task section open, including when
+the translated instruction uses a different section address.
 **Program**, **Assembly**,
 **Controls**, and links to **Hub and devices** open the relevant file or panel. **Next hint**
 reveals help on that card. The panel is available in every workspace.
