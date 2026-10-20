@@ -6,7 +6,13 @@ import pytest
 from PySide6.QtCore import QEvent, Qt, QTimer
 from PySide6.QtGui import QAction, QTextCursor
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox, QPushButton
+from PySide6.QtWidgets import (
+    QApplication,
+    QFileDialog,
+    QMessageBox,
+    QPushButton,
+    QToolButton,
+)
 
 from little_tinker_rig.qt.app import Studio
 
@@ -127,6 +133,43 @@ def test_header_theme_and_language_keep_brand_readable_and_actions_visible(windo
         window.run_button.toolButtonStyle()
         == Qt.ToolButtonStyle.ToolButtonTextBesideIcon
     )
+
+
+def test_compact_toolbar_and_search_icons_remain_named_and_usable(windows):
+    window = windows()
+    window.resize(930, 620)
+    window.change_language("ru")
+    QApplication.processEvents()
+
+    for action in (
+        window.save_action,
+        window.undo_action,
+        window.redo_action,
+        window.upload_action,
+        window.run_action,
+        window.stop_action,
+    ):
+        button = window.main_toolbar.widgetForAction(action)
+        assert button.toolTip() and button.accessibleName() == action.text()
+    assert window.scratch_button.toolTip() == window.scratch_button.text()
+    assert window.scratch_button.accessibleName() == window.scratch_button.text()
+
+    window.search.setText("motor")
+    search, clear = (
+        next(
+            button
+            for button in window.search.findChildren(QToolButton)
+            if (button.defaultAction() is window.search_action) is leading
+        )
+        for leading in (True, False)
+    )
+    assert search.toolTip() == search.accessibleName() == "Найти блок…"
+    assert clear.toolTip() == clear.accessibleName() == "Очистить поиск блоков"
+    window.source.setFocus()
+    QTest.mouseClick(search, Qt.MouseButton.LeftButton)
+    assert window.search.hasFocus() and window.search.selectedText() == "motor"
+    QTest.mouseClick(clear, Qt.MouseButton.LeftButton)
+    assert window.search.text() == ""
 
 
 def test_compact_catalog_releases_editor_width_without_overriding_manual_split(windows):

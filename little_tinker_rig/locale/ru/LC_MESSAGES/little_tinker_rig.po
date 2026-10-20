@@ -963,6 +963,10 @@ msgstr ""
 msgid "Clear"
 msgstr "Очистить"
 
+#: little_tinker_rig/qt/app.py
+msgid "Clear block search"
+msgstr "Очистить поиск блоков"
+
 #: little_tinker_rig/snippets/pybricks/hubs.py:244
 msgid "Clear display"
 msgstr "Очистить дисплей"

@@ -229,6 +229,9 @@ branch.
 collections, Functions, Motors and movement, Sensors and input, Light and sound,
 and Devices and communication. Open a branch or search by an action, description,
 or Python API name. Search includes English names in every interface language.
+Click the magnifying-glass icon to focus and select the search query; click the
+clear icon to remove it.
+
 Direct title matches appear before incidental matches within each category.
 Search previews the best matching variant; you can still choose another variant.
 Clearing search restores the previous selection and open branches. If you switch

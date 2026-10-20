@@ -155,7 +155,18 @@ class Studio(QMainWindow):
         self.search_action = self.search.addAction(
             svg_icon("search"), QLineEdit.ActionPosition.LeadingPosition
         )
+        self.search_action.setText(N_("Find a block…"))
+        self.search_action.setToolTip(N_("Find a block…"))
+        self.search_action.triggered.connect(self.focus_block_search)
         self.search.setClearButtonEnabled(True)
+        for button in self.search.findChildren(QToolButton):
+            if button.defaultAction() is self.search_action:
+                label = N_("Find a block…")
+            else:
+                label = N_("Clear block search")
+                button.defaultAction().setText(label)
+            button.setToolTip(label)
+            button.setAccessibleName(label)
         self.search.textChanged.connect(self.library.filter)
         self.level_filter = ChoiceButtons({**LEVEL_TITLES, "all": N_("All")})
         self.level_filter.setAccessibleName(N_("Block level"))
@@ -374,6 +385,7 @@ class Studio(QMainWindow):
         menu.addAction(action)
         if toolbar:
             toolbar.addAction(action)
+            toolbar.widgetForAction(action).setAccessibleName(label)
         return action
 
     def _docks(self):
@@ -781,6 +793,8 @@ class Studio(QMainWindow):
         self.statusBar().addPermanentWidget(self.console_button)
         scratch_button = self.scratch_button = QToolButton()
         scratch_button.setText(N_("Scratch"))
+        scratch_button.setToolTip(N_("Scratch"))
+        scratch_button.setAccessibleName(N_("Scratch"))
         scratch_button.clicked.connect(lambda: self.toggle_dock(self.scratch_dock))
         self.statusBar().addPermanentWidget(scratch_button)
         self.set_intensity(self.intensity.value())
@@ -793,6 +807,10 @@ class Studio(QMainWindow):
         description = tr("Appearance") + " · " + name
         self.theme_toggle.setToolTip(description)
         self.theme_toggle.setAccessibleName(description)
+
+    def focus_block_search(self):
+        self.search.setFocus()
+        self.search.selectAll()
 
     def _update_toolbar_density(self):
         style = (
