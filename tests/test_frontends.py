@@ -500,3 +500,37 @@ def test_hub_error_can_be_copied_and_opens_offline_usb_help(tmp_path, qt_app):
         robot.close()
         window.robot = None
         window.close()
+
+
+def test_connection_dialog_keeps_primary_action_after_language_switch(tmp_path, qt_app):
+    from PySide6.QtCore import Qt
+    from PySide6.QtTest import QTest
+    from PySide6.QtWidgets import QDialog, QPushButton
+
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.device import ConnectDialog
+
+    window = Studio(tmp_path / "main.py")
+    window.confirm_close = lambda *_: True
+    window.show()
+    try:
+        for code, expected in (("en", "Connect"), ("ru", "Подключить")):
+            window.change_language(code)
+            dialog = ConnectDialog(window, preferred_transport="virtual")
+            dialog.show()
+            QTest.qWait(60)
+            assert dialog.findChild(QPushButton, "dialogPrimary").text() == expected
+            assert not dialog.name.isVisible()
+            assert dialog.model.isVisible()
+            dialog.transport.setCurrentIndex(dialog.transport.findData("ble"))
+            assert dialog.name.isVisible()
+            assert not dialog.model.isVisible()
+            dialog.close()
+            dialog.deleteLater()
+        keyboard_dialog = ConnectDialog(window, preferred_transport="virtual")
+        keyboard_dialog.show()
+        QTest.keyClick(keyboard_dialog, Qt.Key.Key_Return)
+        assert keyboard_dialog.result() == QDialog.DialogCode.Accepted
+    finally:
+        window.change_language("en")
+        window.close()

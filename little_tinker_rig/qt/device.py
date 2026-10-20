@@ -29,7 +29,7 @@ class ConnectDialog(QDialog):
     def __init__(self, parent, *, preferred_transport=None):
         super().__init__(parent)
         self.setWindowTitle(N_("Connect hub"))
-        self.resize(470, 285)
+        self.resize(470, 260)
         layout = QVBoxLayout(self)
         header = QFrame()
         header.setObjectName("dialogHeader")
@@ -51,7 +51,7 @@ class ConnectDialog(QDialog):
         heading.addWidget(description)
         header_row.addLayout(heading, 1)
         layout.addWidget(header)
-        form = QFormLayout()
+        form = self.form = QFormLayout()
         self.transport = QComboBox()
         for label, key in (
             (N_("Virtual hub · no hardware needed"), "virtual"),
@@ -61,12 +61,6 @@ class ConnectDialog(QDialog):
             self.transport.addItem(label, key)
         self.name = QLineEdit()
         self.name.setPlaceholderText(N_("Empty — first available hub"))
-        self.name.setEnabled(False)
-        self.transport.currentIndexChanged.connect(
-            lambda index: self.name.setEnabled(
-                self.transport.currentData() != "virtual"
-            )
-        )
         self.name.setToolTip(
             N_(
                 "Bluetooth hub name, or USB serial port such as /dev/ttyACM0 or COM3. Leave empty for automatic discovery."
@@ -79,11 +73,6 @@ class ConnectDialog(QDialog):
             ("LEGO Technic Hub", "technic"),
         ):
             self.model.addItem(label, key)
-        self.transport.currentIndexChanged.connect(
-            lambda index: self.model.setEnabled(
-                self.transport.currentData() == "virtual"
-            )
-        )
         transport = (
             preferred_transport
             if preferred_transport in {"virtual", "ble", "usb"}
@@ -93,14 +82,14 @@ class ConnectDialog(QDialog):
         form.addRow(N_("Connection"), self.transport)
         form.addRow(N_("Hub name / USB port"), self.name)
         form.addRow(N_("Virtual hub model"), self.model)
+        self.transport.currentIndexChanged.connect(self.update_connection_fields)
+        self.update_connection_fields()
         layout.addLayout(form)
-        buttons = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Cancel)
+        connect_button = buttons.addButton(
+            N_("Connect"), QDialogButtonBox.ButtonRole.AcceptRole
         )
-        buttons.button(QDialogButtonBox.StandardButton.Ok).setText(N_("Connect"))
-        buttons.button(QDialogButtonBox.StandardButton.Ok).setObjectName(
-            "dialogPrimary"
-        )
+        connect_button.setObjectName("dialogPrimary")
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         help_button = buttons.addButton(
@@ -111,6 +100,13 @@ class ConnectDialog(QDialog):
         help_button.clicked.connect(parent.show_usb_help)
         layout.addWidget(buttons)
         localize(self)
+
+    def update_connection_fields(self, *_):
+        virtual = self.transport.currentData() == "virtual"
+        self.name.setEnabled(not virtual)
+        self.model.setEnabled(virtual)
+        self.form.setRowVisible(self.name, not virtual)
+        self.form.setRowVisible(self.model, virtual)
 
 
 class DevicePanel(QWidget):

@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QInputDialog,
     QMessageBox,
+    QPushButton,
     QToolButton,
 )
 
@@ -127,9 +128,7 @@ def connect(window, model="inventor"):
         dialog.transport.setCurrentIndex(dialog.transport.findData("virtual"))
         dialog.model.setCurrentIndex(dialog.model.findData(model))
         QTest.mouseClick(
-            dialog.findChild(QDialogButtonBox).button(
-                QDialogButtonBox.StandardButton.Ok
-            ),
+            dialog.findChild(QPushButton, "dialogPrimary"),
             Qt.MouseButton.LeftButton,
         )
 
