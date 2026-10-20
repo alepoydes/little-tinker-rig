@@ -825,6 +825,40 @@ def test_invalid_parameter_blocks_tab_change_without_losing_draft(windows, tmp_p
     assert window.session.project.path == other
 
 
+def test_context_value_edit_keeps_invalid_draft_and_commits_valid_one(windows):
+    from little_tinker_rig.qt.structure import block_menu
+
+    window = windows("print(1)\nprint(2)\n")
+    view = window.source
+    slots = [slot for slot in view.parameter_slots if slot.parameter.name == "value"]
+    assert len(slots) == 2
+    view.show_parameter(slots[0])
+    original = view.parameter_editor
+    field = original.line_edit
+    field.setText("1 +")
+    view.reveal(slots[1].span.start)
+    QApplication.processEvents()
+    menu = block_menu(view, view.parameter_rect(slots[1]).center().toPoint())
+    try:
+        edit_value = next(
+            action for action in menu.actions() if action.text() == "Edit value…"
+        )
+        edit_value.trigger()
+        QApplication.processEvents()
+        assert view.parameter_editor is original
+        assert field.isVisible() and field.text() == "1 +"
+        assert window.document_page.text == "print(1)\nprint(2)\n"
+
+        field.setText("300")
+        edit_value.trigger()
+        QApplication.processEvents()
+        assert window.document_page.text == "print(300)\nprint(2)\n"
+        assert view.parameter_editor is not original
+        assert view.parameter_editor.line_edit.text() == "2"
+    finally:
+        menu.deleteLater()
+
+
 def test_stop_and_disconnect_bypass_invalid_edits(windows, monkeypatch):
     from PySide6.QtWidgets import QToolBar
 

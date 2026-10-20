@@ -198,8 +198,7 @@ class SourceView(QTextEdit):
         painter.drawLine(0, 0, 0, 31)
         painter.end()
         self.setStyleSheet(
-            f"QTextEdit {{ color: {c['text']}; "
-            "border: 0; padding: 8px; }"
+            f"QTextEdit {{ color: {c['text']}; " "border: 0; padding: 8px; }"
         )
         palette = self.viewport().palette()
         palette.setBrush(QPalette.ColorRole.Base, QBrush(tile))
@@ -374,7 +373,8 @@ class SourceView(QTextEdit):
                 frame = self.document().rootFrame()
                 frame_format = frame.frameFormat()
                 frame_format.setTopMargin(
-                    4 + (self.fontMetrics().height() + 3) * first_notes
+                    4
+                    + (self.fontMetrics().height() + 3) * first_notes
                     + (8 if first_notes else 0)
                 )
                 frame.setFrameFormat(frame_format)
@@ -720,7 +720,11 @@ class SourceView(QTextEdit):
                 default=0,
             )
             color = block_color(region.role)
-            color = color.lighter(100 + int(amount * 45)) if dark else saturated(color, amount)
+            color = (
+                color.lighter(100 + int(amount * 45))
+                if dark
+                else saturated(color, amount)
+            )
             color.setAlphaF(self.intensity)
             painter.setBrush(color)
             rects = tuple(self.region_rects(region, first_line, last_line))
@@ -736,9 +740,7 @@ class SourceView(QTextEdit):
                     area = QRegion(rect.toRect())
                     painter.setClipRegion(area - covered)
                     if rounded is not None:
-                        painter.setClipPath(
-                            rounded, Qt.ClipOperation.IntersectClip
-                        )
+                        painter.setClipPath(rounded, Qt.ClipOperation.IntersectClip)
                     painter.drawRect(rect)
                     covered |= area
             if region.outlined:
@@ -754,9 +756,11 @@ class SourceView(QTextEdit):
             path = self.outline_path(region, first_line, last_line)
             pen_color = block_color(region.role)
             pen = QPen(
-                pen_color.lighter(155 + int(amount * 40))
-                if dark
-                else saturated(pen_color, 0.45 + amount * 0.4),
+                (
+                    pen_color.lighter(155 + int(amount * 40))
+                    if dark
+                    else saturated(pen_color, 0.45 + amount * 0.4)
+                ),
                 1,
             )
             pen.setCosmetic(True)
@@ -792,9 +796,7 @@ class SourceView(QTextEdit):
                 if rect is None or not rect.intersects(QRectF(event.rect())):
                     continue
                 band = block_color(note.role)
-                band = (
-                    band.lighter(150) if dark else saturated(band, 0.3)
-                )
+                band = band.lighter(150) if dark else saturated(band, 0.3)
                 band.setAlphaF(0.48 if dark else 0.56)
                 painter.setPen(Qt.PenStyle.NoPen)
                 painter.setBrush(band)
@@ -902,16 +904,18 @@ class SourceView(QTextEdit):
             painter.setPen(
                 QPen(
                     QColor(
-                        colors()["danger"] if issue else colors()["accent"]
-                        if related else colors()["border"]
+                        colors()["danger"]
+                        if issue
+                        else colors()["accent"] if related else colors()["border"]
                     ),
                     2 if related or issue else 1,
                 )
             )
             painter.setBrush(
                 QColor(
-                    colors()["danger_soft"] if issue else colors()["selected"]
-                    if related else colors()["panel"]
+                    colors()["danger_soft"]
+                    if issue
+                    else colors()["selected"] if related else colors()["panel"]
                 )
             )
             painter.drawRoundedRect(rect.adjusted(-1, 1, -1, -1), 3, 3)
@@ -1444,12 +1448,34 @@ class SourceView(QTextEdit):
         )
 
     def show_parameter(self, slot):
+        field = self.parameter_editor
+        if field:
+            if field.slot is slot:
+                field.line_edit.setFocus()
+                return
+            if not self.finish_parameter():
+                return
+        if not any(current is slot for current in self.parameter_slots):
+            position = edit.map_offset(
+                slot.syntax.source,
+                self.session.document.state.source,
+                slot.span.start,
+            )
+            slot = next(
+                (
+                    current
+                    for current in self.parameter_slots
+                    if current.span.start == position
+                    and current.parameter.name == slot.parameter.name
+                ),
+                None,
+            )
+            if slot is None:
+                return
         if empty(slot.node):
             self.session.editor.selection = slot.node
             self.choose_expression()
             return
-        if self.parameter_editor:
-            self.parameter_editor.close()
         self.reveal(slot.span.start)
         rect = self.parameter_rect(slot)
         if rect is None:

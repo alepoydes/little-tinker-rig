@@ -101,8 +101,10 @@ conditions offer booleans and button readings, motor fields offer motor variable
 Repeated occurrences change together. Enter, choosing an item or leaving the field
 applies valid input; Escape cancels it. Save and Run apply the active field first.
 Invalid input stays editable and prevents saving, running or leaving its document
-until corrected or cancelled. **Stop (F6)** and **Disconnect** always remain
-available when connected, even with invalid input; they preserve that input.
+until corrected or cancelled. Choosing another value through the context menu
+first applies a valid draft; an invalid draft stays open for correction.
+**Stop (F6)** and **Disconnect** always remain available when connected, even
+with invalid input; they preserve that input.
 F6 also stops the owning window's hub while one of its dialogs is open.
 Stop and Disconnect cancel pending console input and device configuration before
 issuing the hub operation.
