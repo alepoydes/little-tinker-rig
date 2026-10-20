@@ -323,9 +323,7 @@ class Studio(QMainWindow):
         self.scratch_dock.dockLocationChanged.connect(
             self._scratch_dock_location_changed
         )
-        self.device_dock.dockLocationChanged.connect(
-            self._device_dock_location_changed
-        )
+        self.device_dock.dockLocationChanged.connect(self._device_dock_location_changed)
         self.device_dock.visibilityChanged.connect(self._device_visibility_changed)
         self.block_editor.configure(
             self.session.snippets, self.session.collection_paths
@@ -367,7 +365,8 @@ class Studio(QMainWindow):
             return svg_icon(theme)
         return contrast_icon(
             QIcon.fromTheme(
-                theme, self.style().standardIcon(getattr(QStyle.StandardPixmap, fallback))
+                theme,
+                self.style().standardIcon(getattr(QStyle.StandardPixmap, fallback)),
             )
         )
 
@@ -485,9 +484,7 @@ class Studio(QMainWindow):
         dock.setObjectName(title)
         dock.setWidget(widget)
         self.addDockWidget(area, dock)
-        dock.topLevelChanged.connect(
-            lambda *_: self._translate_dock_buttons(dock)
-        )
+        dock.topLevelChanged.connect(lambda *_: self._translate_dock_buttons(dock))
         return dock
 
     def _translate_dock_buttons(self, dock):
@@ -877,7 +874,9 @@ class Studio(QMainWindow):
 
     def _refresh_theme_toggle(self):
         target = "dark" if self.visual_theme == "light" else "light"
-        self.theme_toggle.setIcon(svg_icon("theme-moon" if target == "dark" else "theme-sun"))
+        self.theme_toggle.setIcon(
+            svg_icon("theme-moon" if target == "dark" else "theme-sun")
+        )
         name = tr("Dark") if target == "dark" else tr("Light")
         description = tr("Appearance") + " · " + name
         self.theme_toggle.setToolTip(description)
@@ -905,11 +904,7 @@ class Studio(QMainWindow):
         self._catalog_width_manual = True
 
     def _schedule_catalog_width(self):
-        if (
-            self._closing
-            or self._catalog_width_manual
-            or self._catalog_resize_pending
-        ):
+        if self._closing or self._catalog_width_manual or self._catalog_resize_pending:
             return
         self._catalog_resize_pending = True
         QTimer.singleShot(0, self, self._fit_catalog_width)
@@ -947,12 +942,15 @@ class Studio(QMainWindow):
 
     def _right_dock_anchor(self, moving):
         lessons = getattr(self, "lessons", None)
-        for dock in (getattr(lessons, "dock", None), self.scratch_dock, self.device_dock):
+        for dock in (
+            getattr(lessons, "dock", None),
+            self.scratch_dock,
+            self.device_dock,
+        ):
             if (
                 dock is not None
                 and dock is not moving
-                and self.dockWidgetArea(dock)
-                == Qt.DockWidgetArea.RightDockWidgetArea
+                and self.dockWidgetArea(dock) == Qt.DockWidgetArea.RightDockWidgetArea
             ):
                 return dock
         return None
@@ -1658,6 +1656,7 @@ class Studio(QMainWindow):
             return
         if index != 5 and self.modes.item(index).isHidden():
             return
+        previous_mode = self.pages.currentIndex()
         was_home = self.pages.currentIndex() == 5
         if not self.finish_parameters():
             self.home_button.setChecked(was_home)
@@ -1688,8 +1687,11 @@ class Studio(QMainWindow):
         self.scratch_button.setEnabled(index == 0)
         self._fit_device_layout()
         if index == 1:
-            self.device_dock.show()
-            self.device_dock.raise_()
+            if self.hub_info.connected or self.hub_info.connection_action:
+                self.device_dock.show()
+                self.device_dock.raise_()
+            elif previous_mode != 1:
+                self.device_dock.hide()
         elif index != 0:
             self.device_dock.hide()
         if index == 3:
@@ -1797,9 +1799,7 @@ class Studio(QMainWindow):
         page = self.editing_page
         if page is None:
             return
-        task_overlay = (
-            hasattr(self, "lessons") and self.lessons.overlay.isVisible()
-        )
+        task_overlay = hasattr(self, "lessons") and self.lessons.overlay.isVisible()
         visible = not page.code_active and not task_overlay
         was_visible = self.library_pane.isVisible()
         self.library_pane.setVisible(visible)
@@ -2558,11 +2558,16 @@ class Studio(QMainWindow):
                 self.settings.value("lastHubTransport") != info.transport
             ):
                 self.settings.setValue("lastHubTransport", info.transport)
-            if info.transport == "virtual" and info.model in {
-                "inventor",
-                "boost",
-                "technic",
-            } and self.settings.value("lastVirtualHubModel") != info.model:
+            if (
+                info.transport == "virtual"
+                and info.model
+                in {
+                    "inventor",
+                    "boost",
+                    "technic",
+                }
+                and self.settings.value("lastVirtualHubModel") != info.model
+            ):
                 self.settings.setValue("lastVirtualHubModel", info.model)
         input_available = info.connected and info.transport in ("ble", "usb")
         self.hub_input.setVisible(input_available)
@@ -2584,9 +2589,7 @@ class Studio(QMainWindow):
             else (
                 tr("Cancel connection")
                 if action == "connecting"
-                else tr("Disconnect hub")
-                if info.connected
-                else tr("＋ Connect hub")
+                else tr("Disconnect hub") if info.connected else tr("＋ Connect hub")
             )
         )
         self.hub_button.setToolTip(
@@ -2599,9 +2602,7 @@ class Studio(QMainWindow):
                     tr("Disconnect {name}", name=info.name or tr("Virtual hub"))
                     if info.connected
                     else (
-                        tr("Connect hub")
-                        + " · "
-                        + tr("Bluetooth, USB or virtual hub")
+                        tr("Connect hub") + " · " + tr("Bluetooth, USB or virtual hub")
                     )
                 )
             )

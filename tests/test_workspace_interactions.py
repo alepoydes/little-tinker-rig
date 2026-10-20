@@ -104,15 +104,19 @@ def test_structural_canvas_stays_dark_after_theme_switch(windows):
     window.change_visual_theme("dark")
     QApplication.processEvents()
     viewport = window.source.viewport()
-    dark = viewport.grab().toImage().pixelColor(
-        viewport.width() - 12, viewport.height() - 12
+    dark = (
+        viewport.grab()
+        .toImage()
+        .pixelColor(viewport.width() - 12, viewport.height() - 12)
     )
     assert dark.lightness() < 80
 
     window.change_visual_theme("light")
     QApplication.processEvents()
-    light = viewport.grab().toImage().pixelColor(
-        viewport.width() - 12, viewport.height() - 12
+    light = (
+        viewport.grab()
+        .toImage()
+        .pixelColor(viewport.width() - 12, viewport.height() - 12)
     )
     assert light.lightness() > 200
 
@@ -298,6 +302,34 @@ def test_compact_control_keeps_sticks_visible_and_opens_motor_assignments(window
     assert not window.controls.assignments.isVisible()
 
 
+def test_disconnected_controls_leave_device_panel_optional(windows):
+    from little_tinker_rig.pybricks.devices import HubInfo
+
+    window = windows()
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.set_mode(1)
+    assert window.device_dock.isHidden()
+    assert window.pages.height() >= 400
+
+    window.view_menu.aboutToShow.emit()
+    window.dock_view_actions[window.device_dock].trigger()
+    assert not window.device_dock.visibleRegion().isEmpty()
+    window.set_mode(1)
+    assert not window.device_dock.visibleRegion().isEmpty()
+
+    window.device_dock.hide()
+    window.set_mode(0)
+    window.update_hub(HubInfo(connected=True, transport="virtual"))
+    window.set_mode(1)
+    assert not window.device_dock.visibleRegion().isEmpty()
+
+    window.set_mode(0)
+    window.update_hub(HubInfo())
+    window.set_mode(1)
+    assert window.device_dock.isHidden()
+
+
 def test_narrow_toolbar_and_device_panel_keep_program_available(windows):
     from pathlib import Path
 
@@ -376,6 +408,7 @@ def test_console_request_reveals_tab_behind_device_panel(windows):
     window.setMinimumWidth(0)
     window.resize(800, 620)
     window.set_mode(1)
+    window.device_dock.show()
     window.set_mode(0)
     QTest.qWait(50)
     assert not window.console_dock.isVisible()
