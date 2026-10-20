@@ -522,28 +522,58 @@ class HelpPage(QWidget):
         anchor = lesson.instructions_anchor(stage, language())
         self.show_page("lesson/instructions" + ("#" + anchor if anchor else ""))
 
+    def _translated_lesson_key(self, key, old_names, old_language):
+        """Map open lesson pages through task IDs and translated resource links."""
+        if not key or not self.lesson or not key.startswith("lesson/"):
+            return key
+        page, _, anchor = key.partition("#")
+        if page == "lesson/instructions":
+            if anchor:
+                for stage in self.lesson.stages:
+                    if self.lesson.instructions_anchor(stage, old_language) == anchor:
+                        anchor = self.lesson.instructions_anchor(stage, language())
+                        break
+            return page + ("#" + anchor if anchor else "")
+        logical = old_names.get(page)
+        if logical is None:
+            return None
+        old_name = logical + ("#" + anchor if anchor else "")
+        links = [
+            (
+                localized(link["target"], old_language),
+                localized(link["target"], language()),
+            )
+            for stage in self.lesson.stages
+            for link in stage.get("links", [])
+            if link["kind"] == "markdown"
+        ]
+        target = next((new for old, new in links if old == old_name), None)
+        if target is None:
+            paths = {
+                new.partition("#")[0]
+                for old, new in links
+                if old.partition("#")[0] == logical
+            }
+            target = (
+                paths.pop() + ("#" + anchor if anchor else "")
+                if len(paths) == 1
+                else old_name
+            )
+        try:
+            translated_page = self.add_lesson_material(target)
+        except (OSError, ValueError):
+            return None
+        _, _, translated_anchor = target.partition("#")
+        return translated_page + (
+            "#" + translated_anchor if translated_anchor else ""
+        )
+
     def retranslate(self):
         current, history, recent = self.current, self.history, self.recent_pages
+        old_names = self.lesson_page_names.copy()
+        old_language = self.root.name
         self._search_expanded = None
         self._search_selected = None
-        lesson_target = None
-        if self.lesson and current and current.startswith("lesson/"):
-            page, _, anchor = current.partition("#")
-            lesson_target = (
-                current if page == "lesson/instructions" else "lesson/instructions"
-            )
-            if page == "lesson/instructions" and anchor:
-                # Match the old fragment to a task before loading translated headings.
-                previous_language = self.root.name
-                for stage in self.lesson.stages:
-                    if self.lesson.instructions_anchor(stage, previous_language) == anchor:
-                        translated_anchor = self.lesson.instructions_anchor(
-                            stage, language()
-                        )
-                        lesson_target = page + (
-                            "#" + translated_anchor if translated_anchor else ""
-                        )
-                        break
         self.root = self.base_root / language()
         self.pages, self.page_paths, self.snippet_targets = {}, {}, {}
         self.lesson_page_names = {}
@@ -633,15 +663,23 @@ class HelpPage(QWidget):
             self.lesson_group.setExpanded(True)
         developers.setExpanded(False)
         self.tree.blockSignals(False)
+        mapped_history = [
+            self._translated_lesson_key(key, old_names, old_language)
+            for key in history
+        ]
+        mapped_recent = [
+            self._translated_lesson_key(key, old_names, old_language)
+            for key in recent
+        ]
         self.history = [
             key.partition("#")[0] if key.startswith("lesson/") else key
-            for key in history
-            if key.partition("#")[0] in self.pages
+            for key in mapped_history
+            if key and key.partition("#")[0] in self.pages
         ]
         self.recent_pages = [
             key.partition("#")[0] if key.startswith("lesson/") else key
-            for key in recent
-            if key.partition("#")[0] in self.pages
+            for key in mapped_recent
+            if key and key.partition("#")[0] in self.pages
         ]
         self.back_button.setToolTip(tr("Back"))
         self.back_button.setAccessibleName(tr("Back"))
@@ -656,11 +694,13 @@ class HelpPage(QWidget):
         self.find_previous.setAccessibleName(tr("Previous match"))
         self.find_next.setToolTip(tr("Next match"))
         self.find_next.setAccessibleName(tr("Next match"))
-        destination = lesson_target or (
-            current
-            if current and current.partition("#")[0] in self.pages
-            else "index.md"
-        )
+        destination = self._translated_lesson_key(current, old_names, old_language)
+        if not destination or destination.partition("#")[0] not in self.pages:
+            destination = (
+                "lesson/instructions"
+                if self.lesson and current and current.startswith("lesson/")
+                else "index.md"
+            )
         self.show_page(destination)
         self.filter(self.search.text())
 

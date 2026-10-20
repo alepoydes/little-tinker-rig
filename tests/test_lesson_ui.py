@@ -1047,6 +1047,81 @@ def test_language_switch_keeps_task_section_with_localized_anchor(tmp_path, qt_a
         page.deleteLater()
 
 
+def test_language_switch_keeps_localized_task_material_in_help_history(
+    tmp_path, qt_app
+):
+    from little_tinker_rig.qt.help import HelpPage
+
+    root = tmp_path / "materials"
+    root.mkdir()
+    (root / "en.md").write_text("# Training\n\n## First\n\nStart here.\n", encoding="utf-8")
+    (root / "ru.md").write_text("# Обучение\n\n## Первый\n\nНачни здесь.\n", encoding="utf-8")
+    (root / "extra_en.md").write_text(
+        "# More\n\n## Details\n\nEnglish details.\n", encoding="utf-8"
+    )
+    (root / "extra_ru.md").write_text(
+        "# Ещё\n\n## Подробности\n\nРусские подробности.\n", encoding="utf-8"
+    )
+    (root / "lesson.json").write_text(
+        json.dumps(
+            {
+                "format": 1,
+                "id": "materials",
+                "title": {"en": "Training", "ru": "Обучение"},
+                "instructions": {"en": "en.md", "ru": "ru.md"},
+                "stages": [
+                    {
+                        "id": "first",
+                        "title": {"en": "First", "ru": "Первый"},
+                        "description": {"en": "en.md#first", "ru": "ru.md#первый"},
+                        "links": [
+                            {
+                                "kind": "markdown",
+                                "label": {"en": "More", "ru": "Подробнее"},
+                                "target": {
+                                    "en": "extra_en.md#details",
+                                    "ru": "extra_ru.md#подробности",
+                                },
+                            }
+                        ],
+                    }
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    lesson = Lesson.load(root)
+    previous_language = language()
+    set_language("en")
+    page = HelpPage([])
+    try:
+        page.show_lesson_stage(lesson, lesson.stages[0])
+        page.show_lesson_material(lesson, "extra_en.md#details")
+        assert page.current == "lesson/resource/extra_en.md#details"
+        assert page.history[-1] == "lesson/instructions#first"
+
+        set_language("ru")
+        page.retranslate()
+        assert page.current == "lesson/resource/extra_ru.md#подробности"
+        assert page.page_paths["lesson/resource/extra_ru.md"] == root / "extra_ru.md"
+        assert "Русские подробности." in page.browser.toPlainText()
+        assert page.history[-1] == "lesson/instructions"
+
+        page.back()
+        assert page.current == "lesson/instructions"
+        resource_action = next(
+            action
+            for action in page.recent_menu.actions()
+            if action.data() == "lesson/resource/extra_ru.md#подробности"
+        )
+        resource_action.trigger()
+        assert page.current == "lesson/resource/extra_ru.md#подробности"
+    finally:
+        set_language(previous_language)
+        page.deleteLater()
+
+
 def test_instruction_heading_numbers_match_task_panel_order(tmp_path, qt_app):
     from pathlib import Path
 
