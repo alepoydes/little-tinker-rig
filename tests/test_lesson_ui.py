@@ -722,6 +722,38 @@ def test_compact_tasks_keep_lesson_instructions_readable(tmp_path, qt_app):
         window.deleteLater()
 
 
+def test_compact_lesson_help_shows_first_task_with_console_open(tmp_path, qt_app):
+    from pathlib import Path
+
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "plain.py")
+    window.confirm_close = lambda *_: True
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.show()
+    try:
+        window.change_language("ru")
+        window.lessons.open(Path("lessons/first_python"))
+        window.console_dock.show()
+        window.lessons.set_panel_expanded(True)
+        window.help_page.show_lesson_home(window.lessons.current.lesson)
+        QTest.qWait(90)
+
+        browser = window.help_page.browser
+        first_task = browser.document().find("Придумай своё сообщение")
+        assert not first_task.isNull()
+        assert browser.verticalScrollBar().value() == 0
+        assert (
+            browser.viewport().rect().contains(browser.cursorRect(first_task).center())
+        )
+    finally:
+        window.close()
+        window.deleteLater()
+
+
 def test_help_destination_link_clears_compact_task_overlay(tmp_path, qt_app):
     from pathlib import Path
 

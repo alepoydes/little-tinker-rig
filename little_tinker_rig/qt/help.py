@@ -17,6 +17,7 @@ from PySide6.QtGui import (
     QTextBlockFormat,
     QTextCharFormat,
     QTextCursor,
+    QTextFormat,
     QTextFrameFormat,
     QTextImageFormat,
     QTextTable,
@@ -120,6 +121,7 @@ class HelpBrowser(QTextBrowser):
     def __init__(self):
         super().__init__()
         self.lesson_numbers = {}
+        self._compact_document = self.width() < 440
 
     def lesson_number_image(self, number):
         c = colors()
@@ -194,13 +196,20 @@ class HelpBrowser(QTextBrowser):
         if self.viewportMargins().left() != inset:
             self.setViewportMargins(inset, 0, inset, 0)
         super().resizeEvent(event)
-        self.fit_images()
+        compact = self.width() < 440
+        if compact != self._compact_document:
+            scroll = self.verticalScrollBar().value()
+            self._compact_document = compact
+            self.style_document()
+            self.verticalScrollBar().setValue(scroll)
+        else:
+            self.fit_images()
 
     def style_document(self):
         c = colors()
         document = self.document()
         document.setDefaultFont(QFont("sans-serif", 12))
-        document.setDocumentMargin(32)
+        document.setDocumentMargin(14 if self._compact_document else 32)
         block = document.begin()
         while block.isValid():
             cursor = QTextCursor(block)
@@ -211,8 +220,13 @@ class HelpBrowser(QTextBrowser):
                 145 if code else 155,
                 QTextBlockFormat.LineHeightTypes.ProportionalHeight.value,
             )
-            format.setTopMargin(24 if heading else 0)
-            format.setBottomMargin(12 if heading else 0 if code else 12)
+            format.setTopMargin(
+                (12 if self._compact_document else 24) if heading else 0
+            )
+            bottom_margin = 0 if code else 12
+            if heading and self._compact_document:
+                bottom_margin = 8
+            format.setBottomMargin(bottom_margin)
             if code:
                 format.setBackground(QColor(c["raised"]))
                 format.setLeftMargin(14)
@@ -226,21 +240,36 @@ class HelpBrowser(QTextBrowser):
                 text_format.setForeground(QColor(c["text"]))
                 cursor.mergeCharFormat(text_format)
             elif heading:
-                if block.text().startswith("\ufffc"):
-                    cursor.setPosition(block.position() + 1)
-                    cursor.movePosition(
-                        QTextCursor.MoveOperation.EndOfBlock,
-                        QTextCursor.MoveMode.KeepAnchor,
-                    )
+                if heading == 1:
+                    heading_size = 19 if self._compact_document else 25
+                elif heading == 2:
+                    heading_size = 16 if self._compact_document else 18
                 else:
-                    cursor.select(QTextCursor.SelectionType.BlockUnderCursor)
-                text_format = cursor.charFormat()
-                text_format.setFontPointSize(
-                    25 if heading == 1 else 18 if heading == 2 else 14
+                    heading_size = 14
+                start = block.position() + (
+                    1 if block.text().startswith("\ufffc") else 0
                 )
-                text_format.setForeground(QColor(c["text"]))
-                text_format.setFontWeight(QFont.Weight.DemiBold)
-                cursor.mergeCharFormat(text_format)
+                end = block.position() + len(block.text())
+                fragments = []
+                item = block.begin()
+                while not item.atEnd():
+                    fragment = item.fragment()
+                    first = max(start, fragment.position())
+                    last = min(end, fragment.position() + fragment.length())
+                    if first < last:
+                        text_format = fragment.charFormat()
+                        text_format.clearProperty(
+                            QTextFormat.Property.FontSizeAdjustment
+                        )
+                        text_format.setFontPointSize(heading_size)
+                        text_format.setForeground(QColor(c["text"]))
+                        text_format.setFontWeight(QFont.Weight.DemiBold)
+                        fragments.append((first, last, text_format))
+                    item += 1
+                for first, last, text_format in fragments:
+                    cursor.setPosition(first)
+                    cursor.setPosition(last, QTextCursor.MoveMode.KeepAnchor)
+                    cursor.setCharFormat(text_format)
             cursor.clearSelection()
             cursor.setPosition(block.position())
             cursor.setBlockFormat(format)
