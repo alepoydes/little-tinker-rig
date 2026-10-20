@@ -135,6 +135,33 @@ def test_header_theme_and_language_keep_brand_readable_and_actions_visible(windo
     )
 
 
+def test_compact_title_keeps_document_name_and_full_title_available(windows):
+    from pathlib import Path
+
+    window = windows()
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.change_language("ru")
+    window.lessons.open(Path("lessons/first_python"))
+    window.set_mode(0)
+    QApplication.processEvents()
+
+    label = window.title_bar.title
+    full = window.windowTitle()
+    shown = label.fontMetrics().elidedText(
+        label.display_text(), Qt.TextElideMode.ElideMiddle, max(0, label.width() - 16)
+    )
+    assert full.endswith(" — LittleTinker Rig")
+    assert label.display_text().endswith(" · main.py")
+    assert "LittleTinker Rig" not in shown
+    assert shown.endswith("main.py")
+    assert label.accessibleName() == window.title_bar.toolTip() == full
+
+    window.set_mode(5)
+    assert label.display_text().endswith("Начало")
+    assert window.title_bar.toolTip() == window.windowTitle()
+
+
 def test_compact_toolbar_and_search_icons_remain_named_and_usable(windows):
     window = windows()
     window.resize(930, 620)

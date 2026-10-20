@@ -121,6 +121,8 @@ interface immediately, or click the sun/moon button beside the hub control to
 switch between the two themes. The choice is saved; Light is the default. The
 **Block color** slider in the same menu adjusts block shading across open
 documents and Scratch.
+The header shortens long project titles while keeping the file name visible;
+hover over the title to see its full name.
 After a normal close, the next launch restores the window position, size and
 maximized or full-screen state. A minimized window reopens visibly. Qt adjusts
 off-screen positions when the monitor configuration changes.

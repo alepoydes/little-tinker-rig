@@ -19,11 +19,14 @@ from .theme import colors, contrast_icon, svg_icon
 class ElidedTitle(QLabel):
     """Keep a useful drag area when a localized title grows too long."""
 
+    def display_text(self):
+        return self.text().removesuffix(" — LittleTinker Rig")
+
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setPen(self.palette().windowText().color())
         text = self.fontMetrics().elidedText(
-            self.text(), Qt.TextElideMode.ElideMiddle, max(0, self.width() - 16)
+            self.display_text(), Qt.TextElideMode.ElideMiddle, max(0, self.width() - 16)
         )
         painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, text)
 
@@ -86,9 +89,15 @@ class TitleBar(QWidget):
             row.addWidget(button)
             setattr(self, name, button)
         self.close_button.setObjectName("windowClose")
-        window.windowTitleChanged.connect(self.title.setText)
+        window.windowTitleChanged.connect(self.update_title)
+        self.update_title(window.windowTitle())
         window.installEventFilter(self)
         self.apply_theme(window.visual_theme)
+
+    def update_title(self, title):
+        self.title.setText(title)
+        self.title.setAccessibleName(title)
+        self.setToolTip(title)
 
     def apply_theme(self, name):
         palette = colors(name)
