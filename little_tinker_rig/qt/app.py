@@ -981,7 +981,12 @@ class Studio(QMainWindow):
             self._schedule_device_size()
 
     def _schedule_device_size(self):
-        QTimer.singleShot(0, self, self._size_device_once)
+        # Tabified docks need one layout pass after being raised before resizing.
+        QTimer.singleShot(
+            0,
+            self,
+            lambda: QTimer.singleShot(0, self, self._size_device_once),
+        )
 
     def _size_device_once(self):
         if not self._device_needs_size or not self.device_dock.isVisible():

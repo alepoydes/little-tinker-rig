@@ -80,6 +80,8 @@ the sticks and triggers. Assign an axis or trigger, choose its mode/scale, scrol
 back up, then enable commands.
 **Send controller input to my program** shows the complete controller,
 including buttons. Both layouts fit the available width.
+In a compact window, the sticks remain in view while the bottom Hub and devices
+panel leaves its port monitor control visible; scroll either area for more options.
 
 Rotation scale is degrees per second at full input. Servo scale is an angle added
 to its center: RT with scale 90 and center 20 requests 20–110°. Sticks range from

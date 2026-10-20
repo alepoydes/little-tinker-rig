@@ -255,8 +255,12 @@ def test_compact_control_keeps_sticks_visible_and_opens_motor_assignments(window
     assert window.dockWidgetArea(window.device_dock) == (
         Qt.DockWidgetArea.BottomDockWidgetArea
     )
-    assert window.device_dock.height() <= 190
+    assert 150 <= window.device_dock.height() <= 190
     assert window.pages.height() >= 300
+    assert (
+        window.device_panel.monitor.visibleRegion().boundingRect().height()
+        == window.device_panel.monitor.height()
+    )
     table = window.controls.table
     assert table.isVisible()
     controller = window.controls.controller
