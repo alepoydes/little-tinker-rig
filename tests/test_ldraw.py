@@ -185,6 +185,77 @@ def test_cancelled_assembly_result_does_not_show_finished_scene(model, qt_app):
         page.deleteLater()
 
 
+@pytest.mark.parametrize("report_download", [False, True])
+def test_assembly_loading_identifies_cached_and_downloaded_parts(
+    model, qt_app, monkeypatch, report_download
+):
+    import json
+    import threading
+    import time
+
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.core import ldraw_cache, ldraw_parts
+    from little_tinker_rig.i18n import language, set_language
+    from little_tinker_rig.qt.assembly import AssemblyPage
+    from little_tinker_rig.qt.localization import localize
+
+    description = model.with_suffix(".json")
+    description.write_text(json.dumps({"format": 1, "model": model.name}))
+    library_gate = threading.Event()
+    model_gate = threading.Event()
+
+    def resolve_library(root, reference, *, progress, **kwargs):
+        if report_download:
+            progress(1024**2, 2 * 1024**2)
+        assert library_gate.wait(5)
+        return model.parent
+
+    def load_scene(*args, **kwargs):
+        assert model_gate.wait(5)
+        return None
+
+    monkeypatch.setattr(ldraw_parts, "resolve_library", resolve_library)
+    monkeypatch.setattr(ldraw_cache, "load_scene", load_scene)
+
+    def wait_for(predicate):
+        deadline = time.monotonic() + 5
+        while not predicate() and time.monotonic() < deadline:
+            QTest.qWait(10)
+        assert predicate()
+
+    page = AssemblyPage(description)
+    original_language = language()
+    page.show()
+    try:
+        assert page.cancel.text() == "Cancel loading"
+        if report_download:
+            wait_for(lambda: "Loading parts: 1.0 / 2.0 MiB" == page.placeholder_text.text())
+            assert page.progress.maximum() == 1000
+            assert page.download_status.isHidden()
+        else:
+            assert page.placeholder_text.text() == "Loading robot model…"
+        library_gate.set()
+        wait_for(lambda: page.placeholder_text.text() == "Preparing 3D model…")
+        assert page.progress.maximum() == 0
+        set_language("ru")
+        localize(page)
+        page.retranslate()
+        assert page.placeholder_text.text() == "Подготовка 3D-модели…"
+        assert page.cancel.text() == "Отменить загрузку"
+        page.cancel.click()
+        model_gate.set()
+        wait_for(lambda: page.job is None)
+        assert page.error_kind == "cancelled"
+    finally:
+        library_gate.set()
+        model_gate.set()
+        page.cancel_loading()
+        set_language(original_language)
+        page.close()
+        page.deleteLater()
+
+
 def test_replacing_assembly_page_cancels_its_active_load(model, tmp_path, qt_app):
     import json
 

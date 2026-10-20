@@ -82,6 +82,8 @@ class AssemblyPage(QWidget):
         self.view = None
         self.view_container = None
         self.job = None
+        self.loading_phase = "model"
+        self.loading_bytes = (0, 0)
         self.attempted = False
         self.error_kind = None
         self.step = step
@@ -202,7 +204,7 @@ class AssemblyPage(QWidget):
         self.local.setObjectName("assemblyLocal")
         self.local.clicked.connect(self.open_library)
         self.local.hide()
-        self.cancel = QPushButton(N_("Cancel download"))
+        self.cancel = QPushButton(N_("Cancel loading"))
         self.cancel.clicked.connect(
             lambda: self.job.cancelled.set() if self.job else None
         )
@@ -261,6 +263,8 @@ class AssemblyPage(QWidget):
                 progress=progress,
                 cancelled=cancelled,
             )
+            # No download progress uses zero bytes; this marks model preparation.
+            progress(0, 0)
             scene = load_scene(
                 path,
                 library,
@@ -276,10 +280,10 @@ class AssemblyPage(QWidget):
         self.error_kind = None
         self.error.clear()
         self.error.hide()
-        self.placeholder_text.setText(tr("Loading robot model…"))
+        self.loading_phase = "model"
+        self.loading_bytes = (0, 0)
         self.placeholder.setVisible(self.view_container is None)
-        self.download_status.setText(tr("Loading robot model…"))
-        self.download_status.setVisible(self.view_container is not None)
+        self.update_loading_status()
         self.progress.setRange(0, 0)
         self.progress.show()
         self.retry.hide()
@@ -292,16 +296,32 @@ class AssemblyPage(QWidget):
         QThreadPool.globalInstance().start(self.job)
 
     def download_progress(self, received, total):
+        if received == 0 and total == 0:
+            self.loading_phase = "prepare"
+            self.progress.setRange(0, 0)
+            self.update_loading_status()
+            return
+        self.loading_phase = "parts"
+        self.loading_bytes = received, total
         self.progress.setRange(0, 1000 if total else 0)
         self.progress.setValue(int(received * 1000 / total) if total else 0)
-        self.download_status.setText(
-            tr(
+        self.update_loading_status()
+
+    def update_loading_status(self):
+        if self.loading_phase == "prepare":
+            message = tr("Preparing 3D model…")
+        elif self.loading_phase == "parts":
+            received, total = self.loading_bytes
+            message = tr(
                 "Loading parts: {current} / {total} MiB",
                 current=f"{received / 1024**2:.1f}",
                 total=f"{total / 1024**2:.1f}" if total else "?",
             )
-        )
-        self.download_status.show()
+        else:
+            message = tr("Loading robot model…")
+        self.placeholder_text.setText(message)
+        self.download_status.setText(message)
+        self.download_status.setVisible(self.view_container is not None)
 
     def loaded(self, scene, error):
         cancelled = self.job is not None and self.job.cancelled.is_set()
@@ -621,9 +641,12 @@ class AssemblyPage(QWidget):
 
     def retranslate(self):
         self.update_error_text()
-        self.placeholder_text.setText(
-            self.error.text() if self.error_kind else tr("Loading robot model…")
-        )
+        if self.error_kind:
+            self.placeholder_text.setText(self.error.text())
+        elif self.job:
+            self.update_loading_status()
+        else:
+            self.placeholder_text.setText(tr("Loading robot model…"))
         self.set_step(self.step)
 
 

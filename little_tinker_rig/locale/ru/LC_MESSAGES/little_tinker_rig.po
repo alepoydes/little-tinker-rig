@@ -621,8 +621,8 @@ msgstr "Отмена"
 msgid "Cancel connection"
 msgstr "Отменить подключение"
 
-#: little_tinker_rig/qt/assembly.py:171
-msgid "Cancel download"
+#: little_tinker_rig/qt/assembly.py:207
+msgid "Cancel loading"
 msgstr "Отменить загрузку"
 
 #: little_tinker_rig/qt/app.py:537
@@ -4051,6 +4051,10 @@ msgstr "Загрузить и проверить"
 #: little_tinker_rig/tui/firmware.py:92
 msgid "Prepare local file"
 msgstr "Подготовить файл"
+
+#: little_tinker_rig/qt/assembly.py:312
+msgid "Preparing 3D model…"
+msgstr "Подготовка 3D-модели…"
 
 #: little_tinker_rig/qt/lessons.py:1302
 msgid "Preparing offline resources…"
