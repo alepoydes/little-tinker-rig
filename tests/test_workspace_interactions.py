@@ -594,6 +594,40 @@ def test_sequence_bar_keeps_program_source_clear_of_line_numbers(windows):
     clear_of_numbers()
 
 
+def test_sequence_bar_keeps_inline_parameter_until_it_is_valid(windows):
+    from PySide6.QtCore import QPoint
+
+    window = windows("result = max(1, 2)\n")
+    view = window.source
+    rect = view._rect(1, 13)
+    point = QPoint(int(rect.left()) + 2, int(rect.center().y()))
+    bar = view.structure_bar
+    bar.activate(point)
+    assert bar.isVisible()
+    assert bar.item_index(bar.current()) == 0
+
+    slot = next(slot for slot in view.parameter_slots if slot.span.start == 13)
+    view.show_parameter(slot)
+    assert not bar.isVisible()
+    field = view.parameter_editor.line_edit
+    field.setText("1 +")
+    bar.change("remove")
+    QApplication.processEvents()
+    assert field.isVisible() and field.text() == "1 +"
+    assert window.document_page.text == "result = max(1, 2)\n"
+
+    field.setText("300")
+    bar.change("remove")
+    QApplication.processEvents()
+    assert window.document_page.text == "result = max(300, 2)\n"
+    assert view.parameter_editor is None
+    assert not bar.isVisible()
+
+    bar.activate(point)
+    bar.change("remove")
+    assert window.document_page.text == "result = max(2)\n"
+
+
 def test_console_uses_compact_height_after_hidden_window_resize(windows):
     window = windows()
     window.resize(1380, 880)

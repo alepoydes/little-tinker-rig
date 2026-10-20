@@ -421,9 +421,12 @@ edit it as Python, clear it to `...`, or wrap it in a logical, arithmetic or
 comparison expression. Drag compatible blocks into the resulting empty fields.
 
 Click inside a call, function header or logical expression to show its compact
-list controls below the editor. Scalar input clicks only edit their value. Select the list when several are nested. **+** inserts after the
-selected item, or appends when no item is selected; its menu also inserts before
-an item. **−** removes an item, and the arrows reorder it. Calls and definitions
+list controls below the editor. Opening a value field hides these controls until
+the next list selection. An invalid field must be corrected or cancelled before
+a list command can run. Scalar input clicks only edit their value. Select the list
+when several are nested. **+** inserts after the selected item, or appends when
+no item is selected; its menu also inserts before an item. **−** removes an item,
+and the arrows reorder it. Calls and definitions
 may have no arguments; `and` and `or` retain at least two operands. Parameters may
 include annotations, defaults and Python's `/`, `*`, `*args` and `**kwargs` forms.
 Edits that violate Python syntax leave the document unchanged. Each accepted

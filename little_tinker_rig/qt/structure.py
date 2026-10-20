@@ -187,6 +187,12 @@ class StructureBar(QWidget):
             action.setVisible(seq.kind == "arguments")
 
     def change(self, action):
+        syntax = self.view.session.document.syntax
+        if not self.view.finish_parameter():
+            return
+        if self.view.session.document.syntax is not syntax:
+            self.hide()
+            return
         seq = self.current()
         if seq is None:
             return

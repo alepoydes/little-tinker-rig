@@ -1476,6 +1476,7 @@ class SourceView(QTextEdit):
             self.session.editor.selection = slot.node
             self.choose_expression()
             return
+        self.structure_bar.hide()
         self.reveal(slot.span.start)
         rect = self.parameter_rect(slot)
         if rect is None:
