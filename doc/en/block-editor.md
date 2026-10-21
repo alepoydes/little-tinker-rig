@@ -34,10 +34,11 @@ selected function, including its decorators, imports and reachable helper functi
 The copy has its own identity; it does not replace the built-in block.
 
 Choose a **Group / module**, such as `custom` or `robots/motors`, and a starter:
-**Action**, **Expression**, or **Multi-command action**. **New block** adds a
-function to that module. Copies use the same group field. Name collisions receive
-a numeric suffix. Functions in one module form one help
-page. Edit the function name, signature, docstring and body directly in Python.
+**Action**, **Expression**, or **Multi-command action**. Leave the group field
+empty to use `custom`. **New block** adds a function to that module. Copies use
+the same group field. Name collisions receive a numeric suffix. Functions in one
+module form one help page. Edit the function name, signature, docstring and body
+directly in Python.
 
 In the program, **Edit → Create block from selection** starts a definition from
 the selected structural block or selected Python text. The program stays intact.

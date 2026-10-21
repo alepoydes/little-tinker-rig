@@ -417,6 +417,26 @@ def test_selection_preserves_multiline_literals_and_expression_kind():
     assert not snippet.expression
 
 
+def test_new_block_shows_its_default_group(tmp_path, qt_app):
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "main.py")
+    window.confirm_close = lambda page: True
+    window.show()
+    try:
+        window.set_mode(3)
+        page = window.block_editor
+        assert page.module_name.text() == ""
+        window.change_language("ru")
+        assert page.module_name.placeholderText() == "Группа / модуль"
+        page.create(SOURCE)
+        assert page.code.draft.module == "custom"
+        assert page.module_name.text() == "custom"
+    finally:
+        window.close()
+        window.deleteLater()
+
+
 def test_editor_groups_copies_and_language_changes_keep_edits(tmp_path, qt_app):
     from PySide6.QtGui import QTextCursor
 

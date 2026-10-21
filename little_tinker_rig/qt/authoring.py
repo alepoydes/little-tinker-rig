@@ -262,7 +262,7 @@ class BlockEditor(QWidget):
             (N_("Multi-command action"), "sequence"),
         ):
             self.starters.addItem(label, key)
-        self.module_name = QLineEdit("custom")
+        self.module_name = QLineEdit()
         self.module_name.setPlaceholderText(N_("Group / module"))
         self.module_name.setAccessibleName(N_("Group / module"))
         self.module_name.setToolTip(
@@ -1262,10 +1262,9 @@ class BlockEditor(QWidget):
 
     def create(self, source, *, level=None):
         root = self.ensure_collection()
-        module = self.module_name.text().strip()
+        module = self.module_name.text().strip() or "custom"
         if (
-            not module
-            or not all(
+            not all(
                 part.isidentifier() and not keyword.iskeyword(part)
                 for part in module.split("/")
             )
@@ -1357,6 +1356,7 @@ class BlockEditor(QWidget):
         function = self.function()
         if function:
             self.code.goto(name_span(self.code.syntax, function))
+        self.module_name.setText(module)
         self.code.setFocus()
 
     def copy_block(self):
