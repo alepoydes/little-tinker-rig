@@ -62,7 +62,9 @@ pages and blocks; Escape clears its filter and focuses the topic tree. An empty
 sidebar result is explained, and Enter opens the selected visible page or the
 first result, then focuses the topic tree. A search with no results leaves the
 current page unchanged. Following a link clears a filter that would hide its
-destination. In a program
+destination. If a query matches only an already opened lesson material, opening
+the lesson result shows that material directly; it still shares the instruction
+entry in the topic tree. In a program
 or Scratch, Enter finds the next match, Shift+Enter the previous match, and
 Escape closes search. A missed search reports
 **Not found** without moving the cursor. Select a catalog block and press Enter

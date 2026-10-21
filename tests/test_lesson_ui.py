@@ -1509,6 +1509,9 @@ def test_language_switch_keeps_task_section_with_localized_anchor(tmp_path, qt_a
 def test_language_switch_keeps_localized_task_material_in_help_history(
     tmp_path, qt_app
 ):
+    from PySide6.QtCore import Qt
+    from PySide6.QtTest import QTest
+
     from little_tinker_rig.qt.help import HelpPage
 
     root = tmp_path / "materials"
@@ -1558,10 +1561,23 @@ def test_language_switch_keeps_localized_task_material_in_help_history(
     previous_language = language()
     set_language("en")
     page = HelpPage([])
+    page.show()
+    qt_app.processEvents()
     try:
         page.show_lesson_stage(lesson, lesson.stages[0])
         page.show_lesson_material(lesson, "extra_en.md#details", "More")
         assert page.current == "lesson/resource/extra_en.md#details"
+        page.back()
+        assert page.current == "lesson/instructions#first"
+        page.search.setText("English details.")
+        page.search.setFocus()
+        QTest.keyClick(page.search, Qt.Key.Key_Return)
+        assert page.current == "lesson/resource/extra_en.md#details"
+        page.back()
+        assert page.current == "lesson/instructions#first"
+        page.tree.itemClicked.emit(page.lesson_item, 0)
+        assert page.current == "lesson/resource/extra_en.md#details"
+        page.search.clear()
         assert page.history[-1] == "lesson/instructions#first"
         page.back()
         english_action = next(

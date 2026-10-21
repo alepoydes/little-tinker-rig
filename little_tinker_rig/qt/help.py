@@ -414,13 +414,11 @@ class HelpPage(QWidget):
         escape_find.setContext(Qt.ShortcutContext.WidgetShortcut)
         escape_find.activated.connect(self.close_find)
         self.tree.currentItemChanged.connect(
-            lambda item, old: (
-                self.show_page(item.data(0, Qt.ItemDataRole.UserRole)) if item else None
-            )
+            lambda item, old: self.open_tree_item(item)
         )
         self.tree.itemClicked.connect(
             lambda item: (
-                self.show_lesson_home(self.lesson)
+                self.open_tree_item(item)
                 if self.lesson and item is self.lesson_item
                 else None
             )
@@ -951,6 +949,31 @@ class HelpPage(QWidget):
             and not any(not item.isHidden() for _, item in self.pages.values())
         )
 
+    def _lesson_search_destination(self):
+        instructions = "lesson/instructions"
+        needle = self.search.text().strip().casefold()
+        if not needle or instructions not in self.pages:
+            return instructions
+        if needle in (instructions + self.pages[instructions][0]).casefold():
+            return instructions
+        matches = [
+            identity
+            for identity, (text, _) in self.pages.items()
+            if identity.startswith("lesson/resource/") and needle in text.casefold()
+        ]
+        for identity in (self.current, *self.recent_pages):
+            if identity and identity.partition("#")[0] in matches:
+                return identity
+        return matches[0] if matches else instructions
+
+    def open_tree_item(self, item):
+        if item is None:
+            return
+        identity = item.data(0, Qt.ItemDataRole.UserRole)
+        if identity == "lesson/instructions" and self.lesson:
+            identity = self._lesson_search_destination()
+        self.show_page(identity)
+
     def open_search_result(self):
         if not self.search.text().strip():
             return
@@ -977,7 +1000,7 @@ class HelpPage(QWidget):
                 if target is not None:
                     break
         if target is not None:
-            self.show_page(target.data(0, Qt.ItemDataRole.UserRole))
+            self.open_tree_item(target)
             self.tree.setFocus()
 
     def dismiss_search(self):
