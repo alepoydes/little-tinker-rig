@@ -1,7 +1,7 @@
 """A small input state shared by screen controls, keyboard and SDL gamepads."""
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from little_tinker_rig.i18n import tr
 
@@ -79,28 +79,63 @@ class Gamepad:
                 )
             )
         self.device = controller.Controller(index)
+        self.instance_id = self.device.as_joystick().get_instance_id()
+        self._buttons = 0
+        pygame.event.get()
 
     def read(self) -> ControlState:
-        self.pygame.event.pump()
+        """Return the current state after draining queued controller events."""
+        return self.read_samples()[-1]
+
+    def read_samples(self) -> tuple[ControlState, ...]:
+        """Preserve button transitions that occur between timer samples."""
+        # Drain axis and joystick events too, so their queue cannot fill up.
+        events = self.pygame.event.get()
         if not self.device.attached():
             raise ValueError(tr("Physical controller disconnected"))
         axes = [self.device.get_axis(index) / 32767 for index in range(4)]
         axes = [0 if abs(value) < 0.08 else max(-1, min(1, value)) for value in axes]
-        buttons = sum(
+        current_buttons = sum(
             1 << index for index in range(15) if self.device.get_button(index)
         )
         triggers = [
             max(0, min(1, self.device.get_axis(index) / 32767)) for index in (4, 5)
         ]
-        return ControlState(
+        current = ControlState(
             axes[0],
             -axes[1],
             axes[2],
             -axes[3],
-            buttons,
+            current_buttons,
             left_trigger=triggers[0],
             right_trigger=triggers[1],
         )
+        buttons = self._buttons
+        samples = []
+        for event in events:
+            if (
+                event.type
+                not in (
+                    self.pygame.CONTROLLERBUTTONDOWN,
+                    self.pygame.CONTROLLERBUTTONUP,
+                )
+                or event.instance_id != self.instance_id
+                or not 0 <= event.button < 15
+            ):
+                continue
+            bit = 1 << event.button
+            changed = (
+                buttons | bit
+                if event.type == self.pygame.CONTROLLERBUTTONDOWN
+                else buttons & ~bit
+            )
+            if changed != buttons:
+                buttons = changed
+                samples.append(replace(current, buttons=buttons))
+        self._buttons = current_buttons
+        if not samples or samples[-1].buttons != current_buttons:
+            samples.append(current)
+        return tuple(samples)
 
     def close(self):
         self.device.quit()

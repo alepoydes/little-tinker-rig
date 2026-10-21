@@ -129,8 +129,9 @@ The `gamepad` extra enables a physical Xbox-compatible SDL controller. Its stick
 triggers and buttons mirror the screen controls and use the same motor assignments.
 If support is unavailable, check the `gamepad` extra installation.
 If no compatible controller is found or it disconnects, Controls reports the
-problem and disables commands. To feed your own program instead, select
-**Send controller input to my program** and use the helper:
+problem and disables commands. To feed your own program, select
+**Send controller input to my program** and use the helper. In this mode, short
+button taps are delivered even if they start and end between screen updates:
 
 ```sh
 ./.venv/bin/little-tinker-rig controller examples/little_tinker_rig_controller.py --write

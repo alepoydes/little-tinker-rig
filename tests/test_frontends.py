@@ -289,6 +289,9 @@ def test_qt_controller_mirrors_physical_state_and_stops_on_disconnect(qt_app):
                 raise ValueError("Controller disconnected")
             return ControlState(0.5, -1, buttons=5, left_trigger=0.25, right_trigger=1)
 
+        def read_samples(self):
+            return (self.read(),)
+
         def close(self):
             self.closed = True
 

@@ -562,7 +562,14 @@ class ControlsPage(QWidget):
         )
 
     def _armed(self, enabled):
-        if not enabled:
+        if enabled and self.gamepad:
+            try:
+                self.gamepad.read()
+            except Exception as error:
+                self.armed.setChecked(False)
+                self.physical.setChecked(False)
+                self.failed.emit(str(error))
+        elif not enabled:
             self.controller.display(ControlState())
             if self.info and self.info.monitoring:
                 self.drive_requested.emit(())
@@ -590,7 +597,12 @@ class ControlsPage(QWidget):
 
     def sample(self):
         try:
-            state = self.gamepad.read() if self.gamepad else self.controller.state()
+            samples = (
+                self.gamepad.read_samples()
+                if self.gamepad
+                else (self.controller.state(),)
+            )
+            state = samples[-1]
             if self.gamepad:
                 self.controller.display(state)
             self.state_label.setText(
@@ -598,7 +610,8 @@ class ControlsPage(QWidget):
             )
             if self.armed.isChecked():
                 if self.target.currentData() == "program":
-                    self.input_requested.emit(state)
+                    for sample in samples:
+                        self.input_requested.emit(sample)
                 else:
                     self.drive_requested.emit(motor_commands(self.bindings(), state))
         except Exception as error:

@@ -53,7 +53,7 @@ def test_gamepad_errors_follow_interface_language(
     pygame = types.ModuleType("pygame")
     pygame.__path__ = []
     pygame.display = types.SimpleNamespace(init=lambda: None)
-    pygame.event = types.SimpleNamespace(pump=lambda: None)
+    pygame.event = types.SimpleNamespace(get=lambda: [])
     sdl = types.ModuleType("pygame._sdl2")
     sdl.__path__ = []
     controller = types.ModuleType("pygame._sdl2.controller")
@@ -61,7 +61,9 @@ def test_gamepad_errors_follow_interface_language(
     controller.get_count = lambda: 0
     controller.is_controller = lambda index: True
     controller.Controller = lambda index: types.SimpleNamespace(
-        attached=lambda: False, quit=lambda: None
+        attached=lambda: False,
+        as_joystick=lambda: types.SimpleNamespace(get_instance_id=lambda: 42),
+        quit=lambda: None,
     )
     monkeypatch.setitem(sys.modules, "pygame", pygame)
     monkeypatch.setitem(sys.modules, "pygame._sdl2", sdl)
@@ -77,6 +79,54 @@ def test_gamepad_errors_follow_interface_language(
         gamepad.read()
     assert str(error.value) == disconnected
     gamepad.close()
+
+
+def test_gamepad_keeps_short_button_taps_and_ignores_other_devices(monkeypatch):
+    events = []
+    buttons = [0]
+    pygame = types.ModuleType("pygame")
+    pygame.__path__ = []
+    pygame.CONTROLLERBUTTONDOWN = 1
+    pygame.CONTROLLERBUTTONUP = 2
+    pygame.display = types.SimpleNamespace(init=lambda: None)
+
+    def get_events():
+        queued, events[:] = events[:], []
+        return queued
+
+    pygame.event = types.SimpleNamespace(get=get_events)
+    sdl = types.ModuleType("pygame._sdl2")
+    sdl.__path__ = []
+    controller = types.ModuleType("pygame._sdl2.controller")
+    controller.init = lambda: None
+    controller.get_count = lambda: 1
+    controller.is_controller = lambda index: True
+    controller.Controller = lambda index: types.SimpleNamespace(
+        attached=lambda: True,
+        as_joystick=lambda: types.SimpleNamespace(get_instance_id=lambda: 42),
+        get_axis=lambda index: 0,
+        get_button=lambda index: bool(buttons[0] & (1 << index)),
+        quit=lambda: None,
+    )
+    monkeypatch.setitem(sys.modules, "pygame", pygame)
+    monkeypatch.setitem(sys.modules, "pygame._sdl2", sdl)
+    monkeypatch.setitem(sys.modules, "pygame._sdl2.controller", controller)
+    gamepad = Gamepad()
+    try:
+        events.extend(
+            [
+                types.SimpleNamespace(type=1, instance_id=7, button=4),
+                types.SimpleNamespace(type=1, instance_id=42, button=0),
+                types.SimpleNamespace(type=2, instance_id=42, button=0),
+            ]
+        )
+        assert [state.buttons for state in gamepad.read_samples()] == [1, 0]
+        buttons[0] = 2
+        assert [state.buttons for state in gamepad.read_samples()] == [2]
+        buttons[0] = 0
+        assert [state.buttons for state in gamepad.read_samples()] == [0]
+    finally:
+        gamepad.close()
 
 
 def test_hub_parser_handles_partial_frames_and_neutralizes_stale_input(monkeypatch):
@@ -144,5 +194,41 @@ def test_short_screen_button_click_and_key_press_emit_both_edges(qt_app):
         button.setFocus()
         QTest.keyClick(button, Qt.Key.Key_Space)
         assert frames[2:4] == [1, 0]
+    finally:
+        page.close()
+
+
+def test_short_physical_button_tap_reaches_program(qt_app):
+    from little_tinker_rig.pybricks.devices import HubInfo
+    from little_tinker_rig.qt.controls import ControlsPage
+
+    class Gamepad:
+        queued = (ControlState(buttons=1), ControlState())
+
+        def read(self):
+            state = self.queued[-1] if self.queued else ControlState()
+            self.queued = ()
+            return state
+
+        def read_samples(self):
+            queued, self.queued = self.queued or (ControlState(),), ()
+            return queued
+
+        def close(self):
+            pass
+
+    page = ControlsPage()
+    page.gamepad = Gamepad()
+    try:
+        page.target.setCurrentIndex(1)
+        page.update_info(HubInfo(connected=True, running=True))
+        frames = []
+        page.input_requested.connect(lambda state: frames.append(state.buttons))
+        page.armed.setChecked(True)
+        page.sample()
+        assert frames == [0]
+        page.gamepad.queued = (ControlState(buttons=1), ControlState())
+        page.sample()
+        assert frames == [0, 1, 0]
     finally:
         page.close()
