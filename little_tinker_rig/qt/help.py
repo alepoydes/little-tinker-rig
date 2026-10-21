@@ -61,6 +61,7 @@ GUIDE_ORDER = (
     "tui.md",
 )
 COMPACT_DOCUMENT_WIDTH = 680
+GROUP_ROLE = Qt.ItemDataRole.UserRole + 1
 
 
 def group_document(identity, snippets):
@@ -348,6 +349,7 @@ class HelpPage(QWidget):
         self.root = self.base_root
         self.snippets = snippets
         self.pages = {}
+        self.page_paths = {}
         self.history = []
         self.recent_pages = []
         self.current = None
@@ -500,7 +502,7 @@ class HelpPage(QWidget):
         ]
         if self.current and self.current.partition("#")[0].startswith("lesson/"):
             self.current = None
-        self.retranslate()
+        self.refresh_contents()
 
     def add_lesson_material(self, name, title=None):
         logical, _, _ = name.partition("#")
@@ -607,11 +609,32 @@ class HelpPage(QWidget):
         return translated_page + ("#" + translated_anchor if translated_anchor else "")
 
     def retranslate(self):
+        changed = self.root.name != language()
+        self.refresh_contents()
+        if changed:
+            self.show_page(self.current)
+
+    def _group_states(self):
+        return {
+            group.data(0, GROUP_ROLE): group.isExpanded()
+            for index in range(self.tree.topLevelItemCount())
+            if (group := self.tree.topLevelItem(index))
+        }
+
+    def _add_group(self, identity, title):
+        group = QTreeWidgetItem(self.tree, [title])
+        group.setData(0, GROUP_ROLE, identity)
+        return group
+
+    def refresh_contents(self):
+        """Rebuild the index without turning a model refresh into navigation."""
         current, history, recent = self.current, self.history, self.recent_pages
+        expanded = self._group_states()
+        old_page = current.partition("#")[0] if current else None
+        old_text = self.pages[old_page][0] if old_page in self.pages else None
+        old_path = self.page_paths.get(old_page)
         old_names = self.lesson_page_names.copy()
         old_language = self.root.name
-        self._search_expanded = None
-        self._search_selected = None
         self.root = self.base_root / language()
         self.pages, self.page_paths, self.snippet_targets = {}, {}, {}
         self.lesson_page_names = {}
@@ -624,10 +647,9 @@ class HelpPage(QWidget):
         self.tree.clear()
         if self.lesson:
             project_activity = self.lesson.data.get("kind") == "project"
-            self.lesson_group = QTreeWidgetItem(
-                [tr("This project") if project_activity else tr("This lesson")]
+            self.lesson_group = self._add_group(
+                "lesson", tr("This project") if project_activity else tr("This lesson")
             )
-            self.tree.insertTopLevelItem(0, self.lesson_group)
             title = localized(self.lesson.data["title"], language())
             text, name = self.lesson.instructions_document(language())
             tasks = []
@@ -659,9 +681,9 @@ class HelpPage(QWidget):
             self.lesson_item = self.pages["lesson/instructions"][1]
             self.page_paths["lesson/instructions"] = self.lesson.file(name)
             self.lesson_page_names["lesson/instructions"] = name
-        documents = QTreeWidgetItem(self.tree, [tr("Guide")])
-        templates = QTreeWidgetItem(self.tree, [tr("Block library")])
-        developers = QTreeWidgetItem(self.tree, [tr("Developer reference")])
+        documents = self._add_group("guide", tr("Guide"))
+        templates = self._add_group("library", tr("Block library"))
+        developers = self._add_group("developers", tr("Developer reference"))
         english = self.base_root / DEFAULT_LANGUAGE
         identities = {
             str(path.relative_to(root))
@@ -701,6 +723,11 @@ class HelpPage(QWidget):
             templates.setExpanded(False)
             self.lesson_group.setExpanded(True)
         developers.setExpanded(False)
+        for index in range(self.tree.topLevelItemCount()):
+            group = self.tree.topLevelItem(index)
+            group.setExpanded(
+                expanded.get(group.data(0, GROUP_ROLE), group.isExpanded())
+            )
         self.tree.blockSignals(False)
         mapped_history = [
             self._translated_lesson_key(key, old_names, old_language) for key in history
@@ -734,8 +761,24 @@ class HelpPage(QWidget):
                 if self.lesson and current and current.startswith("lesson/")
                 else "index.md"
             )
+        self.current = destination
+        page, _, anchor = destination.partition("#")
+        if (
+            destination != current
+            or self.pages[page][0] != old_text
+            or self.page_paths[page] != old_path
+        ):
+            self._render_page(page)
+            if anchor:
+                self.browser.scrollToAnchor(anchor)
+            self.find_in_document(self.find_field.text(), focus_first=False)
+        self.tree.blockSignals(True)
+        self.tree.setCurrentItem(self.pages[page][1])
+        self.tree.blockSignals(False)
+        if not any(key.partition("#")[0] == page for key in self.recent_pages):
+            self.recent_pages.insert(0, destination)
         self.filter(self.search.text())
-        self.show_page(destination)
+        self._refresh_navigation()
 
     def add_page(self, parent, identity, title, text):
         item = QTreeWidgetItem(parent, [title])
@@ -750,8 +793,7 @@ class HelpPage(QWidget):
         page, _, anchor = identity.partition("#")
         if page not in self.pages:
             return
-        if self.pages[page][1].isHidden():
-            self.search.clear()
+        self._reveal_page(page)
         if identity == self.current:
             if anchor:
                 self.browser.scrollToAnchor(anchor)
@@ -767,7 +809,18 @@ class HelpPage(QWidget):
             key for key in self.recent_pages if key.partition("#")[0] != page
         ][:9]
         self._refresh_navigation()
-        text, item = self.pages[page]
+        if previous is None or previous.partition("#")[0] != page:
+            self._render_page(page)
+        if anchor:
+            self.browser.scrollToAnchor(anchor)
+        else:
+            self.browser.verticalScrollBar().setValue(0)
+        self.find_in_document(self.find_field.text(), focus_first=False)
+
+    def _reveal_page(self, page):
+        _, item = self.pages[page]
+        if item.isHidden():
+            self.search.clear()
         self.tree.blockSignals(True)
         self.tree.setCurrentItem(item)
         item.parent().setExpanded(True)
@@ -778,43 +831,36 @@ class HelpPage(QWidget):
                     group.setExpanded(False)
         self.tree.scrollToItem(item)
         self.tree.blockSignals(False)
-        if previous is None or previous.partition("#")[0] != page:
-            self.browser.document().setBaseUrl(
-                QUrl.fromLocalFile(str(self.page_paths[page]))
-            )
-            self.browser.setMarkdown(text)
-            # Qt's Markdown importer omits named anchors. Attach the same section
-            # names used by the documentation checker, including stable block IDs.
-            names = iter(heading_anchors(text))
-            block = self.browser.document().begin()
-            while block.isValid():
-                if block.blockFormat().headingLevel():
-                    cursor = QTextCursor(block)
-                    cursor.select(QTextCursor.SelectionType.BlockUnderCursor)
-                    format = cursor.charFormat()
-                    format.setAnchor(True)
-                    format.setAnchorNames(next(names, []))
-                    cursor.mergeCharFormat(format)
-                block = block.next()
-            self.browser.style_document()
-            self.browser.lesson_numbers = {}
-            if page == "lesson/instructions":
-                self.browser.lesson_numbers = {
-                    stage_anchor: index
-                    for index, stage in enumerate(self.lesson.stages, 1)
-                    if (
-                        stage_anchor := self.lesson.instructions_anchor(
-                            stage, language()
-                        )
-                    )
-                }
-                self.browser.decorate_lesson_index(self.browser.lesson_numbers)
-                self.browser.decorate_lesson_headings(self.browser.lesson_numbers)
-        if anchor:
-            self.browser.scrollToAnchor(anchor)
-        else:
-            self.browser.verticalScrollBar().setValue(0)
-        self.find_in_document(self.find_field.text(), focus_first=False)
+
+    def _render_page(self, page):
+        text = self.pages[page][0]
+        self.browser.document().setBaseUrl(
+            QUrl.fromLocalFile(str(self.page_paths[page]))
+        )
+        self.browser.setMarkdown(text)
+        # Qt's Markdown importer omits named anchors. Use the documentation
+        # checker's section names, including stable block IDs.
+        names = iter(heading_anchors(text))
+        block = self.browser.document().begin()
+        while block.isValid():
+            if block.blockFormat().headingLevel():
+                cursor = QTextCursor(block)
+                cursor.select(QTextCursor.SelectionType.BlockUnderCursor)
+                format = cursor.charFormat()
+                format.setAnchor(True)
+                format.setAnchorNames(next(names, []))
+                cursor.mergeCharFormat(format)
+            block = block.next()
+        self.browser.style_document()
+        self.browser.lesson_numbers = {}
+        if page == "lesson/instructions":
+            self.browser.lesson_numbers = {
+                stage_anchor: index
+                for index, stage in enumerate(self.lesson.stages, 1)
+                if (stage_anchor := self.lesson.instructions_anchor(stage, language()))
+            }
+            self.browser.decorate_lesson_index(self.browser.lesson_numbers)
+            self.browser.decorate_lesson_headings(self.browser.lesson_numbers)
 
     def back(self):
         if self.history:
@@ -907,11 +953,11 @@ class HelpPage(QWidget):
         needle = query.strip().casefold()
         searching = bool(needle)
         if searching and self._search_expanded is None:
-            self._search_expanded = {
-                index: self.tree.topLevelItem(index).isExpanded()
-                for index in range(self.tree.topLevelItemCount())
-            }
-            self._search_selected = self.tree.currentItem()
+            self._search_expanded = self._group_states()
+            selected = self.tree.currentItem()
+            self._search_selected = (
+                selected.data(0, Qt.ItemDataRole.UserRole) if selected else None
+            )
         for identity, (text, item) in self.pages.items():
             if identity.startswith("lesson/resource/"):
                 continue
@@ -932,9 +978,16 @@ class HelpPage(QWidget):
         if not searching and self._search_expanded is not None:
             for index in range(self.tree.topLevelItemCount()):
                 group = self.tree.topLevelItem(index)
-                group.setExpanded(self._search_expanded.get(index, group.isExpanded()))
+                group.setExpanded(
+                    self._search_expanded.get(
+                        group.data(0, GROUP_ROLE), group.isExpanded()
+                    )
+                )
             selected = self.tree.currentItem()
-            if selected is not None and selected is not self._search_selected:
+            if (
+                selected is not None
+                and selected.data(0, Qt.ItemDataRole.UserRole) != self._search_selected
+            ):
                 ancestor = selected.parent()
                 while ancestor is not None:
                     ancestor.setExpanded(True)

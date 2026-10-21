@@ -1186,6 +1186,19 @@ def test_document_has_one_inline_draft_and_refresh_does_not_discard_it(windows):
     assert window.document_page.text == "print(2)\n"
 
 
+def test_changing_documents_preserves_help_search(windows, tmp_path):
+    window = windows("print(1)\n")
+    help_page = window.help_page
+    help_page.search.setText("run_target")
+    second = tmp_path / "second.py"
+    second.write_text("print(2)\n", encoding="utf-8")
+    window.open_document(second)
+    assert help_page.search.text() == "run_target"
+    window.session.editor.commit("def twice(value):\n    return value * 2\n")
+    window.refresh_views()
+    assert help_page.search.text() == "run_target"
+
+
 def test_insertion_handler_waits_for_inline_parameter(windows):
     window = windows("print(1)\n")
     view = window.source

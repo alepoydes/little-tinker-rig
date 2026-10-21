@@ -90,11 +90,13 @@ class AssemblyPage(QWidget):
         self.step = step
         self._overlay_compact = False
         self._restore_sidebar_width = False
+        self._wide_sidebar_width = 340
         layout = QVBoxLayout(self)
         self.caption = QLabel(tr("Loading robot model…"))
         layout.addWidget(self.caption)
         split = QSplitter()
         self.splitter = split
+        split.splitterMoved.connect(self._remember_sidebar_width)
         self.view_host = QWidget()
         self.view_host.setLayout(QVBoxLayout())
         self.placeholder = QWidget()
@@ -165,7 +167,9 @@ class AssemblyPage(QWidget):
         sidebar.addWidget(self.group_controls)
         self.group_controls.hide()
         split.addWidget(side)
-        split.setSizes([900, 340])
+        split.setStretchFactor(0, 1)
+        split.setStretchFactor(1, 0)
+        split.setSizes([900, self._wide_sidebar_width])
         layout.addWidget(split, 1)
         self.selection = QLabel()
         self.selection.setWordWrap(True)
@@ -224,6 +228,13 @@ class AssemblyPage(QWidget):
     def set_overlay_compact(self, compact):
         compact = bool(compact)
         was_compact = self._overlay_compact
+        if (
+            compact
+            and not was_compact
+            and not self._restore_sidebar_width
+            and self.view_container
+        ):
+            self._wide_sidebar_width = self.splitter.sizes()[1]
         self._overlay_compact = compact
         self.sidebar.setMinimumWidth(210 if compact else 260)
         minimum = QSize(200, 180) if compact else QSize(240, 200)
@@ -251,14 +262,21 @@ class AssemblyPage(QWidget):
             QTimer.singleShot(0, self, self._restore_wide_sidebar)
 
     def _restore_wide_sidebar(self):
-        if (
-            not self._restore_sidebar_width
-            or self._overlay_compact
-            or self.splitter.width() < 600
-        ):
+        if not self._restore_sidebar_width or self._overlay_compact:
             return
-        self._restore_sidebar_width = False
-        self.splitter.setSizes([self.splitter.width() - 340, 340])
+        available = self.splitter.contentsRect().width() - self.splitter.handleWidth()
+        room = available - self.view_host.minimumSizeHint().width()
+        if room < self.sidebar.minimumWidth():
+            return
+        width = min(self._wide_sidebar_width, room)
+        # The host can still be resizing after it removes the task panel margin.
+        self._restore_sidebar_width = width < self._wide_sidebar_width
+        self.splitter.setSizes([available - width, width])
+
+    def _remember_sidebar_width(self, *_):
+        if not self._overlay_compact:
+            self._wide_sidebar_width = self.splitter.sizes()[1]
+            self._restore_sidebar_width = False
 
     def apply_theme(self):
         c = colors()

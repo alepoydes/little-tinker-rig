@@ -372,6 +372,46 @@ def test_help_language_switch_keeps_current_page_visible_when_search_changes(qt_
         set_language(previous_language)
 
 
+@pytest.mark.parametrize("query", ["run_target", "no-such-help-topic-123"])
+def test_help_content_refresh_preserves_discovery_and_reading_position(qt_app, query):
+    from little_tinker_rig.qt.help import HelpPage
+
+    page = HelpPage(builtin_snippets())
+    page.resize(900, 600)
+    page.show()
+    qt_app.processEvents()
+    try:
+        page.show_page("usage.md")
+        page.find_field.setText("block")
+        page.next_match(1)
+        page.browser.verticalScrollBar().setValue(400)
+        for index in (0, 1):
+            page.tree.topLevelItem(index).setExpanded(False)
+        page.search.setText(query)
+        history, recent = page.history[:], page.recent_pages[:]
+        scroll = page.browser.verticalScrollBar().value()
+        count = page.find_count.text()
+        page.snippets = (
+            *page.snippets,
+            *load_module(
+                "def fresh(value=1):\n    return value\n", "custom/fresh", "1"
+            ),
+        )
+        page.refresh_contents()
+        assert page.current == "usage.md"
+        assert page.search.text() == query
+        assert (page.history, page.recent_pages) == (history, recent)
+        assert page.browser.verticalScrollBar().value() == scroll
+        assert page.find_field.text() == "block" and page.find_count.text() == count
+        assert "library/custom/fresh" in page.pages
+        assert page.no_results.isVisible() == query.startswith("no-such")
+        page.search.clear()
+        assert not page.tree.topLevelItem(0).isExpanded()
+        assert not page.tree.topLevelItem(1).isExpanded()
+    finally:
+        page.close()
+
+
 def test_help_search_enter_opens_visible_result_and_preserves_miss(qt_app):
     from PySide6.QtCore import Qt
     from PySide6.QtTest import QTest

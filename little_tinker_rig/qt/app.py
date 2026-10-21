@@ -1228,7 +1228,7 @@ class Studio(QMainWindow):
         self.library.load(self.session.available_snippets)
         self.library.filter(self.search.text(), self.level_filter.value)
         self.help_page.snippets = self.session.available_snippets
-        self.help_page.retranslate()
+        self.help_page.refresh_contents()
         self.block_editor.configure(
             self.session.snippets, self.session.collection_paths
         )
@@ -1737,7 +1737,7 @@ class Studio(QMainWindow):
         self.source.refresh_source()
         if self.library.update_functions(self.session.available_snippets):
             self.help_page.snippets = self.session.available_snippets
-            self.help_page.retranslate()
+            self.help_page.refresh_contents()
         self.scratch.refresh(self.session)
         self.refresh_status()
         if hasattr(self, "recovery"):

@@ -943,6 +943,35 @@ def test_compact_task_overlay_releases_control_assembly_and_block_editor(
         window.deleteLater()
 
 
+def test_assembly_restores_user_split_after_compact_tasks(qt_app, monkeypatch):
+    from PySide6.QtWidgets import QWidget
+
+    from little_tinker_rig.qt.assembly import AssemblyPage
+
+    monkeypatch.setattr(AssemblyPage, "load", lambda self: None)
+    page = AssemblyPage("lessons/first_drive/robot/robot.json")
+    page.view_container = QWidget()
+    page.view_host.layout().addWidget(page.view_container)
+    page.placeholder.hide()
+    page.resize(1200, 720)
+    page.show()
+    try:
+        qt_app.processEvents()
+        for width in (500, 400):
+            page.splitter.setSizes([page.splitter.width() - width, width])
+            before = page.splitter.sizes()
+            page.set_overlay_compact(True)
+            page.resize(700, 720)
+            qt_app.processEvents()
+            page.set_overlay_compact(False)
+            qt_app.processEvents()
+            page.resize(1200, 720)
+            qt_app.processEvents()
+            assert abs(page.splitter.sizes()[1] - before[1]) <= 2
+    finally:
+        page.close()
+
+
 @pytest.mark.parametrize("assembly_state", ["loading", "failure", "fallback", "model"])
 def test_compact_lesson_assembly_stays_usable_beside_tasks(
     tmp_path, qt_app, monkeypatch, assembly_state

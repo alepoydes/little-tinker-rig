@@ -138,6 +138,9 @@
   preserve the editor position on a miss, and support keyboard dismissal.
 - Keep preview and source usable with Console open at the minimum window size.
   Help navigation must reveal its destination even when a search filter is active.
+- Keep Help content refresh separate from navigation: preserve discovery state and
+  unchanged articles' reading positions. Track tree state by stable identities.
+  Temporary compact layouts restore user divider choices instead of fixed defaults.
 
 ## Execution and example work
 

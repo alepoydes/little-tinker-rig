@@ -73,7 +73,8 @@ and the physical-controller option move below the main action row. Scroll the
 complete controller vertically to reach its lower buttons.
 In Assembly, step notes, parts, and step navigation stay beside the task panel.
 The model and notes become narrower while it is open; closing the panel restores
-their usual space. The loading status remains visible beside the task panel.
+the previous sidebar width, including a width you chose with the divider, as
+space permits. The loading status remains visible beside the task panel.
 Escape, a click outside it, or following a destination link hides it temporarily.
 Switching to Controls, Block Editor or Assembly also hides it on a narrow window
 so their tools have room. The progress control reopens it in any of those views.

@@ -61,7 +61,9 @@ Escape clears it while leaving the controls visible. The sidebar search filters 
 pages and blocks; Escape clears its filter and focuses the topic tree. An empty
 sidebar result is explained, and Enter opens the selected visible page or the
 first result, then focuses the topic tree. A search with no results leaves the
-current page unchanged. Following a link clears a filter that would hide its
+current page unchanged. Switching program documents or updating block definitions
+keeps the Help query, branch choices and position in an unchanged article.
+Following a link clears a filter that would hide its
 destination. Switching languages also clears the filter if it would hide the
 translated current page. If a query matches only an already opened lesson
 material, opening the lesson result shows that material directly; it still
