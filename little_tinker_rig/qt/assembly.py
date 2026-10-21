@@ -111,6 +111,10 @@ class AssemblyPage(QWidget):
         side = QWidget()
         side.setMinimumWidth(260)
         sidebar = QVBoxLayout(side)
+        self.error = QLabel()
+        self.error.setWordWrap(True)
+        self.error.hide()
+        sidebar.addWidget(self.error)
         self.notes = HelpBrowser()
         self.notes.setOpenExternalLinks(True)
         sidebar.addWidget(self.notes, 1)
@@ -158,10 +162,6 @@ class AssemblyPage(QWidget):
         split.addWidget(side)
         split.setSizes([900, 340])
         layout.addWidget(split, 1)
-        self.error = QLabel()
-        self.error.setWordWrap(True)
-        self.error.hide()
-        layout.addWidget(self.error)
         self.selection = QLabel()
         self.selection.setWordWrap(True)
         row = QHBoxLayout()
@@ -226,6 +226,10 @@ class AssemblyPage(QWidget):
         self.placeholder_text.setStyleSheet(
             f"color: {c['text']}; font-size: 15px; font-weight: 700;"
         )
+        self.error.setStyleSheet(
+            f"background: {c['raised']}; color: {c['text']}; "
+            f"border: 1px solid {c['border']}; border-radius: 8px; padding: 8px;"
+        )
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -282,6 +286,7 @@ class AssemblyPage(QWidget):
         self.error.hide()
         self.loading_phase = "model"
         self.loading_bytes = (0, 0)
+        self.view_host.show()
         self.placeholder.setVisible(self.view_container is None)
         self.update_loading_status()
         self.progress.setRange(0, 0)
@@ -355,6 +360,7 @@ class AssemblyPage(QWidget):
         self.error_kind = None
         self.error.clear()
         self.error.hide()
+        self.view_host.show()
         if self.view:
             self.view.cleanup()
             self.view_host.layout().removeWidget(self.view_container)
@@ -378,10 +384,7 @@ class AssemblyPage(QWidget):
             except (ImportError, ValueError) as error:
                 self.show_error(str(error))
         else:
-            self.error_kind = "display"
-            self.update_error_text()
-            self.error.hide()
-            self.placeholder_text.setText(self.error.text())
+            self.show_error("")
         self.reset_button.setVisible(self.view_available)
         self.set_step(min(self.step, scene.step_count - 1))
         if not self.state.get("camera"):
@@ -393,10 +396,8 @@ class AssemblyPage(QWidget):
         self.future.hide()
         self.group_controls.hide()
         self.devices.hide()
-        self.error.setVisible(self.view_container is not None)
-        if not self.view_container:
-            self.placeholder_text.setText(self.error.text())
-            self.placeholder.show()
+        self.error.show()
+        self.view_host.hide()
         self.reset_button.hide()
 
     @property

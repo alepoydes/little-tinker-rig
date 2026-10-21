@@ -86,7 +86,13 @@ def test_compact_loaded_assembly_keeps_model_and_notes_visible(model, qt_app):
         page.set_step(2)
         QTest.qWait(30)
         assert page.notes.viewport().width() >= 240
-        assert page.view_host.width() >= 400
+        if page.view_available:
+            assert page.view_host.width() >= 400
+        else:
+            assert page.view_host.isHidden()
+            assert page.error.isVisible()
+            assert page.notes.viewport().width() >= 500
+            assert page.parts.isVisible()
         assert page.back.isVisible() and page.next_step.isVisible()
     finally:
         page.close()
@@ -230,7 +236,9 @@ def test_assembly_loading_identifies_cached_and_downloaded_parts(
     try:
         assert page.cancel.text() == "Cancel loading"
         if report_download:
-            wait_for(lambda: "Loading parts: 1.0 / 2.0 MiB" == page.placeholder_text.text())
+            wait_for(
+                lambda: "Loading parts: 1.0 / 2.0 MiB" == page.placeholder_text.text()
+            )
             assert page.progress.maximum() == 1000
             assert page.download_status.isHidden()
         else:
