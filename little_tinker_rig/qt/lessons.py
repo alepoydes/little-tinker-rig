@@ -104,6 +104,7 @@ class Lessons(QObject):
         self.projects = {}
         self.current = None
         self.export_job = None
+        self._refresh_serial = 0
         self._updating_panel = False
         self._dock_active = False
         self._transient_hidden = False
@@ -748,6 +749,19 @@ class Lessons(QObject):
         project = self.current
         if project is None:
             return
+        self._refresh_serial += 1
+        serial = self._refresh_serial
+        focused = QApplication.focusWidget()
+        focus_target = None
+        if focused:
+            for identity, widgets in self.cards.items():
+                for key in ("check", "title", "body"):
+                    widget = widgets[key]
+                    if focused is widget or widget.isAncestorOf(focused):
+                        focus_target = (identity, key)
+                        break
+                if focus_target:
+                    break
         self.title.setText(localized(project.lesson.data["title"], language()))
         scroll = self.task_area.verticalScrollBar().value()
         for widgets in self.cards.values():
@@ -778,6 +792,12 @@ class Lessons(QObject):
         )
         self.update_check()
         self.update_card()
+        if focus_target and not reveal:
+            QTimer.singleShot(
+                0,
+                self,
+                lambda: self._restore_task_focus(focus_target, serial),
+            )
         if reveal:
             QTimer.singleShot(0, self, self.reveal_selected)
         else:
@@ -786,6 +806,16 @@ class Lessons(QObject):
                 self.task_area,
                 lambda: self.task_area.verticalScrollBar().setValue(scroll),
             )
+
+    def _restore_task_focus(self, focus_target, serial):
+        if serial != self._refresh_serial:
+            return
+        identity, key = focus_target
+        widgets = self.cards.get(identity)
+        if widgets:
+            target = widgets[key]
+            if target.isVisible():
+                target.setFocus(Qt.FocusReason.OtherFocusReason)
 
     def reveal_selected(self):
         if self.current and self.current.stage["id"] in self.cards:

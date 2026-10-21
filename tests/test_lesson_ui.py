@@ -665,6 +665,34 @@ def test_authored_task_card_link_opens_instructions_from_visible_markdown(
         window.deleteLater()
 
 
+@pytest.mark.parametrize("width,height", [(1380, 880), (800, 620)])
+def test_task_completion_keeps_keyboard_focus(tmp_path, qt_app, width, height):
+    from PySide6.QtCore import Qt
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "plain.py")
+    window.resize(width, height)
+    window.show()
+    try:
+        window.lessons.open(make_lesson(tmp_path))
+        window.lessons.set_panel_expanded(True)
+        qt_app.processEvents()
+        assert window.lessons.panel.isVisible()
+        for checked in (True, False):
+            check = window.lessons.cards["drive"]["check"]
+            check.setFocus()
+            QTest.keyClick(check, Qt.Key.Key_Space)
+            qt_app.processEvents()
+            current = window.lessons.cards["drive"]["check"]
+            assert current.isChecked() is checked
+            assert qt_app.focusWidget() is current
+    finally:
+        window.recovery.close()
+        window.deleteLater()
+
+
 def test_compact_tasks_keep_lesson_instructions_readable(tmp_path, qt_app):
     from pathlib import Path
 
