@@ -215,7 +215,7 @@ class Lessons(QObject):
         )
         window.tabifyDockWidget(window.scratch_dock, self.dock)
         self.dock.visibilityChanged.connect(self._dock_visibility_changed)
-        window.pages.currentChanged.connect(self._sync_help_clearance)
+        window.pages.currentChanged.connect(self._sync_overlay_clearance)
         app = QApplication.instance()
         app.installEventFilter(self)
         window.destroyed.connect(lambda *_: app.removeEventFilter(self))
@@ -870,21 +870,26 @@ class Lessons(QObject):
 
     def _position_overlay(self):
         workspace = self.window.workspace
-        width = min(380, max(280, workspace.width() - 52))
+        width = min(380, max(280, workspace.width() - 500))
         self.overlay.setGeometry(
             workspace.width() - width - 4, 4, width, max(80, workspace.height() - 8)
         )
         self.overlay.raise_()
-        self._sync_help_clearance()
+        self._sync_overlay_clearance()
 
-    def _sync_help_clearance(self, *_):
+    def _sync_overlay_clearance(self, *_):
         visible = (
-            not self.overlay.isHidden()
-            and self.window.width() < LESSON_DOCK_MIN_WIDTH
-            and self.window.pages.currentIndex() == 2
+            not self.overlay.isHidden() and self.window.width() < LESSON_DOCK_MIN_WIDTH
         )
         self.window.help_page.set_overlay_clearance(
-            self.overlay.width() if visible else 0
+            self.overlay.width()
+            if visible and self.window.pages.currentIndex() == 2
+            else 0
+        )
+        self.window.block_editor.set_overlay_clearance(
+            self.overlay.width()
+            if visible and self.window.pages.currentIndex() == 3
+            else 0
         )
 
     def update_panel_visibility(self):
@@ -913,7 +918,7 @@ class Lessons(QObject):
         finally:
             self._updating_panel = False
         self.window.sync_catalog_visibility()
-        self._sync_help_clearance()
+        self._sync_overlay_clearance()
         self._sync_panel_toggle()
         QTimer.singleShot(0, self, self._sync_panel_toggle)
         if expanded and not narrow and not self._transient_hidden:

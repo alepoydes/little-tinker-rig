@@ -810,6 +810,52 @@ def test_compact_task_overlay_releases_control_assembly_and_block_editor(
         window.deleteLater()
 
 
+@pytest.mark.parametrize("width, minimum_code", [(800, 340), (930, 350)])
+def test_compact_tasks_leave_block_editor_commands_and_code_visible(
+    tmp_path, qt_app, width, minimum_code
+):
+    from pathlib import Path
+
+    from PySide6.QtCore import Qt
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "plain.py")
+    window.confirm_close = lambda *_: True
+    window.resize(width, 620)
+    window.show()
+    try:
+        window.change_language("ru")
+        window.lessons.open(Path("lessons/first_python"))
+        window.console_dock.show()
+        window.set_mode(3)
+        qt_app.processEvents()
+        editor = window.block_editor
+        browser_before = editor.browser_pane.isVisible()
+        window.lessons.set_panel_expanded(True)
+        qt_app.processEvents()
+
+        overlay = window.lessons.overlay
+        assert overlay.isVisible()
+        assert not editor.browser_pane.isVisible()
+        assert editor.preview_splitter.orientation() == Qt.Orientation.Vertical
+        assert editor.code.viewport().width() >= minimum_code
+        assert editor.code.viewport().height() >= 70
+        assert window.workspace.width() - overlay.width() >= 500
+        save_edge = editor.save_button.mapTo(
+            window.workspace, editor.save_button.rect().topRight()
+        ).x()
+        assert save_edge < overlay.geometry().left()
+
+        window.lessons.set_panel_expanded(False)
+        qt_app.processEvents()
+        assert editor.browser_pane.isVisible() == browser_before
+        assert editor.level.isVisible()
+    finally:
+        window.close()
+        window.deleteLater()
+
+
 def test_compact_lesson_help_shows_first_task_with_console_open(tmp_path, qt_app):
     from pathlib import Path
 

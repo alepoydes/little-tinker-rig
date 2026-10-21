@@ -439,6 +439,7 @@ class BlockEditor(QWidget):
         self._browser_compact = None
         self._browser_visible = True
         self._browser_user_choice = None
+        self._overlay_clearance = 0
         self.refresh_browser_button()
         self.update_status()
         self.apply_theme()
@@ -1107,22 +1108,38 @@ class BlockEditor(QWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        compact = event.size().width() < 800
+        self._update_compact_layout()
+
+    def _update_compact_layout(self):
+        compact = self.width() - self._overlay_clearance < 800
         if compact != self._browser_compact:
             self._browser_compact = compact
             self.set_browser_visible(
-                self._browser_user_choice
-                if self._browser_user_choice is not None
-                else not compact
+                False
+                if self._overlay_clearance
+                else (
+                    self._browser_user_choice
+                    if self._browser_user_choice is not None
+                    else not compact
+                )
             )
         orientation = (
             Qt.Orientation.Horizontal
-            if event.size().height() < 430
+            if self.height() < 430 and not self._overlay_clearance
             else Qt.Orientation.Vertical
         )
         if self.preview_splitter.orientation() != orientation:
             self.preview_splitter.setOrientation(orientation)
             self.resize_preview(self.expand.isChecked())
+
+    def set_overlay_clearance(self, width):
+        width = max(0, width)
+        if width == self._overlay_clearance:
+            return
+        self._overlay_clearance = width
+        self.layout().setContentsMargins(0, 0, width + 8 if width else 0, 0)
+        self._browser_compact = None
+        self._update_compact_layout()
 
     def choose_browser_visible(self, visible):
         self._browser_user_choice = visible
