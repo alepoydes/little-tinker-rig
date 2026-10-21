@@ -44,7 +44,7 @@ from little_tinker_rig.i18n import DEFAULT_LANGUAGE, LANGUAGES, N_, language, tr
 
 from .library import LEVEL_TITLES, group_title, snippet_title
 from .markdown import fit_images
-from .theme import colors, recolor_document_links
+from .theme import colors, recolor_document_links, svg_icon
 
 GUIDE_ORDER = (
     "index.md",
@@ -389,7 +389,6 @@ class HelpPage(QWidget):
         self.back_button.setText("←")
         self.back_button.clicked.connect(self.back)
         self.recent_button = QToolButton()
-        self.recent_button.setText("▾")
         self.recent_menu = QMenu(self.recent_button)
         self.recent_button.setMenu(self.recent_menu)
         self.recent_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
@@ -469,6 +468,7 @@ class HelpPage(QWidget):
 
     def apply_theme(self):
         c = colors()
+        self.recent_button.setIcon(svg_icon("recent"))
         self.tree.setStyleSheet(
             f"QTreeWidget {{ border: 0; background: {c['raised']}; "
             f"color: {c['text']}; font-size: 14px; }}"
