@@ -34,6 +34,7 @@ class HubWorker:
         self.operation = self.pending = None
         self.control_lock = Lock()
         self.latest_control = None
+        self.control_release = None
         self.control_edges = deque()
         self.control_buttons = 0
         self.control_connection = None
@@ -330,6 +331,7 @@ class HubWorker:
     def _clear_controls(self):
         # Call with control_lock held; an already started write may finish.
         self.latest_control = None
+        self.control_release = None
         self.control_edges.clear()
         self.control_buttons = 0
         self.control_connection = None
@@ -351,7 +353,7 @@ class HubWorker:
             if release:
                 # Keep the neutral boundary even if input is immediately rearmed.
                 self.control_connection = self.connection
-                self.control_edges.append((monotonic(), sample))
+                self.control_release = sample
             elif method == "send" and isinstance(value, ControlState):
                 if self.control_connection is not self.connection:
                     self.control_edges.clear()
@@ -376,17 +378,17 @@ class HubWorker:
         try:
             while True:
                 with self.control_lock:
-                    sample = None
-                    while self.control_edges:
+                    sample, self.control_release = self.control_release, None
+                    while sample is None and self.control_edges:
                         created, candidate = self.control_edges.popleft()
                         if monotonic() - created > BUTTON_EDGE_MAX_AGE:
                             continue
                         sample = candidate
-                        if self.latest_control is sample:
-                            self.latest_control = None
                         break
                     if sample is None:
                         sample, self.latest_control = self.latest_control, None
+                    elif self.latest_control is sample:
+                        self.latest_control = None
                     if sample is None:
                         self.pending = None
                         return

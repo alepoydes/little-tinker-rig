@@ -634,9 +634,14 @@ def test_interruption_discards_queued_button_edges(operation):
 
 @pytest.mark.parametrize("monitoring", [False, True])
 @pytest.mark.parametrize("rearm", [False, True])
+@pytest.mark.parametrize("elapsed", [0, 1])
 def test_disarming_discards_queued_input_and_keeps_neutral_before_rearming(
-    monitoring, rearm
+    monitoring, rearm, elapsed, monkeypatch
 ):
+    import little_tinker_rig.pybricks.worker as worker_module
+
+    now = [0.0]
+    monkeypatch.setattr(worker_module, "monotonic", lambda: now[0])
     entered, release = Event(), asyncio.Event()
     frames, failures = [], []
 
@@ -673,6 +678,7 @@ def test_disarming_discards_queued_input_and_keeps_neutral_before_rearming(
         worker.release_controls()
         if rearm:
             control(pressed)
+        now[0] = elapsed
         worker.loop.call_soon_threadsafe(release.set)
         pending.result(timeout=1)
         assert frames == [neutral, neutral] + ([pressed] if rearm else [])
