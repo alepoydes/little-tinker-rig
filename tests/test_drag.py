@@ -128,6 +128,66 @@ def test_library_drop_keeps_invalid_inline_parameter(tmp_path, qt_app):
         window.deleteLater()
 
 
+def test_program_drop_keeps_invalid_scratch_parameter(tmp_path, qt_app):
+    from PySide6.QtCore import QMimeData, QPoint, QPointF, Qt
+    from PySide6.QtGui import QDragEnterEvent, QDragMoveEvent, QDropEvent
+
+    from little_tinker_rig.qt.app import Studio
+
+    path = tmp_path / "program.py"
+    path.write_text("print(2)\n", encoding="utf-8")
+    window = Studio(path)
+    window.confirm_close = lambda *_: True
+    window.show()
+    window.session.set_scratch(None, "print(1)")
+    window.refresh_views()
+    window.toggle_dock(window.scratch_dock)
+    qt_app.processEvents()
+    try:
+        cell = window.scratch.cells[0]
+        slot = next(
+            s for s in cell.source.parameter_slots if s.parameter.name == "value"
+        )
+        cell.source.show_parameter(slot)
+        field = cell.source.parameter_editor.line_edit
+        field.setText("1 +")
+        view = window.source
+        data = QMimeData()
+        data.setData(
+            "application/x-little-tinker-rig-snippet", b"python/basics/display"
+        )
+        args = (
+            Qt.DropAction.CopyAction,
+            data,
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+        )
+        point = QPoint(150, 180)
+
+        invalid = QDragEnterEvent(point, *args)
+        view.dragEnterEvent(invalid)
+        assert not invalid.isAccepted()
+        assert field.isVisible() and field.text() == "1 +"
+        assert window.document_page.text == "print(2)\n"
+        assert window.session.document.state.scratch == ("print(1)",)
+
+        field.setText("300")
+        valid = QDragEnterEvent(point, *args)
+        view.dragEnterEvent(valid)
+        assert valid.isAccepted()
+        assert window.session.document.state.scratch[0].strip() == "print(300)"
+        move = QDragMoveEvent(point, *args)
+        view.dragMoveEvent(move)
+        assert move.isAccepted()
+        drop = QDropEvent(QPointF(point), *args)
+        view.dropEvent(drop)
+        assert drop.isAccepted()
+        assert 'print("Hello!")' in window.document_page.text
+    finally:
+        window.close()
+        window.deleteLater()
+
+
 @pytest.mark.parametrize("count", [0, 150])
 def test_insert_rows_preserve_pointer_anchor_at_both_halves_and_document_edges(
     qt_app, count

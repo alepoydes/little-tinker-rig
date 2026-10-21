@@ -164,6 +164,7 @@ class SourceView(QTextEdit):
         self.parameter_issues = {}
         self.parameter_revision = None
         self.parameter_editor = None
+        self.document_parameter_finisher = None
         self.structure_bar = StructureBar(self)
         self.pending_parameter = None
         self.scratch_owner = None
@@ -1499,6 +1500,10 @@ class SourceView(QTextEdit):
         field = self.parameter_editor
         return field is None or field.apply(focus=False)
 
+    def finish_document_parameters(self):
+        finish = self.document_parameter_finisher or self.finish_parameter
+        return finish()
+
     def edit_parameters(self):
         syntax = self.session.document.syntax
         match = self.session.selected_match()
@@ -1901,18 +1906,28 @@ class SourceView(QTextEdit):
         self.structure_bar.hide()
         self.dragLeaveEvent(None)
         data = event.mimeData()
+        transfer = None
+        identity = None
         if isinstance(data, BlockMime):
             if data.transfer.owner is not (self.scratch_owner or self.session):
                 return
-            try:
-                data.transfer.validate()
-            except ValueError:
-                return
-            self.drop_transfer = data.transfer
+            transfer = data.transfer
         elif data.hasFormat("application/x-little-tinker-rig-snippet"):
             identity = bytes(
                 data.data("application/x-little-tinker-rig-snippet")
             ).decode()
+        else:
+            return
+        if not self.finish_document_parameters():
+            event.ignore()
+            return
+        if transfer is not None:
+            try:
+                transfer.validate()
+            except ValueError:
+                return
+            self.drop_transfer = transfer
+        else:
             self.drop_snippet = next(
                 (
                     s
@@ -1923,12 +1938,6 @@ class SourceView(QTextEdit):
             )
             if self.drop_snippet is None:
                 return
-        else:
-            return
-        if not self.finish_parameter():
-            self.dragLeaveEvent(None)
-            event.ignore()
-            return
         # Choose the geometric destination first, then validate that destination.
         # An invalid context must never snap to another, distant legal target.
         self.drop_candidates = tuple(edit.targets(self.session.document.syntax))
@@ -2145,7 +2154,10 @@ class SourceView(QTextEdit):
             event.ignore()
             return
         syntax = self.session.document.syntax
-        if not self.finish_parameter() or self.session.document.syntax is not syntax:
+        if (
+            not self.finish_document_parameters()
+            or self.session.document.syntax is not syntax
+        ):
             self.dragLeaveEvent(event)
             event.ignore()
             return

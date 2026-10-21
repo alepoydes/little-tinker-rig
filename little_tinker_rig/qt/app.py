@@ -2125,7 +2125,7 @@ class Studio(QMainWindow):
         view = view or (self.editing_source if target is None else self.source)
         syntax_before_edit = view.session.document.syntax
         if (
-            not view.finish_parameter()
+            not view.finish_document_parameters()
             or view.session.document.syntax is not syntax_before_edit
         ):
             return

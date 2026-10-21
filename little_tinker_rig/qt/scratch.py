@@ -89,6 +89,7 @@ class ScratchCell(QFrame):
         self.code.setAcceptDrops(False)
         self.code.setPlainText(text)
         self.source = SourceView(Session.fragment("", pane.session.snippets))
+        self.source.document_parameter_finisher = pane.finish_parameters
         self.source.scratch_owner = pane.session
         self.source.scratch_index = index
         self.source.changed.connect(self.structural_changed)
@@ -343,6 +344,11 @@ class ScratchPane(QScrollArea):
             (cell for cell in self.cells if cell is focus or cell.isAncestorOf(focus)),
             None,
         )
+
+    def finish_parameters(self):
+        if self.history is not None:
+            return self.history.finish_parameters()
+        return all(cell.source.finish_parameter() for cell in self.cells)
 
     def dragEnterEvent(self, event):
         data = event.mimeData()

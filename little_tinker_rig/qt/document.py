@@ -45,6 +45,7 @@ class DocumentPage(QWidget):
         self.session.editor.select(0)
         self.code_active = False
         self.source = SourceView(self.session)
+        self.source.document_parameter_finisher = self.finish_parameters
         self.source.changed.connect(self.changed)
         self.source.transferred.connect(self.changed)
         self.source.selected.connect(self.changed)
@@ -126,6 +127,10 @@ class DocumentPage(QWidget):
             self.editor_stack.setCurrentIndex(1)
         self.update_mode()
 
+    def finish_parameters(self):
+        views = (self.source, *(cell.source for cell in self.scratch.cells))
+        return all(view.finish_parameter() for view in views)
+
     def scroll_source(self, direction):
         if not self.source.finish_parameter():
             return
@@ -139,7 +144,9 @@ class DocumentPage(QWidget):
         self.scroll_left.setVisible(visible)
         self.scroll_right.setVisible(visible)
         self.scroll_left.setEnabled(visible and scrollbar.value() > scrollbar.minimum())
-        self.scroll_right.setEnabled(visible and scrollbar.value() < scrollbar.maximum())
+        self.scroll_right.setEnabled(
+            visible and scrollbar.value() < scrollbar.maximum()
+        )
 
     @property
     def dirty(self):
