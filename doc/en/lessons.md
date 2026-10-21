@@ -164,7 +164,8 @@ a ZIP tool.
 
 ## Assembly
 
-With no model open, **Choose a project** opens the project cards on Home. Choose a
+With no model open, Assembly shows a **Build your robot** card. **Choose a project**
+opens the project cards on Home. Choose a
 robot project to see assembly steps; the first Python lesson has no robot model.
 You can also use **Open robot instructions…** to select your own `robot.json` file.
 

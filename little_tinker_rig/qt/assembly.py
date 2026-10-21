@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QFileDialog,
+    QFrame,
     QHBoxLayout,
     QLabel,
     QListWidget,
@@ -738,26 +739,42 @@ class AssemblyWorkspace(QWidget):
         self.pages = QStackedWidget()
         self.empty = QWidget()
         empty_layout = QVBoxLayout(self.empty)
-        label = QLabel(
+        empty_layout.setContentsMargins(20, 20, 20, 20)
+        empty_layout.addStretch()
+        card = QFrame()
+        card.setObjectName("assemblyEmptyCard")
+        card.setMaximumWidth(520)
+        card_layout = QVBoxLayout(card)
+        card_layout.setContentsMargins(26, 24, 26, 24)
+        card_layout.setSpacing(12)
+        picture = QLabel()
+        picture.setObjectName("assemblyEmptyPicture")
+        picture.setFixedSize(88, 88)
+        picture.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        picture.setPixmap(svg_pixmap("home-drive", QSize(68, 68)))
+        card_layout.addWidget(picture, alignment=Qt.AlignmentFlag.AlignHCenter)
+        heading = QLabel(N_("Build your robot"))
+        heading.setObjectName("assemblyEmptyHeading")
+        heading.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        card_layout.addWidget(heading)
+        description = QLabel(
             N_(
-                "Assembly steps appear when you open a robot project or a robot.json file."
+                "Choose a robot project to see its build steps, or open your own robot instructions."
             )
         )
-        label.setWordWrap(True)
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        empty_layout.addStretch()
-        empty_layout.addWidget(label)
-        actions = QHBoxLayout()
-        actions.addStretch()
+        description.setObjectName("assemblyEmptyDescription")
+        description.setWordWrap(True)
+        description.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        card_layout.addWidget(description)
         projects = self.projects_button = QPushButton(N_("Choose a project"))
         projects.setObjectName("assemblyProjects")
+        projects.setMinimumHeight(38)
         projects.clicked.connect(self.projects_requested)
-        actions.addWidget(projects)
+        card_layout.addWidget(projects, alignment=Qt.AlignmentFlag.AlignHCenter)
         button = QPushButton(N_("Open robot instructions…"))
         button.clicked.connect(self.choose)
-        actions.addWidget(button)
-        actions.addStretch()
-        empty_layout.addLayout(actions)
+        card_layout.addWidget(button, alignment=Qt.AlignmentFlag.AlignHCenter)
+        empty_layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignHCenter)
         empty_layout.addStretch()
         self.pages.addWidget(self.empty)
         layout.addWidget(self.pages, 1)

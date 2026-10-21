@@ -303,10 +303,6 @@ msgstr ""
 msgid "Assembly"
 msgstr "Сборка"
 
-#: little_tinker_rig/qt/assembly.py:743
-msgid "Assembly steps appear when you open a robot project or a robot.json file."
-msgstr "Шаги сборки появятся после открытия проекта с роботом или файла robot.json."
-
 #: little_tinker_rig/qt/assembly.py:332
 #, python-brace-format
 msgid "Assembly · step {current} of {total}"
@@ -540,6 +536,10 @@ msgstr ""
 #: little_tinker_rig/snippets/python/data.py:99
 msgid "Build list"
 msgstr "Построить список"
+
+#: little_tinker_rig/qt/assembly.py:756
+msgid "Build your robot"
+msgstr "Собери своего робота"
 
 #: little_tinker_rig/snippets/pybricks/hubs.py:96
 msgid "Built-in icon"
@@ -6656,6 +6656,10 @@ msgstr "Продолжить работу"
 #: little_tinker_rig/qt/home.py
 msgid "Choose a project"
 msgstr "Выбрать проект"
+
+#: little_tinker_rig/qt/assembly.py:762
+msgid "Choose a robot project to see its build steps, or open your own robot instructions."
+msgstr "Выбери проект с роботом, чтобы увидеть шаги сборки, или открой свою инструкцию."
 
 #: little_tinker_rig/qt/home.py
 msgid "Start with Python, then try a robot. Open a card to create or resume your own copy."

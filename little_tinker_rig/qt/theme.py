@@ -231,6 +231,14 @@ def studio_stylesheet(name):
             font-size: 12px; }}
         QFrame#firmwareIdle {{ background: {c['selected']};
             border: 1px solid {c['border']}; border-radius: 9px; }}
+        QFrame#assemblyEmptyCard {{ background: {c['panel']};
+            border: 1px solid {c['border']}; border-radius: 18px; }}
+        QLabel#assemblyEmptyPicture {{ background: {c['selected']};
+            border-radius: 18px; border: 0; }}
+        QLabel#assemblyEmptyHeading {{ color: {c['text']};
+            font-size: 22px; font-weight: 700; border: 0; }}
+        QLabel#assemblyEmptyDescription {{ color: {c['muted']};
+            font-size: 13px; border: 0; }}
         QLabel#firmwareIdleTitle {{ color: {c['accent']};
             font-size: 17px; font-weight: 700; border: 0; }}
         QLabel#firmwareIdleHint {{ color: {c['text']};
