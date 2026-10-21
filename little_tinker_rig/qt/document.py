@@ -163,7 +163,7 @@ class DocumentPage(QWidget):
         )
 
     def prepare_save(self):
-        if not self.source.finish_parameter():
+        if not self.finish_parameters():
             raise ValueError(tr("Correct the highlighted parameter before continuing."))
         source = utf8_source(self.text)
         if not self.code_active:
@@ -193,12 +193,16 @@ class DocumentPage(QWidget):
             self.update_mode()
 
     def undo(self):
+        if not self.finish_parameters():
+            return
         self.session.editor.undo()
         self.sync_text()
         self.scratch.refresh(self.session)
         self.changed.emit()
 
     def redo(self):
+        if not self.finish_parameters():
+            return
         self.session.editor.redo()
         self.sync_text()
         self.scratch.refresh(self.session)
@@ -297,7 +301,7 @@ class DocumentPage(QWidget):
         if bool(index) == self.code_active:
             return
         try:
-            if not self.source.finish_parameter():
+            if not self.finish_parameters():
                 self.update_mode()
                 return
             if index == 0:

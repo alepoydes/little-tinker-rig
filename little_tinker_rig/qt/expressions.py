@@ -99,9 +99,9 @@ class ExpressionChooser(QDialog):
         index = self.results.currentRow()
         if not 0 <= index < len(self.entries):
             return
+        if not self.view.prepare_edit(self.syntax):
+            return
         try:
-            if self.syntax is not self.view.session.document.syntax:
-                raise ValueError(tr("Document changed; choose the expression again"))
             self.view.session.editor.selection = self.node
             compose(
                 self.view.session,

@@ -1941,10 +1941,10 @@ class Studio(QMainWindow):
         return path
 
     def finish_parameters(self):
-        views = [self.documents.widget(i).source for i in range(self.documents.count())]
-        if hasattr(self, "scratch"):
-            views.extend(cell.source for cell in self.scratch.cells)
-        return all(view.finish_parameter() for view in views)
+        return all(
+            self.documents.widget(i).finish_parameters()
+            for i in range(self.documents.count())
+        )
 
     def perform(self, callback, *, commit_parameters=True):
         if commit_parameters and not self.finish_parameters():
@@ -2133,11 +2133,7 @@ class Studio(QMainWindow):
                 tr("Switch this editor to Blocks before inserting a block.")
             )
         view = view or (self.editing_source if target is None else self.source)
-        syntax_before_edit = view.session.document.syntax
-        if (
-            not view.finish_document_parameters()
-            or view.session.document.syntax is not syntax_before_edit
-        ):
+        if not view.prepare_edit():
             return
         session = view.session
         snippet = next(

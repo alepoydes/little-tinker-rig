@@ -121,7 +121,7 @@ class ScratchCell(QFrame):
         self.apply_theme()
         self.error.hide()
         layout.addWidget(self.error)
-        self.change_mode(False)
+        self.change_mode(False, focus=False)
         localize(self)
         self.code.textChanged.connect(self.text_changed)
 
@@ -149,7 +149,9 @@ class ScratchCell(QFrame):
             self.source.session = session
 
     def change_mode(self, code, *, focus=True):
-        if not self.source.finish_parameter():
+        if focus and not self.source.finish_document_parameters():
+            self.blocks_button.setChecked(not self.code_active)
+            self.code_button.setChecked(self.code_active)
             return
         if not code:
             try:
@@ -226,6 +228,8 @@ class ScratchCell(QFrame):
         self.fit()
 
     def insert_snippet(self, identity, target=None):
+        if not self.source.prepare_edit():
+            return
         try:
             snippet = self.pane.catalog_snippet(identity)
             syntax = self.source.session.document.syntax

@@ -288,9 +288,6 @@ class SourceView(QTextEdit):
             if revision != self.parameter_revision:
                 self.parameter_revision = revision
                 self.hover_parameter = None
-                if self.parameter_editor:
-                    self.parameter_editor.close()
-                    self.parameter_editor = None
                 self.parameter_slots = tuple(
                     slot
                     for slot in slots(self.session)
@@ -419,6 +416,11 @@ class SourceView(QTextEdit):
                 self.verticalScrollBar().value() + self.cursorRect(anchor).y() - old_y
             )
             self.horizontalScrollBar().setValue(horizontal)
+        field = self.parameter_editor
+        if field and field.slot.syntax is self.session.document.syntax:
+            rect = self.parameter_rect(field.slot)
+            if rect is not None:
+                field.setGeometry(rect.toRect().adjusted(-1, 0, 2, 0))
         self.viewport().update()
 
     def reveal(self, offset):
@@ -885,7 +887,9 @@ class SourceView(QTextEdit):
                 )
         active = (
             self.parameter_editor.slot
-            if self.parameter_editor and self.parameter_editor.isVisible()
+            if self.parameter_editor
+            and self.parameter_editor.isVisible()
+            and self.parameter_editor.slot.syntax is self.session.document.syntax
             else self.hover_parameter
         )
         linked = set(self.linked_parameter_spans(active))
@@ -1450,12 +1454,11 @@ class SourceView(QTextEdit):
 
     def show_parameter(self, slot):
         field = self.parameter_editor
-        if field:
-            if field.slot is slot:
-                field.line_edit.setFocus()
-                return
-            if not self.finish_parameter():
-                return
+        if field and field.slot is slot:
+            field.line_edit.setFocus()
+            return
+        if not self.finish_document_parameters():
+            return
         if not any(current is slot for current in self.parameter_slots):
             position = edit.map_offset(
                 slot.syntax.source,
@@ -1504,6 +1507,18 @@ class SourceView(QTextEdit):
         finish = self.document_parameter_finisher or self.finish_parameter
         return finish()
 
+    def prepare_edit(self, syntax=None):
+        """Finish the owning document's fields before using a captured target."""
+        captured = syntax is not None
+        syntax = self.session.document.syntax if syntax is None else syntax
+        if not self.finish_document_parameters():
+            return False
+        if self.session.document.syntax is syntax:
+            return True
+        if captured:
+            self.failed.emit(tr("Document changed; choose the block again"))
+        return False
+
     def edit_parameters(self):
         syntax = self.session.document.syntax
         match = self.session.selected_match()
@@ -1538,6 +1553,8 @@ class SourceView(QTextEdit):
     def edit_variant(self):
         from .variants import VariantDialog
 
+        if not self.prepare_edit():
+            return
         try:
             dialog = VariantDialog(self)
         except (ValueError, SyntaxError) as error:
@@ -1581,6 +1598,8 @@ class SourceView(QTextEdit):
     def set_display_mode(self, block, mode):
         if mode not in {"auto", "source", "definition"}:
             raise ValueError("Unknown block display mode")
+        if not self.prepare_edit():
+            return
         key = (block.match.span.start, block.match.snippet.identity)
         if mode == "auto":
             self.display_modes.pop(key, None)
@@ -1602,10 +1621,10 @@ class SourceView(QTextEdit):
     def choose_expression(self, *, wrap=False):
         from .expressions import ExpressionChooser
 
+        if not self.prepare_edit():
+            return
         if not public(self.session, self.session.editor.selection):
             return
-        if self.parameter_editor:
-            self.parameter_editor.close()
         if self.expression_popup:
             self.expression_popup.close()
         self.expression_popup = popup = ExpressionChooser(self, wrap=wrap)
@@ -1640,6 +1659,8 @@ class SourceView(QTextEdit):
         self.reveal_selection()
 
     def delete_selection(self):
+        if not self.prepare_edit():
+            return
         if self.session.editor.selection is self.session.document.syntax.tree:
             return
         try:
@@ -1668,6 +1689,8 @@ class SourceView(QTextEdit):
                     self.session.document.syntax.text(node)
                 )
             else:
+                if not self.prepare_edit():
+                    return
                 try:
                     compose(self.session, Proposal("", QApplication.clipboard().text()))
                     self.refresh_source()
@@ -1698,6 +1721,8 @@ class SourceView(QTextEdit):
         if event.text() in ("+", "-", "*", "/", "%", "<", ">", "&", "|") and public(
             self.session, self.session.editor.selection
         ):
+            if not self.prepare_edit():
+                return
             try:
                 compose(
                     self.session,
@@ -1726,7 +1751,7 @@ class SourceView(QTextEdit):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
-            if not self.finish_parameter():
+            if not self.prepare_edit():
                 event.accept()
                 return
             self.setFocus()
@@ -1756,14 +1781,9 @@ class SourceView(QTextEdit):
                 self.structure_bar.activate(point)
 
     def contextMenuEvent(self, event):
-        if self.parameter_editor:
-            syntax = self.session.document.syntax
-            if (
-                not self.finish_parameter()
-                or self.session.document.syntax is not syntax
-            ):
-                event.accept()
-                return
+        if not self.prepare_edit():
+            event.accept()
+            return
         menu = block_menu(self, event.pos())
         if not menu.isEmpty():
             menu.exec(event.globalPos())
@@ -2153,11 +2173,7 @@ class SourceView(QTextEdit):
             self.dragLeaveEvent(event)
             event.ignore()
             return
-        syntax = self.session.document.syntax
-        if (
-            not self.finish_document_parameters()
-            or self.session.document.syntax is not syntax
-        ):
+        if not self.prepare_edit():
             self.dragLeaveEvent(event)
             event.ignore()
             return
@@ -2204,6 +2220,8 @@ class SourceView(QTextEdit):
         super().hideEvent(event)
 
     def fold_selection(self):
+        if not self.prepare_edit():
+            return
         syntax = self.session.document.syntax
         match = self.session.selected_match()
         span = match.span if match else syntax.spans[self.session.editor.selection]

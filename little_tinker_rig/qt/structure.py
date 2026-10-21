@@ -187,10 +187,7 @@ class StructureBar(QWidget):
             action.setVisible(seq.kind == "arguments")
 
     def change(self, action):
-        syntax = self.view.session.document.syntax
-        if not self.view.finish_parameter():
-            return
-        if self.view.session.document.syntax is not syntax:
+        if not self.view.prepare_edit():
             self.hide()
             return
         seq = self.current()
@@ -312,9 +309,9 @@ def block_menu(view, point):
         menu.addSeparator()
 
     def perform(action, *, transfer=False):
+        if not view.prepare_edit(syntax):
+            return
         try:
-            if syntax is not session.document.syntax:
-                raise ValueError(tr("Document changed; choose the block again"))
             action()
             view.refresh_source()
             (view.transferred if transfer else view.changed).emit()
@@ -493,9 +490,9 @@ def expression_menu(view, point, *, menu=None):
     menu = QMenu(view) if standalone else menu
 
     def replace(owner, text):
+        if not view.prepare_edit(syntax):
+            return
         try:
-            if syntax is not view.session.document.syntax:
-                raise ValueError(tr("Document changed; choose the expression again"))
             view.session.replace_expression(owner, text)
             view.refresh_source()
             view.changed.emit()
@@ -516,6 +513,8 @@ def expression_menu(view, point, *, menu=None):
         submenu = menu.addMenu(text[:65] + ("…" if len(text) > 65 else ""))
 
         def choose(checked=False, owner=owner, wrap=False):
+            if not view.prepare_edit(syntax):
+                return
             view.session.editor.selection = owner
             view.choose_expression(wrap=wrap)
 
@@ -537,11 +536,9 @@ def expression_menu(view, point, *, menu=None):
         wrap = submenu.addMenu(tr("Wrap expression"))
 
         def apply(operation, owner):
+            if not view.prepare_edit(syntax):
+                return
             try:
-                if syntax is not view.session.document.syntax:
-                    raise ValueError(
-                        tr("Document changed; choose the expression again")
-                    )
                 view.session.editor.selection = owner
                 compose(
                     view.session,
@@ -577,7 +574,7 @@ def expression_menu(view, point, *, menu=None):
             keep = submenu.addMenu(tr("Unwrap: keep an operand"))
 
             def keep_operand(owner, operand):
-                if syntax is not view.session.document.syntax:
+                if not view.prepare_edit(syntax):
                     return
                 view.session.editor.selection = owner
                 unwrap(view.session, operand)

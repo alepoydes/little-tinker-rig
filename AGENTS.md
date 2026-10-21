@@ -96,6 +96,10 @@
 - Commit valid inline input before saving, running, switching views or leaving its
   document. Keep invalid input visible and editable; only explicit cancellation
   discards it. Hiding a widget is not a decision to discard its draft.
+- Guard structural commands through the owning document, including every Scratch
+  cell. Keep one active inline field per document and revalidate captured targets
+  after committing it. Rendering or context/diagnostic refresh must not cancel a
+  draft. Test commands in one view while another owns the unfinished input.
 - Stop and disconnect bypass edit validation and preserve pending input. Exercise
   both toolbar actions and shortcuts while an invalid parameter is open.
 - Route editing commands to a visible editor with a stable owner, including

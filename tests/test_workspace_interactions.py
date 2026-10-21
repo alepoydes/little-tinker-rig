@@ -1087,6 +1087,105 @@ def test_context_menu_waits_for_inline_parameter(windows, monkeypatch):
     assert view.parameter_editor is None
 
 
+@pytest.mark.parametrize("command", ["context", "delete", "sequence"])
+def test_program_commands_finish_scratch_drafts_before_editing(
+    windows, monkeypatch, command
+):
+    from PySide6.QtCore import QPoint
+
+    from little_tinker_rig.qt.structure import block_menu
+
+    original = "values = [1, 2]\nprint(3)\n"
+    window = windows(original)
+    window.session.set_scratch(None, "print(7)\n")
+    window.refresh_views()
+    window.scratch_dock.show()
+    window.scratch_dock.raise_()
+    QApplication.processEvents()
+    cell = window.scratch.cells[0]
+    field = parameter(window, "value", "7 +", view=cell.source)
+    view = window.source
+    rect = view._rect(2, 0)
+    point = QPoint(int(rect.left()) + 2, int(rect.center().y()))
+    opened = []
+
+    def scripted_menu(view, point):
+        menu = block_menu(view, point)
+        opened.append(True)
+        action = next(a for a in menu.actions() if a.text() == "Delete")
+        return SimpleNamespace(
+            isEmpty=menu.isEmpty,
+            exec=lambda *_: action.trigger(),
+            deleteLater=menu.deleteLater,
+        )
+
+    monkeypatch.setattr("little_tinker_rig.qt.editor.block_menu", scripted_menu)
+
+    def execute():
+        if command == "context":
+            view.contextMenuEvent(
+                QContextMenuEvent(
+                    QContextMenuEvent.Reason.Mouse,
+                    point,
+                    view.viewport().mapToGlobal(point),
+                )
+            )
+        elif command == "delete":
+            view.session.editor.select(original.index("print"))
+            QTest.keyClick(view, Qt.Key.Key_Delete)
+        else:
+            rect = view._rect(1, 10)
+            item = QPoint(int(rect.left()) + 2, int(rect.center().y()))
+            view.structure_bar.activate(item)
+            view.structure_bar.change("remove")
+        QApplication.processEvents()
+
+    execute()
+    assert window.document_page.text == original
+    assert cell.text == "print(7)\n"
+    assert field.isVisible() and field.text() == "7 +"
+    assert opened == []
+
+    field.setText("70")
+    execute()
+    expected = (
+        "values = [2]\nprint(3)\n" if command == "sequence" else "values = [1, 2]\n"
+    )
+    assert window.document_page.text == expected
+    assert cell.text == "print(70)\n"
+    window.document_page.undo()
+    assert window.document_page.text == original
+    assert cell.text == "print(70)\n"
+    window.document_page.undo()
+    assert cell.text == "print(7)\n"
+
+
+def test_document_has_one_inline_draft_and_refresh_does_not_discard_it(windows):
+    window = windows("print(1)\n")
+    window.session.set_scratch(None, "print(7)\n")
+    window.refresh_views()
+    window.scratch_dock.show()
+    window.scratch_dock.raise_()
+    QApplication.processEvents()
+    cell = window.scratch.cells[0]
+    field = parameter(window, "value", "7 +", view=cell.source)
+    slot = next(s for s in window.source.parameter_slots if s.parameter.name == "value")
+    window.source.show_parameter(slot)
+    assert window.source.parameter_editor is None
+    window.document_page.change_mode(1)
+    assert not window.document_page.code_active
+
+    # Recomputing diagnostics after context changes must not cancel a local draft.
+    window.session.editor.commit("print(2)\n")
+    window.refresh_views()
+    QApplication.processEvents()
+    assert field.isVisible() and field.text() == "7 +"
+    field.setText("70")
+    assert window.document_page.finish_parameters()
+    assert cell.text == "print(70)\n"
+    assert window.document_page.text == "print(2)\n"
+
+
 def test_insertion_handler_waits_for_inline_parameter(windows):
     window = windows("print(1)\n")
     view = window.source

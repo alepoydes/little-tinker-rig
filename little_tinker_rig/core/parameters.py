@@ -555,7 +555,7 @@ def default_bindings(session, snippet, offset=None):
 
 def change_parameter(session, slot, expression):
     syntax = session.document.syntax
-    # The popup is attached to this revision. Publishing a new revision closes it.
+    # A retained draft must never apply its captured target to a different revision.
     if slot.syntax is not syntax:
         raise ValueError(tr("Document changed; choose the parameter again"))
     expansion = expression if isinstance(expression, Expansion) else None
