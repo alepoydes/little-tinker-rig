@@ -485,8 +485,11 @@ class BlockEditor(QWidget):
             return None
 
     def create_new_block(self):
+        return self.create_with_guidance(STARTERS[self.starters.currentData()])
+
+    def create_with_guidance(self, source, *, level=None):
         try:
-            return self.create(STARTERS[self.starters.currentData()])
+            return self.create(source, level=level)
         except (ValueError, SyntaxError, OSError) as error:
             reveal_group = isinstance(error, ValueError) and not self._browser_visible
             if reveal_group:
@@ -1376,7 +1379,9 @@ class BlockEditor(QWidget):
         if function:
             source = self.code.draft.source
             level = self.preview_snippet.level
-            self.create(copy_definition(source, function.name), level=level)
+            self.create_with_guidance(
+                copy_definition(source, function.name), level=level
+            )
 
     def save(self):
         if self.code:

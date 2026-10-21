@@ -42,7 +42,7 @@ directly in Python.
 The **New block** icon in the toolbar performs the same action while the browser
 is collapsed. It uses the selected starter and group; initially these are
 **Action** and `custom`. If the group needs correction, the browser opens and
-selects its field.
+selects its field. The same guidance applies when copying a built-in block.
 
 In the program, **Edit → Create block from selection** starts a definition from
 the selected structural block or selected Python text. The program stays intact.

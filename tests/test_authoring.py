@@ -463,7 +463,8 @@ def test_compact_block_editor_can_create_without_opening_browser(tmp_path, qt_ap
         window.deleteLater()
 
 
-def test_compact_new_block_reveals_group_that_needs_correction(tmp_path, qt_app):
+@pytest.mark.parametrize("action", ["new", "copy"])
+def test_compact_creation_reveals_group_that_needs_correction(tmp_path, qt_app, action):
     from PySide6.QtCore import Qt
     from PySide6.QtTest import QTest
 
@@ -480,14 +481,18 @@ def test_compact_new_block_reveals_group_that_needs_correction(tmp_path, qt_app)
         page = window.block_editor
         assert not page.browser_pane.isVisible()
         page.module_name.setText("broken/name?")
-        QTest.mouseClick(page.quick_new_button, Qt.MouseButton.LeftButton)
+        button = page.quick_new_button if action == "new" else page.copy_button
+        QTest.mouseClick(button, Qt.MouseButton.LeftButton)
         qt_app.processEvents()
         assert window.last_error
         assert page.browser_pane.isVisible()
         assert page.module_name.hasFocus()
         assert page.module_name.selectedText() == "broken/name?"
         page.module_name.setText("fixed")
-        QTest.mouseClick(page.new_button, Qt.MouseButton.LeftButton)
+        QTest.mouseClick(
+            page.new_button if action == "new" else page.copy_button,
+            Qt.MouseButton.LeftButton,
+        )
         assert page.code.draft.module == "fixed"
     finally:
         window.close()
