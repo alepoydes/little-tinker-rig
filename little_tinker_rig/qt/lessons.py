@@ -2,11 +2,10 @@
 
 import hashlib
 from datetime import datetime
-from html import escape
 from math import ceil
 from pathlib import Path
 
-from PySide6.QtCore import QEvent, QObject, Qt, QThreadPool, QTimer, QUrl
+from PySide6.QtCore import QEvent, QObject, QSize, Qt, QThreadPool, QTimer, QUrl
 from PySide6.QtGui import QAction, QDesktopServices
 from PySide6.QtWidgets import (
     QApplication,
@@ -19,6 +18,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QProgressBar,
     QProgressDialog,
+    QPushButton,
     QScrollArea,
     QSizePolicy,
     QTextBrowser,
@@ -92,6 +92,42 @@ class TaskMarkdown(QTextBrowser):
                     if layout := host.layout():
                         layout.invalidate()
                         layout.activate()
+
+
+class TaskTitle(QPushButton):
+    def __init__(self, title):
+        super().__init__()
+        self.setObjectName("lessonTaskTitle")
+        self.setAccessibleName(title)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(3, 2, 3, 2)
+        self.label = QLabel(title)
+        self.label.setWordWrap(True)
+        self.label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        layout.addWidget(self.label)
+        self.apply_theme()
+
+    def sizeHint(self):
+        return self.layout().sizeHint().expandedTo(super().sizeHint())
+
+    def minimumSizeHint(self):
+        return QSize(self.label.minimumSizeHint().width() + 6, 28)
+
+    def heightForWidth(self, width):
+        return self.label.heightForWidth(max(1, width - 6)) + 4
+
+    def apply_theme(self):
+        self.label.setStyleSheet(f"color: {colors()['text']}; font-weight: 600;")
+
+    def keyPressEvent(self, event):
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            if not event.isAutoRepeat():
+                self.click()
+            event.accept()
+            return
+        super().keyPressEvent(event)
 
 
 LESSON_DOCK_MIN_WIDTH = 1320
@@ -270,6 +306,11 @@ class Lessons(QObject):
             "color: white; border-color: transparent; }"
             f'#lessonTaskNumber[selected="true"] {{ background: {c["accent"]}; '
             f'color: {c["accent_text"]}; border-color: transparent; }}'
+            "#lessonTaskTitle { background: transparent; border: 1px solid transparent; "
+            "border-radius: 4px; padding: 0; }"
+            f"#lessonTaskTitle:hover {{ background: {c['hover']}; }}"
+            f"#lessonTaskTitle:focus {{ border-color: {c['accent']}; "
+            f"background: {c['hover']}; }}"
             f"QProgressBar#lessonTaskProgress {{ background: {c['raised']}; "
             "border: 0; border-radius: 4px; }"
             f"QProgressBar#lessonTaskProgress::chunk {{ background: {c['accent']}; "
@@ -286,12 +327,7 @@ class Lessons(QObject):
         )
         self.intro.apply_theme()
         for widgets in self.cards.values():
-            title = widgets["title"]
-            title.setText(
-                f'<a href="task:select" style="color:{c["text"]}; '
-                'text-decoration:none; font-weight:600;">'
-                f"{escape(title.accessibleName())}</a>"
-            )
+            widgets["title"].apply_theme()
             widgets["body"].apply_theme()
             widgets["status"].setStyleSheet(f"color: {c['muted']}; font-size: 11px;")
 
@@ -692,20 +728,11 @@ class Lessons(QObject):
         number.setProperty("completed", identity in self.current.progress["completed"])
         number.setAlignment(Qt.AlignmentFlag.AlignCenter)
         header.addWidget(number)
-        name = QLabel(
-            f'<a href="task:select" style="color:{colors()["text"]}; '
-            'text-decoration:none; font-weight:600;">'
-            f"{escape(title)}</a>"
-        )
-        name.setCursor(Qt.CursorShape.PointingHandCursor)
-        name.setWordWrap(True)
-        name.setAccessibleName(title)
-        name.setTextInteractionFlags(
-            Qt.TextInteractionFlag.LinksAccessibleByMouse
-            | Qt.TextInteractionFlag.LinksAccessibleByKeyboard
-        )
-        name.linkActivated.connect(
-            lambda _, row=index: self.window.perform(lambda: self.open_task(row))
+        name = TaskTitle(title)
+        name.clicked.connect(
+            lambda checked=False, row=index: self.window.perform(
+                lambda: self.open_task(row)
+            )
         )
         header.addWidget(name, 1)
         points = QLabel(f"★ {stage.get('points', 1)}")

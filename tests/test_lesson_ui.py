@@ -668,7 +668,8 @@ def test_authored_task_card_link_opens_instructions_from_visible_markdown(
 @pytest.mark.parametrize("width,height", [(1380, 880), (800, 620)])
 def test_task_completion_keeps_keyboard_focus(tmp_path, qt_app, width, height):
     from PySide6.QtCore import Qt
-    from PySide6.QtTest import QTest
+    from PySide6.QtGui import QAccessible
+    from PySide6.QtTest import QSignalSpy, QTest
 
     from little_tinker_rig.qt.app import Studio
 
@@ -694,7 +695,27 @@ def test_task_completion_keeps_keyboard_focus(tmp_path, qt_app, width, height):
             assert current.isChecked() is checked
             assert qt_app.focusWidget() is current
         QTest.keyClick(current, Qt.Key.Key_Tab)
-        assert qt_app.focusWidget() is window.lessons.cards["drive"]["title"]
+        title = window.lessons.cards["drive"]["title"]
+        assert qt_app.focusWidget() is title
+        assert (
+            QAccessible.queryAccessibleInterface(title).role()
+            == QAccessible.Role.PushButton
+        )
+        QTest.keyClick(title, Qt.Key.Key_Tab)
+        assert qt_app.focusWidget() is window.lessons.cards["drive"]["body"]
+        title.setFocus()
+        activated = QSignalSpy(title.clicked)
+        QTest.keyClick(title, Qt.Key.Key_Return)
+        assert activated.count() == 1
+        assert window.pages.currentIndex() == 2
+        window.set_mode(0)
+        window.lessons.set_panel_expanded(True)
+        title = window.lessons.cards["drive"]["title"]
+        title.setFocus()
+        activated = QSignalSpy(title.clicked)
+        QTest.keyClick(title, Qt.Key.Key_Space)
+        assert activated.count() == 1
+        assert window.pages.currentIndex() == 2
     finally:
         window.recovery.close()
         window.deleteLater()
@@ -1734,7 +1755,7 @@ def test_task_title_navigates_checkbox_stays_put_and_help_finds_text(tmp_path, q
         help_page = window.help_page
         assert help_page.lesson_item.text(0).startswith("First drive")
         assert "Tasks in this lesson" in help_page.browser.toPlainText()
-        window.lessons.cards["experiment"]["title"].linkActivated.emit("task:select")
+        window.lessons.cards["experiment"]["title"].click()
         qt_app.processEvents()
         assert window.lessons.current.stage["id"] == "experiment"
         assert help_page.current == "lesson/instructions#experiment"
@@ -1796,7 +1817,7 @@ def test_task_title_waits_for_invalid_block_parameter(tmp_path, qt_app):
         field.setText("1 +")
         previous_help = window.help_page.current
 
-        window.lessons.cards["repeat"]["title"].linkActivated.emit("task:select")
+        window.lessons.cards["repeat"]["title"].click()
         qt_app.processEvents()
         assert window.lessons.current.stage["id"] == "message"
         assert window.help_page.current == previous_help
@@ -1804,7 +1825,7 @@ def test_task_title_waits_for_invalid_block_parameter(tmp_path, qt_app):
         assert field.isVisible() and field.text() == "1 +"
 
         field.setText("4")
-        window.lessons.cards["repeat"]["title"].linkActivated.emit("task:select")
+        window.lessons.cards["repeat"]["title"].click()
         qt_app.processEvents()
         assert window.lessons.current.stage["id"] == "repeat"
         assert window.help_page.current == "lesson/instructions#repeat"

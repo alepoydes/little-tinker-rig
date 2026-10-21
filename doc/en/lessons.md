@@ -25,8 +25,9 @@ connections and measurements. In a narrow window, the step instructions retain
 enough width to read beside the model.
 The selected task expands to show its goal, completion guidance, links and hints;
 other tasks stay compact. It appears only while a lesson project is active.
-Clicking a task title selects it, updates suggested blocks, and opens its section
-in **Help**. An active block parameter is applied first; invalid input keeps the
+Clicking a task title, or pressing Enter or Space on it, selects the task,
+updates suggested blocks, and opens its section in **Help**. An active block
+parameter is applied first; invalid input keeps the
 current task selected so it can be fixed. The title does not mark a task complete.
 A checkbox only records completion and does not navigate. It keeps keyboard
 focus when it updates, so Space can toggle it again.
