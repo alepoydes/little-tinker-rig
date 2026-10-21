@@ -484,13 +484,9 @@ msgstr ""
 " затем отпустите. Держите хаб рядом с компьютером и закройте другие подключения "
 "Bluetooth."
 
-#: little_tinker_rig/qt/device.py:54
-msgid ""
-"Bluetooth hub name, or USB serial port such as /dev/ttyACM0 or COM3. Leave empty for "
-"automatic discovery."
-msgstr ""
-"Имя Bluetooth-хаба или последовательный USB-порт, например /dev/ttyACM0 или COM3. "
-"Оставьте пустым для автоматического поиска."
+#: little_tinker_rig/qt/device.py
+msgid "Bluetooth hub name"
+msgstr "Имя Bluetooth-хаба"
 
 #: little_tinker_rig/qt/app.py:1958
 msgid "Bluetooth, USB or virtual hub"
@@ -2277,6 +2273,10 @@ msgstr "Пусто"
 msgid "Empty fields"
 msgstr "Пустые поля"
 
+#: little_tinker_rig/qt/device.py
+msgid "Empty — detect a single USB hub"
+msgstr "Пусто — найти единственный USB-хаб"
+
 #: little_tinker_rig/qt/device.py:45
 msgid "Empty — first available hub"
 msgstr "Пусто — первый найденный хаб"
@@ -2289,6 +2289,14 @@ msgstr "Передавать команды"
 #: little_tinker_rig/qt/structure.py:200
 msgid "Enter a Python identifier"
 msgstr "Введите идентификатор Python"
+
+#: little_tinker_rig/qt/device.py
+msgid ""
+"Enter a USB serial port such as COM3 or /dev/ttyACM0. Leave empty if only one "
+"Pybricks USB hub is connected."
+msgstr ""
+"Введите последовательный USB-порт, например COM3 или /dev/ttyACM0. Оставьте "
+"пустым, если подключён только один USB-хаб Pybricks."
 
 #: little_tinker_rig/snippets/python/objects.py:34
 msgid ""
@@ -2311,6 +2319,10 @@ msgstr "Введите модуль и импортируемые имена"
 #: little_tinker_rig/core/structure.py:321
 msgid "Enter an item and choose an insertion position"
 msgstr "Введите элемент и выберите место вставки"
+
+#: little_tinker_rig/qt/device.py
+msgid "Enter the Bluetooth hub name, or leave empty for the first available hub."
+msgstr "Введите имя Bluetooth-хаба или оставьте поле пустым для первого найденного хаба."
 
 #: little_tinker_rig/snippets/python/basics.py:146
 msgid "Equal to"
@@ -2882,10 +2894,6 @@ msgstr ""
 #: little_tinker_rig/qt/firmware.py:71
 msgid "Hub model"
 msgstr "Модель хаба"
-
-#: little_tinker_rig/qt/device.py:71
-msgid "Hub name / USB port"
-msgstr "Имя хаба / USB-порт"
 
 #: little_tinker_rig/tui/app.py:501
 msgid "Hub name / USB port (empty: automatic)"
@@ -6132,6 +6140,10 @@ msgstr "Помощь с подключением USB"
 #: little_tinker_rig/pybricks/usb_process.py:104
 msgid "USB hub disconnected"
 msgstr "USB-хаб отключён"
+
+#: little_tinker_rig/qt/device.py
+msgid "USB serial port"
+msgstr "Последовательный USB-порт"
 
 #: little_tinker_rig/snippets/pybricks/sensor_values.py:30
 #: little_tinker_rig/snippets/pybricks/sensors.py:83

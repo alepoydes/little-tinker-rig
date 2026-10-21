@@ -487,6 +487,9 @@ def test_hub_error_can_be_copied_and_opens_offline_usb_help(tmp_path, qt_app):
         window.set_mode(0)
         dialog = ConnectDialog(window)
         dialog.show()
+        assert dialog.help_button.isHidden()
+        dialog.transport.setCurrentIndex(dialog.transport.findData("usb"))
+        assert dialog.help_button.isVisible()
         buttons = dialog.findChild(QDialogButtonBox)
         help_button = next(
             button
@@ -522,15 +525,56 @@ def test_connection_dialog_keeps_primary_action_after_language_switch(tmp_path, 
             assert dialog.findChild(QPushButton, "dialogPrimary").text() == expected
             assert not dialog.name.isVisible()
             assert dialog.model.isVisible()
+            assert dialog.help_button.isHidden()
             dialog.transport.setCurrentIndex(dialog.transport.findData("ble"))
             assert dialog.name.isVisible()
             assert not dialog.model.isVisible()
+            assert dialog.name_label.text() == (
+                "Bluetooth hub name" if code == "en" else "Имя Bluetooth-хаба"
+            )
+            assert dialog.name.accessibleName() == dialog.name_label.text()
+            assert dialog.name.placeholderText() == (
+                "Empty — first available hub"
+                if code == "en"
+                else "Пусто — первый найденный хаб"
+            )
+            assert dialog.help_button.isHidden()
+            dialog.transport.setCurrentIndex(dialog.transport.findData("usb"))
+            assert dialog.name_label.text() == (
+                "USB serial port" if code == "en" else "Последовательный USB-порт"
+            )
+            assert dialog.name.accessibleName() == dialog.name_label.text()
+            assert dialog.name.placeholderText() == (
+                "Empty — detect a single USB hub"
+                if code == "en"
+                else "Пусто — найти единственный USB-хаб"
+            )
+            assert (
+                "only one Pybricks USB hub" if code == "en" else "только один USB-хаб"
+            ) in dialog.name.toolTip()
+            assert dialog.help_button.isVisible()
             dialog.close()
             dialog.deleteLater()
         keyboard_dialog = ConnectDialog(window, preferred_transport="virtual")
         keyboard_dialog.show()
         QTest.keyClick(keyboard_dialog, Qt.Key.Key_Return)
         assert keyboard_dialog.result() == QDialog.DialogCode.Accepted
+
+        window.change_language("en")
+        live_dialog = ConnectDialog(window, preferred_transport="usb")
+        live_dialog.show()
+        window.change_language("ru")
+        assert live_dialog.name_label.text() == "Последовательный USB-порт"
+        assert live_dialog.name.accessibleName() == live_dialog.name_label.text()
+        assert (
+            live_dialog.name.placeholderText() == "Пусто — найти единственный USB-хаб"
+        )
+        live_dialog.transport.setCurrentIndex(live_dialog.transport.findData("ble"))
+        assert live_dialog.name_label.text() == "Имя Bluetooth-хаба"
+        window.change_language("en")
+        assert live_dialog.name_label.text() == "Bluetooth hub name"
+        assert live_dialog.name.placeholderText() == "Empty — first available hub"
+        live_dialog.close()
     finally:
         window.change_language("en")
         window.close()

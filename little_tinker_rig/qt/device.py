@@ -62,11 +62,11 @@ class ConnectDialog(QDialog):
         ):
             self.transport.addItem(label, key)
         self.name = QLineEdit()
-        self.name.setAccessibleName(N_("Hub name / USB port"))
+        self.name.setAccessibleName(N_("Bluetooth hub name"))
         self.name.setPlaceholderText(N_("Empty — first available hub"))
         self.name.setToolTip(
             N_(
-                "Bluetooth hub name, or USB serial port such as /dev/ttyACM0 or COM3. Leave empty for automatic discovery."
+                "Enter the Bluetooth hub name, or leave empty for the first available hub."
             )
         )
         self.model = QComboBox()
@@ -90,10 +90,10 @@ class ConnectDialog(QDialog):
         )
         self.transport.setCurrentIndex(self.transport.findData(transport))
         form.addRow(N_("Connection"), self.transport)
-        form.addRow(N_("Hub name / USB port"), self.name)
+        form.addRow(N_("Bluetooth hub name"), self.name)
         form.addRow(N_("Virtual hub model"), self.model)
+        self.name_label = form.labelForField(self.name)
         self.transport.currentIndexChanged.connect(self.update_connection_fields)
-        self.update_connection_fields()
         layout.addLayout(form)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Cancel)
         connect_button = buttons.addButton(
@@ -102,21 +102,55 @@ class ConnectDialog(QDialog):
         connect_button.setObjectName("dialogPrimary")
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
-        help_button = buttons.addButton(
+        self.help_button = buttons.addButton(
             N_("USB connection help"), QDialogButtonBox.ButtonRole.HelpRole
         )
-        help_button.setObjectName("dialogHelp")
-        help_button.clicked.connect(self.reject)
-        help_button.clicked.connect(parent.show_usb_help)
+        self.help_button.setObjectName("dialogHelp")
+        self.help_button.clicked.connect(self.reject)
+        self.help_button.clicked.connect(parent.show_usb_help)
         layout.addWidget(buttons)
         localize(self)
+        self.update_connection_fields()
 
     def update_connection_fields(self, *_):
-        virtual = self.transport.currentData() == "virtual"
+        transport = self.transport.currentData()
+        virtual = transport == "virtual"
         self.name.setEnabled(not virtual)
         self.model.setEnabled(virtual)
         self.form.setRowVisible(self.name, not virtual)
         self.form.setRowVisible(self.model, virtual)
+        self.help_button.setVisible(transport == "usb")
+        name_source = (
+            N_("USB serial port") if transport == "usb" else N_("Bluetooth hub name")
+        )
+        placeholder_source = (
+            N_("Empty — detect a single USB hub")
+            if transport == "usb"
+            else N_("Empty — first available hub")
+        )
+        tooltip_source = (
+            N_(
+                "Enter a USB serial port such as COM3 or /dev/ttyACM0. Leave empty if only one Pybricks USB hub is connected."
+            )
+            if transport == "usb"
+            else N_(
+                "Enter the Bluetooth hub name, or leave empty for the first available hub."
+            )
+        )
+        label_sources = dict(self.name_label.property("translationSources") or {})
+        label_sources["text"] = name_source
+        self.name_label.setProperty("translationSources", label_sources)
+        self.name_label.setText(tr(name_source))
+        name_sources = dict(self.name.property("translationSources") or {})
+        name_sources.update(
+            accessibleName=name_source,
+            placeholderText=placeholder_source,
+            toolTip=tooltip_source,
+        )
+        self.name.setProperty("translationSources", name_sources)
+        self.name.setAccessibleName(tr(name_source))
+        self.name.setPlaceholderText(tr(placeholder_source))
+        self.name.setToolTip(tr(tooltip_source))
 
 
 class DevicePanel(QWidget):

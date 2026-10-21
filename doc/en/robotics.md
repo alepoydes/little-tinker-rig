@@ -18,6 +18,8 @@ optionally a Bluetooth name / USB serial port (`COM3`,
 `/dev/ttyACM0`). An empty name selects the first Bluetooth hub or discovers USB
 automatically; multiple serial hubs require a port selection. Real connections
 require the `pybricks` extra. USB depends on firmware and OS permissions.
+The dialog labels the optional field for the selected connection. **USB connection
+help** appears when USB is selected; the virtual choice shows only its model.
 
 For permission errors and port troubleshooting, open [USB connection help](usb.md).
 Connection fields and per-port device and motor controls have localized names
