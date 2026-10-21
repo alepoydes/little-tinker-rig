@@ -445,6 +445,10 @@ msgstr "Цвет блоков"
 msgid "Block definition"
 msgstr "Определение блока"
 
+#: little_tinker_rig/qt/authoring.py
+msgid "Block definitions"
+msgstr "Определения блоков"
+
 #: little_tinker_rig/qt/structure.py:359
 msgid "Block display"
 msgstr "Отображение блока"
@@ -2809,6 +2813,10 @@ msgstr "Обработать исключение"
 #: little_tinker_rig/qt/structure.py:417
 msgid "Help"
 msgstr "Помощь"
+
+#: little_tinker_rig/qt/help.py
+msgid "Help contents"
+msgstr "Содержание справки"
 
 #: little_tinker_rig/qt/help.py
 msgid "Help document"

@@ -360,6 +360,7 @@ class HelpPage(QWidget):
         self._search_selected = None
         self.tree = QTreeWidget()
         self.tree.setHeaderHidden(True)
+        self.tree.setAccessibleName(N_("Help contents"))
         self.tree.setMinimumWidth(230)
         self.browser = HelpBrowser()
         self.browser.setAccessibleName(N_("Help document"))

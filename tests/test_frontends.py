@@ -658,6 +658,9 @@ def test_unlabeled_editor_and_hub_fields_have_localized_accessible_names(
                     "Block definition",
                     "Scratch blocks",
                     "Scratch Python source",
+                    "Help contents",
+                    "Block definitions",
+                    "Block preview",
                 ),
             ),
             (
@@ -677,6 +680,9 @@ def test_unlabeled_editor_and_hub_fields_have_localized_accessible_names(
                     "Определение блока",
                     "Блоки в черновике",
                     "Исходный код Python в черновике",
+                    "Содержание справки",
+                    "Определения блоков",
+                    "Предпросмотр блока",
                 ),
             ),
         ):
@@ -698,6 +704,9 @@ def test_unlabeled_editor_and_hub_fields_have_localized_accessible_names(
                     window.block_editor.code.accessibleName(),
                     window.scratch.cells[0].source.accessibleName(),
                     window.scratch.cells[0].code.accessibleName(),
+                    window.help_page.tree.accessibleName(),
+                    window.block_editor.tree.accessibleName(),
+                    window.block_editor.card.accessibleName(),
                 ) == names
                 assert window.block_editor.icon.lineEdit().accessibleName() == (
                     "Block icon · stored in the decorator"
