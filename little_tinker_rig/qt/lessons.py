@@ -294,6 +294,18 @@ class Lessons(QObject):
         self.progress_button.setIcon(svg_icon("lesson"))
         self.panel.setStyleSheet(
             f"#lessonTaskPanel {{ background: {c['window']}; color: {c['text']}; }}"
+            "QCheckBox#lessonTaskCheck { border: 1px solid transparent; "
+            "border-radius: 4px; }"
+            f"QCheckBox#lessonTaskCheck:focus {{ border-color: {c['focus']}; }}"
+            f"QCheckBox#lessonTaskCheck::indicator:unchecked {{ width: 17px; "
+            f"height: 17px; background: {c['panel']}; "
+            f"border: 2px solid {c['muted']}; border-radius: 4px; }}"
+            f"QCheckBox#lessonTaskCheck::indicator:unchecked:hover {{ "
+            f"border-color: {c['focus']}; }}"
+            f"QCheckBox#lessonTaskCheck::indicator:unchecked:disabled {{ "
+            f"background: {c['raised']}; border-color: {c['border']}; }}"
+            "QCheckBox#lessonTaskCheck::indicator:checked { "
+            "width: 17px; height: 17px; }"
             f"#lessonTaskCard {{ background: {c['panel']}; color: {c['text']}; "
             f"border: 1px solid {c['border']}; border-radius: 9px; }}"
             f'#lessonTaskCard[completed="true"] {{ border-color: {c["success"]}; }}'
@@ -714,6 +726,8 @@ class Lessons(QObject):
         frame.setSpacing(5)
         header = QHBoxLayout()
         check = QCheckBox()
+        check.setObjectName("lessonTaskCheck")
+        check.setMinimumSize(29, 23)
         check.setAccessibleName(tr("Mark {title} complete", title=title))
         check.setToolTip(title)
         check.blockSignals(True)
