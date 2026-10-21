@@ -359,11 +359,15 @@ def studio_stylesheet(name):
         QPushButton#manualStart:hover, QPushButton#manualConnect:hover, QPushButton#blockEditorNew:hover, QPushButton#assemblyRetry:hover {{ background: {c['focus']}; }}
         QPushButton#manualStart:disabled, QPushButton#manualConnect:disabled, QPushButton#blockEditorNew:disabled, QPushButton#assemblyRetry:disabled {{ background: {c['raised']};
             color: {c['muted']}; border-color: {c['border']}; }}
-        QCheckBox::indicator:unchecked {{ width: 15px; height: 15px;
+        QCheckBox {{ border: 1px solid transparent; border-radius: 4px; }}
+        QCheckBox:focus {{ border-color: {c['focus']}; }}
+        QCheckBox::indicator:unchecked {{ width: 13px; height: 13px;
                                          background: {c['panel']};
-                                         border: 1px solid {c['border']};
+                                         border: 2px solid {c['muted']};
                                          border-radius: 4px; }}
         QCheckBox::indicator:unchecked:hover {{ border-color: {c['focus']}; }}
+        QCheckBox::indicator:unchecked:disabled {{
+            background: {c['raised']}; border-color: {c['border']}; }}
         QMenuBar {{ background: transparent; color: {c['text']}; }}
         QMenuBar::item {{ padding: 6px 9px; }}
         QMenuBar::item:selected {{ background: {c['hover']}; border-radius: 5px; }}
