@@ -39,6 +39,9 @@ empty to use `custom`. **New block** adds a function to that module. Copies use
 the same group field. Name collisions receive a numeric suffix. Functions in one
 module form one help page. Edit the function name, signature, docstring and body
 directly in Python.
+The **New block** icon in the toolbar performs the same action while the browser
+is collapsed. It uses the selected starter and group; initially these are
+**Action** and `custom`.
 
 In the program, **Edit → Create block from selection** starts a definition from
 the selected structural block or selected Python text. The program stays intact.

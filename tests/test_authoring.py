@@ -437,6 +437,32 @@ def test_new_block_shows_its_default_group(tmp_path, qt_app):
         window.deleteLater()
 
 
+def test_compact_block_editor_can_create_without_opening_browser(tmp_path, qt_app):
+    from PySide6.QtCore import Qt
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "main.py")
+    window.confirm_close = lambda page: True
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.show()
+    try:
+        window.set_mode(3)
+        qt_app.processEvents()
+        page = window.block_editor
+        assert not page.browser_pane.isVisible()
+        assert page.quick_new_button.isVisible()
+        QTest.mouseClick(page.quick_new_button, Qt.MouseButton.LeftButton)
+        assert page.code.draft.module == "custom"
+        assert page.module_name.text() == "custom"
+        assert not page.browser_pane.isVisible()
+    finally:
+        window.close()
+        window.deleteLater()
+
+
 def test_editor_groups_copies_and_language_changes_keep_edits(tmp_path, qt_app):
     from PySide6.QtGui import QTextCursor
 

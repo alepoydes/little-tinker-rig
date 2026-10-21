@@ -270,11 +270,7 @@ class BlockEditor(QWidget):
         )
         self.new_button = QPushButton(N_("New block"))
         self.new_button.setObjectName("blockEditorNew")
-        self.new_button.clicked.connect(
-            lambda: self.attempt(
-                lambda: self.create(STARTERS[self.starters.currentData()])
-            )
-        )
+        self.new_button.clicked.connect(self.create_new_block)
         left = self.browser_pane = QWidget()
         layout = QVBoxLayout(left)
         layout.addWidget(self.search)
@@ -416,6 +412,9 @@ class BlockEditor(QWidget):
         self.browser_button.setProperty("translationSources", {})
         self.browser_button.toggled.connect(self.choose_browser_visible)
         row.addWidget(self.browser_button)
+        self.quick_new_button = tool_button(N_("New block"), "document-new")
+        self.quick_new_button.clicked.connect(self.create_new_block)
+        row.addWidget(self.quick_new_button)
         self.focus_preview = tool_button(N_("Preview view"), "preview")
         self.focus_preview.setCheckable(True)
         self.focus_preview.hide()
@@ -484,6 +483,9 @@ class BlockEditor(QWidget):
         except (ValueError, SyntaxError, OSError) as error:
             self.failed.emit(str(error))
             return None
+
+    def create_new_block(self):
+        return self.attempt(lambda: self.create(STARTERS[self.starters.currentData()]))
 
     def configure(self, snippets, roots):
         self.snippets = tuple(
