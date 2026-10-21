@@ -3281,6 +3281,14 @@ msgstr ""
 "\n"
 "Списки, строки и словари как обычные данные Python."
 
+#: little_tinker_rig/qt/controls.py:215
+msgid ""
+"LittleTinker Rig\n"
+"Controller"
+msgstr ""
+"LittleTinker Rig\n"
+"Контроллер"
+
 #: little_tinker_rig/qt/assembly.py:246
 #, python-brace-format
 msgid "Loading parts: {current} / {total} MiB"

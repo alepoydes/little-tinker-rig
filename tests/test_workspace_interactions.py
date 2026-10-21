@@ -307,6 +307,12 @@ def test_control_names_and_trigger_hints_follow_language(windows):
 
     window = windows()
     controller = window.controls.controller
+    assert controller.brand_label.text() == "LittleTinker Rig\nController"
+    assert [controller.buttons[index].text() for index in (4, 6, 5)] == [
+        "View",
+        "Menu",
+        "Guide",
+    ]
     controls = (*controller.triggers, controller.left, controller.right)
     assert [item.accessibleName() for item in controls] == [
         "Left trigger",
@@ -319,6 +325,12 @@ def test_control_names_and_trigger_hints_follow_language(windows):
         "RT · release to return to zero",
     ]
     window.change_language("ru")
+    assert controller.brand_label.text() == "LittleTinker Rig\nКонтроллер"
+    assert [controller.buttons[index].text() for index in (4, 6, 5)] == [
+        "View",
+        "Menu",
+        "Guide",
+    ]
     assert [item.accessibleName() for item in controls] == [
         "Левый триггер",
         "Правый триггер",
@@ -335,6 +347,12 @@ def test_control_names_and_trigger_hints_follow_language(windows):
         for item in controls
     )
     window.change_language("en")
+    assert controller.brand_label.text() == "LittleTinker Rig\nController"
+    assert [controller.buttons[index].text() for index in (4, 6, 5)] == [
+        "View",
+        "Menu",
+        "Guide",
+    ]
     assert controller.triggers[0].accessibleName() == "Left trigger"
     assert controller.triggers[0].toolTip() == "LT · release to return to zero"
 

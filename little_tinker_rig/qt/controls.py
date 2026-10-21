@@ -212,14 +212,11 @@ class Controller(QWidget):
             self.buttons[number] = button
             grid.addWidget(button, row, column)
         layout.addWidget(arrows, 3, 0)
-        layout.addWidget(
-            QLabel("LittleTinker Rig\nController"),
-            2,
-            1,
-            alignment=Qt.AlignmentFlag.AlignCenter,
-        )
+        self.brand_label = QLabel(N_("LittleTinker Rig\nController"))
+        layout.addWidget(self.brand_label, 2, 1, alignment=Qt.AlignmentFlag.AlignCenter)
         for number, label in ((4, "View"), (6, "Menu")):
             button = QPushButton(label)
+            button.setProperty("translationSources", {})
             self.buttons[number] = button
             layout.addWidget(
                 button,
@@ -233,6 +230,8 @@ class Controller(QWidget):
             )
         for column, number, label in ((0, 7, "L3"), (1, 5, "Guide"), (2, 8, "R3")):
             button = QPushButton(label)
+            if number == 5:
+                button.setProperty("translationSources", {})
             self.buttons[number] = button
             layout.addWidget(button, 5, column, alignment=Qt.AlignmentFlag.AlignCenter)
 
