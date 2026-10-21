@@ -939,6 +939,9 @@ class Studio(QMainWindow):
     def _device_dock_location_changed(self, area):
         if not self._device_relocating:
             self._device_dock_auto = False
+            self.device_panel.set_bottom_layout(
+                area == Qt.DockWidgetArea.BottomDockWidgetArea
+            )
 
     def _right_dock_anchor(self, moving):
         lessons = getattr(self, "lessons", None)
@@ -976,6 +979,7 @@ class Studio(QMainWindow):
             else Qt.DockWidgetArea.RightDockWidgetArea
         )
         if self.dockWidgetArea(self.device_dock) == target:
+            self.device_panel.set_bottom_layout(narrow)
             return
         active = (
             self.device_dock.isVisible()
@@ -991,6 +995,7 @@ class Studio(QMainWindow):
             elif anchor := self._right_dock_anchor(self.device_dock):
                 self.tabifyDockWidget(anchor, self.device_dock)
             self.device_dock.setVisible(not hidden)
+            self.device_panel.set_bottom_layout(narrow)
             if active:
                 self.device_dock.raise_()
             self._device_needs_size = True

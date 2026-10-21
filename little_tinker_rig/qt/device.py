@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
     QFormLayout,
     QFrame,
+    QGridLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -127,13 +128,16 @@ class DevicePanel(QWidget):
         super().__init__()
         self.info = None
         layout = QVBoxLayout(self)
+        self.header = QWidget()
+        self.header_grid = QGridLayout(self.header)
+        self.header_grid.setContentsMargins(0, 0, 0, 0)
         self.identity = QLabel(N_("No hub connected"))
         self.identity.setWordWrap(True)
         self.identity.setStyleSheet("font-size: 15px; font-weight: bold")
         self.details = QLabel()
         self.details.setWordWrap(True)
-        layout.addWidget(self.identity)
-        layout.addWidget(self.details)
+        self.header_grid.addWidget(self.identity, 0, 0)
+        self.header_grid.addWidget(self.details, 1, 0)
         self.monitor = QPushButton(N_("Open port monitor"))
         self.monitor.setToolTip(
             N_(
@@ -141,11 +145,19 @@ class DevicePanel(QWidget):
             )
         )
         self.monitor.clicked.connect(self.monitor_requested)
-        layout.addWidget(self.monitor)
+        self.header_grid.addWidget(self.monitor, 2, 0)
+        layout.addWidget(self.header)
+        self.port_container = QWidget()
+        self.port_grid = QGridLayout(self.port_container)
+        self.port_grid.setContentsMargins(0, 0, 0, 0)
+        self.port_grid.setSpacing(6)
+        layout.addWidget(self.port_container)
+        self._bottom_layout = False
+        self._visible_ports = tuple("ABCDEF")
         self.rows = {}
         self.port_cards = []
         self.distance_sliders = {}
-        for port in "ABCDEF":
+        for index, port in enumerate("ABCDEF"):
             card = QFrame()
             card.setObjectName("portCard")
             self.port_cards.append(card)
@@ -177,12 +189,37 @@ class DevicePanel(QWidget):
             box.addWidget(distance)
             self.distance_sliders[port] = distance
             self.rows[port] = (kind, value, slider)
-            layout.addWidget(card)
+            self.port_grid.addWidget(card, index, 0)
         layout.addStretch()
         self.disconnect = QPushButton(N_("Disconnect hub"))
         self.disconnect.clicked.connect(self.disconnect_requested)
         layout.addWidget(self.disconnect)
         self.apply_theme()
+
+    def set_bottom_layout(self, bottom):
+        bottom = bool(bottom)
+        if bottom == self._bottom_layout:
+            return
+        self._bottom_layout = bottom
+        self.header_grid.removeWidget(self.monitor)
+        if bottom:
+            self.header_grid.addWidget(
+                self.monitor, 0, 1, 2, 1, Qt.AlignmentFlag.AlignVCenter
+            )
+        else:
+            self.header_grid.addWidget(self.monitor, 2, 0)
+        self._arrange_ports()
+
+    def _arrange_ports(self):
+        for card in self.port_cards:
+            self.port_grid.removeWidget(card)
+        columns = 3 if self._bottom_layout else 1
+        for index, port in enumerate(self._visible_ports):
+            self.port_grid.addWidget(
+                self.port_cards[ord(port) - ord("A")], index // columns, index % columns
+            )
+        for column in range(3):
+            self.port_grid.setColumnStretch(column, int(column < columns))
 
     def apply_theme(self):
         from .theme import colors
@@ -215,9 +252,10 @@ class DevicePanel(QWidget):
             tr(" · {p0:.2f} V", p0=info.battery_mv / 1000) if info.battery_mv else ""
         )
         identity = " · ".join(part for part in (info.kind, info.firmware) if part)
-        status = " · ".join(
-            part for part in (info.transport.upper(), state) if part
-        ) + battery
+        status = (
+            " · ".join(part for part in (info.transport.upper(), state) if part)
+            + battery
+        )
         self.details.setText(
             "\n".join(part for part in (identity, status) if part)
             if info.connected
@@ -267,7 +305,9 @@ class DevicePanel(QWidget):
             kind.blockSignals(False)
             kind.setEnabled(virtual and not (info.model == "boost" and port in "AB"))
             kind.parentWidget().setVisible(
-                info.model != "ev3" and (not info.ports or port in info.ports)
+                info.connected
+                and info.model != "ev3"
+                and (not info.ports or port in info.ports)
             )
             text = describe_device(data)
             fresh = info.monitoring or virtual
@@ -294,3 +334,13 @@ class DevicePanel(QWidget):
                 distance.blockSignals(True)
                 distance.setValue(round(data.get("distance_percent", 50)))
                 distance.blockSignals(False)
+        visible_ports = tuple(
+            port
+            for port in "ABCDEF"
+            if info.connected
+            and info.model != "ev3"
+            and (not info.ports or port in info.ports)
+        )
+        if visible_ports != self._visible_ports:
+            self._visible_ports = visible_ports
+            self._arrange_ports()

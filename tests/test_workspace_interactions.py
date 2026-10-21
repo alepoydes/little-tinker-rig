@@ -302,6 +302,64 @@ def test_compact_control_keeps_sticks_visible_and_opens_motor_assignments(window
     assert not window.controls.assignments.isVisible()
 
 
+def test_device_ports_use_columns_in_bottom_dock_and_rows_in_side_dock(windows):
+    from little_tinker_rig.pybricks.devices import HubInfo
+
+    window = windows()
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.change_language("ru")
+    window.set_mode(1)
+    window.device_dock.show()
+    window.device_dock.raise_()
+    ports = {port: {"type": "motor"} for port in "ABCDEF"}
+    window.update_hub(
+        HubInfo(connected=True, transport="virtual", model="inventor", ports=ports)
+    )
+    QTest.qWait(60)
+
+    panel = window.device_panel
+    scroll = window.device_dock.widget()
+    assert panel._bottom_layout
+    assert window.dockWidgetArea(window.device_dock) == (
+        Qt.DockWidgetArea.BottomDockWidgetArea
+    )
+    assert panel.port_grid.count() == 6
+    assert panel.port_cards[0].y() == panel.port_cards[1].y()
+    assert panel.port_cards[1].y() == panel.port_cards[2].y()
+    assert panel.port_cards[3].y() > panel.port_cards[0].y()
+    assert scroll.horizontalScrollBar().maximum() == 0
+    assert scroll.verticalScrollBar().maximum() < 250
+    assert (
+        panel.monitor.visibleRegion().boundingRect().height() == panel.monitor.height()
+    )
+
+    window.resize(1380, 880)
+    QTest.qWait(90)
+    assert not panel._bottom_layout
+    assert window.dockWidgetArea(window.device_dock) == (
+        Qt.DockWidgetArea.RightDockWidgetArea
+    )
+    assert panel.port_cards[0].y() < panel.port_cards[1].y()
+    assert panel.port_cards[1].y() < panel.port_cards[2].y()
+    assert panel.port_cards[0].x() == panel.port_cards[1].x()
+
+    window.update_hub(
+        HubInfo(
+            connected=True,
+            transport="virtual",
+            model="inventor",
+            ports={"C": {"type": "color"}},
+        )
+    )
+    QTest.qWait(30)
+    assert panel.port_grid.count() == 1
+    assert panel.port_cards[2].isVisible()
+    assert panel.port_cards[2].y() == 0
+    window.update_hub(HubInfo())
+    assert panel.port_grid.count() == 0
+
+
 def test_disconnected_controls_leave_device_panel_optional(windows):
     from little_tinker_rig.pybricks.devices import HubInfo
 
@@ -378,6 +436,11 @@ def test_device_dock_keeps_user_chosen_area_after_resize(windows):
     assert window.dockWidgetArea(window.device_dock) == (
         Qt.DockWidgetArea.LeftDockWidgetArea
     )
+    assert not window.device_panel._bottom_layout
+
+    window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, window.device_dock)
+    QApplication.processEvents()
+    assert window.device_panel._bottom_layout
 
 
 def test_first_console_open_keeps_compact_program_visible(windows):
