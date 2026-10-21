@@ -21,7 +21,8 @@ Screen readers identify the search, group, starter type, preview view and block
 metadata selectors by their localized names.
 If nothing matches, the editor says so without moving the Python cursor. Clear the
 query with its icon or press Escape to return to the tree; branches then regain
-their previous open state.
+their previous open state. Press Enter in search to open the selected visible
+definition or the first result and move focus to the tree.
 In a very narrow editor, the definition browser starts collapsed so Python stays
 readable. Use the search icon at the start of the editor toolbar to show or hide
 the browser. Ctrl+F also opens the browser and focuses its search field. While

@@ -342,6 +342,37 @@ def test_help_search_restores_branches_and_keeps_new_destination_visible(qt_app)
         page.close()
 
 
+def test_help_search_enter_opens_visible_result_and_preserves_miss(qt_app):
+    from PySide6.QtCore import Qt
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.help import HelpPage
+
+    page = HelpPage(builtin_snippets())
+    page.show()
+    qt_app.processEvents()
+    try:
+        page.search.setText("crw-rw----")
+        assert page.current == "index.md"
+        assert not page.pages["usb.md"][1].isHidden()
+        page.search.setFocus()
+        QTest.keyClick(page.search, Qt.Key.Key_Return)
+        assert page.current == "usb.md"
+        assert page.tree.hasFocus()
+
+        page.search.setText("no-such-help-topic-123")
+        page.search.setFocus()
+        QTest.keyClick(page.search, Qt.Key.Key_Return)
+        assert page.current == "usb.md"
+        assert page.search.hasFocus()
+
+        QTest.keyClick(page.search, Qt.Key.Key_Escape)
+        assert not page.search.text()
+        assert page.tree.hasFocus()
+    finally:
+        page.close()
+
+
 def test_help_custom_group_without_docstring_excludes_historical_versions(qt_app):
     from little_tinker_rig.qt.help import HelpPage
 

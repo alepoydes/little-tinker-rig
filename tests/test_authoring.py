@@ -561,6 +561,8 @@ def test_definition_search_reports_misses_and_restores_tree_after_escape(
     page = BlockEditor(lambda: root, lambda *_: None)
     page.resize(868, 477)
     page.show()
+    page.activateWindow()
+    qt_app.processEvents()
     try:
         page.configure(builtin_snippets(), (root,))
         module = next(
@@ -582,6 +584,9 @@ def test_definition_search_reports_misses_and_restores_tree_after_escape(
         assert clear.toolTip() == clear.accessibleName() == "Очистить поиск определений"
 
         page.search.setFocus()
+        QTest.keyClick(page.search, Qt.Key.Key_Return)
+        assert page.search.hasFocus()
+        assert page.code.textCursor().position() == cursor
         QTest.keyClick(page.search, Qt.Key.Key_Escape)
         qt_app.processEvents()
         assert not page.search.text()
@@ -597,6 +602,12 @@ def test_definition_search_reports_misses_and_restores_tree_after_escape(
         QTest.mouseClick(clear, Qt.MouseButton.LeftButton)
         assert not page.search.text()
         assert not module.isExpanded()
+
+        page.search.setText("run_motor")
+        page.search.setFocus()
+        QTest.keyClick(page.search, Qt.Key.Key_Return)
+        assert page.tree.hasFocus()
+        assert page.tree.currentItem().text(0) == "run_motor"
     finally:
         set_language("en")
         page.close()

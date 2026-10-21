@@ -58,8 +58,11 @@ follows that editor's Blocks / Python mode. Undo is unavailable in Help, Control
 and Assembly. In Help, the always-visible in-document search highlights matches
 and provides next/previous controls and a match count. Ctrl+F focuses that field;
 Escape clears it while leaving the controls visible. The sidebar search filters guide
-pages and blocks; Escape clears its filter. An empty sidebar result is explained,
-and following a link clears a filter that would hide its destination. In a program
+pages and blocks; Escape clears its filter and focuses the topic tree. An empty
+sidebar result is explained, and Enter opens the selected visible page or the
+first result, then focuses the topic tree. A search with no results leaves the
+current page unchanged. Following a link clears a filter that would hide its
+destination. In a program
 or Scratch, Enter finds the next match, Shift+Enter the previous match, and
 Escape closes search. A missed search reports
 **Not found** without moving the cursor. Select a catalog block and press Enter

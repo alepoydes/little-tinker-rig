@@ -249,6 +249,7 @@ class BlockEditor(QWidget):
             button.setAccessibleName(label)
         self.search.installEventFilter(self)
         self.search.textChanged.connect(self.filter)
+        self.search.returnPressed.connect(self.open_search_result)
         self.search_status = QLabel()
         self.search_status.setProperty("translationSources", {})
         self.search_status.hide()
@@ -665,6 +666,37 @@ class BlockEditor(QWidget):
                     ancestor.setExpanded(True)
                     ancestor = ancestor.parent()
             self._search_selected = None
+
+    def open_search_result(self):
+        if not self.search.text().strip():
+            return
+
+        def visible_definitions(item):
+            if item.isHidden():
+                return
+            for index in range(item.childCount()):
+                yield from visible_definitions(item.child(index))
+            if item.data(0, Qt.ItemDataRole.UserRole):
+                yield item
+
+        target = self.tree.currentItem()
+        if (
+            target is None
+            or target.isHidden()
+            or not target.data(0, Qt.ItemDataRole.UserRole)
+        ):
+            target = next(
+                (
+                    found
+                    for index in range(self.tree.topLevelItemCount())
+                    for found in visible_definitions(self.tree.topLevelItem(index))
+                ),
+                None,
+            )
+        if target is not None:
+            self.tree.setCurrentItem(target)
+            self.tree.scrollToItem(target)
+            self.tree.setFocus()
 
     def dismiss_search(self):
         self.search.clear()

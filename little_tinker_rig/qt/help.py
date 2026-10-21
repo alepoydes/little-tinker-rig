@@ -431,9 +431,10 @@ class HelpPage(QWidget):
         search.setAccessibleName(N_("Search the guide and blocks…"))
         search.setClearButtonEnabled(True)
         search.textChanged.connect(self.filter)
+        search.returnPressed.connect(self.open_search_result)
         clear = QShortcut(QKeySequence("Escape"), search)
         clear.setContext(Qt.ShortcutContext.WidgetShortcut)
-        clear.activated.connect(search.clear)
+        clear.activated.connect(self.dismiss_search)
         self.no_results = QLabel()
         self.no_results.setWordWrap(True)
         self.no_results.hide()
@@ -949,6 +950,39 @@ class HelpPage(QWidget):
             searching
             and not any(not item.isHidden() for _, item in self.pages.values())
         )
+
+    def open_search_result(self):
+        if not self.search.text().strip():
+            return
+        target = self.tree.currentItem()
+        if (
+            target is None
+            or target.isHidden()
+            or not target.data(0, Qt.ItemDataRole.UserRole)
+        ):
+            target = None
+            for index in range(self.tree.topLevelItemCount()):
+                group = self.tree.topLevelItem(index)
+                if group.isHidden():
+                    continue
+                target = next(
+                    (
+                        group.child(child)
+                        for child in range(group.childCount())
+                        if not group.child(child).isHidden()
+                        and group.child(child).data(0, Qt.ItemDataRole.UserRole)
+                    ),
+                    None,
+                )
+                if target is not None:
+                    break
+        if target is not None:
+            self.show_page(target.data(0, Qt.ItemDataRole.UserRole))
+            self.tree.setFocus()
+
+    def dismiss_search(self):
+        self.search.clear()
+        self.tree.setFocus()
 
     def follow_link(self, url):
         if url.scheme() == "little-tinker-rig-definition":
