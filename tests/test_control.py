@@ -58,3 +58,34 @@ def test_hub_parser_handles_partial_frames_and_neutralizes_stale_input(monkeypat
     controller.update()
     assert controller.left_x == controller.left_y == controller.buttons == 0
     assert controller.left_trigger == controller.right_trigger == 0
+    buffer.extend(ControlState(buttons=1).encode())
+    buffer.extend(ControlState().encode())
+    controller.update()
+    assert controller.buttons == 1
+    controller.update()
+    assert controller.buttons == 0
+
+
+def test_short_screen_button_click_and_key_press_emit_both_edges(qt_app):
+    from PySide6.QtCore import Qt
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.pybricks.devices import HubInfo
+    from little_tinker_rig.qt.controls import ControlsPage
+
+    page = ControlsPage()
+    page.show()
+    try:
+        page.target.setCurrentIndex(1)
+        page.update_info(HubInfo(connected=True, running=True))
+        frames = []
+        page.input_requested.connect(lambda state: frames.append(state.buttons))
+        page.armed.setChecked(True)
+        button = page.controller.buttons[0]
+        QTest.mouseClick(button, Qt.MouseButton.LeftButton)
+        assert frames[:2] == [1, 0]
+        button.setFocus()
+        QTest.keyClick(button, Qt.Key.Key_Space)
+        assert frames[2:4] == [1, 0]
+    finally:
+        page.close()

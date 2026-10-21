@@ -2,15 +2,21 @@
 
 import asyncio
 import codecs
+from collections import deque
 from dataclasses import replace
 from threading import Event, Lock, Thread
+from time import monotonic
 
 from little_tinker_rig.core.runtime_errors import Tracebacks
 from little_tinker_rig.i18n import tr
 from little_tinker_rig.pybricks.connection import Connection
+from little_tinker_rig.pybricks.control import ControlState
 from little_tinker_rig.pybricks.devices import HubInfo
 from little_tinker_rig.pybricks.program import Program
 from little_tinker_rig.pybricks.virtual import VirtualConnection
+
+# A queued click must not be replayed after the hub's input timeout.
+BUTTON_EDGE_MAX_AGE = 0.5
 
 
 class HubWorker:
@@ -28,6 +34,9 @@ class HubWorker:
         self.operation = self.pending = None
         self.control_lock = Lock()
         self.latest_control = None
+        self.control_edges = deque()
+        self.control_buttons = 0
+        self.control_connection = None
         self.tracebacks = None
         self.stored_program = None
         self.lock = asyncio.Lock()
@@ -75,6 +84,9 @@ class HubWorker:
                 self.operation.cancel()
             with self.control_lock:
                 self.latest_control = None
+                self.control_edges.clear()
+                self.control_buttons = 0
+                self.control_connection = None
                 if self.pending:
                     self.pending.cancel()
             self._busy_changed(True)
@@ -319,9 +331,24 @@ class HubWorker:
                 and not self.operation.done()
             ):
                 return
-            # Keep one latest sample, including the final neutral frame when
-            # disarming stops the UI timer. Never accumulate obsolete movement.
-            self.latest_control = self.connection, method, value
+            sample = self.connection, method, value
+            if method == "send" and isinstance(value, ControlState):
+                if self.control_connection is not self.connection:
+                    self.control_edges.clear()
+                    self.control_buttons = 0
+                    self.control_connection = self.connection
+                now = monotonic()
+                while (
+                    self.control_edges
+                    and now - self.control_edges[0][0] > BUTTON_EDGE_MAX_AGE
+                ):
+                    self.control_edges.popleft()
+                if value.buttons != self.control_buttons:
+                    self.control_edges.append((now, sample))
+                    self.control_buttons = value.buttons
+            # Motion remains coalesced, while button transitions can survive
+            # a press and release before the transport handles the next sample.
+            self.latest_control = sample
             if self.pending is None or self.pending.done():
                 self.pending = self.submit(self._drain_controls())
 
@@ -329,7 +356,17 @@ class HubWorker:
         try:
             while True:
                 with self.control_lock:
-                    sample, self.latest_control = self.latest_control, None
+                    sample = None
+                    while self.control_edges:
+                        created, candidate = self.control_edges.popleft()
+                        if monotonic() - created > BUTTON_EDGE_MAX_AGE:
+                            continue
+                        sample = candidate
+                        if self.latest_control is sample:
+                            self.latest_control = None
+                        break
+                    if sample is None:
+                        sample, self.latest_control = self.latest_control, None
                     if sample is None:
                         self.pending = None
                         return
@@ -338,6 +375,9 @@ class HubWorker:
         except BaseException:
             with self.control_lock:
                 self.latest_control = self.pending = None
+                self.control_edges.clear()
+                self.control_buttons = 0
+                self.control_connection = None
             raise
 
     def configure(self, port, kind, value=None):

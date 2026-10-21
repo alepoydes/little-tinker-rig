@@ -9,6 +9,7 @@ class Controller:
     def __init__(self, timeout=500):
         self.left_x = self.left_y = self.right_x = self.right_y = 0
         self.buttons = 0
+        self._raw_buttons = self._pressed_this_update = 0
         self.slider = 0
         self.left_trigger = self.right_trigger = 0
         self.timeout = timeout
@@ -16,6 +17,7 @@ class Controller:
         self._buffer = bytearray()
 
     def update(self):
+        self._pressed_this_update = 0
         for _ in range(128):
             value = read_input_byte()
             if value is None:
@@ -31,9 +33,11 @@ class Controller:
                     self._buffer = bytearray()
         if self._clock.time() > self.timeout:
             self.left_x = self.left_y = self.right_x = self.right_y = 0
-            self.buttons = 0
+            self._raw_buttons = self.buttons = 0
             self.slider = 0
             self.left_trigger = self.right_trigger = 0
+        else:
+            self.buttons = self._raw_buttons | self._pressed_this_update
         return self
 
     def _accept(self):
@@ -62,6 +66,7 @@ class Controller:
         except ValueError:
             return
         self.left_x, self.left_y, self.right_x, self.right_y = axes
-        self.buttons, self.slider = buttons, slider
+        self._pressed_this_update |= buttons & ~self._raw_buttons
+        self._raw_buttons, self.slider = buttons, slider
         self.left_trigger, self.right_trigger = triggers
         self._clock.reset()

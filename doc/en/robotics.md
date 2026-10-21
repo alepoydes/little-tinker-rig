@@ -96,6 +96,8 @@ back up, then enable commands.
 including buttons. Both layouts fit the available width.
 View, Menu and Guide retain their Xbox button names in every interface language.
 The D-pad arrows show localized direction tooltips and screen-reader names.
+Short on-screen button taps send press and release immediately. The hub helper
+keeps a tap visible for one `update()` call even when both frames arrive together.
 In a compact window with a hub connected, the sticks remain in view while the
 bottom Hub and devices panel leaves its port monitor control visible; scroll
 either area for more options.

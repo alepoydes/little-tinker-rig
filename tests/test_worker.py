@@ -7,6 +7,7 @@ from threading import Event
 import pytest
 
 from little_tinker_rig.pybricks.connection import Connection
+from little_tinker_rig.pybricks.control import ControlState
 from little_tinker_rig.pybricks.devices import HubInfo
 from little_tinker_rig.pybricks.program import Program
 from little_tinker_rig.pybricks.virtual import VirtualConnection
@@ -540,6 +541,94 @@ def test_latest_control_is_delivered_and_stop_discards_queued_motion(method):
         assert frames == [1, 0, 3, "stop"]
         assert not failures
     finally:
+        worker.close()
+
+
+@pytest.mark.parametrize("elapsed, expected", [(0, [0, 1, 0]), (1, [0, 0])])
+def test_button_edges_survive_coalescing_but_expire_if_transport_stalls(
+    monkeypatch, elapsed, expected
+):
+    import little_tinker_rig.pybricks.worker as worker_module
+
+    now = [0.0]
+    monkeypatch.setattr(worker_module, "monotonic", lambda: now[0])
+    entered = Event()
+    release = asyncio.Event()
+    frames = []
+
+    class Peer:
+        async def send(self, state):
+            frames.append(state.buttons)
+            if len(frames) == 1:
+                entered.set()
+                await release.wait()
+
+        async def disconnect(self):
+            pass
+
+    worker = HubWorker(
+        output=lambda *_: None,
+        failed=lambda *_: None,
+        updated=lambda *_: None,
+        busy_changed=lambda *_: None,
+        problem=lambda *_: None,
+        program_started=lambda *_: None,
+    )
+    worker.connection = Peer()
+    worker.info = HubInfo(connected=True, running=True)
+    try:
+        worker.send(ControlState())
+        assert entered.wait(1)
+        pending = worker.pending
+        worker.send(ControlState(buttons=1))
+        worker.send(ControlState())
+        now[0] = elapsed
+        worker.loop.call_soon_threadsafe(release.set)
+        pending.result(timeout=1)
+        assert frames == expected
+    finally:
+        worker.loop.call_soon_threadsafe(release.set)
+        worker.close()
+
+
+@pytest.mark.parametrize("operation", ["stop_program", "disconnect_hub"])
+def test_interruption_discards_queued_button_edges(operation):
+    entered = Event()
+    release = asyncio.Event()
+    frames = []
+
+    class Peer:
+        async def send(self, state):
+            frames.append(state.buttons)
+            entered.set()
+            await release.wait()
+
+        async def stop(self):
+            frames.append("stop")
+
+        async def disconnect(self):
+            frames.append("disconnect")
+
+    worker = HubWorker(
+        output=lambda *_: None,
+        failed=lambda *_: None,
+        updated=lambda *_: None,
+        busy_changed=lambda *_: None,
+        problem=lambda *_: None,
+        program_started=lambda *_: None,
+    )
+    worker.connection = Peer()
+    worker.info = HubInfo(connected=True, running=True)
+    try:
+        worker.send(ControlState(buttons=1))
+        assert entered.wait(1)
+        worker.send(ControlState())
+        worker.send(ControlState(buttons=2))
+        getattr(worker, operation)().result(timeout=1)
+        assert frames == [1, "stop" if operation == "stop_program" else "disconnect"]
+        assert not worker.control_edges
+    finally:
+        worker.loop.call_soon_threadsafe(release.set)
         worker.close()
 
 

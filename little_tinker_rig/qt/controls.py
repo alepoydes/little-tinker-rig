@@ -429,6 +429,9 @@ class ControlsPage(QWidget):
         self.timer = QTimer(self)
         self.timer.setInterval(50)
         self.timer.timeout.connect(self.sample)
+        for button in self.controller.buttons.values():
+            button.pressed.connect(self.sample)
+            button.released.connect(self.sample)
         self.controller.compact(True)
         self._compact_columns = None
         self._overlay_clearance = 0
