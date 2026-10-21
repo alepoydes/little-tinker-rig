@@ -833,6 +833,55 @@ def test_compact_task_overlay_leaves_program_editable(tmp_path, qt_app):
         window.deleteLater()
 
 
+def test_compact_task_overlay_keeps_program_lines_scrollable(tmp_path, qt_app):
+    from pathlib import Path
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "plain.py")
+    window.confirm_close = lambda *_: True
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.show()
+    try:
+        window.lessons.open(Path("lessons/first_python"))
+        window.set_mode(0)
+        window.lessons.set_panel_expanded(True)
+        qt_app.processEvents()
+        overlay = window.lessons.overlay
+        assert (
+            window.source.viewport()
+            .mapTo(window.workspace, window.source.viewport().rect().topRight())
+            .x()
+            < overlay.x()
+        )
+        window.document_page.change_mode(1)
+        window.code.setPlainText('value = "' + "x" * 55 + '"\n')
+        window.lessons.set_panel_expanded(False)
+        qt_app.processEvents()
+        full_width = window.code.viewport().width()
+        assert window.code.horizontalScrollBar().maximum() == 0
+
+        window.lessons.set_panel_expanded(True)
+        qt_app.processEvents()
+        assert overlay.isVisible()
+        assert window.code.viewport().width() < full_width
+        assert (
+            window.code.viewport()
+            .mapTo(window.workspace, window.code.viewport().rect().topRight())
+            .x()
+            < overlay.x()
+        )
+        assert window.code.horizontalScrollBar().maximum() > 0
+
+        window.lessons.set_panel_expanded(False)
+        qt_app.processEvents()
+        assert window.code.horizontalScrollBar().maximum() == 0
+    finally:
+        window.close()
+        window.deleteLater()
+
+
 def test_compact_task_overlay_releases_control_assembly_and_block_editor(
     tmp_path, qt_app
 ):

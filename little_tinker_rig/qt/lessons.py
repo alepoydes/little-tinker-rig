@@ -954,6 +954,14 @@ class Lessons(QObject):
         visible = (
             not self.overlay.isHidden() and self.window.width() < LESSON_DOCK_MIN_WIDTH
         )
+        program_clearance = (
+            self.overlay.width() + 8
+            if visible and self.window.pages.currentIndex() == 0
+            else 0
+        )
+        self.window.program_documents.layout().setContentsMargins(
+            0, 0, program_clearance, 0
+        )
         self.window.help_page.set_overlay_clearance(
             self.overlay.width()
             if visible and self.window.pages.currentIndex() == 2
