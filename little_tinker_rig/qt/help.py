@@ -122,6 +122,7 @@ class HelpBrowser(QTextBrowser):
     def __init__(self):
         super().__init__()
         self.lesson_numbers = {}
+        self._force_compact = False
         self._compact_document = self.width() < COMPACT_DOCUMENT_WIDTH
 
     def lesson_number_image(self, number):
@@ -224,7 +225,16 @@ class HelpBrowser(QTextBrowser):
         if self.viewportMargins().left() != inset:
             self.setViewportMargins(inset, 0, inset, 0)
         super().resizeEvent(event)
-        compact = self.width() < COMPACT_DOCUMENT_WIDTH
+        self.update_compact_document()
+
+    def set_compact_override(self, enabled):
+        if self._force_compact == bool(enabled):
+            return
+        self._force_compact = bool(enabled)
+        self.update_compact_document()
+
+    def update_compact_document(self):
+        compact = self._force_compact or self.width() < COMPACT_DOCUMENT_WIDTH
         if compact != self._compact_document:
             scroll = self.verticalScrollBar().value()
             self._compact_document = compact
@@ -455,6 +465,7 @@ class HelpPage(QWidget):
         self.find_row.setStretch(2, 0 if width else 1)
         self.find_row.setStretchFactor(self.find_field, 1 if width else 0)
         self.layout().setContentsMargins(0, 0, width + 8 if width else 0, 0)
+        self.browser.set_compact_override(bool(width))
 
     def apply_theme(self):
         c = colors()

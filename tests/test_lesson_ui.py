@@ -1178,7 +1178,10 @@ def test_compact_tasks_leave_manual_controls_accessible(tmp_path, qt_app):
         window.deleteLater()
 
 
-def test_compact_lesson_help_shows_first_task_with_console_open(tmp_path, qt_app):
+@pytest.mark.parametrize("width", [800, 1100])
+def test_compact_lesson_help_shows_first_task_with_console_open(
+    tmp_path, qt_app, width
+):
     from pathlib import Path
 
     from PySide6.QtCore import Qt
@@ -1189,7 +1192,7 @@ def test_compact_lesson_help_shows_first_task_with_console_open(tmp_path, qt_app
     window = Studio(tmp_path / "plain.py")
     window.confirm_close = lambda *_: True
     window.setMinimumWidth(0)
-    window.resize(800, 620)
+    window.resize(width, 620)
     window.show()
     try:
         window.change_language("ru")
