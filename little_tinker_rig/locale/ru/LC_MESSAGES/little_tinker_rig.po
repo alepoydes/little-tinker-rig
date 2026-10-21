@@ -457,6 +457,10 @@ msgstr "Значок блока · хранится в декораторе"
 msgid "Block level"
 msgstr "Уровень блоков"
 
+#: little_tinker_rig/qt/authoring.py
+msgid "Block preview"
+msgstr "Предпросмотр блока"
+
 #: little_tinker_rig/qt/authoring.py:279
 msgid "Block level · stored in the decorator"
 msgstr "Уровень блока · хранится в декораторе"
@@ -2806,6 +2810,10 @@ msgstr "Обработать исключение"
 msgid "Help"
 msgstr "Помощь"
 
+#: little_tinker_rig/qt/help.py
+msgid "Help document"
+msgstr "Документ справки"
+
 #: little_tinker_rig/qt/authoring.py:684
 msgid "Helper: shared ordinary Python; it does not appear in the block library."
 msgstr "Вспомогательная функция: общий код Python; в библиотеке блоков не показывается."
@@ -4181,6 +4189,10 @@ msgstr "Хаб Prime / Inventor"
 msgid "Program"
 msgstr "Программа"
 
+#: little_tinker_rig/qt/document.py
+msgid "Program blocks"
+msgstr "Блоки программы"
+
 #: little_tinker_rig/qt/editor.py:1675
 msgid "Program comments"
 msgstr "Комментарии программы"
@@ -4192,6 +4204,10 @@ msgstr "Ввод для программы на хабе Bluetooth или USB. �
 #: little_tinker_rig/qt/app.py:340
 msgid "Program output and messages"
 msgstr "Вывод программы и сообщения"
+
+#: little_tinker_rig/qt/document.py
+msgid "Program Python source"
+msgstr "Исходный код программы на Python"
 
 #: little_tinker_rig/qt/device.py:176
 msgid "Program running"
@@ -5166,6 +5182,14 @@ msgstr "Масштаб"
 #: little_tinker_rig/qt/app.py:377 little_tinker_rig/qt/app.py:701
 msgid "Scratch"
 msgstr "Черновики"
+
+#: little_tinker_rig/qt/scratch.py
+msgid "Scratch blocks"
+msgstr "Блоки в черновике"
+
+#: little_tinker_rig/qt/scratch.py
+msgid "Scratch Python source"
+msgstr "Исходный код Python в черновике"
 
 #: little_tinker_rig/qt/document.py:73
 msgid "Scroll program left"

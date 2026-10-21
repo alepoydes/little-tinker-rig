@@ -362,6 +362,7 @@ class HelpPage(QWidget):
         self.tree.setHeaderHidden(True)
         self.tree.setMinimumWidth(230)
         self.browser = HelpBrowser()
+        self.browser.setAccessibleName(N_("Help document"))
         self.browser.setOpenLinks(False)
         self.browser.anchorClicked.connect(self.follow_link)
         self.find_matches = []

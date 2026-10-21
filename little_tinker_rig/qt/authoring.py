@@ -69,6 +69,7 @@ class DefinitionCode(CodeEdit):
         self.syntax = None
         self._reveal_when_shown = False
         self.setAcceptDrops(False)
+        self.setAccessibleName(N_("Block definition"))
         self.setPlainText(draft.source)
         self.setReadOnly(draft.read_only)
 
@@ -345,6 +346,7 @@ class BlockEditor(QWidget):
         self.hint.setProperty("translationSources", {})
         self.hint.setWordWrap(True)
         self.preview = BlockPreview()
+        self.preview.setAccessibleName(N_("Block preview"))
         self.preview.parameter_clicked.connect(self.goto_parameter)
         self.preview.description_clicked.connect(self.goto_description)
         self.card = Library(())
@@ -696,6 +698,7 @@ class BlockEditor(QWidget):
             code.cursorPositionChanged.connect(self.cursor_changed)
             self.buffers[path] = code
             self.code_stack.addWidget(code)
+            localize(code)
         self.code_stack.setCurrentWidget(self.buffers[path])
         self.selected_name = name or getattr(self.code, "selected_name", None)
         self.preview_key = None

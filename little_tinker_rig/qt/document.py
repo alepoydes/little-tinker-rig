@@ -45,6 +45,7 @@ class DocumentPage(QWidget):
         self.session.editor.select(0)
         self.code_active = False
         self.source = SourceView(self.session)
+        self.source.setAccessibleName(N_("Program blocks"))
         self.source.document_parameter_finisher = self.finish_parameters
         self.source.changed.connect(self.changed)
         self.source.transferred.connect(self.changed)
@@ -55,6 +56,7 @@ class DocumentPage(QWidget):
         self.source.help_requested.connect(self.help_requested)
         self.source.input_search_requested.connect(self.input_search_requested)
         self.code = CodeEdit(path)
+        self.code.setAccessibleName(N_("Program Python source"))
         self.code.history = self
         self.code.setAcceptDrops(False)
         self.code.setPlainText(self.session.document.state.source)

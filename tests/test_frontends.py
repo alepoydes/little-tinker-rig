@@ -637,6 +637,9 @@ def test_unlabeled_editor_and_hub_fields_have_localized_accessible_names(
     window = Studio(tmp_path / "main.py")
     window.show()
     try:
+        window.session.set_scratch(None, "value = 1\n")
+        window.scratch.refresh(window.session)
+        window.confirm_close = lambda page: True
         for code, names in (
             (
                 "en",
@@ -648,6 +651,13 @@ def test_unlabeled_editor_and_hub_fields_have_localized_accessible_names(
                     "New block type",
                     "Preview view",
                     "Connection",
+                    "Program blocks",
+                    "Program Python source",
+                    "Help document",
+                    "Block preview",
+                    "Block definition",
+                    "Scratch blocks",
+                    "Scratch Python source",
                 ),
             ),
             (
@@ -660,6 +670,13 @@ def test_unlabeled_editor_and_hub_fields_have_localized_accessible_names(
                     "Тип нового блока",
                     "Вид предпросмотра",
                     "Подключение",
+                    "Блоки программы",
+                    "Исходный код программы на Python",
+                    "Документ справки",
+                    "Предпросмотр блока",
+                    "Определение блока",
+                    "Блоки в черновике",
+                    "Исходный код Python в черновике",
                 ),
             ),
         ):
@@ -674,6 +691,13 @@ def test_unlabeled_editor_and_hub_fields_have_localized_accessible_names(
                     window.block_editor.starters.accessibleName(),
                     window.block_editor.preview_mode.accessibleName(),
                     dialog.transport.accessibleName(),
+                    window.source.accessibleName(),
+                    window.code.accessibleName(),
+                    window.help_page.browser.accessibleName(),
+                    window.block_editor.preview.accessibleName(),
+                    window.block_editor.code.accessibleName(),
+                    window.scratch.cells[0].source.accessibleName(),
+                    window.scratch.cells[0].code.accessibleName(),
                 ) == names
                 assert window.block_editor.icon.lineEdit().accessibleName() == (
                     "Block icon · stored in the decorator"

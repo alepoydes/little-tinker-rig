@@ -88,10 +88,12 @@ class ScratchCell(QFrame):
         self.code_button.clicked.connect(lambda: self.change_mode(True))
         layout.addLayout(row)
         self.code = CodeEdit()
+        self.code.setAccessibleName(N_("Scratch Python source"))
         self.code.history = pane.history
         self.code.setAcceptDrops(False)
         self.code.setPlainText(text)
         self.source = SourceView(Session.fragment("", pane.session.snippets))
+        self.source.setAccessibleName(N_("Scratch blocks"))
         self.source.document_parameter_finisher = pane.finish_parameters
         self.source.scratch_owner = pane.session
         self.source.scratch_index = index
