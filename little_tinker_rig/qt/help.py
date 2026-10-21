@@ -60,7 +60,7 @@ GUIDE_ORDER = (
     "block-editor.md",
     "tui.md",
 )
-COMPACT_DOCUMENT_WIDTH = 560
+COMPACT_DOCUMENT_WIDTH = 680
 
 
 def group_document(identity, snippets):

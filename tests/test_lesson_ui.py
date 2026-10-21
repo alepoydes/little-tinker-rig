@@ -721,6 +721,34 @@ def test_task_completion_keeps_keyboard_focus(tmp_path, qt_app, width, height):
         window.deleteLater()
 
 
+def test_lesson_help_title_fits_compact_russian_window_with_console(tmp_path, qt_app):
+    from pathlib import Path
+
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "main.py")
+    window.resize(930, 620)
+    window.show()
+    try:
+        window.change_language("ru")
+        window.lessons.open(Path("lessons/first_drive"))
+        window.set_mode(2)
+        window.console_dock.show()
+        QTest.qWait(80)
+        browser = window.help_page.browser
+        title = browser.document().begin()
+        assert browser.width() <= 620
+        assert title.blockFormat().headingLevel() == 1
+        assert "45678" in title.text()
+        assert title.layout().lineCount() == 1
+    finally:
+        window.confirm_close = lambda *_: True
+        window.recovery.close()
+        window.close()
+
+
 def test_compact_tasks_keep_lesson_instructions_readable(tmp_path, qt_app):
     from pathlib import Path
 
