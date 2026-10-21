@@ -1147,6 +1147,7 @@ def test_compact_tasks_leave_manual_controls_accessible(tmp_path, qt_app):
     from PySide6.QtCore import QPoint, Qt
     from PySide6.QtTest import QTest
 
+    from little_tinker_rig.pybricks.devices import HubInfo
     from little_tinker_rig.qt.app import Studio
 
     window = Studio(tmp_path / "plain.py")
@@ -1180,6 +1181,30 @@ def test_compact_tasks_leave_manual_controls_accessible(tmp_path, qt_app):
             assert qt_app.widgetAt(widget.mapToGlobal(widget.rect().center())) is widget
         for label in controls.controller.stick_labels:
             assert label.visibleRegion().boundingRect().height() == label.height()
+
+        controls.update_info(
+            HubInfo(
+                connected=True,
+                monitoring=True,
+                ports={port: {"type": "motor"} for port in "AB"},
+            )
+        )
+        qt_app.processEvents()
+        QTest.qWait(80)
+        for port, key, prefix in (("A", "left_x", "LX"), ("B", "left_y", "LY")):
+            source = controls.rows[port][0]
+            source.setCurrentIndex(source.findData(key))
+            assert source.width() <= 80, (
+                window.width(),
+                controls.width(),
+                controls.table.width(),
+                source.width(),
+            )
+            visible = source.fontMetrics().elidedText(
+                source.currentText(), Qt.TextElideMode.ElideRight, source.width() - 24
+            )
+            assert visible.startswith(prefix + " ·")
+        assert controls.table.horizontalScrollBar().maximum() == 0
 
         right = controls.controller.right
         point = QPoint(75, 50)

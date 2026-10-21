@@ -3229,13 +3229,21 @@ msgstr ""
 "\n"
 "Вставляйте внутрь for или while, например в условие if."
 
-#: little_tinker_rig/qt/controls.py:322
-msgid "Left X"
-msgstr "Левый X"
+#: little_tinker_rig/qt/controls.py:352
+msgid "LX · Left X"
+msgstr "LX · Левый X"
 
-#: little_tinker_rig/qt/controls.py:323
-msgid "Left Y"
-msgstr "Левый Y"
+#: little_tinker_rig/qt/controls.py:353
+msgid "LY · Left Y"
+msgstr "LY · Левый Y"
+
+#: little_tinker_rig/qt/controls.py:354
+msgid "RX · Right X"
+msgstr "RX · Правый X"
+
+#: little_tinker_rig/qt/controls.py:355
+msgid "RY · Right Y"
+msgstr "RY · Правый Y"
 
 #: little_tinker_rig/snippets/pybricks/xbox.py:26
 msgid "Left joystick"
@@ -4928,14 +4936,6 @@ msgstr "Обратный обход"
 #: little_tinker_rig/qt/app.py:1476
 msgid "Review block upgrade"
 msgstr "Проверка обновления блока"
-
-#: little_tinker_rig/qt/controls.py:324
-msgid "Right X"
-msgstr "Правый X"
-
-#: little_tinker_rig/qt/controls.py:325
-msgid "Right Y"
-msgstr "Правый Y"
 
 #: little_tinker_rig/snippets/pybricks/xbox.py:52
 msgid "Right joystick"

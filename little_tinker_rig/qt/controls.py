@@ -349,10 +349,10 @@ class ControlsPage(QWidget):
         self.table.setFixedHeight(225)
         self.rows = {}
         source_names = (
-            N_("Left X"),
-            N_("Left Y"),
-            N_("Right X"),
-            N_("Right Y"),
+            N_("LX · Left X"),
+            N_("LY · Left Y"),
+            N_("RX · Right X"),
+            N_("RY · Right Y"),
             "LT",
             "RT",
         )

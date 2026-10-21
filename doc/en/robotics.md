@@ -92,6 +92,10 @@ a connection brings the panel forward.
 With a detected motor, **Configure motors ↓** jumps to its assignment table below
 the sticks and triggers. Assign an axis or trigger, choose its mode/scale, scroll
 back up, then enable commands.
+
+The assignment list prefixes stick axes with LX, LY, RX and RY so they remain
+distinct when the task panel narrows the table.
+
 **Send controller input to my program** shows the complete controller,
 including buttons. Both layouts fit the available width.
 View, Menu and Guide retain their Xbox button names in every interface language.
