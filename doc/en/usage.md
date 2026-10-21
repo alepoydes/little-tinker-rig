@@ -232,7 +232,8 @@ Ordinary drops accept compatible expressions only in empty parameters (`...`).
 Moving an existing block between the program and Scratch checks every open inline
 field in that document. An invalid draft stays visible and the move is refused;
 if a valid edit changes the document after pickup, pick up the block again.
-Dropping a library block into the program also applies its open fields first.
+Dropping a library block into the program or Scratch also applies open fields
+first; an invalid draft remains editable and blocks the insertion.
 After **Find value blocks**, the searched input also accepts replacement of its
 current value; other populated inputs remain protected. Invalid contexts offer no insertion and
 release restores the source. Library blocks use defaults and known device names.

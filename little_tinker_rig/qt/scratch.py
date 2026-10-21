@@ -353,17 +353,21 @@ class ScratchPane(QScrollArea):
     def dragEnterEvent(self, event):
         data = event.mimeData()
         if isinstance(data, BlockMime):
-            if data.transfer.owner is not self.session or not self.finish_parameters():
-                event.ignore()
-                return
-            try:
-                data.transfer.validate()
-            except ValueError:
+            if data.transfer.owner is not self.session:
                 event.ignore()
                 return
         elif not data.hasFormat("application/x-little-tinker-rig-snippet"):
             event.ignore()
             return
+        if not self.finish_parameters():
+            event.ignore()
+            return
+        if isinstance(data, BlockMime):
+            try:
+                data.transfer.validate()
+            except ValueError:
+                event.ignore()
+                return
         if self.drop_padding is None:
             self.drop_padding = self.column.contentsMargins()
             margins = self.column.contentsMargins()
@@ -433,11 +437,14 @@ class ScratchPane(QScrollArea):
         position = len(self.cells) if self.drop_position is None else self.drop_position
         self.dragLeaveEvent(event)
         data = event.mimeData()
-        if (
-            isinstance(data, BlockMime)
-            and data.transfer.owner is self.session
-            and not self.finish_parameters()
-        ):
+        if isinstance(data, BlockMime):
+            if data.transfer.owner is not self.session:
+                event.ignore()
+                return
+        elif not data.hasFormat("application/x-little-tinker-rig-snippet"):
+            event.ignore()
+            return
+        if not self.finish_parameters():
             event.ignore()
             return
         try:
