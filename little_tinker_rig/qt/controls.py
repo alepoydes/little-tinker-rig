@@ -202,13 +202,15 @@ class Controller(QWidget):
         grid = QGridLayout(arrows)
         grid.setContentsMargins(0, 0, 0, 0)
         grid.setSpacing(4)
-        for number, label, row, column in (
-            (11, "↑", 0, 1),
-            (12, "↓", 2, 1),
-            (13, "←", 1, 0),
-            (14, "→", 1, 2),
+        for number, label, name, row, column in (
+            (11, "↑", N_("D-pad up"), 0, 1),
+            (12, "↓", N_("D-pad down"), 2, 1),
+            (13, "←", N_("D-pad left"), 1, 0),
+            (14, "→", N_("D-pad right"), 1, 2),
         ):
             button = QPushButton(label)
+            button.setToolTip(name)
+            button.setAccessibleName(name)
             self.buttons[number] = button
             grid.addWidget(button, row, column)
         layout.addWidget(arrows, 3, 0)

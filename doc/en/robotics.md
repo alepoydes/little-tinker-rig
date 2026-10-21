@@ -95,6 +95,7 @@ back up, then enable commands.
 **Send controller input to my program** shows the complete controller,
 including buttons. Both layouts fit the available width.
 View, Menu and Guide retain their Xbox button names in every interface language.
+The D-pad arrows show localized direction tooltips and screen-reader names.
 In a compact window with a hub connected, the sticks remain in view while the
 bottom Hub and devices panel leaves its port monitor control visible; scroll
 either area for more options.

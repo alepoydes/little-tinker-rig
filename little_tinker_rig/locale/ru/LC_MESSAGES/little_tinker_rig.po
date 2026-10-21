@@ -1702,6 +1702,22 @@ msgstr "Вырезать"
 msgid "Cycle the status light through colors at a fixed interval."
 msgstr "Менять цвета индикатора через заданный интервал."
 
+#: little_tinker_rig/qt/controls.py:207
+msgid "D-pad down"
+msgstr "Крестовина: вниз"
+
+#: little_tinker_rig/qt/controls.py:208
+msgid "D-pad left"
+msgstr "Крестовина: влево"
+
+#: little_tinker_rig/qt/controls.py:209
+msgid "D-pad right"
+msgstr "Крестовина: вправо"
+
+#: little_tinker_rig/qt/controls.py:206
+msgid "D-pad up"
+msgstr "Крестовина: вверх"
+
 #: little_tinker_rig/snippets/pybricks/motor_motion.py:356
 msgid "DC motor value"
 msgstr "Значение DC-мотора"

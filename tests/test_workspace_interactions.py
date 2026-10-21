@@ -324,6 +324,16 @@ def test_control_names_and_trigger_hints_follow_language(windows):
         "LT · release to return to zero",
         "RT · release to return to zero",
     ]
+    arrows = [controller.buttons[index] for index in (11, 12, 13, 14)]
+    assert [item.accessibleName() for item in arrows] == [
+        "D-pad up",
+        "D-pad down",
+        "D-pad left",
+        "D-pad right",
+    ]
+    assert [item.toolTip() for item in arrows] == [
+        item.accessibleName() for item in arrows
+    ]
     window.change_language("ru")
     assert controller.brand_label.text() == "LittleTinker Rig\nКонтроллер"
     assert [controller.buttons[index].text() for index in (4, 6, 5)] == [
@@ -341,10 +351,19 @@ def test_control_names_and_trigger_hints_follow_language(windows):
         "LT · отпустите для возврата к нулю",
         "RT · отпустите для возврата к нулю",
     ]
+    assert [item.accessibleName() for item in arrows] == [
+        "Крестовина: вверх",
+        "Крестовина: вниз",
+        "Крестовина: влево",
+        "Крестовина: вправо",
+    ]
+    assert [item.toolTip() for item in arrows] == [
+        item.accessibleName() for item in arrows
+    ]
     assert all(
         QAccessible.queryAccessibleInterface(item).text(QAccessible.Text.Name)
         == item.accessibleName()
-        for item in controls
+        for item in (*controls, *arrows)
     )
     window.change_language("en")
     assert controller.brand_label.text() == "LittleTinker Rig\nController"
@@ -355,6 +374,7 @@ def test_control_names_and_trigger_hints_follow_language(windows):
     ]
     assert controller.triggers[0].accessibleName() == "Left trigger"
     assert controller.triggers[0].toolTip() == "LT · release to return to zero"
+    assert arrows[0].accessibleName() == arrows[0].toolTip() == "D-pad up"
 
 
 def test_device_ports_use_columns_in_bottom_dock_and_rows_in_side_dock(windows):
