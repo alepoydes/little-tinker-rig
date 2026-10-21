@@ -391,6 +391,24 @@ def test_home_filter_and_russian_caption(tmp_path, qt_app):
         window.home_page.kit.setCurrentIndex(window.home_page.kit.findData("none"))
         assert window.home_page.project_layout.count() == 1
         assert window.settings.value("homeKit") == "none"
+        for equipment, robot_title in (
+            ("spike", "Первая поездка робота"),
+            ("inventor", "Исследовательский вездеход"),
+        ):
+            window.home_page.kit.setCurrentIndex(
+                window.home_page.kit.findData(equipment)
+            )
+            cards = [
+                window.home_page.project_layout.itemAt(index).widget()
+                for index in range(window.home_page.project_layout.count())
+            ]
+            assert len(cards) == 2
+            titles = {
+                label.text() for card in cards for label in card.findChildren(QLabel)
+            }
+            assert "Первая программа на Python" in titles
+            assert robot_title in titles
+        window.home_page.kit.setCurrentIndex(window.home_page.kit.findData("none"))
         another = Studio()
         try:
             assert another.home_page.kit.currentData() == "none"

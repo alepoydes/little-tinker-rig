@@ -447,7 +447,11 @@ class HomePage(QScrollArea):
                 lessons_directory() / "pybricks" / "inventor_51515_exploration_rover",
             ),
         ]
-        visible = [item for item in projects if selection in (None, "all", item[0])]
+        visible = [
+            item
+            for item in projects
+            if selection in (None, "all", item[0]) or item[0] == "none"
+        ]
         for index, (_, title, description, detail, icon, path) in enumerate(visible):
             attempt = StudentProject.latest(path)
             card = self._card(

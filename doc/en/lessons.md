@@ -6,6 +6,7 @@ then run on a virtual hub and inspect Console; each task has a small diagram.
 **Home → First robot drive**
 starts the SPIKE Prime build and driving lesson. The project cards show equipment
 requirements and can be filtered; reopening one resumes the latest attempt.
+The equipment filter always keeps the robot-free first Python lesson available.
 
 **File → Lessons → Guided lessons → First drive · SPIKE Prime 45678** opens
 your latest attempt at that lesson, or creates one if this is the first time.
