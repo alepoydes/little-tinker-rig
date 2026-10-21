@@ -485,7 +485,17 @@ class BlockEditor(QWidget):
             return None
 
     def create_new_block(self):
-        return self.attempt(lambda: self.create(STARTERS[self.starters.currentData()]))
+        try:
+            return self.create(STARTERS[self.starters.currentData()])
+        except (ValueError, SyntaxError, OSError) as error:
+            reveal_group = isinstance(error, ValueError) and not self._browser_visible
+            if reveal_group:
+                self.browser_button.setChecked(True)
+            self.failed.emit(str(error))
+            if reveal_group:
+                self.module_name.setFocus()
+                self.module_name.selectAll()
+            return None
 
     def configure(self, snippets, roots):
         self.snippets = tuple(

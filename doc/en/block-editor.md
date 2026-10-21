@@ -41,7 +41,8 @@ module form one help page. Edit the function name, signature, docstring and body
 directly in Python.
 The **New block** icon in the toolbar performs the same action while the browser
 is collapsed. It uses the selected starter and group; initially these are
-**Action** and `custom`.
+**Action** and `custom`. If the group needs correction, the browser opens and
+selects its field.
 
 In the program, **Edit → Create block from selection** starts a definition from
 the selected structural block or selected Python text. The program stays intact.
