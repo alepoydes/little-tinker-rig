@@ -680,6 +680,11 @@ def test_task_completion_keeps_keyboard_focus(tmp_path, qt_app, width, height):
         window.lessons.set_panel_expanded(True)
         qt_app.processEvents()
         assert window.lessons.panel.isVisible()
+        window.lessons.collapse_button.setFocus()
+        QTest.keyClick(window.lessons.collapse_button, Qt.Key.Key_Tab)
+        assert qt_app.focusWidget() is window.lessons.task_area
+        QTest.keyClick(window.lessons.task_area, Qt.Key.Key_Tab)
+        assert qt_app.focusWidget() is window.lessons.cards["drive"]["check"]
         for checked in (True, False):
             check = window.lessons.cards["drive"]["check"]
             check.setFocus()
@@ -688,6 +693,8 @@ def test_task_completion_keeps_keyboard_focus(tmp_path, qt_app, width, height):
             current = window.lessons.cards["drive"]["check"]
             assert current.isChecked() is checked
             assert qt_app.focusWidget() is current
+        QTest.keyClick(current, Qt.Key.Key_Tab)
+        assert qt_app.focusWidget() is window.lessons.cards["drive"]["title"]
     finally:
         window.recovery.close()
         window.deleteLater()

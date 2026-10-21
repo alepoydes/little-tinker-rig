@@ -792,6 +792,7 @@ class Lessons(QObject):
         )
         self.update_check()
         self.update_card()
+        self._update_task_tab_order()
         if focus_target and not reveal:
             QTimer.singleShot(
                 0,
@@ -816,6 +817,20 @@ class Lessons(QObject):
             target = widgets[key]
             if target.isVisible():
                 target.setFocus(Qt.FocusReason.OtherFocusReason)
+
+    def _update_task_tab_order(self):
+        if not self.current:
+            return
+        widgets = [self.collapse_button, self.task_area]
+        if not self.intro.isHidden():
+            widgets.append(self.intro)
+        for stage in self.current.lesson.stages:
+            card = self.cards[stage["id"]]
+            widgets.extend((card["check"], card["title"]))
+            if not card["body"].isHidden():
+                widgets.append(card["body"])
+        for first, second in zip(widgets, widgets[1:], strict=False):
+            QWidget.setTabOrder(first, second)
 
     def reveal_selected(self):
         if self.current and self.current.stage["id"] in self.cards:
