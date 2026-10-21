@@ -1076,6 +1076,7 @@ def test_compact_tasks_leave_manual_controls_accessible(tmp_path, qt_app):
 def test_compact_lesson_help_shows_first_task_with_console_open(tmp_path, qt_app):
     from pathlib import Path
 
+    from PySide6.QtCore import Qt
     from PySide6.QtTest import QTest
 
     from little_tinker_rig.qt.app import Studio
@@ -1099,6 +1100,30 @@ def test_compact_lesson_help_shows_first_task_with_console_open(tmp_path, qt_app
         assert browser.verticalScrollBar().value() == 0
         assert (
             browser.viewport().rect().contains(browser.cursorRect(first_task).center())
+        )
+        help_page = window.help_page
+        overlay = window.lessons.overlay
+        assert not help_page.sidebar.isVisible()
+        assert help_page.back_button.isVisible()
+        assert help_page.recent_button.isVisible()
+        assert help_page.find_field.width() >= 260
+        assert browser.document().documentMargin() == 14
+        for button in (help_page.back_button, help_page.recent_button):
+            assert (
+                button.mapTo(window.workspace, button.rect().topRight()).x()
+                < overlay.geometry().left()
+            )
+
+        help_page.show_page("robotics.md")
+        qt_app.processEvents()
+        assert help_page.back_button.isEnabled()
+        assert help_page.recent_button.isEnabled()
+        QTest.mouseClick(help_page.back_button, Qt.MouseButton.LeftButton)
+        assert help_page.current == "lesson/instructions"
+        assert not overlay.isVisible()
+        assert help_page.sidebar.isVisible()
+        assert any(
+            action.data() == "robotics.md" for action in help_page.recent_menu.actions()
         )
     finally:
         window.close()

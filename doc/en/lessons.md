@@ -54,7 +54,8 @@ In Program, the block catalog temporarily hides while the task panel is open,
 leaving the code readable. Collapse the panel or click outside it to bring the
 catalog back.
 In Help, the page list temporarily hides and the instructions fit beside the
-open task panel; closing the panel restores the page list.
+open task panel; closing the panel restores the page list. Back, Recent pages,
+and Find in document remain above the article while the task panel is open.
 In Block Editor, the task panel narrows as needed and the definition browser
 temporarily hides so the editing controls remain visible beside it;
 closing the panel restores the browser's previous visibility.

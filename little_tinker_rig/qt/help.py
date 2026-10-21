@@ -60,6 +60,7 @@ GUIDE_ORDER = (
     "block-editor.md",
     "tui.md",
 )
+COMPACT_DOCUMENT_WIDTH = 560
 
 
 def group_document(identity, snippets):
@@ -121,7 +122,7 @@ class HelpBrowser(QTextBrowser):
     def __init__(self):
         super().__init__()
         self.lesson_numbers = {}
-        self._compact_document = self.width() < 440
+        self._compact_document = self.width() < COMPACT_DOCUMENT_WIDTH
 
     def lesson_number_image(self, number):
         c = colors()
@@ -223,7 +224,7 @@ class HelpBrowser(QTextBrowser):
         if self.viewportMargins().left() != inset:
             self.setViewportMargins(inset, 0, inset, 0)
         super().resizeEvent(event)
-        compact = self.width() < 440
+        compact = self.width() < COMPACT_DOCUMENT_WIDTH
         if compact != self._compact_document:
             scroll = self.verticalScrollBar().value()
             self._compact_document = compact
@@ -304,7 +305,7 @@ class HelpBrowser(QTextBrowser):
         for frame in document.rootFrame().childFrames():
             if isinstance(frame, QTextTable):
                 format = frame.format()
-                format.setCellPadding(9)
+                format.setCellPadding(4 if self._compact_document else 9)
                 format.setCellSpacing(0)
                 format.setBorder(1)
                 format.setBorderStyle(QTextFrameFormat.BorderStyle.BorderStyle_Solid)
@@ -374,8 +375,18 @@ class HelpPage(QWidget):
         self.find_next.setAccessibleName(N_("Next match"))
         self.find_next.clicked.connect(lambda: self.next_match(1))
         self.find_count = QLabel()
-        find_row = QHBoxLayout()
+        self.back_button = QToolButton()
+        self.back_button.setText("←")
+        self.back_button.clicked.connect(self.back)
+        self.recent_button = QToolButton()
+        self.recent_button.setText("▾")
+        self.recent_menu = QMenu(self.recent_button)
+        self.recent_button.setMenu(self.recent_menu)
+        self.recent_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        find_row = self.find_row = QHBoxLayout()
         find_row.setContentsMargins(4, 3, 4, 3)
+        find_row.addWidget(self.back_button)
+        find_row.addWidget(self.recent_button)
         find_row.addStretch(1)
         find_row.addWidget(self.find_field)
         find_row.addWidget(self.find_previous)
@@ -415,24 +426,10 @@ class HelpPage(QWidget):
         self.no_results = QLabel()
         self.no_results.setWordWrap(True)
         self.no_results.hide()
-        self.back_button = QToolButton()
-        self.back_button.setText("←")
-        self.back_button.clicked.connect(self.back)
-        self.recent_button = QToolButton()
-        self.recent_button.setText("▾")
-        self.recent_menu = QMenu(self.recent_button)
-        self.recent_button.setMenu(self.recent_menu)
-        self.recent_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
-        navigation = QHBoxLayout()
-        navigation.setContentsMargins(0, 0, 0, 0)
-        navigation.setSpacing(3)
-        navigation.addWidget(self.back_button)
-        navigation.addWidget(self.recent_button)
-        navigation.addWidget(search, 1)
         sidebar = self.sidebar = QWidget()
         sidebar.setMinimumWidth(230)
         left = QVBoxLayout(sidebar)
-        left.addLayout(navigation)
+        left.addWidget(search)
         left.addWidget(self.no_results)
         left.addWidget(self.tree)
         splitter = QSplitter()
@@ -455,6 +452,8 @@ class HelpPage(QWidget):
         self._overlay_clearance = width
         self.sidebar.setVisible(not width)
         self.find_field.setMinimumWidth(160 if width else 240)
+        self.find_row.setStretch(2, 0 if width else 1)
+        self.find_row.setStretchFactor(self.find_field, 1 if width else 0)
         self.layout().setContentsMargins(0, 0, width + 8 if width else 0, 0)
 
     def apply_theme(self):

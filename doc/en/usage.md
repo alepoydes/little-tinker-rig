@@ -346,6 +346,8 @@ color as inserted blocks. Hover shows the full preview. F1 opens the selected
 block's section on its group page or the guide. Help includes offline Markdown and snippet
 parameters/source, with search, internal links, a compact Back control, and a
 Recent pages menu that lists unique documents.
+Back and Recent pages sit beside Find in document above the article, so they
+remain available when a lesson hides the Help sidebar.
 Searching the Help sidebar opens matching groups; clearing the query restores
 their previous open state while keeping a newly opened page visible.
 
