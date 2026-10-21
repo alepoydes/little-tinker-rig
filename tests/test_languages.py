@@ -37,6 +37,56 @@ def test_english_source_and_russian_catalog():
     assert language() == "ru"
 
 
+@pytest.mark.parametrize(
+    "code, labels",
+    [
+        ("en", ("Programs and lessons", "Robot instructions", "Firmware")),
+        ("ru", ("Программы и уроки", "Инструкция сборки робота", "Прошивка")),
+    ],
+)
+def test_file_dialog_filters_translate_labels_without_changing_extensions(
+    tmp_path, qt_app, code, labels
+):
+    from PySide6.QtWidgets import QFileDialog
+
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.firmware import FirmwareDialog
+
+    path = tmp_path / "program.py"
+    path.write_text("print('ready')\n", encoding="utf-8")
+    set_language(code)
+    window = Studio(path)
+    window.confirm_close = lambda *_: True
+    filters = []
+
+    def record_files(*args):
+        filters.append(args[3])
+        return [], ""
+
+    def record_file(*args):
+        filters.append(args[3])
+        return "", ""
+
+    try:
+        with (
+            patch.object(QFileDialog, "getOpenFileNames", side_effect=record_files),
+            patch.object(QFileDialog, "getOpenFileName", side_effect=record_file),
+        ):
+            window.open_file()
+            window.lessons.assembly_host.choose()
+            dialog = FirmwareDialog(window)
+            dialog.open_local()
+            dialog.close()
+        assert filters == [
+            f"{labels[0]} (*.py *.ltr *.pylesson *.pyblocks);;"
+            "Python (*.py);;LittleTinker Rig (*.ltr *.pylesson *.pyblocks)",
+            f"{labels[1]} (*.json)",
+            f"{labels[2]} (*.zip *.bin)",
+        ]
+    finally:
+        window.close()
+
+
 def test_parameter_validation_is_localized_without_changing_source(tmp_path, qt_app):
     from little_tinker_rig.core.session import Session
     from little_tinker_rig.qt.editor import SourceView

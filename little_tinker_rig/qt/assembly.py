@@ -839,7 +839,7 @@ class AssemblyWorkspace(QWidget):
             self,
             tr("Open robot instructions"),
             str(self.free_path.parent) if self.free_path else "",
-            "Robot instructions (*.json)",
+            f"{tr('Robot instructions')} (*.json)",
         )
         if name:
             self.open(Path(name))

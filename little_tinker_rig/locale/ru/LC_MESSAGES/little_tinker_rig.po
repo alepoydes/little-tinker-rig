@@ -4177,6 +4177,10 @@ msgstr "Программа запущена."
 msgid "Program uploaded."
 msgstr "Программа загружена."
 
+#: little_tinker_rig/qt/app.py:2455
+msgid "Programs and lessons"
+msgstr "Программы и уроки"
+
 #: little_tinker_rig/qt/lessons.py:705
 #, python-brace-format
 msgid "Project · {position}/{total} · {completed} done"

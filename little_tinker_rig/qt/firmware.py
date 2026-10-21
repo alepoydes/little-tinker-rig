@@ -104,7 +104,9 @@ class FirmwareDialog(QDialog):
         idle_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         idle_layout.setSpacing(9)
         icon = QLabel()
-        icon.setPixmap(svg_pixmap("network-connect", QSize(48, 48), tint=colors()["accent"]))
+        icon.setPixmap(
+            svg_pixmap("network-connect", QSize(48, 48), tint=colors()["accent"])
+        )
         icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         idle_layout.addWidget(icon)
         idle_title = QLabel(tr("Ready to prepare firmware"))
@@ -112,7 +114,9 @@ class FirmwareDialog(QDialog):
         idle_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         idle_layout.addWidget(idle_title)
         idle_hint = QLabel(
-            tr("Choose a hub and version, then prepare a download or open a local file.")
+            tr(
+                "Choose a hub and version, then prepare a download or open a local file."
+            )
         )
         idle_hint.setObjectName("firmwareIdleHint")
         idle_hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -249,7 +253,7 @@ class FirmwareDialog(QDialog):
 
     def open_local(self):
         path, _ = QFileDialog.getOpenFileName(
-            self, tr("Open firmware"), "", "Firmware (*.zip *.bin)"
+            self, tr("Open firmware"), "", f"{tr('Firmware')} (*.zip *.bin)"
         )
         if path:
             self.prepare(lambda: Path(path))

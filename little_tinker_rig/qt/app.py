@@ -2452,7 +2452,8 @@ class Studio(QMainWindow):
             self,
             tr("Open program or lesson"),
             str(self.session.project.path.parent),
-            "Programs and lessons (*.py *.ltr *.pylesson *.pyblocks);;Python (*.py);;LittleTinker Rig (*.ltr *.pylesson *.pyblocks)",
+            f"{tr('Programs and lessons')} (*.py *.ltr *.pylesson *.pyblocks);;"
+            "Python (*.py);;LittleTinker Rig (*.ltr *.pylesson *.pyblocks)",
         )
         opened = None
         for path in paths:
