@@ -734,8 +734,8 @@ class HelpPage(QWidget):
                 if self.lesson and current and current.startswith("lesson/")
                 else "index.md"
             )
-        self.show_page(destination)
         self.filter(self.search.text())
+        self.show_page(destination)
 
     def add_page(self, parent, identity, title, text):
         item = QTreeWidgetItem(parent, [title])

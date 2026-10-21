@@ -342,6 +342,36 @@ def test_help_search_restores_branches_and_keeps_new_destination_visible(qt_app)
         page.close()
 
 
+def test_help_language_switch_keeps_current_page_visible_when_search_changes(qt_app):
+    from little_tinker_rig.qt.help import HelpPage
+
+    previous_language = language()
+    set_language("en")
+    page = HelpPage([])
+    page.show()
+    qt_app.processEvents()
+    try:
+        page.search.setText("Learn and build")
+        assert not page.tree.currentItem().isHidden()
+
+        set_language("ru")
+        page.retranslate()
+        assert page.current == "index.md"
+        assert page.tree.currentItem() is page.pages["index.md"][1]
+        assert not page.tree.currentItem().isHidden()
+        assert not page.search.text()
+        assert not page.no_results.isVisible()
+
+        page.search.setText("LittleTinker Rig")
+        set_language("en")
+        page.retranslate()
+        assert page.search.text() == "LittleTinker Rig"
+        assert not page.tree.currentItem().isHidden()
+    finally:
+        page.close()
+        set_language(previous_language)
+
+
 def test_help_search_enter_opens_visible_result_and_preserves_miss(qt_app):
     from PySide6.QtCore import Qt
     from PySide6.QtTest import QTest

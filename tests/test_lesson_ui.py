@@ -1588,9 +1588,12 @@ def test_language_switch_keeps_localized_task_material_in_help_history(
         assert english_action.text() == "Training · More"
         english_action.trigger()
 
+        page.search.setText("English details.")
         set_language("ru")
         page.retranslate()
         assert page.current == "lesson/resource/extra_ru.md#подробности"
+        assert not page.search.text()
+        assert not page.lesson_item.isHidden()
         assert page.page_paths["lesson/resource/extra_ru.md"] == root / "extra_ru.md"
         assert "Русские подробности." in page.browser.toPlainText()
         assert page.history[-1] == "lesson/instructions#первый"
