@@ -386,16 +386,24 @@ def test_switching_language_preserves_scratch_widgets_and_user_text(tmp_path, qt
     before = window.session.document.state
     try:
         assert cell.blocks_button.toolTip() == "Блоки"
+        assert cell.blocks_button.accessibleName() == "Блоки"
+        assert cell.code_button.accessibleName() == "Python"
+        assert cell.findChild(Grip).accessibleName() == cell.findChild(Grip).toolTip()
         set_language("en")
         window.retranslate()
         assert window.scratch.cells[0] is cell
         assert cell.blocks_button.toolTip() == "Blocks"
+        assert cell.blocks_button.accessibleName() == "Blocks"
+        assert cell.code_button.accessibleName() == "Python"
         assert cell.findChild(Grip).toolTip().startswith("Drag the whole fragment")
+        assert cell.findChild(Grip).accessibleName() == cell.findChild(Grip).toolTip()
         assert window.session.document.state is before
         assert "Program.py" in window.windowTitle()
         set_language("ru")
         window.retranslate()
         assert cell.blocks_button.toolTip() == "Блоки"
+        assert cell.blocks_button.accessibleName() == "Блоки"
+        assert cell.findChild(Grip).accessibleName() == cell.findChild(Grip).toolTip()
         assert window.session.document.state is before
     finally:
         with patch.object(

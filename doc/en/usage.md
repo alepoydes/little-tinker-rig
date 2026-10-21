@@ -365,6 +365,7 @@ cell's mode and cursor, along with the shared document history. Python accepts
 arbitrary unfinished text; parseable fragments can be edited structurally without a complete execution
 context. For example, a detached `break` is allowed in Scratch but can only return
 inside a loop. Invalid drops preserve both areas.
+The icon controls and drag handle have descriptive names for screen readers.
 Reordering cells or removing a neighboring cell keeps each remaining fragment's
 own text editor, including when two fragments have identical text.
 Undo restores removed cells with their previous editor mode and cursor.

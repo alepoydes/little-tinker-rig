@@ -37,6 +37,7 @@ class Grip(QLabel):
         self.cell = cell
         self.setCursor(Qt.CursorShape.OpenHandCursor)
         self.setToolTip(N_("Drag the whole fragment into the program or another cell"))
+        self.setAccessibleName(self.toolTip())
         self.setStyleSheet(
             f"font-size: 20px; color: {colors()['muted']}; padding: 2px 8px"
         )
@@ -75,9 +76,11 @@ class ScratchCell(QFrame):
         self.blocks_button = QToolButton()
         self.blocks_button.setText("▦")
         self.blocks_button.setToolTip(N_("Blocks"))
+        self.blocks_button.setAccessibleName(self.blocks_button.toolTip())
         self.code_button = QToolButton()
         self.code_button.setText("</>")
         self.code_button.setToolTip("Python")
+        self.code_button.setAccessibleName(self.code_button.toolTip())
         for button in (self.blocks_button, self.code_button):
             button.setCheckable(True)
             row.addWidget(button)
