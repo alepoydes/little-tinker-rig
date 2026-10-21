@@ -188,6 +188,96 @@ def test_program_drop_keeps_invalid_scratch_parameter(tmp_path, qt_app):
         window.deleteLater()
 
 
+def test_scratch_transfer_keeps_inline_draft_and_rejects_stale_pickup(tmp_path, qt_app):
+    from PySide6.QtCore import QPoint, QPointF, Qt
+    from PySide6.QtGui import QDragEnterEvent, QDragMoveEvent, QDropEvent
+
+    from little_tinker_rig.core.transfer import Transfer
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.drag import BlockMime
+
+    path = tmp_path / "program.py"
+    path.write_text("print(2)\n", encoding="utf-8")
+    window = Studio(path)
+    window.confirm_close = lambda *_: True
+    window.show()
+    window.session.set_scratch(None, "print(1)")
+    window.refresh_views()
+    window.toggle_dock(window.scratch_dock)
+    qt_app.processEvents()
+    try:
+        pane = window.scratch
+        cell = pane.cells[0]
+        window.session.editor.selection = window.session.document.syntax.tree.body[0]
+        data = BlockMime(Transfer.capture(window.session))
+        point = QPoint(30, 30)
+        args = (
+            Qt.DropAction.MoveAction,
+            data,
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+        )
+        enter = QDragEnterEvent(point, *args)
+        pane.dragEnterEvent(enter)
+        assert enter.isAccepted()
+        move = QDragMoveEvent(point, *args)
+        pane.dragMoveEvent(move)
+        assert move.isAccepted()
+
+        slot = next(
+            s for s in cell.source.parameter_slots if s.parameter.name == "value"
+        )
+        cell.source.show_parameter(slot)
+        field = cell.source.parameter_editor.line_edit
+        field.setText("1 +")
+        late = QDropEvent(QPointF(point), *args)
+        pane.dropEvent(late)
+        qt_app.processEvents()
+        assert not late.isAccepted()
+        assert field.isVisible() and field.text() == "1 +"
+        assert window.document_page.text == "print(2)\n"
+        assert window.session.document.state.scratch == ("print(1)",)
+
+        invalid = QDragEnterEvent(point, *args)
+        pane.dragEnterEvent(invalid)
+        assert not invalid.isAccepted()
+        assert field.isVisible() and field.text() == "1 +"
+
+        field.setText("300")
+        stale = QDragEnterEvent(point, *args)
+        pane.dragEnterEvent(stale)
+        assert not stale.isAccepted()
+        assert window.session.document.state.scratch[0].strip() == "print(300)"
+        assert window.document_page.text == "print(2)\n"
+
+        window.session.editor.selection = window.session.document.syntax.tree.body[0]
+        fresh_data = BlockMime(Transfer.capture(window.session))
+        fresh_args = (
+            Qt.DropAction.MoveAction,
+            fresh_data,
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+        )
+        fresh_enter = QDragEnterEvent(point, *fresh_args)
+        pane.dragEnterEvent(fresh_enter)
+        assert fresh_enter.isAccepted()
+        fresh_move = QDragMoveEvent(point, *fresh_args)
+        pane.dragMoveEvent(fresh_move)
+        assert fresh_move.isAccepted()
+        fresh_drop = QDropEvent(QPointF(point), *fresh_args)
+        pane.dropEvent(fresh_drop)
+        qt_app.processEvents()
+        assert fresh_drop.isAccepted()
+        assert not window.document_page.text
+        assert [text.strip() for text in window.session.document.state.scratch] == [
+            "print(2)",
+            "print(300)",
+        ]
+    finally:
+        window.close()
+        window.deleteLater()
+
+
 @pytest.mark.parametrize("count", [0, 150])
 def test_insert_rows_preserve_pointer_anchor_at_both_halves_and_document_edges(
     qt_app, count

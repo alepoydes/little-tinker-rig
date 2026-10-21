@@ -352,24 +352,25 @@ class ScratchPane(QScrollArea):
 
     def dragEnterEvent(self, event):
         data = event.mimeData()
-        if (
-            isinstance(data, BlockMime)
-            and data.transfer.owner is self.session
-            or data.hasFormat("application/x-little-tinker-rig-snippet")
-        ):
-            if isinstance(data, BlockMime):
-                try:
-                    data.transfer.validate()
-                except ValueError:
-                    event.ignore()
-                    return
-            if self.drop_padding is None:
-                self.drop_padding = self.column.contentsMargins()
-                margins = self.column.contentsMargins()
-                margins.setBottom(self.viewport().height() + 40)
-                self.column.setContentsMargins(margins)
-                self.column.activate()
-            event.acceptProposedAction()
+        if isinstance(data, BlockMime):
+            if data.transfer.owner is not self.session or not self.finish_parameters():
+                event.ignore()
+                return
+            try:
+                data.transfer.validate()
+            except ValueError:
+                event.ignore()
+                return
+        elif not data.hasFormat("application/x-little-tinker-rig-snippet"):
+            event.ignore()
+            return
+        if self.drop_padding is None:
+            self.drop_padding = self.column.contentsMargins()
+            margins = self.column.contentsMargins()
+            margins.setBottom(self.viewport().height() + 40)
+            self.column.setContentsMargins(margins)
+            self.column.activate()
+        event.acceptProposedAction()
 
     def dragMoveEvent(self, event):
         point = self.content.mapFrom(self.viewport(), event.position().toPoint())
@@ -431,8 +432,15 @@ class ScratchPane(QScrollArea):
     def dropEvent(self, event):
         position = len(self.cells) if self.drop_position is None else self.drop_position
         self.dragLeaveEvent(event)
+        data = event.mimeData()
+        if (
+            isinstance(data, BlockMime)
+            and data.transfer.owner is self.session
+            and not self.finish_parameters()
+        ):
+            event.ignore()
+            return
         try:
-            data = event.mimeData()
             if isinstance(data, BlockMime):
                 if data.transfer.owner is not self.session:
                     raise ValueError("Choose a fragment from this document")
