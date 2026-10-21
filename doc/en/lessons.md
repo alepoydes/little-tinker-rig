@@ -168,7 +168,9 @@ verification on a real set.
   Once the selection grows larger than the window its edges can extend outside.
   Zooming out preserves the resulting center, and manual panning remains unrestricted.
 - Previous parts are muted, current parts keep their colors, future parts are
-  hidden unless their outlines are enabled.
+  hidden unless their outlines are enabled. Outlines, section views, device location
+  and **Recommended view** require the 3D display. Step notes, the parts list and
+  step navigation remain usable without it.
 - Click a part to identify it. The step's parts list includes quantity, color
   swatches and authored lengths; tooltips retain LDraw part names and numbers.
   Selecting a row highlights all copies added in that step, in their actual

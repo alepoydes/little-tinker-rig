@@ -382,7 +382,7 @@ class AssemblyPage(QWidget):
             self.update_error_text()
             self.error.hide()
             self.placeholder_text.setText(self.error.text())
-        self.reset_button.setVisible(self.view is not None)
+        self.reset_button.setVisible(self.view_available)
         self.set_step(min(self.step, scene.step_count - 1))
         if not self.state.get("camera"):
             self.reset_camera()
@@ -390,11 +390,18 @@ class AssemblyPage(QWidget):
     def show_error(self, _error):
         self.error_kind = "display"
         self.update_error_text()
+        self.future.hide()
+        self.group_controls.hide()
+        self.devices.hide()
         self.error.setVisible(self.view_container is not None)
         if not self.view_container:
             self.placeholder_text.setText(self.error.text())
             self.placeholder.show()
-        self.reset_button.setVisible(self.view is not None)
+        self.reset_button.hide()
+
+    @property
+    def view_available(self):
+        return self.view is not None and self.error_kind != "display"
 
     def update_error_text(self):
         if self.error_kind == "load":
@@ -437,7 +444,7 @@ class AssemblyPage(QWidget):
         )
         self.parts_caption.setVisible(self.scene is not None)
         self.parts.setVisible(self.scene is not None)
-        self.future.setVisible(self.step < count - 1)
+        self.future.setVisible(self.view_available and self.step < count - 1)
         self.slider.blockSignals(True)
         self.slider.setValue(self.step)
         self.slider.blockSignals(False)
@@ -490,7 +497,7 @@ class AssemblyPage(QWidget):
                     device["instance"],
                 )
         self.devices.blockSignals(False)
-        self.devices.setVisible(self.devices.count() > 1)
+        self.devices.setVisible(self.view_available and self.devices.count() > 1)
         selected = self.groups.currentData()
         self.groups.blockSignals(True)
         self.groups.clear()
@@ -505,7 +512,7 @@ class AssemblyPage(QWidget):
             self.groups.addItem(group, group)
         self.groups.setCurrentIndex(max(0, self.groups.findData(selected)))
         self.groups.blockSignals(False)
-        self.group_controls.setVisible(self.groups.count() > 1)
+        self.group_controls.setVisible(self.view_available and self.groups.count() > 1)
         if self.view and self.groups.currentData() != selected:
             self.view.group = None
 
@@ -633,7 +640,9 @@ class AssemblyPage(QWidget):
 
     def show_future(self, enabled):
         self.future.setVisible(
-            self.next_step.isEnabled() and self.groups.currentData() is None
+            self.view_available
+            and self.next_step.isEnabled()
+            and self.groups.currentData() is None
         )
         if self.view:
             self.view.future = enabled and self.groups.currentData() is None
