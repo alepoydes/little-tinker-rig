@@ -7,6 +7,7 @@ from zipfile import BadZipFile, ZipFile
 
 from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtWidgets import (
+    QApplication,
     QComboBox,
     QFrame,
     QGridLayout,
@@ -25,6 +26,8 @@ from little_tinker_rig.examples import examples_directory
 from little_tinker_rig.i18n import language, tr
 
 from .theme import colors, svg_pixmap
+
+TWO_COLUMN_PROJECT_WIDTH = 960
 
 
 class HomeCard(QFrame):
@@ -163,7 +166,7 @@ class HomePage(QScrollArea):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        columns = 1 if self.viewport().width() < 1100 else 2
+        columns = 1 if self.viewport().width() < TWO_COLUMN_PROJECT_WIDTH else 2
         if self._project_columns != columns:
             self.refresh_projects()
 
@@ -186,6 +189,19 @@ class HomePage(QScrollArea):
                 widget.hide()
                 widget.setParent(None)
                 widget.deleteLater()
+
+    def _update_tab_order(self):
+        actions = [self.new_button, self.open_button]
+        for index in range(self.recent_layout.count()):
+            card = self.recent_layout.itemAt(index).widget()
+            actions.append(card.findChild(QPushButton, "homeCardAction"))
+        actions.append(self.kit)
+        for index in range(self.project_layout.count()):
+            card = self.project_layout.itemAt(index).widget()
+            actions.append(card.findChild(QPushButton, "homeCardAction"))
+        actions.extend((self.all_lessons, self.all_examples))
+        for first, second in zip(actions, actions[1:], strict=False):
+            QWidget.setTabOrder(first, second)
 
     def _card(
         self, title, description, action, callback, *, icon=None, detail=None, tip=None
@@ -418,8 +434,18 @@ class HomePage(QScrollArea):
         self.apply_theme()
 
     def refresh_projects(self):
+        focused = QApplication.focusWidget()
+        focused_path = None
+        if focused:
+            for index in range(self.project_layout.count()):
+                card = self.project_layout.itemAt(index).widget()
+                if focused is card or card.isAncestorOf(focused):
+                    focused_path = card.property("homeProjectPath")
+                    break
         self._clear(self.project_layout)
-        columns = self._project_columns = 1 if self.viewport().width() < 1100 else 2
+        columns = self._project_columns = (
+            1 if self.viewport().width() < TWO_COLUMN_PROJECT_WIDTH else 2
+        )
         selection = self.kit.currentData()
         projects = [
             (
@@ -452,6 +478,7 @@ class HomePage(QScrollArea):
             for item in projects
             if selection in (None, "all", item[0]) or item[0] == "none"
         ]
+        restore_focus = None
         for index, (_, title, description, detail, icon, path) in enumerate(visible):
             attempt = StudentProject.latest(path)
             card = self._card(
@@ -462,11 +489,17 @@ class HomePage(QScrollArea):
                 icon=icon,
                 detail=detail,
             )
+            card.setProperty("homeProjectPath", str(path))
             self.project_layout.addWidget(card, index // columns, index % columns)
+            if str(path) == focused_path:
+                restore_focus = card.findChild(QPushButton, "homeCardAction")
         rows = (len(visible) + columns - 1) // columns
         self.project_host.setMinimumHeight(rows * 120 + max(0, rows - 1) * 12)
         self.project_layout.setColumnStretch(0, 1)
         self.project_layout.setColumnStretch(1, 1 if columns == 2 else 0)
+        self._update_tab_order()
+        if restore_focus:
+            restore_focus.setFocus(Qt.FocusReason.OtherFocusReason)
 
     def apply_theme(self):
         c = colors()

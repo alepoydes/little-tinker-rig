@@ -420,6 +420,65 @@ def test_home_filter_and_russian_caption(tmp_path, qt_app):
         close(window)
 
 
+def test_home_projects_fit_medium_width_and_tab_order_follows_page(tmp_path, qt_app):
+    window = Studio()
+    window.resize(1100, 700)
+    window.show()
+    try:
+        home = window.home_page
+        qt_app.processEvents()
+        assert home.project_layout.getItemPosition(1)[:2] == (0, 1)
+        for index in range(home.project_layout.count()):
+            button = (
+                home.project_layout.itemAt(index)
+                .widget()
+                .findChild(QPushButton, "homeCardAction")
+            )
+            assert (
+                home.viewport()
+                .rect()
+                .contains(button.mapTo(home.viewport(), button.rect().center()))
+            )
+
+        recent = tmp_path / "continued.py"
+        recent.write_text("print(1)\n", encoding="utf-8")
+        window.settings.setValue("recentFiles", [str(recent)])
+        home.refresh()
+        home.kit.setCurrentIndex(home.kit.findData("spike"))
+        qt_app.processEvents()
+        project_buttons = [
+            home.project_layout.itemAt(index)
+            .widget()
+            .findChild(QPushButton, "homeCardAction")
+            for index in range(home.project_layout.count())
+        ]
+        actions = [
+            home.new_button,
+            home.open_button,
+            home.recent_layout.itemAt(0)
+            .widget()
+            .findChild(QPushButton, "homeCardAction"),
+            home.kit,
+            *project_buttons,
+            home.all_lessons,
+            home.all_examples,
+        ]
+        actions[0].setFocus()
+        for action in actions:
+            assert qt_app.focusWidget() is action
+            QTest.keyClick(action, Qt.Key.Key_Tab)
+            qt_app.processEvents()
+        project_buttons[1].setFocus()
+        window.resize(800, 620)
+        qt_app.processEvents()
+        assert home.project_layout.getItemPosition(1)[:2] == (1, 0)
+        assert qt_app.focusWidget() is home.project_layout.itemAt(1).widget().findChild(
+            QPushButton, "homeCardAction"
+        )
+    finally:
+        close(window)
+
+
 def test_example_attempt_is_one_recent_item(tmp_path, qt_app):
     window = Studio()
     try:

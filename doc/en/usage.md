@@ -27,6 +27,8 @@ its button is also available to keyboard users. Run and
 Upload need no filename; explicit Save asks for one. Cancelling Save leaves the
 document open. Saving while closing uses the same rule. Example attempts autosave
 separately, as described below.
+Tab moves through Home's quick actions, recent work, equipment filter, project
+buttons and catalog buttons in their displayed order.
 Use the two document icons or **View → Blocks / Python** to change the editor mode.
 Global workspaces appear as icons in the narrow left sidebar. Hover over an icon
 to see its full name. The selected mode has a shaded background and a left accent.
