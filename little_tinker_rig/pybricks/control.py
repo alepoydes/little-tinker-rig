@@ -3,6 +3,8 @@
 import math
 from dataclasses import dataclass
 
+from little_tinker_rig.i18n import tr
+
 
 @dataclass(frozen=True)
 class ControlState:
@@ -57,22 +59,31 @@ class Gamepad:
     """SDL's documented controller API gives stable Xbox axes and button names."""
 
     def __init__(self, index: int = 0):
-        import pygame
-        from pygame._sdl2 import controller
+        try:
+            import pygame
+            from pygame._sdl2 import controller
+        except ImportError as error:
+            raise RuntimeError(
+                tr(
+                    "Physical controller support is unavailable; check the gamepad extra installation."
+                )
+            ) from error
 
         self.pygame = pygame
         pygame.display.init()
         controller.init()
         if index >= controller.get_count() or not controller.is_controller(index):
             raise ValueError(
-                "No supported controller found; connect an Xbox-compatible SDL controller"
+                tr(
+                    "No supported controller found; connect an Xbox-compatible SDL controller"
+                )
             )
         self.device = controller.Controller(index)
 
     def read(self) -> ControlState:
         self.pygame.event.pump()
         if not self.device.attached():
-            raise ValueError("Physical controller disconnected")
+            raise ValueError(tr("Physical controller disconnected"))
         axes = [self.device.get_axis(index) / 32767 for index in range(4)]
         axes = [0 if abs(value) < 0.08 else max(-1, min(1, value)) for value in axes]
         buttons = sum(

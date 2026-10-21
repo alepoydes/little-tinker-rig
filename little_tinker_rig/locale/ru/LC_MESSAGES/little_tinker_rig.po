@@ -3791,6 +3791,10 @@ msgstr "Страницы не найдены. Очистите поиск, чт�
 msgid "No recent files"
 msgstr "Нет недавних файлов"
 
+#: little_tinker_rig/pybricks/control.py
+msgid "No supported controller found; connect an Xbox-compatible SDL controller"
+msgstr "Совместимый контроллер не найден; подключите Xbox-совместимый SDL-контроллер"
+
 #: little_tinker_rig/pybricks/usb_process.py:175
 msgid ""
 "No response from USB hub. Check that it runs compatible Pybricks beta firmware and "
@@ -4014,6 +4018,14 @@ msgstr "Физический Xbox / SDL-контроллер"
 #: little_tinker_rig/qt/controls.py:297
 msgid "Physical controller"
 msgstr "Физический контроллер"
+
+#: little_tinker_rig/pybricks/control.py
+msgid "Physical controller disconnected"
+msgstr "Физический контроллер отключён"
+
+#: little_tinker_rig/pybricks/control.py
+msgid "Physical controller support is unavailable; check the gamepad extra installation."
+msgstr "Поддержка физического контроллера недоступна; проверьте установку дополнения gamepad."
 
 #: little_tinker_rig/snippets/pybricks/lessons.py:104
 msgid ""

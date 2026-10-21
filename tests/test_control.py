@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from little_tinker_rig.pybricks.control import ControlState
+from little_tinker_rig.pybricks.control import ControlState, Gamepad
 
 
 @pytest.mark.parametrize("value", [-1, -0.37, 0, 0.59, 1])
@@ -20,6 +20,63 @@ def test_controller_rejects_nonfinite_and_out_of_range():
     for value in (float("nan"), float("inf"), 1.01):
         with pytest.raises(ValueError):
             ControlState(left_x=value)
+
+
+@pytest.mark.parametrize(
+    ("code", "unavailable", "missing", "disconnected"),
+    [
+        (
+            "en",
+            "Physical controller support is unavailable; check the gamepad extra installation.",
+            "No supported controller found; connect an Xbox-compatible SDL controller",
+            "Physical controller disconnected",
+        ),
+        (
+            "ru",
+            "Поддержка физического контроллера недоступна; проверьте установку дополнения gamepad.",
+            "Совместимый контроллер не найден; подключите Xbox-совместимый SDL-контроллер",
+            "Физический контроллер отключён",
+        ),
+    ],
+)
+def test_gamepad_errors_follow_interface_language(
+    monkeypatch, code, unavailable, missing, disconnected
+):
+    from little_tinker_rig.i18n import set_language
+
+    set_language(code)
+    monkeypatch.setitem(sys.modules, "pygame", None)
+    with pytest.raises(RuntimeError) as error:
+        Gamepad()
+    assert str(error.value) == unavailable
+
+    pygame = types.ModuleType("pygame")
+    pygame.__path__ = []
+    pygame.display = types.SimpleNamespace(init=lambda: None)
+    pygame.event = types.SimpleNamespace(pump=lambda: None)
+    sdl = types.ModuleType("pygame._sdl2")
+    sdl.__path__ = []
+    controller = types.ModuleType("pygame._sdl2.controller")
+    controller.init = lambda: None
+    controller.get_count = lambda: 0
+    controller.is_controller = lambda index: True
+    controller.Controller = lambda index: types.SimpleNamespace(
+        attached=lambda: False, quit=lambda: None
+    )
+    monkeypatch.setitem(sys.modules, "pygame", pygame)
+    monkeypatch.setitem(sys.modules, "pygame._sdl2", sdl)
+    monkeypatch.setitem(sys.modules, "pygame._sdl2.controller", controller)
+
+    with pytest.raises(ValueError) as error:
+        Gamepad()
+    assert str(error.value) == missing
+
+    controller.get_count = lambda: 1
+    gamepad = Gamepad()
+    with pytest.raises(ValueError) as error:
+        gamepad.read()
+    assert str(error.value) == disconnected
+    gamepad.close()
 
 
 def test_hub_parser_handles_partial_frames_and_neutralizes_stale_input(monkeypatch):
