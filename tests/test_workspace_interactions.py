@@ -302,6 +302,43 @@ def test_compact_control_keeps_sticks_visible_and_opens_motor_assignments(window
     assert not window.controls.assignments.isVisible()
 
 
+def test_control_names_and_trigger_hints_follow_language(windows):
+    from PySide6.QtGui import QAccessible
+
+    window = windows()
+    controller = window.controls.controller
+    controls = (*controller.triggers, controller.left, controller.right)
+    assert [item.accessibleName() for item in controls] == [
+        "Left trigger",
+        "Right trigger",
+        "Left stick · WASD",
+        "Right stick · arrows",
+    ]
+    assert [item.toolTip() for item in controller.triggers] == [
+        "LT · release to return to zero",
+        "RT · release to return to zero",
+    ]
+    window.change_language("ru")
+    assert [item.accessibleName() for item in controls] == [
+        "Левый триггер",
+        "Правый триггер",
+        "Левый стик · WASD",
+        "Правый стик · стрелки",
+    ]
+    assert [item.toolTip() for item in controller.triggers] == [
+        "LT · отпустите для возврата к нулю",
+        "RT · отпустите для возврата к нулю",
+    ]
+    assert all(
+        QAccessible.queryAccessibleInterface(item).text(QAccessible.Text.Name)
+        == item.accessibleName()
+        for item in controls
+    )
+    window.change_language("en")
+    assert controller.triggers[0].accessibleName() == "Left trigger"
+    assert controller.triggers[0].toolTip() == "LT · release to return to zero"
+
+
 def test_device_ports_use_columns_in_bottom_dock_and_rows_in_side_dock(windows):
     from little_tinker_rig.pybricks.devices import HubInfo
 

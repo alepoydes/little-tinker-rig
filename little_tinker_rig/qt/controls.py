@@ -151,12 +151,18 @@ class Controller(QWidget):
         layout.setVerticalSpacing(4)
         self.left = Joystick((Qt.Key.Key_A, Qt.Key.Key_D, Qt.Key.Key_W, Qt.Key.Key_S))
         self.right = Joystick()
+        self.left.setAccessibleName(N_("Left stick · WASD"))
+        self.right.setAccessibleName(N_("Right stick · arrows"))
         self.triggers = []
         self.trigger_panels = []
         self.buttons = {}
-        for column, label in ((0, "LT"), (2, "RT")):
+        for column, label, name in (
+            (0, "LT", N_("Left trigger")),
+            (2, "RT", N_("Right trigger")),
+        ):
             slider = Trigger()
             slider.setToolTip(label + N_(" · release to return to zero"))
+            slider.setAccessibleName(name)
             self.triggers.append(slider)
             panel = QWidget()
             self.trigger_panels.append(panel)
@@ -229,6 +235,11 @@ class Controller(QWidget):
             button = QPushButton(label)
             self.buttons[number] = button
             layout.addWidget(button, 5, column, alignment=Qt.AlignmentFlag.AlignCenter)
+
+    def retranslate(self):
+        suffix = tr(" · release to return to zero")
+        for label, slider in zip(("LT", "RT"), self.triggers, strict=True):
+            slider.setToolTip(label + suffix)
 
     def compact(self, enabled):
         essentials = (self.left, self.right, *self.trigger_panels, *self.stick_labels)

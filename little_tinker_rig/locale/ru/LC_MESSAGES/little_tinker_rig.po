@@ -3205,6 +3205,10 @@ msgstr "Левый Y"
 msgid "Left joystick"
 msgstr "Левый джойстик"
 
+#: little_tinker_rig/qt/controls.py:160
+msgid "Left trigger"
+msgstr "Левый триггер"
+
 #: little_tinker_rig/qt/controls.py:171
 msgid "Left stick · WASD"
 msgstr "Левый стик · WASD"
@@ -4872,6 +4876,10 @@ msgstr "Правый Y"
 #: little_tinker_rig/snippets/pybricks/xbox.py:52
 msgid "Right joystick"
 msgstr "Правый джойстик"
+
+#: little_tinker_rig/qt/controls.py:161
+msgid "Right trigger"
+msgstr "Правый триггер"
 
 #: little_tinker_rig/qt/controls.py:172
 msgid "Right stick · arrows"

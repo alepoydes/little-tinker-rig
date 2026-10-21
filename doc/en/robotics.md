@@ -107,8 +107,10 @@ Unassigned motors remain stopped. Assignments remain in the current window.
 
 Release the mouse or keyboard control to center a stick or reset a trigger.
 This includes clicking the trigger's track outside its handle.
-Moving keyboard focus away also returns the input to neutral. Trigger sliders
-ignore the mouse wheel because it has no release action. With a stick focused,
+Moving keyboard focus away also returns the input to neutral. Sticks and triggers
+have names for screen readers; LT/RT tooltips explain their release behavior in
+the selected interface language. Trigger sliders ignore the mouse wheel because
+it has no release action. With a stick focused,
 WASD controls the left stick and arrow keys the right. A neutral rotation input
 stops the motor; a neutral servo input returns it to its center. Disabling commands
 brakes both modes. Changing assignments, leaving Control, losing window focus or

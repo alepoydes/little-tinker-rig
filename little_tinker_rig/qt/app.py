@@ -1315,6 +1315,7 @@ class Studio(QMainWindow):
     def retranslate(self):
         translate_standard_dialogs()
         localize(self)
+        self.controls.controller.retranslate()
         for dock in (self.console_dock, self.scratch_dock, self.device_dock):
             self._translate_dock_buttons(dock)
         home_name = tr("Home")
