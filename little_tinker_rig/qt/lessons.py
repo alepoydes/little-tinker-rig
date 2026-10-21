@@ -1092,6 +1092,7 @@ class Lessons(QObject):
         self.window.set_mode(5)
         if self.window.pages.currentIndex() == 5:
             home = self.window.home_page
+            home.kit.setCurrentIndex(home.kit.findData("robots"))
             home.verticalScrollBar().setValue(home.projects_title.y() - 20)
 
     def follow_task_anchor(self, identity, url, browser):

@@ -408,6 +408,11 @@ def test_home_filter_and_russian_caption(tmp_path, qt_app):
             }
             assert "Первая программа на Python" in titles
             assert robot_title in titles
+        window.home_page.kit.setCurrentIndex(window.home_page.kit.findData("robots"))
+        assert window.home_page.project_layout.count() == 2
+        assert window.home_page.projects_intro.text() == (
+            "Выбери проект с роботом, чтобы пройти шаги сборки и попробовать программу."
+        )
         window.home_page.kit.setCurrentIndex(window.home_page.kit.findData("none"))
         another = Studio()
         try:
@@ -490,6 +495,7 @@ def test_empty_assembly_opens_visible_home_projects(tmp_path, qt_app):
             path.write_text("print(1)\n", encoding="utf-8")
             recent.append(str(path))
         window.settings.setValue("recentFiles", recent)
+        window.home_page.kit.setCurrentIndex(window.home_page.kit.findData("none"))
         window.set_mode(4)
         assert window.lessons.assembly_host.pages.currentIndex() == 0
         QTest.mouseClick(
@@ -500,6 +506,17 @@ def test_empty_assembly_opens_visible_home_projects(tmp_path, qt_app):
 
         home = window.home_page
         assert window.pages.currentWidget() is home
+        assert home.kit.currentData() == window.settings.value("homeKit") == "robots"
+        assert home.projects_intro.text() == (
+            "Choose a robot project to follow its build steps and try its program."
+        )
+        assert home.project_layout.count() == 2
+        titles = [
+            label.text()
+            for index in range(home.project_layout.count())
+            for label in home.project_layout.itemAt(index).widget().findChildren(QLabel)
+        ]
+        assert "First Python program" not in titles
         assert (
             home.viewport()
             .rect()

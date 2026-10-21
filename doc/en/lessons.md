@@ -6,7 +6,8 @@ then run on a virtual hub and inspect Console; each task has a small diagram.
 **Home → First robot drive**
 starts the SPIKE Prime build and driving lesson. The project cards show equipment
 requirements and can be filtered; reopening one resumes the latest attempt.
-The equipment filter always keeps the robot-free first Python lesson available.
+The equipment-specific filters keep the robot-free first Python lesson available;
+**Robot projects** shows only lessons with a robot model.
 
 **File → Lessons → Guided lessons → First drive · SPIKE Prime 45678** opens
 your latest attempt at that lesson, or creates one if this is the first time.
@@ -165,7 +166,7 @@ a ZIP tool.
 ## Assembly
 
 With no model open, Assembly shows a **Build your robot** card. **Choose a project**
-opens the project cards on Home. Choose a
+opens Home with the **Robot projects** filter selected. Choose a
 robot project to see assembly steps; the first Python lesson has no robot model.
 You can also use **Open robot instructions…** to select your own `robot.json` file.
 

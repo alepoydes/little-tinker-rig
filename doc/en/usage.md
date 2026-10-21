@@ -20,8 +20,9 @@ lesson archives. When a lesson has several attempts, their numbers distinguish
 them. Recent files with the same name show distinguishing folders; hover over a
 card or its Continue button to see the full path. A saved lesson attempt keeps
 its archive path and checks for external changes when saved again. The equipment
-filter changes the displayed
-starter projects and remembers the choice. **All lessons…** and **All examples…**
+filter changes the displayed starter projects and remembers the choice. **Robot
+projects** shows only projects with assembly steps; **Assembly → Choose a project**
+selects it automatically. **All lessons…** and **All examples…**
 open the complete bundled catalogs. Click anywhere on a project card to open it;
 its button is also available to keyboard users. Run and
 Upload need no filename; explicit Save asks for one. Cancelling Save leaves the

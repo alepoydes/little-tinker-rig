@@ -264,11 +264,6 @@ class HomePage(QScrollArea):
         self.open_button.setText(tr("Open a file…"))
         self.recent_title.setText(tr("Continue working"))
         self.projects_title.setText(tr("Choose a project"))
-        self.projects_intro.setText(
-            tr(
-                "Start with Python, then try a robot. Open a card to create or resume your own copy."
-            )
-        )
         self.all_lessons.setText(tr("All lessons…"))
         self.all_examples.setText(tr("All examples…"))
         selected = self.kit.currentData() or self.window.settings.value(
@@ -278,6 +273,7 @@ class HomePage(QScrollArea):
         self.kit.clear()
         for key, label in (
             ("all", tr("All equipment")),
+            ("robots", tr("Robot projects")),
             ("none", tr("No robot needed")),
             ("spike", tr("SPIKE Prime 45678")),
             ("inventor", tr("Robot Inventor 51515")),
@@ -447,6 +443,13 @@ class HomePage(QScrollArea):
             1 if self.viewport().width() < TWO_COLUMN_PROJECT_WIDTH else 2
         )
         selection = self.kit.currentData()
+        self.projects_intro.setText(
+            tr("Choose a robot project to follow its build steps and try its program.")
+            if selection == "robots"
+            else tr(
+                "Start with Python, then try a robot. Open a card to create or resume your own copy."
+            )
+        )
         projects = [
             (
                 "none",
@@ -476,7 +479,9 @@ class HomePage(QScrollArea):
         visible = [
             item
             for item in projects
-            if selection in (None, "all", item[0]) or item[0] == "none"
+            if selection in (None, "all", item[0])
+            or (selection == "robots" and item[0] != "none")
+            or (item[0] == "none" and selection != "robots")
         ]
         restore_focus = None
         for index, (_, title, description, detail, icon, path) in enumerate(visible):

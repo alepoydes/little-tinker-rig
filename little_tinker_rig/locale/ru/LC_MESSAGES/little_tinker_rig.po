@@ -4943,6 +4943,10 @@ msgstr "Модель робота"
 msgid "Robot model loading was cancelled. Retry when ready."
 msgstr "Загрузка модели робота отменена. Повторите, когда будете готовы."
 
+#: little_tinker_rig/qt/home.py
+msgid "Robot projects"
+msgstr "Проекты с роботом"
+
 #: little_tinker_rig/snippets/pybricks/hub_display.py:15
 msgid "Rotate the display for the way the hub is mounted. Options: up."
 msgstr "Повернуть изображение с учётом установки хаба. Параметры: up."
@@ -6672,6 +6676,10 @@ msgstr "Продолжить работу"
 #: little_tinker_rig/qt/home.py
 msgid "Choose a project"
 msgstr "Выбрать проект"
+
+#: little_tinker_rig/qt/home.py
+msgid "Choose a robot project to follow its build steps and try its program."
+msgstr "Выбери проект с роботом, чтобы пройти шаги сборки и попробовать программу."
 
 #: little_tinker_rig/qt/assembly.py:762
 msgid "Choose a robot project to see its build steps, or open your own robot instructions."
