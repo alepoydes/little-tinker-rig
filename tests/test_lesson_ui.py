@@ -843,6 +843,11 @@ def test_compact_tasks_leave_block_editor_commands_and_code_visible(
         assert editor.code.viewport().height() >= 140
         assert editor.focus_preview.isVisible()
         assert not editor.preview_top.isVisible()
+        assert editor.metadata_bar.isVisible()
+        assert not editor.caption.isVisible()
+        assert editor.level.width() >= 100
+        assert editor.icon.width() >= 165
+        assert editor.color.width() >= 135
         source = editor.code.toPlainText()
         assert window.workspace.width() - overlay.width() >= 500
         save_edge = editor.save_button.mapTo(
@@ -872,6 +877,8 @@ def test_compact_tasks_leave_block_editor_commands_and_code_visible(
         assert editor.level.isVisible()
         assert not editor.focus_preview.isVisible()
         assert editor.preview_top.isVisible() and editor.code_stack.isVisible()
+        assert not editor.metadata_bar.isVisible()
+        assert editor.caption.isVisible()
         assert editor.code.toPlainText() == source
     finally:
         window.close()

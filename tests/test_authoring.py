@@ -654,8 +654,9 @@ def test_compact_definition_find_reveals_search_field(tmp_path, qt_app):
         window.deleteLater()
 
 
+@pytest.mark.parametrize("compact", [False, True])
 def test_metadata_controls_are_source_edits_with_undo_and_no_manifest_changes(
-    tmp_path, qt_app
+    tmp_path, qt_app, compact
 ):
     from little_tinker_rig.qt.authoring import BlockEditor
 
@@ -664,6 +665,8 @@ def test_metadata_controls_are_source_edits_with_undo_and_no_manifest_changes(
     page = BlockEditor(lambda: root, lambda *_: None)
     try:
         page.create(SOURCE)
+        if compact:
+            page.set_overlay_clearance(290)
         original = page.code.toPlainText()
         page.level.setCurrentIndex(page.level.findData("expert"))
         assert page.preview_snippet.level == "expert"

@@ -408,7 +408,7 @@ class BlockEditor(QWidget):
         self.preview_splitter.setSizes([160, 600])
         right = QWidget()
         layout = QVBoxLayout(right)
-        row = QHBoxLayout()
+        row = self.toolbar_row = QHBoxLayout()
         self.browser_button = QToolButton()
         self.browser_button.setIcon(svg_icon("search"))
         self.browser_button.setCheckable(True)
@@ -430,6 +430,17 @@ class BlockEditor(QWidget):
         row.addWidget(self.reopen_button)
         row.addWidget(self.save_button)
         layout.addLayout(row)
+        self.metadata_controls = (
+            self.level,
+            self.icon,
+            self.color,
+            self.catalog_button,
+        )
+        self.metadata_bar = QWidget()
+        self.metadata_layout = QHBoxLayout(self.metadata_bar)
+        self.metadata_layout.setContentsMargins(0, 0, 0, 0)
+        self.metadata_bar.hide()
+        layout.addWidget(self.metadata_bar)
         layout.addWidget(self.caption)
         layout.addWidget(self.preview_splitter, 1)
         layout.addWidget(self.hint)
@@ -446,6 +457,7 @@ class BlockEditor(QWidget):
         self._browser_user_choice = None
         self._overlay_clearance = 0
         self._tight_layout = False
+        self._metadata_compact = False
         self.refresh_browser_button()
         self.update_status()
         self.apply_theme()
@@ -1118,7 +1130,8 @@ class BlockEditor(QWidget):
         self._update_compact_layout()
 
     def _update_compact_layout(self):
-        compact = self.width() - self._overlay_clearance < 800
+        available_width = self.width() - self._overlay_clearance
+        compact = available_width < 800
         if compact != self._browser_compact:
             self._browser_compact = compact
             self.set_browser_visible(
@@ -1130,6 +1143,9 @@ class BlockEditor(QWidget):
                     else not compact
                 )
             )
+        self._set_metadata_compact(
+            bool(self._overlay_clearance and available_width < 600)
+        )
         orientation = (
             Qt.Orientation.Horizontal
             if self.height() < 430 and not self._overlay_clearance
@@ -1174,6 +1190,23 @@ class BlockEditor(QWidget):
         self._browser_compact = None
         self._update_compact_layout()
 
+    def _set_metadata_compact(self, compact):
+        if compact == self._metadata_compact:
+            return
+        self._metadata_compact = compact
+        if compact:
+            for widget in self.metadata_controls:
+                self.toolbar_row.removeWidget(widget)
+                self.metadata_layout.addWidget(widget)
+        else:
+            index = self.toolbar_row.indexOf(self.copy_button) + 1
+            for widget in self.metadata_controls:
+                self.metadata_layout.removeWidget(widget)
+                self.toolbar_row.insertWidget(index, widget)
+                index += 1
+        self.caption.setVisible(not compact)
+        self.metadata_bar.setVisible(compact and not self._browser_visible)
+
     def choose_browser_visible(self, visible):
         self._browser_user_choice = visible
         self.set_browser_visible(visible)
@@ -1184,6 +1217,7 @@ class BlockEditor(QWidget):
         show_metadata = not (self._browser_compact and visible)
         for widget in (self.level, self.icon, self.color, self.catalog_button):
             widget.setVisible(show_metadata)
+        self.metadata_bar.setVisible(self._metadata_compact and show_metadata)
         self.browser_button.blockSignals(True)
         self.browser_button.setChecked(visible)
         self.browser_button.blockSignals(False)

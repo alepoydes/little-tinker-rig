@@ -2,6 +2,10 @@
 
 When vertical space is limited, for example with Console open, the preview and
 source appear side by side. Taller workspaces place the preview above the source.
+With a lesson task panel open in a narrow window, level, icon, color and catalog
+properties move to a second toolbar row so their values remain readable. The
+block title remains in the workspace status line. If Console is also open, the
+eye/code button switches between the preview and a taller Python source view.
 
 Open **Block Editor** in the workspace rail, or press **Ctrl+Alt+3**. The library's
 context menu and each block's help section also offer **Open definition**.
