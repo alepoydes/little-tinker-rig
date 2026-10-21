@@ -381,7 +381,7 @@ class BlockEditor(QWidget):
         self.reset_tests = tool_button(N_("Reset test values"), "edit-redo")
         self.reset_tests.clicked.connect(self.reset_values)
         self.test_fields = {}
-        top = QWidget()
+        top = self.preview_top = QWidget()
         top_layout = QVBoxLayout(top)
         top_layout.setContentsMargins(0, 0, 0, 0)
         row = QHBoxLayout()
@@ -416,6 +416,11 @@ class BlockEditor(QWidget):
         self.browser_button.setProperty("translationSources", {})
         self.browser_button.toggled.connect(self.choose_browser_visible)
         row.addWidget(self.browser_button)
+        self.focus_preview = tool_button(N_("Preview view"), "preview")
+        self.focus_preview.setCheckable(True)
+        self.focus_preview.hide()
+        self.focus_preview.toggled.connect(self.show_focused_preview)
+        row.addWidget(self.focus_preview)
         row.addWidget(self.copy_button)
         row.addWidget(self.level)
         row.addWidget(self.icon)
@@ -440,6 +445,7 @@ class BlockEditor(QWidget):
         self._browser_visible = True
         self._browser_user_choice = None
         self._overlay_clearance = 0
+        self._tight_layout = False
         self.refresh_browser_button()
         self.update_status()
         self.apply_theme()
@@ -448,6 +454,7 @@ class BlockEditor(QWidget):
         self.new_button.setIcon(svg_icon("document-new", tint=colors()["accent_text"]))
         self.catalog_button.setIcon(svg_icon("catalog"))
         self.browser_button.setIcon(svg_icon("search"))
+        self.refresh_focus_preview()
         self.preview.apply_theme()
         self.card.itemDelegate().apply_theme()
         self.card.viewport().update()
@@ -1131,6 +1138,32 @@ class BlockEditor(QWidget):
         if self.preview_splitter.orientation() != orientation:
             self.preview_splitter.setOrientation(orientation)
             self.resize_preview(self.expand.isChecked())
+        tight = bool(self._overlay_clearance and self.height() < 430)
+        if tight != self._tight_layout:
+            self._tight_layout = tight
+            self.focus_preview.setVisible(tight)
+            self.focus_preview.blockSignals(True)
+            self.focus_preview.setChecked(False)
+            self.focus_preview.blockSignals(False)
+            self.preview_top.setVisible(not tight)
+            self.code_stack.show()
+            self.refresh_focus_preview()
+            if not tight:
+                self.resize_preview(self.expand.isChecked())
+
+    def show_focused_preview(self, visible):
+        if not self._tight_layout:
+            return
+        self.preview_top.setVisible(visible)
+        self.code_stack.setVisible(not visible)
+        self.refresh_focus_preview()
+
+    def refresh_focus_preview(self):
+        visible = self.focus_preview.isChecked()
+        self.focus_preview.setIcon(svg_icon("source" if visible else "preview"))
+        title = tr("Python source") if visible else tr("Preview view")
+        self.focus_preview.setToolTip(title)
+        self.focus_preview.setAccessibleName(title)
 
     def set_overlay_clearance(self, width):
         width = max(0, width)
@@ -1363,6 +1396,7 @@ class BlockEditor(QWidget):
     def retranslate(self):
         localize(self)
         self.refresh_browser_button()
+        self.refresh_focus_preview()
         self.icon.retranslate()
         self.color.retranslate()
         self.rebuild_tree()

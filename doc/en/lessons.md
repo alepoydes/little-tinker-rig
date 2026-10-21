@@ -56,8 +56,11 @@ catalog back.
 In Help, the page list temporarily hides and the instructions fit beside the
 open task panel; closing the panel restores the page list.
 In Block Editor, the task panel narrows as needed and the definition browser
-temporarily hides so the preview, source and commands remain visible beside it;
+temporarily hides so the editing controls remain visible beside it;
 closing the panel restores the browser's previous visibility.
+With Console open at minimum size, the eye/code button switches between the
+block preview and the Python source. Source is shown first; closing the task
+panel restores the split preview and source.
 Escape, a click outside it, or following a destination link hides it temporarily.
 Switching to Controls, Block Editor or Assembly also hides it on a narrow window
 so their tools have room. The progress control reopens it in any of those views.

@@ -840,17 +840,39 @@ def test_compact_tasks_leave_block_editor_commands_and_code_visible(
         assert not editor.browser_pane.isVisible()
         assert editor.preview_splitter.orientation() == Qt.Orientation.Vertical
         assert editor.code.viewport().width() >= minimum_code
-        assert editor.code.viewport().height() >= 70
+        assert editor.code.viewport().height() >= 140
+        assert editor.focus_preview.isVisible()
+        assert not editor.preview_top.isVisible()
+        source = editor.code.toPlainText()
         assert window.workspace.width() - overlay.width() >= 500
         save_edge = editor.save_button.mapTo(
             window.workspace, editor.save_button.rect().topRight()
         ).x()
         assert save_edge < overlay.geometry().left()
 
+        editor.focus_preview.click()
+        qt_app.processEvents()
+        assert editor.preview_top.isVisible()
+        assert not editor.code_stack.isVisible()
+        assert editor.preview_stack.height() >= 90
+        assert editor.focus_preview.toolTip() == "Исходный код Python"
+
+        window.console_dock.hide()
+        qt_app.processEvents()
+        assert not editor.focus_preview.isVisible()
+        assert editor.preview_top.isVisible() and editor.code_stack.isVisible()
+        window.console_dock.show()
+        qt_app.processEvents()
+        assert editor.focus_preview.isVisible()
+        assert not editor.preview_top.isVisible() and editor.code_stack.isVisible()
+
         window.lessons.set_panel_expanded(False)
         qt_app.processEvents()
         assert editor.browser_pane.isVisible() == browser_before
         assert editor.level.isVisible()
+        assert not editor.focus_preview.isVisible()
+        assert editor.preview_top.isVisible() and editor.code_stack.isVisible()
+        assert editor.code.toPlainText() == source
     finally:
         window.close()
         window.deleteLater()
