@@ -469,7 +469,8 @@ class HelpPage(QWidget):
         self.browser.setStyleSheet(
             f"QTextBrowser {{ border: 1px solid {c['border']}; "
             f"background: {c['panel']}; color: {c['text']}; "
-            f"selection-background-color: {c['selected']}; }}"
+            f"selection-background-color: {c['selected']}; "
+            f"selection-color: {c['text']}; }}"
         )
         self.browser.document().setDefaultStyleSheet(f"a {{ color: {c['link']}; }}")
         scroll = self.browser.verticalScrollBar().value()
@@ -882,10 +883,13 @@ class HelpPage(QWidget):
             selection.format.setBackground(
                 QColor("#facc15" if index == self.find_index else "#fef08a")
             )
+            selection.format.setForeground(QColor("#172033"))
             selections.append(selection)
         self.browser.setExtraSelections(selections)
         if self.find_index >= 0:
-            self.browser.setTextCursor(self.find_matches[self.find_index])
+            cursor = QTextCursor(self.find_matches[self.find_index])
+            cursor.setPosition(cursor.selectionStart())
+            self.browser.setTextCursor(cursor)
             self.browser.ensureCursorVisible()
 
     def filter(self, query):
