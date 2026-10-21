@@ -264,6 +264,7 @@ class Lessons(QObject):
         self.assembly_host.changed.connect(self.changed)
         self.assembly_host.selection_changed.connect(self.update_card)
         self.assembly_host.failed.connect(window.error)
+        self.assembly_host.projects_requested.connect(self.show_projects)
         window.pages.addWidget(self.assembly_host)
         window.modes.add_mode("assembly", N_("Assembly"))
         self.menu = window.file_menu.addMenu(N_("Lessons"))
@@ -1078,6 +1079,12 @@ class Lessons(QObject):
         if self.window.width() < LESSON_DOCK_MIN_WIDTH:
             self._transient_hidden = True
             self.update_panel_visibility()
+
+    def show_projects(self):
+        self.window.set_mode(5)
+        if self.window.pages.currentIndex() == 5:
+            home = self.window.home_page
+            home.verticalScrollBar().setValue(home.projects_title.y() - 20)
 
     def follow_task_anchor(self, identity, url, browser):
         if self.current is None:

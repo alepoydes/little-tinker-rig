@@ -164,6 +164,9 @@ a ZIP tool.
 
 ## Assembly
 
+With no model open, **Choose a project** opens the project cards on Home. You can
+also use **Open robot instructions…** to select your own `robot.json` file.
+
 **File → Open robot instructions…** opens a `robot.json` description independently
 of a lesson. Assembly remains available from the left sidebar. The model selector
 appears only when both independent instructions and the lesson robot are open.

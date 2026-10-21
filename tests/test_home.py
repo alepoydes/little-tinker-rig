@@ -479,6 +479,49 @@ def test_home_projects_fit_medium_width_and_tab_order_follows_page(tmp_path, qt_
         close(window)
 
 
+def test_empty_assembly_opens_visible_home_projects(tmp_path, qt_app):
+    window = Studio()
+    window.resize(930, 620)
+    window.show()
+    try:
+        recent = []
+        for index in range(3):
+            path = tmp_path / f"recent_{index}.py"
+            path.write_text("print(1)\n", encoding="utf-8")
+            recent.append(str(path))
+        window.settings.setValue("recentFiles", recent)
+        window.set_mode(4)
+        assert window.lessons.assembly_host.pages.currentIndex() == 0
+        QTest.mouseClick(
+            window.lessons.assembly_host.projects_button,
+            Qt.MouseButton.LeftButton,
+        )
+        qt_app.processEvents()
+
+        home = window.home_page
+        assert window.pages.currentWidget() is home
+        assert (
+            home.viewport()
+            .rect()
+            .contains(
+                home.projects_title.mapTo(
+                    home.viewport(), home.projects_title.rect().center()
+                )
+            )
+        )
+        first_card = home.project_layout.itemAt(0).widget()
+        first_action = first_card.findChild(QPushButton, "homeCardAction")
+        assert (
+            home.viewport()
+            .rect()
+            .contains(first_action.mapTo(home.viewport(), first_action.rect().center()))
+        )
+        assert window.documents.count() == 1
+        assert window.document_page.lesson_project is None
+    finally:
+        close(window)
+
+
 def test_example_attempt_is_one_recent_item(tmp_path, qt_app):
     window = Studio()
     try:

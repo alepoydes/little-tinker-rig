@@ -316,12 +316,13 @@ def studio_stylesheet(name):
                        background: {c['raised']}; border: 1px solid {c['border']};
                        border-radius: 6px; }}
         QPushButton:hover {{ background: {c['hover']}; }}
-        QDialog QPushButton#dialogPrimary {{
+        QDialog QPushButton#dialogPrimary, QPushButton#assemblyProjects {{
             background: {c['accent']}; color: {c['accent_text']};
             border-color: {c['accent']}; font-weight: 700;
             padding: 7px 13px; }}
-        QDialog QPushButton#dialogPrimary:hover {{ background: {c['focus']}; }}
-        QDialog QPushButton#dialogPrimary:disabled {{
+        QDialog QPushButton#dialogPrimary:hover, QPushButton#assemblyProjects:hover {{
+            background: {c['focus']}; }}
+        QDialog QPushButton#dialogPrimary:disabled, QPushButton#assemblyProjects:disabled {{
             background: {c['raised']}; color: {c['muted']};
             border-color: {c['border']}; }}
         QDialog QPushButton#dialogHelp {{
