@@ -885,6 +885,71 @@ def test_compact_tasks_leave_block_editor_commands_and_code_visible(
         window.deleteLater()
 
 
+def test_compact_tasks_leave_manual_controls_accessible(tmp_path, qt_app):
+    from pathlib import Path
+
+    from PySide6.QtCore import QPoint, Qt
+    from PySide6.QtTest import QTest
+
+    from little_tinker_rig.qt.app import Studio
+
+    window = Studio(tmp_path / "plain.py")
+    window.confirm_close = lambda *_: True
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.show()
+    try:
+        window.change_language("ru")
+        window.lessons.open(Path("lessons/first_python"))
+        window.console_dock.show()
+        window.set_mode(1)
+        window.lessons.set_panel_expanded(True)
+        qt_app.processEvents()
+        QTest.qWait(50)
+
+        controls = window.controls
+        overlay = window.lessons.overlay
+        scroll = controls.parentWidget().parentWidget()
+        assert overlay.isVisible() and controls.compact_actions.isVisible()
+        assert scroll.horizontalScrollBar().maximum() == 0
+        for widget in (
+            controls.controller.left,
+            controls.controller.right,
+            *controls.controller.triggers,
+        ):
+            assert (
+                widget.mapTo(window.workspace, widget.rect().topRight()).x()
+                < overlay.geometry().left()
+            )
+            assert qt_app.widgetAt(widget.mapToGlobal(widget.rect().center())) is widget
+        for label in controls.controller.stick_labels:
+            assert label.visibleRegion().boundingRect().height() == label.height()
+
+        right = controls.controller.right
+        point = QPoint(75, 50)
+        QTest.mousePress(right, Qt.MouseButton.LeftButton, pos=point)
+        assert right.x_value > 0.5
+        QTest.mouseRelease(right, Qt.MouseButton.LeftButton, pos=point)
+        assert right.x_value == 0
+
+        controls.target.setCurrentIndex(1)
+        qt_app.processEvents()
+        QTest.qWait(30)
+        assert scroll.horizontalScrollBar().maximum() == 0
+        scroll.ensureWidgetVisible(right)
+        qt_app.processEvents()
+        assert qt_app.widgetAt(right.mapToGlobal(right.rect().center())) is right
+
+        window.lessons.set_panel_expanded(False)
+        qt_app.processEvents()
+        QTest.qWait(30)
+        assert not controls.compact_actions.isVisible()
+        assert scroll.horizontalScrollBar().maximum() == 0
+    finally:
+        window.close()
+        window.deleteLater()
+
+
 def test_compact_lesson_help_shows_first_task_with_console_open(tmp_path, qt_app):
     from pathlib import Path
 

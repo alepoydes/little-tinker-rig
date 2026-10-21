@@ -886,6 +886,11 @@ class Lessons(QObject):
             if visible and self.window.pages.currentIndex() == 2
             else 0
         )
+        self.window.controls.set_overlay_clearance(
+            self.overlay.width()
+            if visible and self.window.pages.currentIndex() == 1
+            else 0
+        )
         self.window.block_editor.set_overlay_clearance(
             self.overlay.width()
             if visible and self.window.pages.currentIndex() == 3

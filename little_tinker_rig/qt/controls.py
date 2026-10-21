@@ -246,6 +246,15 @@ class Controller(QWidget):
             )
         self.setMaximumHeight(180 if enabled else 350)
 
+    def set_task_spacing(self, compact):
+        self.grid.setContentsMargins(
+            8 if compact else 24,
+            6 if compact else 12,
+            8 if compact else 24,
+            6 if compact else 12,
+        )
+        self.grid.setVerticalSpacing(2 if compact else 4)
+
     def state(self):
         return ControlState(
             self.left.x_value,
@@ -368,13 +377,19 @@ class ControlsPage(QWidget):
         layout.addWidget(title)
         layout.addWidget(self.target)
         layout.addWidget(self.notice)
-        row = QHBoxLayout()
+        row = self.action_row = QHBoxLayout()
         row.addWidget(self.start)
         row.addWidget(self.armed)
         row.addWidget(self.assignments)
         row.addStretch()
         row.addWidget(self.physical)
         layout.addLayout(row)
+        self.compact_actions = QWidget()
+        self.compact_action_row = QHBoxLayout(self.compact_actions)
+        self.compact_action_row.setContentsMargins(0, 0, 0, 0)
+        self.compact_action_row.addStretch()
+        self.compact_actions.hide()
+        layout.addWidget(self.compact_actions)
         body = QHBoxLayout()
         body.addStretch()
         self.controller.setMaximumWidth(720)
@@ -397,6 +412,28 @@ class ControlsPage(QWidget):
         self.timer.timeout.connect(self.sample)
         self.controller.compact(True)
         self._compact_columns = None
+        self._overlay_clearance = 0
+
+    def set_overlay_clearance(self, width):
+        width = max(0, width)
+        if width == self._overlay_clearance:
+            return
+        if bool(width) != bool(self._overlay_clearance):
+            if width:
+                self.action_row.removeWidget(self.assignments)
+                self.action_row.removeWidget(self.physical)
+                self.compact_action_row.insertWidget(0, self.assignments)
+                self.compact_action_row.addWidget(self.physical)
+            else:
+                self.compact_action_row.removeWidget(self.assignments)
+                self.compact_action_row.removeWidget(self.physical)
+                self.action_row.insertWidget(2, self.assignments)
+                self.action_row.addWidget(self.physical)
+            self.compact_actions.setVisible(bool(width))
+            self.controller.set_task_spacing(bool(width))
+        self._overlay_clearance = width
+        self.layout().setContentsMargins(10, 8, 18 + width if width else 10, 8)
+        self.layout().setSpacing(4 if width else 7)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

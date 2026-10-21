@@ -61,6 +61,9 @@ closing the panel restores the browser's previous visibility.
 With Console open at minimum size, the eye/code button switches between the
 block preview and the Python source. Source is shown first; closing the task
 panel restores the split preview and source.
+In Controls, both sticks and triggers stay beside the task panel; motor setup
+and the physical-controller option move below the main action row. Scroll the
+complete controller vertically to reach its lower buttons.
 Escape, a click outside it, or following a destination link hides it temporarily.
 Switching to Controls, Block Editor or Assembly also hides it on a narrow window
 so their tools have room. The progress control reopens it in any of those views.

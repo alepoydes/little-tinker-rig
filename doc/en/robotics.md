@@ -90,6 +90,10 @@ including buttons. Both layouts fit the available width.
 In a compact window with a hub connected, the sticks remain in view while the
 bottom Hub and devices panel leaves its port monitor control visible; scroll
 either area for more options.
+With a lesson task panel open, Controls narrows to keep both sticks and triggers
+accessible without horizontal scrolling. Motor setup and the physical-controller
+option move below the main action row. Scroll vertically for lower buttons on the
+complete controller.
 
 Rotation scale is degrees per second at full input. Servo scale is an angle added
 to its center: RT with scale 90 and center 20 requests 20–110°. Sticks range from
