@@ -1465,6 +1465,36 @@ def test_reload_failure_reports_error_and_preserves_open_document(windows, monke
     assert page.text == "edited = 2\n" and page.dirty
 
 
+def test_controls_offer_connection_where_the_controller_is_used(windows, monkeypatch):
+    from little_tinker_rig.pybricks.devices import HubInfo
+
+    window = windows()
+    window.resize(800, 620)
+    window.set_mode(1)
+    controls = window.controls
+    assert controls.connect_button.isVisible()
+    assert not controls.start.isVisible()
+    assert controls.connect_button.isEnabled()
+
+    opened = []
+    monkeypatch.setattr(
+        window,
+        "open_hub_connection",
+        lambda preferred_transport=None: opened.append(preferred_transport),
+    )
+    QTest.mouseClick(controls.connect_button, Qt.MouseButton.LeftButton)
+    assert opened == [None]
+
+    controls.target.setCurrentIndex(1)
+    assert controls.connect_button.isVisible()
+    window.update_hub(HubInfo(connection_action="connecting"))
+    assert not controls.connect_button.isEnabled()
+    window.update_hub(HubInfo(connected=True))
+    assert not controls.connect_button.isVisible()
+    controls.target.setCurrentIndex(0)
+    assert controls.start.isVisible() and controls.start.isEnabled()
+
+
 def test_trigger_release_and_focus_loss_stop_motor_commands(qt_app):
     from little_tinker_rig.pybricks.devices import HubInfo
     from little_tinker_rig.qt.controls import ControlsPage

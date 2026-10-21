@@ -261,6 +261,7 @@ class Studio(QMainWindow):
         self.program_page.splitterMoved.connect(self._catalog_splitter_moved)
         self.controls = ControlsPage()
         self.controls.monitor_requested.connect(self.start_monitor)
+        self.controls.connection_requested.connect(self.connect_hub)
         self.controls.drive_requested.connect(
             lambda commands: self._robot().drive(commands)
         )

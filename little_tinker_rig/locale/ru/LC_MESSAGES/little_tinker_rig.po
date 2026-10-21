@@ -1272,9 +1272,9 @@ msgstr ""
 "\n"
 "Подключить датчик цвета к порту хаба."
 
-#: little_tinker_rig/qt/controls.py:288 little_tinker_rig/qt/controls.py:432
-msgid "Connect a virtual or physical hub at the top right."
-msgstr "Подключите виртуальный или настоящий хаб в правом верхнем углу."
+#: little_tinker_rig/qt/controls.py:309 little_tinker_rig/qt/controls.py:521
+msgid "Connect a virtual or physical hub to use the controller."
+msgstr "Подключите виртуальный или настоящий хаб, чтобы пользоваться контроллером."
 
 #: little_tinker_rig/snippets/pybricks/sensors.py:86
 msgid "Connect an ultrasonic distance sensor."

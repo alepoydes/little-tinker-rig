@@ -84,6 +84,8 @@ percentages; ultrasonic distance is in millimeters.
 ## Manual control
 
 Select **Control → Assign motors to sticks and triggers** and start manual control.
+If no hub is connected, **Connect hub** in Controls opens the connection choices;
+the toolbar connection button opens the same dialog.
 Before starting a hub connection, opening **Controls** leaves **Hub and devices**
 closed so the controller has more room. Open it from **View** if needed. Starting
 a connection brings the panel forward.

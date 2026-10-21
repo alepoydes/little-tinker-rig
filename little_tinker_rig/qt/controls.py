@@ -295,6 +295,7 @@ class ControlsPage(QWidget):
     drive_requested = Signal(object)
     input_requested = Signal(object)
     monitor_requested = Signal()
+    connection_requested = Signal()
     failed = Signal(str)
 
     def __init__(self):
@@ -304,10 +305,15 @@ class ControlsPage(QWidget):
         self.controller = Controller()
         self.state_label = QLabel()
         self.state_label.setWordWrap(True)
-        self.notice = QLabel(N_("Connect a virtual or physical hub at the top right."))
+        self.notice = QLabel(
+            N_("Connect a virtual or physical hub to use the controller.")
+        )
         self.notice.setWordWrap(True)
         self.start = QPushButton(N_("Start manual control"))
         self.start.setObjectName("manualStart")
+        self.connect_button = QPushButton(N_("Connect hub"))
+        self.connect_button.setObjectName("manualConnect")
+        self.connect_button.clicked.connect(self.connection_requested)
         self.apply_theme()
         self.start.setToolTip(N_("Stops the user program and starts the port monitor"))
         self.start.clicked.connect(self.monitor_requested)
@@ -388,6 +394,7 @@ class ControlsPage(QWidget):
         layout.addWidget(self.target)
         layout.addWidget(self.notice)
         row = self.action_row = QHBoxLayout()
+        row.addWidget(self.connect_button)
         row.addWidget(self.start)
         row.addWidget(self.armed)
         row.addWidget(self.assignments)
@@ -462,6 +469,9 @@ class ControlsPage(QWidget):
         self.start.setIcon(
             svg_icon("media-playback-start", tint=colors()["accent_text"])
         )
+        self.connect_button.setIcon(
+            svg_icon("network-connect", tint=colors()["accent_text"])
+        )
 
     def bindings(self):
         return tuple(
@@ -491,29 +501,37 @@ class ControlsPage(QWidget):
         self.info = info
         program = self.target.currentData() == "program"
         ready = info.connected and (info.running if program else info.monitoring)
-        self.start.setEnabled(info.connected and not info.monitoring)
-        self.start.setVisible(not program)
+        self.connect_button.setVisible(not info.connected)
+        self.connect_button.setEnabled(not info.connection_action)
+        if info.connection_action == "connecting":
+            self.connect_button.setText(tr("Connecting to hub…"))
+        elif info.connection_action == "disconnecting":
+            self.connect_button.setText(tr("Disconnecting…"))
+        else:
+            self.connect_button.setText(tr("Connect hub"))
+        self.start.setEnabled(
+            info.connected and not info.connection_action and not info.monitoring
+        )
+        self.start.setVisible(info.connected and not program)
         self.table.setEnabled(not program)
         self.armed.setEnabled(ready)
         if not ready:
             self.armed.setChecked(False)
-        self.notice.setText(
-            tr(
+        if not info.connected:
+            notice = tr("Connect a virtual or physical hub to use the controller.")
+        elif program:
+            notice = tr(
                 "Run a program using the Controller module (see Help → Robots and controls)."
             )
-            if program
-            else (
-                tr("The port monitor is running. Assign a motor, then enable commands.")
-                if ready
-                else (
-                    tr(
-                        "Manual control stops the running program and opens the port monitor."
-                    )
-                    if info.connected
-                    else tr("Connect a virtual or physical hub at the top right.")
-                )
+        elif ready:
+            notice = tr(
+                "The port monitor is running. Assign a motor, then enable commands."
             )
-        )
+        else:
+            notice = tr(
+                "Manual control stops the running program and opens the port monitor."
+            )
+        self.notice.setText(notice)
         for row, port in enumerate("ABCDEF"):
             for widget, field in zip(
                 self.rows[port],
