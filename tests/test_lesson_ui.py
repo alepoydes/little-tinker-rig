@@ -810,6 +810,129 @@ def test_compact_task_overlay_releases_control_assembly_and_block_editor(
         window.deleteLater()
 
 
+@pytest.mark.parametrize("assembly_state", ["loading", "failure", "fallback", "model"])
+def test_compact_lesson_assembly_stays_usable_beside_tasks(
+    tmp_path, qt_app, monkeypatch, assembly_state
+):
+    from pathlib import Path
+    from types import SimpleNamespace
+
+    from PySide6.QtCore import Qt
+    from PySide6.QtGui import QWindow
+    from PySide6.QtTest import QTest
+    from PySide6.QtWidgets import QWidget
+
+    from little_tinker_rig.qt.app import Studio
+    from little_tinker_rig.qt.assembly import AssemblyPage
+    from little_tinker_rig.qt.resources import ResourceJob
+
+    class PlaceholderView(QWindow):
+        def select(self, *_args, **_kwargs):
+            pass
+
+        def update(self):
+            pass
+
+    monkeypatch.setattr(AssemblyPage, "load", lambda self: None)
+    window = Studio(tmp_path / "plain.py")
+    window.setMinimumWidth(0)
+    window.resize(800, 620)
+    window.show()
+    try:
+        window.change_language("ru")
+        window.change_visual_theme("dark")
+        window.lessons.open(Path("lessons/first_drive"))
+        window.console_dock.show()
+        window.set_mode(4)
+        window.lessons.set_panel_expanded(True)
+        page = window.lessons.assembly_host.lesson_page
+        if assembly_state in ("fallback", "model"):
+            page.scene = SimpleNamespace(step_count=2, instances=[])
+            page.set_step(0)
+        if assembly_state == "model":
+            page.view = PlaceholderView()
+            page.view_container = QWidget.createWindowContainer(page.view)
+            page.view_host.layout().addWidget(page.view_container)
+            page.placeholder.hide()
+            page.set_overlay_compact(True)
+        elif assembly_state == "fallback":
+            page.show_error("")
+        elif assembly_state == "failure":
+            page.loaded(None, "unavailable")
+        else:
+            page.job = ResourceJob(lambda **_kwargs: None)
+            page.loading_phase = "prepare"
+            page.update_loading_status()
+            page.progress.show()
+            page.cancel.show()
+        qt_app.processEvents()
+        QTest.qWait(30)
+
+        overlay = window.lessons.overlay
+        assert overlay.isVisible()
+        assert window.lessons.assembly_host._overlay_clearance == overlay.width()
+        if assembly_state == "model":
+            assert page.view_host.width() >= 200
+            assert page.sidebar.width() >= 210
+            assert (
+                page.splitter.width() >= page.view_host.width() + page.sidebar.width()
+            ), (
+                page.width(),
+                page.splitter.geometry().getRect(),
+                page.splitter.sizes(),
+                page.view_host.geometry().getRect(),
+                page.sidebar.geometry().getRect(),
+            )
+        widgets = [page.caption, page.notes]
+        if assembly_state in ("fallback", "model"):
+            widgets += [
+                page.parts_caption,
+                page.parts,
+                page.back,
+                page.slider,
+                page.next_step,
+            ]
+        elif assembly_state == "failure":
+            widgets += [page.error, page.retry]
+        else:
+            widgets += [page.download_status, page.progress, page.cancel]
+        for widget in widgets:
+            assert widget.isVisible()
+            assert (
+                widget.mapTo(window.workspace, widget.rect().topRight()).x()
+                < overlay.geometry().left()
+            )
+        if assembly_state in ("fallback", "model"):
+            QTest.mouseClick(page.next_step, Qt.MouseButton.LeftButton)
+            assert page.step == 1
+        else:
+            assert page.view_host.isHidden()
+
+        compact_width = page.notes.viewport().width()
+        window.lessons.set_panel_expanded(False)
+        qt_app.processEvents()
+        QTest.qWait(30)
+        assert window.lessons.assembly_host._overlay_clearance == 0
+        if assembly_state in ("fallback", "model"):
+            assert page.notes.viewport().width() > compact_width
+        else:
+            assert page.view_host.isVisible()
+
+        window.lessons.set_panel_expanded(True)
+        qt_app.processEvents()
+        QTest.qWait(30)
+        assert overlay.isVisible()
+        assert (
+            page.notes.mapTo(window.workspace, page.notes.rect().topRight()).x()
+            < overlay.geometry().left()
+        )
+        if assembly_state in ("loading", "failure"):
+            assert page.view_host.isHidden()
+    finally:
+        window.close()
+        window.deleteLater()
+
+
 @pytest.mark.parametrize("width, minimum_code", [(800, 340), (930, 350)])
 def test_compact_tasks_leave_block_editor_commands_and_code_visible(
     tmp_path, qt_app, width, minimum_code

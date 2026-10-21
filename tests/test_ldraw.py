@@ -99,6 +99,45 @@ def test_compact_loaded_assembly_keeps_model_and_notes_visible(model, qt_app):
         page.deleteLater()
 
 
+def test_assembly_with_task_panel_fits_model_and_notes(model, qt_app, monkeypatch):
+    import json
+
+    from PySide6.QtGui import QWindow
+    from PySide6.QtWidgets import QWidget
+
+    from little_tinker_rig.qt.assembly import AssemblyPage
+
+    description = model.with_suffix(".json")
+    description.write_text(
+        json.dumps({"format": 1, "model": model.name}), encoding="utf-8"
+    )
+    monkeypatch.setattr(AssemblyPage, "load", lambda self: None)
+    page = AssemblyPage(description)
+    page.view = QWindow()
+    page.view_container = QWidget.createWindowContainer(page.view)
+    page.view_host.layout().addWidget(page.view_container)
+    page.placeholder.hide()
+    page.set_overlay_compact(True)
+    page.resize(436, 364)
+    page.show()
+    try:
+        qt_app.processEvents()
+        assert page.view_host.width() >= 200
+        assert page.sidebar.width() >= 210
+        assert page.sidebar.geometry().right() <= page.width()
+        assert page.view.minimumWidth() == 200
+        assert page.view_container.minimumWidth() == 200
+
+        page.set_overlay_compact(False)
+        page.resize(738, 364)
+        qt_app.processEvents()
+        assert page.view.minimumWidth() == 240
+        assert page.sidebar.minimumWidth() == 260
+    finally:
+        page.close()
+        page.deleteLater()
+
+
 @pytest.mark.parametrize("saved, expected", [(2, 2), (99, 3)])
 def test_saved_assembly_step_waits_for_model_count(model, qt_app, saved, expected):
     import json

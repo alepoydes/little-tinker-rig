@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from PySide6.QtCore import QSize, Qt, QThreadPool, Signal
+from PySide6.QtCore import QSize, Qt, QThreadPool, QTimer, Signal
 from PySide6.QtGui import QColor, QIcon, QPixmap, QShortcut
 from PySide6.QtWidgets import (
     QApplication,
@@ -87,10 +87,13 @@ class AssemblyPage(QWidget):
         self.attempted = False
         self.error_kind = None
         self.step = step
+        self._overlay_compact = False
+        self._restore_sidebar_width = False
         layout = QVBoxLayout(self)
         self.caption = QLabel(tr("Loading robot model…"))
         layout.addWidget(self.caption)
         split = QSplitter()
+        self.splitter = split
         self.view_host = QWidget()
         self.view_host.setLayout(QVBoxLayout())
         self.placeholder = QWidget()
@@ -109,6 +112,7 @@ class AssemblyPage(QWidget):
         self.view_host.layout().addWidget(self.placeholder)
         split.addWidget(self.view_host)
         side = QWidget()
+        self.sidebar = side
         side.setMinimumWidth(260)
         sidebar = QVBoxLayout(side)
         self.error = QLabel()
@@ -216,6 +220,45 @@ class AssemblyPage(QWidget):
         self.apply_theme()
         self.set_step(self.step)
 
+    def set_overlay_compact(self, compact):
+        compact = bool(compact)
+        was_compact = self._overlay_compact
+        self._overlay_compact = compact
+        self.sidebar.setMinimumWidth(210 if compact else 260)
+        minimum = QSize(200, 180) if compact else QSize(240, 200)
+        if self.view:
+            self.view.setMinimumSize(minimum)
+        if self.view_container:
+            self.view_container.setMinimumSize(minimum)
+        self.view_host.setVisible(
+            self.error_kind != "display"
+            and (self.view_container is not None or not compact)
+        )
+        if self.job:
+            self.download_status.setVisible(self.view_container is not None or compact)
+        elif self.error_kind in ("load", "cancelled"):
+            self.error.setVisible(self.view_container is not None or compact)
+        if was_compact and not compact and self.view_container:
+            self._restore_sidebar_width = True
+            QTimer.singleShot(0, self, self._restore_wide_sidebar)
+        elif compact:
+            self._restore_sidebar_width = False
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self._restore_sidebar_width:
+            QTimer.singleShot(0, self, self._restore_wide_sidebar)
+
+    def _restore_wide_sidebar(self):
+        if (
+            not self._restore_sidebar_width
+            or self._overlay_compact
+            or self.splitter.width() < 600
+        ):
+            return
+        self._restore_sidebar_width = False
+        self.splitter.setSizes([self.splitter.width() - 340, 340])
+
     def apply_theme(self):
         c = colors()
         self.placeholder.setStyleSheet(
@@ -289,6 +332,8 @@ class AssemblyPage(QWidget):
         self.view_host.show()
         self.placeholder.setVisible(self.view_container is None)
         self.update_loading_status()
+        if self._overlay_compact and self.view_container is None:
+            self.view_host.hide()
         self.progress.setRange(0, 0)
         self.progress.show()
         self.retry.hide()
@@ -326,7 +371,9 @@ class AssemblyPage(QWidget):
             message = tr("Loading robot model…")
         self.placeholder_text.setText(message)
         self.download_status.setText(message)
-        self.download_status.setVisible(self.view_container is not None)
+        self.download_status.setVisible(
+            self.view_container is not None or self._overlay_compact
+        )
 
     def loaded(self, scene, error):
         cancelled = self.job is not None and self.job.cancelled.is_set()
@@ -350,9 +397,13 @@ class AssemblyPage(QWidget):
             self.caption.setText(tr("Robot instructions"))
             self.error_kind = "cancelled" if cancelled else "load"
             self.update_error_text()
-            self.error.setVisible(self.view_container is not None)
+            self.error.setVisible(
+                self.view_container is not None or self._overlay_compact
+            )
             self.placeholder_text.setText(self.error.text())
             self.placeholder.setVisible(self.view_container is None)
+            if self._overlay_compact and self.view_container is None:
+                self.view_host.hide()
             self.reset_button.setVisible(self.view is not None)
             self.notes.setMarkdown(self.step_description())
             return
@@ -378,6 +429,7 @@ class AssemblyPage(QWidget):
                 self.view.selected.connect(self.select_instance)
                 self.view_container = QWidget.createWindowContainer(self.view)
                 self.view_container.setMinimumSize(240, 200)
+                self.set_overlay_compact(self._overlay_compact)
                 self.view_container.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
                 self.view_host.layout().addWidget(self.view_container)
                 self.placeholder.hide()
@@ -672,6 +724,7 @@ class AssemblyWorkspace(QWidget):
         self.settings = settings
         self.lesson_page = self.free_page = None
         self.free_path = None
+        self._overlay_clearance = 0
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         self.models = QComboBox()
@@ -698,6 +751,16 @@ class AssemblyWorkspace(QWidget):
         self.pages.addWidget(self.empty)
         layout.addWidget(self.pages, 1)
         self.refresh_models()
+
+    def set_overlay_clearance(self, width):
+        width = max(0, width)
+        if width == self._overlay_clearance:
+            return
+        self._overlay_clearance = width
+        self.layout().setContentsMargins(0, 0, width + 12 if width else 0, 0)
+        for page in (self.lesson_page, self.free_page):
+            if page:
+                page.set_overlay_compact(bool(width))
 
     @property
     def showing_lesson(self):
@@ -743,6 +806,7 @@ class AssemblyWorkspace(QWidget):
             self.pages.removeWidget(previous)
             previous.deleteLater()
         if page:
+            page.set_overlay_compact(bool(self._overlay_clearance))
             self.pages.addWidget(page)
 
     def cancel_loading(self):

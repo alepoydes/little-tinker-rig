@@ -896,6 +896,11 @@ class Lessons(QObject):
             if visible and self.window.pages.currentIndex() == 3
             else 0
         )
+        self.assembly_host.set_overlay_clearance(
+            self.overlay.width()
+            if visible and self.window.pages.currentIndex() == 4
+            else 0
+        )
 
     def update_panel_visibility(self):
         expanded = bool(
