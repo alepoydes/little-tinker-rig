@@ -1833,9 +1833,7 @@ class Studio(QMainWindow):
             else "Python" if page and page.code_active else tr("Select a block")
         )
         self.statusBar().showMessage(
-            ""
-            if self.pages.currentIndex() == 5
-            else (
+            (
                 tr("Python · changes not checked")
                 if page
                 and page.code_active
@@ -1846,6 +1844,8 @@ class Studio(QMainWindow):
                     p1=len(session.analysis.diagnostics()),
                 )
             )
+            if self.pages.currentIndex() == 0
+            else ""
         )
         project = self.document_page.lesson_project
         dirty = self.document_page.dirty or (project is not None and project.dirty)
