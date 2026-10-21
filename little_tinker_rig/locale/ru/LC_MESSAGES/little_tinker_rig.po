@@ -303,6 +303,10 @@ msgstr ""
 msgid "Assembly"
 msgstr "Сборка"
 
+#: little_tinker_rig/qt/assembly.py:743
+msgid "Assembly steps appear when you open a robot project or a robot.json file."
+msgstr "Шаги сборки появятся после открытия проекта с роботом или файла robot.json."
+
 #: little_tinker_rig/qt/assembly.py:332
 #, python-brace-format
 msgid "Assembly · step {current} of {total}"
@@ -3827,10 +3831,6 @@ msgstr "Инструкции по настройке находятся в ра�
 #: little_tinker_rig/qt/library.py:585
 msgid "Open a lesson to see blocks suggested for the current task."
 msgstr "Откройте урок, чтобы увидеть блоки, рекомендованные для текущего задания."
-
-#: little_tinker_rig/qt/assembly.py:560
-msgid "Open a robot.json file to follow assembly steps without a lesson."
-msgstr "Открой файл robot.json, чтобы пройти шаги сборки без урока."
 
 #: little_tinker_rig/qt/lessons.py:672
 msgid "Open assembly"

@@ -739,7 +739,9 @@ class AssemblyWorkspace(QWidget):
         self.empty = QWidget()
         empty_layout = QVBoxLayout(self.empty)
         label = QLabel(
-            N_("Open a robot.json file to follow assembly steps without a lesson.")
+            N_(
+                "Assembly steps appear when you open a robot project or a robot.json file."
+            )
         )
         label.setWordWrap(True)
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
