@@ -266,6 +266,9 @@ class Studio(QMainWindow):
             lambda commands: self._robot().drive(commands)
         )
         self.controls.input_requested.connect(lambda state: self._robot().send(state))
+        self.controls.release_requested.connect(
+            lambda: self._robot().release_controls()
+        )
         self.controls.failed.connect(self.error)
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)

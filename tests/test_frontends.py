@@ -309,6 +309,7 @@ def test_qt_controller_mirrors_physical_state_and_stops_on_disconnect(qt_app):
     source.setCurrentIndex(source.findData("left_y"))
     commands = []
     page.drive_requested.connect(commands.append)
+    page.release_requested.connect(lambda: commands.append("released"))
     page.armed.setChecked(True)
     page.sample()
     assert page.controller.state() == gamepad.read()
@@ -317,7 +318,7 @@ def test_qt_controller_mirrors_physical_state_and_stops_on_disconnect(qt_app):
     page.sample()
     assert not page.armed.isChecked() and not page.physical.isChecked()
     assert gamepad.closed
-    assert commands[-1] == ()
+    assert commands[-1] == "released"
     assert page.controller.state() == ControlState()
     page.close()
 

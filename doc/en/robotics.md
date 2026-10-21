@@ -126,8 +126,9 @@ stops the motor; a neutral servo input returns it to its center. Disabling comma
 brakes both modes. Changing assignments, leaving Control, losing window focus or
 connection disables transmission. The hub brakes after 500 ms without commands.
 If a write is already in progress when commands are disabled, the neutral frame
-is sent immediately after that write completes. Stop and disconnect discard
-queued movement commands.
+is sent immediately after that write completes. Disabling commands discards
+queued movement and button presses; enabling them again starts with fresh input.
+Stop and disconnect also discard queued controls.
 
 The `gamepad` extra enables a physical Xbox-compatible SDL controller. Its sticks,
 triggers and buttons mirror the screen controls and use the same motor assignments.

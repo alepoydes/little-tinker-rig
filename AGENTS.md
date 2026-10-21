@@ -121,6 +121,9 @@
   Stop and disconnect interrupt every task holding or waiting for the connection
   lock, including console input and configuration. Their timeouts must not be
   postponed indefinitely by unrelated writes.
+- Treat disabling control input as cancellation of queued samples, distinct from
+  a normal button release. Preserve the final neutral boundary when input is
+  immediately rearmed; a write already in progress may finish before it.
 - Momentary motor controls return to neutral on mouse/key release and focus loss.
   Cover slider grooves as well as handles: sliderReleased is not a general mouse
   release event. Verify emitted commands, not just the displayed position.

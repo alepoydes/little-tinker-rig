@@ -83,10 +83,7 @@ class HubWorker:
             if interrupt and self.operation:
                 self.operation.cancel()
             with self.control_lock:
-                self.latest_control = None
-                self.control_edges.clear()
-                self.control_buttons = 0
-                self.control_connection = None
+                self._clear_controls()
                 if self.pending:
                     self.pending.cancel()
             self._busy_changed(True)
@@ -322,17 +319,40 @@ class HubWorker:
     def send(self, state):
         self._control("send", state)
 
-    def _control(self, method, value):
+    def release_controls(self):
+        monitoring = self.info.monitoring
+        self._control(
+            "drive" if monitoring else "send",
+            () if monitoring else ControlState(),
+            release=True,
+        )
+
+    def _clear_controls(self):
+        # Call with control_lock held; an already started write may finish.
+        self.latest_control = None
+        self.control_edges.clear()
+        self.control_buttons = 0
+        self.control_connection = None
+
+    def _control(self, method, value, *, release=False):
         with self.control_lock:
+            if release:
+                self._clear_controls()
             if (
                 not self.connection
                 or not self.info.connected
                 or self.operation
                 and not self.operation.done()
+                or release
+                and not (self.info.monitoring or self.info.running)
             ):
                 return
             sample = self.connection, method, value
-            if method == "send" and isinstance(value, ControlState):
+            if release:
+                # Keep the neutral boundary even if input is immediately rearmed.
+                self.control_connection = self.connection
+                self.control_edges.append((monotonic(), sample))
+            elif method == "send" and isinstance(value, ControlState):
                 if self.control_connection is not self.connection:
                     self.control_edges.clear()
                     self.control_buttons = 0
@@ -374,10 +394,8 @@ class HubWorker:
                 await getattr(connection, method)(value)
         except BaseException:
             with self.control_lock:
-                self.latest_control = self.pending = None
-                self.control_edges.clear()
-                self.control_buttons = 0
-                self.control_connection = None
+                self._clear_controls()
+                self.pending = None
             raise
 
     def configure(self, port, kind, value=None):

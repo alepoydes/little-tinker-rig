@@ -632,6 +632,56 @@ def test_interruption_discards_queued_button_edges(operation):
         worker.close()
 
 
+@pytest.mark.parametrize("monitoring", [False, True])
+@pytest.mark.parametrize("rearm", [False, True])
+def test_disarming_discards_queued_input_and_keeps_neutral_before_rearming(
+    monitoring, rearm
+):
+    entered, release = Event(), asyncio.Event()
+    frames, failures = [], []
+
+    class Peer:
+        async def send(self, state):
+            frames.append(state)
+            if len(frames) == 1:
+                entered.set()
+                await release.wait()
+
+        drive = send
+
+        async def disconnect(self):
+            pass
+
+    worker = HubWorker(
+        output=lambda *_: None,
+        failed=failures.append,
+        updated=lambda *_: None,
+        busy_changed=lambda *_: None,
+        problem=lambda *_: None,
+        program_started=lambda *_: None,
+    )
+    worker.connection = Peer()
+    worker.info = HubInfo(connected=True, running=not monitoring, monitoring=monitoring)
+    neutral = () if monitoring else ControlState()
+    pressed = (("A", "speed", 100),) if monitoring else ControlState(buttons=1)
+    control = worker.drive if monitoring else worker.send
+    try:
+        control(neutral)
+        assert entered.wait(1)
+        pending = worker.pending
+        control(pressed)
+        worker.release_controls()
+        if rearm:
+            control(pressed)
+        worker.loop.call_soon_threadsafe(release.set)
+        pending.result(timeout=1)
+        assert frames == [neutral, neutral] + ([pressed] if rearm else [])
+        assert not failures
+    finally:
+        worker.loop.call_soon_threadsafe(release.set)
+        worker.close()
+
+
 @pytest.mark.parametrize("operation", ["stop_program", "disconnect_hub"])
 def test_interrupt_cancels_active_and_queued_console_writes(operation):
     entered = Event()

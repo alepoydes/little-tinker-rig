@@ -198,6 +198,40 @@ def test_short_screen_button_click_and_key_press_emit_both_edges(qt_app):
         page.close()
 
 
+@pytest.mark.parametrize("action", ["disable", "hide", "target"])
+def test_ending_controls_releases_the_queue_separately_from_button_up(qt_app, action):
+    from little_tinker_rig.pybricks.devices import HubInfo
+    from little_tinker_rig.qt.controls import ControlsPage
+
+    page = ControlsPage()
+    page.show()
+    page.timer.stop()
+    page.target.setCurrentIndex(1)
+    page.update_info(HubInfo(connected=True, running=True))
+    released, samples = [], []
+    page.release_requested.connect(lambda: released.append(True))
+    page.input_requested.connect(samples.append)
+    try:
+        page.armed.setChecked(True)
+        page.controller.buttons[0].setDown(True)
+        page.sample()
+        page.controller.buttons[0].setDown(False)
+        page.sample()
+        assert [sample.buttons for sample in samples] == [1, 0]
+        assert released == []
+        if action == "disable":
+            page.armed.setChecked(False)
+        elif action == "hide":
+            page.hide()
+        else:
+            page.target.setCurrentIndex(0)
+        assert released == [True]
+        assert not page.armed.isChecked()
+        assert page.controller.state() == ControlState()
+    finally:
+        page.close()
+
+
 def test_short_physical_button_tap_reaches_program(qt_app):
     from little_tinker_rig.pybricks.devices import HubInfo
     from little_tinker_rig.qt.controls import ControlsPage

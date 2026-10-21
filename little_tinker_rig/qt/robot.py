@@ -64,6 +64,9 @@ class Robot(QObject):
     def send(self, state):
         return self.worker.send(state)
 
+    def release_controls(self):
+        return self.worker.release_controls()
+
     def configure(self, port, kind, value=None):
         return self.worker.configure(port, kind, value)
 

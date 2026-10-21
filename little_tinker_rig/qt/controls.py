@@ -296,6 +296,7 @@ class Controller(QWidget):
 class ControlsPage(QWidget):
     drive_requested = Signal(object)
     input_requested = Signal(object)
+    release_requested = Signal()
     monitor_requested = Signal()
     connection_requested = Signal()
     failed = Signal(str)
@@ -571,10 +572,7 @@ class ControlsPage(QWidget):
                 self.failed.emit(str(error))
         elif not enabled:
             self.controller.display(ControlState())
-            if self.info and self.info.monitoring:
-                self.drive_requested.emit(())
-            elif self.info and self.info.connected and self.info.running:
-                self.input_requested.emit(ControlState())
+            self.release_requested.emit()
 
     def _target_changed(self):
         self.armed.setChecked(False)
